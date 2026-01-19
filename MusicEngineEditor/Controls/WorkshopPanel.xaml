@@ -1,0 +1,418 @@
+<UserControl x:Class="MusicEngineEditor.Controls.WorkshopPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="500"
+             Background="#1E1F22">
+
+    <UserControl.Resources>
+        <!-- Colors matching the dark theme -->
+        <SolidColorBrush x:Key="WorkshopBackgroundBrush" Color="#1E1F22"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#313335"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="SubtleBorderBrush" Color="#43454A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="BrightForegroundBrush" Color="#DFE1E5"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
+        <SolidColorBrush x:Key="CodeBackgroundBrush" Color="#1A1B1E"/>
+        <SolidColorBrush x:Key="RunButtonBrush" Color="#499C54"/>
+        <SolidColorBrush x:Key="RunButtonHoverBrush" Color="#5AAF65"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="#E9B85B"/>
+        <SolidColorBrush x:Key="SidebarBrush" Color="#252628"/>
+
+        <!-- Navigation Item Style -->
+        <Style x:Key="NavItemStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                BorderThickness="3,0,0,0"
+                                BorderBrush="Transparent"
+                                CornerRadius="0,4,4,0"
+                                Margin="0,1">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="Tag" Value="Active">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#3C3F41" Offset="0"/>
+                                            <GradientStop Color="#252628" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Step Number Badge Style -->
+        <Style x:Key="StepBadgeStyle" TargetType="Border">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Margin" Value="0,0,14,0"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#5A7FC4" Offset="0"/>
+                        <GradientStop Color="#4B6EAF" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#4B6EAF" BlurRadius="6" ShadowDepth="0" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Run Example Button Style -->
+        <Style x:Key="WorkshopRunButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#5AAF65" Offset="0"/>
+                        <GradientStop Color="#499C54" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="6">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="runShadow" Color="#499C54" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="&#x25B6;" FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="runShadow"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="8" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="runShadow"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.5" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="runShadow"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="runShadow"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#6BC176" Offset="0"/>
+                                            <GradientStop Color="#5AAF65" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Copy Button Style -->
+        <Style x:Key="WorkshopCopyButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SubtleBorderBrush}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Navigation Button Style -->
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" MinWidth="180"/>
+            <ColumnDefinition Width="1"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Sidebar Navigation -->
+        <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Workshop Header -->
+                <Border Grid.Row="0" Padding="20,24" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#2B2D30" Offset="0"/>
+                            <GradientStop Color="#252628" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="36" Height="36" CornerRadius="8" Margin="0,0,12,0">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#5A7FC4" Offset="0"/>
+                                        <GradientStop Color="#4B6EAF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="&#x1F3B5;" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Workshop" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrightForegroundBrush}"/>
+                                <TextBlock Text="Interactive Tutorials" FontSize="11" Foreground="{StaticResource SecondaryForegroundBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Navigation Menu -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="NavigationPanel" Margin="0,8,0,8">
+                        <!-- Getting Started Section -->
+                        <TextBlock Text="GETTING STARTED" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{StaticResource SecondaryForegroundBrush}"
+                                   Margin="16,16,0,8"/>
+                        <Button Style="{StaticResource NavItemStyle}" Tag="Active" Click="NavItem_Click" x:Name="Nav_Welcome">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="1." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="Welcome"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_FirstSound">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="2." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="First Sounds"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_Notes">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="3." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="Playing Notes"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- MIDI Section -->
+                        <TextBlock Text="MIDI" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{StaticResource SecondaryForegroundBrush}"
+                                   Margin="16,24,0,8"/>
+                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_MidiBasics">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="4." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="MIDI Basics"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_MidiRouting">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="5." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="MIDI Routing"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- VST Plugins Section -->
+                        <TextBlock Text="VST PLUGINS" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{StaticResource SecondaryForegroundBrush}"
+                                   Margin="16,24,0,8"/>
+                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_VstBasics">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="6." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="Loading Plugins"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_VstVital">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="7." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="Using Vital"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Patterns Section -->
+                        <TextBlock Text="PATTERNS" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{StaticResource SecondaryForegroundBrush}"
+                                   Margin="16,24,0,8"/>
+                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_Patterns">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="8." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="Creating Patterns"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_Sequencing">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="9." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="Sequencing"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- Splitter -->
+        <GridSplitter Grid.Column="1" Width="1" Background="{StaticResource BorderBrush}" HorizontalAlignment="Stretch"/>
+
+        <!-- Main Content Area -->
+        <Border Grid.Column="2" Background="{StaticResource WorkshopBackgroundBrush}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Scrollable Content -->
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                    <StackPanel x:Name="ContentPanel" Margin="32,24,32,32">
+                        <!-- Content will be populated dynamically -->
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Bottom Navigation -->
+                <Border Grid.Row="1" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0"
+                        Padding="28,18">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#2B2D30" Offset="0"/>
+                            <GradientStop Color="#27292C" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button x:Name="PrevButton" Grid.Column="0"
+                                Style="{StaticResource NavButtonStyle}"
+                                HorizontalAlignment="Left"
+                                Click="PrevButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#x25C0;" FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Previous"/>
+                            </StackPanel>
+                        </Button>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Background="#1E1F22" CornerRadius="12" Padding="14,6">
+                                <TextBlock x:Name="ProgressText"
+                                           Text="1 / 9"
+                                           Foreground="{StaticResource ForegroundBrush}"
+                                           FontWeight="Medium"
+                                           FontSize="12"/>
+                            </Border>
+                        </StackPanel>
+
+                        <Button x:Name="NextButton" Grid.Column="2"
+                                Style="{StaticResource NavButtonStyle}"
+                                HorizontalAlignment="Right"
+                                Click="NextButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Next"/>
+                                <TextBlock Text="&#x25B6;" FontSize="10" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

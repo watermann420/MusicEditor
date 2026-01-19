@@ -1,0 +1,308 @@
+<UserControl x:Class="MusicEngineEditor.Controls.FindReplaceControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="80" d:DesignWidth="400"
+             Background="#2B2D30"
+             Visibility="Collapsed">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="InputBackgroundBrush" Color="#1E1F22"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="FocusBorderBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="HighlightBrush" Color="#214283"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#6AAB73"/>
+
+        <!-- Search TextBox Style -->
+        <Style x:Key="SearchInputStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="JetBrains Mono, Cascadia Code, Consolas"/>
+            <Setter Property="CaretBrush" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="focusShadow" Color="#4B6EAF" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="&#x1F50D;" FontSize="12"
+                                           Foreground="{StaticResource SecondaryBrush}"
+                                           VerticalAlignment="Center" Margin="10,0,6,0"/>
+                                <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1"
+                                              Margin="0,8,10,8"
+                                              VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource FocusBorderBrush}"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="focusShadow"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="4" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="focusShadow"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.3" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="focusShadow"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="focusShadow"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Icon Button Style -->
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="26"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toggle Button Style -->
+        <Style x:Key="ToggleOptionStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="26"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ToolTipService.InitialShowDelay" Value="500"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#214283"/>
+                                <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="12,10">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#2B2D30" Offset="0"/>
+                <GradientStop Color="#27292C" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Find Row -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Expand/Collapse Replace -->
+                <ToggleButton x:Name="ExpandReplaceToggle"
+                              Grid.Column="0"
+                              Style="{StaticResource ToggleOptionStyle}"
+                              ToolTip="Toggle Replace (Ctrl+H)"
+                              Width="24" Height="24"
+                              Margin="0,0,8,0"
+                              Checked="ExpandReplaceToggle_Changed"
+                              Unchecked="ExpandReplaceToggle_Changed">
+                    <TextBlock x:Name="ExpandArrow" Text="&#9654;" FontSize="9"/>
+                </ToggleButton>
+
+                <!-- Search Input -->
+                <TextBox x:Name="SearchTextBox"
+                         Grid.Column="1"
+                         Style="{StaticResource SearchInputStyle}"
+                         TextChanged="SearchTextBox_TextChanged"
+                         KeyDown="SearchTextBox_KeyDown"/>
+
+                <!-- Search Options -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0">
+                    <ToggleButton x:Name="CaseSensitiveToggle"
+                                  Style="{StaticResource ToggleOptionStyle}"
+                                  ToolTip="Match Case (Alt+C)"
+                                  Checked="SearchOptions_Changed"
+                                  Unchecked="SearchOptions_Changed"
+                                  Width="28" Height="28">
+                        <TextBlock Text="Aa" FontSize="11" FontWeight="SemiBold"/>
+                    </ToggleButton>
+                    <ToggleButton x:Name="WholeWordToggle"
+                                  Style="{StaticResource ToggleOptionStyle}"
+                                  ToolTip="Match Whole Word (Alt+W)"
+                                  Checked="SearchOptions_Changed"
+                                  Unchecked="SearchOptions_Changed"
+                                  Width="28" Height="28" Margin="2,0,0,0">
+                        <TextBlock Text="W" FontSize="11" FontWeight="SemiBold" TextDecorations="Underline"/>
+                    </ToggleButton>
+                    <ToggleButton x:Name="RegexToggle"
+                                  Style="{StaticResource ToggleOptionStyle}"
+                                  ToolTip="Use Regular Expression (Alt+R)"
+                                  Checked="SearchOptions_Changed"
+                                  Unchecked="SearchOptions_Changed"
+                                  Width="28" Height="28" Margin="2,0,0,0">
+                        <TextBlock Text=".*" FontSize="11" FontWeight="SemiBold"/>
+                    </ToggleButton>
+                </StackPanel>
+
+                <!-- Results Counter -->
+                <Border Grid.Column="3" Background="#1E1F22" CornerRadius="4" Padding="10,4" Margin="4,0">
+                    <TextBlock x:Name="ResultsCounter"
+                               Text="0 results"
+                               Foreground="{StaticResource SecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Navigation and Close -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="4,0,0,0">
+                    <Button x:Name="PrevButton"
+                            Style="{StaticResource IconButtonStyle}"
+                            ToolTip="Previous Match (Shift+F3)"
+                            Click="PrevButton_Click"
+                            Width="28" Height="28">
+                        <TextBlock Text="&#9650;" FontSize="10"/>
+                    </Button>
+                    <Button x:Name="NextButton"
+                            Style="{StaticResource IconButtonStyle}"
+                            ToolTip="Next Match (F3)"
+                            Click="NextButton_Click"
+                            Width="28" Height="28" Margin="2,0,0,0">
+                        <TextBlock Text="&#9660;" FontSize="10"/>
+                    </Button>
+                    <Button x:Name="CloseButton"
+                            Style="{StaticResource IconButtonStyle}"
+                            ToolTip="Close (Escape)"
+                            Click="CloseButton_Click"
+                            Width="28" Height="28" Margin="8,0,0,0">
+                        <TextBlock Text="&#10005;" FontSize="11"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Replace Row -->
+            <Grid Grid.Row="1" x:Name="ReplaceRow" Visibility="Collapsed" Margin="32,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Replace Input -->
+                <TextBox x:Name="ReplaceTextBox"
+                         Grid.Column="0"
+                         Style="{StaticResource SearchInputStyle}"
+                         KeyDown="ReplaceTextBox_KeyDown"/>
+
+                <!-- Replace Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0">
+                    <Button x:Name="ReplaceButton"
+                            Style="{StaticResource IconButtonStyle}"
+                            ToolTip="Replace (Ctrl+Shift+1)"
+                            Click="ReplaceButton_Click"
+                            Width="Auto" Height="28" Padding="12,0">
+                        <TextBlock Text="Replace" FontSize="11" FontWeight="Medium"/>
+                    </Button>
+                    <Button x:Name="ReplaceAllButton"
+                            ToolTip="Replace All (Ctrl+Shift+Enter)"
+                            Click="ReplaceAllButton_Click"
+                            Width="Auto" Height="28" Padding="12,0" Margin="6,0,0,0"
+                            Background="{StaticResource AccentBrush}" Foreground="White" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="4"
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#5A7FC4"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <TextBlock Text="Replace All" FontSize="11" FontWeight="SemiBold"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>
