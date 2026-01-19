@@ -29,7 +29,7 @@ Install: https://github.com/watermann420/MusicEngine
 ## Requirements
 
 * MusicEngine must be installed
-* Compatible with the platform that supports MusicEngine
+
 
 ---
 
