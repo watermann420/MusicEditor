@@ -319,12 +319,6 @@
                                 <TextBlock Text="Loading Plugins"/>
                             </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_VstVital">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="7." Width="20" Foreground="{StaticResource AccentBrush}"/>
-                                <TextBlock Text="Using Vital"/>
-                            </StackPanel>
-                        </Button>
 
                         <!-- Patterns Section -->
                         <TextBlock Text="PATTERNS" FontSize="10" FontWeight="SemiBold"
@@ -332,14 +326,26 @@
                                    Margin="16,24,0,8"/>
                         <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_Patterns">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="8." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="7." Width="20" Foreground="{StaticResource AccentBrush}"/>
                                 <TextBlock Text="Creating Patterns"/>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_Sequencing">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="9." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="8." Width="20" Foreground="{StaticResource AccentBrush}"/>
                                 <TextBlock Text="Sequencing"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_Samples">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="9." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="Sample Instrument"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource NavItemStyle}" Click="NavItem_Click" x:Name="Nav_Complete">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="10." Width="20" Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="Complete Example"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>

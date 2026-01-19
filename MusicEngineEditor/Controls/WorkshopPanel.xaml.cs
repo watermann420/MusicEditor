@@ -288,92 +288,52 @@ midi.device(0).cc(1).to(synth, ""cutoff"");",
                 new()
                 {
                     Type = SectionType.Text,
-                    Content = "MusicEngine can load VST2 and VST3 plugins. This lets you use professional synthesizers like Vital, Serum, or any other VST instrument."
+                    Content = "MusicEngine can load VST2 and VST3 plugins. This lets you use any professional synthesizer like Serum, Vital, Massive, or any other plugin you have installed."
                 },
                 new()
                 {
                     Type = SectionType.Code,
                     Content = @"// Load a VST plugin by name
-var plugin = vst.load(""Vital"");
-
-if (plugin != null)
-{
-    Print(""Plugin loaded!"");
-    plugin.ShowEditor();  // Open the plugin window
-}
-else
-{
-    Print(""Plugin not found"");
-}",
-                    Description = "Load and open a VST plugin"
-                },
-                new()
-                {
-                    Type = SectionType.Warning,
-                    Content = "Make sure your VST plugins are installed in a standard location like C:\\Program Files\\Common Files\\VST3"
-                }
-            }
-        });
-
-        _lessons.Add(new WorkshopLesson
-        {
-            Id = "vst-vital",
-            Title = "Using Vital",
-            Subtitle = "Free wavetable synthesizer",
-            Sections = new List<LessonSection>
-            {
-                new()
-                {
-                    Type = SectionType.Text,
-                    Content = "Vital is a free, powerful wavetable synthesizer. Download it from vital.audio if you haven't already."
-                },
-                new()
-                {
-                    Type = SectionType.Code,
-                    Content = @"// Load Vital and connect MIDI
-var vital = vst.load(""Vital"");
-
-if (vital != null)
-{
-    // Show the Vital interface
-    vital.ShowEditor();
-
-    // Route your MIDI keyboard
-    vital.from(0);
-
-    Print(""Vital ready! Play your keyboard."");
-}
-else
-{
-    Print(""Install Vital from vital.audio"");
-}",
-                    Description = "Complete Vital setup"
+var synth = vst.load(""MyPluginName"");
+synth.ShowEditor();
+synth.NoteOn(60, 100);",
+                    Description = "Replace 'MyPluginName' with your plugin name (e.g. Serum, Vital, Massive)"
                 },
                 new()
                 {
                     Type = SectionType.Heading,
-                    Content = "Playing Notes Programmatically"
+                    Content = "Connect MIDI Keyboard"
                 },
                 new()
                 {
                     Type = SectionType.Code,
-                    Content = @"// Play notes through Vital
-var vital = vst.load(""Vital"");
-
-if (vital != null)
-{
-    vital.ShowEditor();
-
-    // Play a chord
-    vital.NoteOn(60, 100);  // C
-    vital.NoteOn(64, 100);  // E
-    vital.NoteOn(67, 100);  // G
-
-    await Task.Delay(1000);
-
-    vital.AllNotesOff();
-}",
-                    Description = "Play chords through Vital"
+                    Content = @"// Load plugin and connect your keyboard
+var synth = vst.load(""MyPluginName"");
+synth.ShowEditor();
+synth.from(0);  // MIDI device 0",
+                    Description = "Route MIDI keyboard to VST plugin"
+                },
+                new()
+                {
+                    Type = SectionType.Tip,
+                    Content = "Common VST locations: C:\\Program Files\\Common Files\\VST3 or C:\\Program Files\\VSTPlugins"
+                },
+                new()
+                {
+                    Type = SectionType.Heading,
+                    Content = "Popular Free VST Plugins"
+                },
+                new()
+                {
+                    Type = SectionType.BulletList,
+                    Items = new List<string>
+                    {
+                        "Vital - Free wavetable synth (vital.audio)",
+                        "Surge XT - Open source hybrid synth (surge-synth-team.org)",
+                        "Dexed - DX7 FM synth emulator",
+                        "OB-Xd - Oberheim emulation",
+                        "Helm - Another great free synth"
+                    }
                 }
             }
         });
@@ -388,29 +348,49 @@ if (vital != null)
                 new()
                 {
                     Type = SectionType.Text,
-                    Content = "Patterns let you create repeating musical sequences. You can program drum beats, bass lines, or melodies."
+                    Content = "Patterns let you create repeating musical sequences. Use pattern.Note(note, beat, duration, velocity) to add notes."
                 },
                 new()
                 {
                     Type = SectionType.Code,
-                    Content = @"// Create a simple drum pattern
+                    Content = @"// Simple 4-beat pattern
 var synth = CreateSynth();
-var pattern = CreatePattern(synth);
+var p = CreatePattern(synth);
 
-// Add notes: (note, beat, duration, velocity)
-pattern.Note(36, 0, 0.25, 100);     // Kick on beat 1
-pattern.Note(38, 1, 0.25, 100);     // Snare on beat 2
-pattern.Note(36, 2, 0.25, 100);     // Kick on beat 3
-pattern.Note(38, 3, 0.25, 100);     // Snare on beat 4
+p.Note(60, 0, 0.5, 100);  // C on beat 1
+p.Note(64, 1, 0.5, 100);  // E on beat 2
+p.Note(67, 2, 0.5, 100);  // G on beat 3
+p.Note(72, 3, 0.5, 100);  // C on beat 4
 
-pattern.Loop = true;
-pattern.Play();",
-                    Description = "A basic 4-on-the-floor beat"
+p.Loop = true;
+p.Play();",
+                    Description = "A simple melody loop"
+                },
+                new()
+                {
+                    Type = SectionType.Heading,
+                    Content = "Drum Pattern Example"
+                },
+                new()
+                {
+                    Type = SectionType.Code,
+                    Content = @"// Basic drum beat
+var drums = CreateSynth();
+var p = CreatePattern(drums);
+
+p.Note(36, 0, 0.25, 100);  // Kick
+p.Note(38, 1, 0.25, 100);  // Snare
+p.Note(36, 2, 0.25, 100);  // Kick
+p.Note(38, 3, 0.25, 100);  // Snare
+
+p.Loop = true;
+p.Play();",
+                    Description = "Note 36 = Kick, Note 38 = Snare"
                 },
                 new()
                 {
                     Type = SectionType.Tip,
-                    Content = "Note 36 = Kick drum, Note 38 = Snare in General MIDI"
+                    Content = "The white box around code shows what's currently playing!"
                 }
             }
         });
@@ -425,47 +405,141 @@ pattern.Play();",
                 new()
                 {
                     Type = SectionType.Text,
-                    Content = "The Sequencer controls the global tempo and timing. You can schedule events to happen at specific beats."
+                    Content = "The Sequencer controls the tempo. Use sequencer.Bpm to set the speed."
                 },
                 new()
                 {
                     Type = SectionType.Code,
-                    Content = @"// Set the tempo
-Sequencer.Bpm = 120;
+                    Content = @"// Set tempo to 120 BPM
+sequencer.Bpm = 120;
 
-// Schedule events
-Sequencer.Schedule(0, () => Print(""Beat 1""));
-Sequencer.Schedule(1, () => Print(""Beat 2""));
-Sequencer.Schedule(2, () => Print(""Beat 3""));
-Sequencer.Schedule(3, () => Print(""Beat 4""));
+var synth = CreateSynth();
+var p = CreatePattern(synth);
 
-Sequencer.Start();",
-                    Description = "Schedule events at specific beats"
+p.Note(60, 0, 0.5, 100);
+p.Note(67, 2, 0.5, 100);
+
+p.Loop = true;
+p.Play();",
+                    Description = "Simple example with tempo"
+                },
+                new()
+                {
+                    Type = SectionType.Tip,
+                    Content = "Use lowercase 'sequencer' or uppercase 'Sequencer' - both work!"
+                }
+            }
+        });
+
+        // New lesson: SampleInstrument
+        _lessons.Add(new WorkshopLesson
+        {
+            Id = "samples",
+            Title = "Sample Instrument",
+            Subtitle = "Play audio files as instruments",
+            Sections = new List<LessonSection>
+            {
+                new()
+                {
+                    Type = SectionType.Text,
+                    Content = "SampleInstrument lets you load audio files (WAV, MP3, etc.) and play them like an instrument. Map different sounds to different MIDI notes!"
+                },
+                new()
+                {
+                    Type = SectionType.Code,
+                    Content = @"// Load a single sample
+var drums = CreateSampler();
+drums.LoadSample(36, ""kick.wav"");
+drums.LoadSample(38, ""snare.wav"");
+
+drums.NoteOn(36, 100);  // Play kick",
+                    Description = "Load samples to specific MIDI notes"
                 },
                 new()
                 {
                     Type = SectionType.Heading,
-                    Content = "Combining Everything"
+                    Content = "Load from a folder"
                 },
                 new()
                 {
                     Type = SectionType.Code,
-                    Content = @"// Full example: synth + pattern + tempo
-Sequencer.Bpm = 140;
+                    Content = @"// Load all samples from a folder
+var sampler = CreateSamplerFromDirectory(""C:/Samples/DrumKit"");
 
-var synth = CreateSynth();
-synth.SetParameter(""waveform"", 2);  // Sawtooth
+// Files are mapped by name:
+// kick.wav -> note 36, snare.wav -> note 38, etc.
+sampler.NoteOn(36, 100);",
+                    Description = "Auto-map samples from a folder"
+                },
+                new()
+                {
+                    Type = SectionType.Heading,
+                    Content = "Use in Patterns"
+                },
+                new()
+                {
+                    Type = SectionType.Code,
+                    Content = @"// Create drum loop with samples
+var drums = CreateSampler();
+drums.LoadSample(36, ""kick.wav"");
+drums.LoadSample(38, ""snare.wav"");
 
-var pattern = CreatePattern(synth);
-pattern.Note(48, 0, 0.5, 100);    // C
-pattern.Note(48, 1, 0.5, 100);    // C
-pattern.Note(55, 2, 0.5, 100);    // G
-pattern.Note(53, 3, 0.5, 100);    // F
+var p = CreatePattern(drums);
+p.Note(36, 0, 0.25, 100);  // Kick
+p.Note(38, 1, 0.25, 100);  // Snare
+p.Note(36, 2, 0.25, 100);  // Kick
+p.Note(38, 3, 0.25, 100);  // Snare
 
-pattern.Loop = true;
-pattern.Play();
-Sequencer.Start();",
-                    Description = "A complete musical example"
+p.Loop = true;
+p.Play();",
+                    Description = "Combine samples with patterns"
+                },
+                new()
+                {
+                    Type = SectionType.Tip,
+                    Content = "Samples are automatically pitch-shifted when played on different notes!"
+                }
+            }
+        });
+
+        _lessons.Add(new WorkshopLesson
+        {
+            Id = "complete",
+            Title = "Putting It All Together",
+            Subtitle = "Complete music example",
+            Sections = new List<LessonSection>
+            {
+                new()
+                {
+                    Type = SectionType.Text,
+                    Content = "Let's combine everything you've learned into a complete track!"
+                },
+                new()
+                {
+                    Type = SectionType.Code,
+                    Content = @"// Set tempo
+sequencer.Bpm = 128;
+
+// Bass synth
+var bass = CreateSynth();
+var bassP = CreatePattern(bass);
+bassP.Note(36, 0, 0.5, 100);
+bassP.Note(36, 1, 0.5, 100);
+bassP.Note(43, 2, 0.5, 100);
+bassP.Note(41, 3, 0.5, 100);
+bassP.Loop = true;
+
+// Lead synth
+var lead = CreateSynth();
+var leadP = CreatePattern(lead);
+leadP.Note(60, 0, 1, 80);
+leadP.Note(67, 2, 1, 80);
+leadP.Loop = true;
+
+// Start everything
+bassP.Play();
+leadP.Play();",
+                    Description = "Bass + Lead pattern"
                 },
                 new()
                 {
@@ -484,9 +558,10 @@ Sequencer.Start();",
         _navButtons["midi-basics"] = Nav_MidiBasics;
         _navButtons["midi-routing"] = Nav_MidiRouting;
         _navButtons["vst-basics"] = Nav_VstBasics;
-        _navButtons["vst-vital"] = Nav_VstVital;
         _navButtons["patterns"] = Nav_Patterns;
         _navButtons["sequencing"] = Nav_Sequencing;
+        _navButtons["samples"] = Nav_Samples;
+        _navButtons["complete"] = Nav_Complete;
     }
 
     #endregion
@@ -505,9 +580,10 @@ Sequencer.Start();",
                 "midibasics" => "midi-basics",
                 "midirouting" => "midi-routing",
                 "vstbasics" => "vst-basics",
-                "vstvital" => "vst-vital",
                 "patterns" => "patterns",
                 "sequencing" => "sequencing",
+                "samples" => "samples",
+                "complete" => "complete",
                 _ => "welcome"
             };
 

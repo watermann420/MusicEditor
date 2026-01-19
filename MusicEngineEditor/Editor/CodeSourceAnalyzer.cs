@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using MusicEngine.Core;
@@ -80,6 +81,10 @@ public static class CodeSourceAnalyzer
         @"(?<var>\w+)\s*=\s*(?:vst\.load|LoadVst)\s*\(\s*[""'](?<name>[^""']+)[""']\s*\)",
         RegexOptions.Compiled);
 
+    private static readonly Regex SamplerCreationRegex = new(
+        @"(?<var>\w+)\s*=\s*(?:CreateSampler|CreateSamplerFromFile|CreateSamplerFromDirectory)\s*\([^)]*\)",
+        RegexOptions.Compiled);
+
     private static readonly Regex PatternCreationRegex = new(
         @"(?<var>\w+)\s*=\s*(?:new\s+Pattern|CreatePattern)\s*\(\s*(?<synth>\w+)\s*\)",
         RegexOptions.Compiled);
@@ -94,6 +99,11 @@ public static class CodeSourceAnalyzer
 
     private static readonly Regex PatternNoteRegex = new(
         @"(?<pattern>\w+)\.Events\.Add\s*\(\s*new\s+NoteEvent\s*\{(?<props>[^}]+)\}\s*\)",
+        RegexOptions.Compiled);
+
+    // Simple pattern.Note(note, beat, duration, velocity) syntax - this is the primary syntax
+    private static readonly Regex SimplePatternNoteRegex = new(
+        @"(?<pattern>\w+)\.Note\s*\(\s*(?<note>\d+)\s*,\s*(?<beat>[\d.]+)\s*,\s*(?<duration>[\d.]+)\s*,\s*(?<velocity>\d+)\s*\)",
         RegexOptions.Compiled);
 
     private static readonly Regex VariableUsageRegex = new(
@@ -112,12 +122,14 @@ public static class CodeSourceAnalyzer
             // Find all synth/instrument definitions
             FindSynthDefinitions(code, result);
             FindVstDefinitions(code, result);
+            FindSamplerDefinitions(code, result);
 
             // Find all pattern definitions
             FindPatternDefinitions(code, result);
 
-            // Find note events within patterns
+            // Find note events within patterns (including simple .Note() syntax)
             FindNoteEvents(code, result);
+            FindSimpleNoteEvents(code, result);
 
             // Find all references to each instrument
             FindInstrumentReferences(code, result);
@@ -169,6 +181,25 @@ public static class CodeSourceAnalyzer
                 VariableName = match.Groups["var"].Value,
                 Name = match.Groups["name"].Value,
                 InstrumentType = "VstPlugin",
+                DefinitionStart = match.Index,
+                DefinitionEnd = match.Index + match.Length,
+                Line = GetLineNumber(code, match.Index),
+                Column = GetColumnNumber(code, match.Index)
+            };
+
+            result.Instruments.Add(instrument);
+        }
+    }
+
+    private static void FindSamplerDefinitions(string code, CodeAnalysisResult result)
+    {
+        foreach (Match match in SamplerCreationRegex.Matches(code))
+        {
+            var instrument = new InstrumentDefinition
+            {
+                VariableName = match.Groups["var"].Value,
+                Name = match.Groups["var"].Value,
+                InstrumentType = "SampleInstrument",
                 DefinitionStart = match.Index,
                 DefinitionEnd = match.Index + match.Length,
                 Line = GetLineNumber(code, match.Index),
@@ -243,6 +274,40 @@ public static class CodeSourceAnalyzer
                         }
                     }
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Finds the simple pattern.Note(note, beat, duration, velocity) syntax
+    /// This is the primary syntax used in the workshop examples.
+    /// </summary>
+    private static void FindSimpleNoteEvents(string code, CodeAnalysisResult result)
+    {
+        foreach (Match match in SimplePatternNoteRegex.Matches(code))
+        {
+            var patternVar = match.Groups["pattern"].Value;
+
+            var pattern = result.Patterns.FirstOrDefault(p => p.VariableName == patternVar);
+            if (pattern == null) continue;
+
+            var note = new NoteDefinition
+            {
+                Note = int.Parse(match.Groups["note"].Value),
+                Beat = double.Parse(match.Groups["beat"].Value, System.Globalization.CultureInfo.InvariantCulture),
+                Duration = double.Parse(match.Groups["duration"].Value, System.Globalization.CultureInfo.InvariantCulture),
+                Velocity = int.Parse(match.Groups["velocity"].Value),
+                SourceStart = match.Index,
+                SourceEnd = match.Index + match.Length,
+                Line = GetLineNumber(code, match.Index),
+                Column = GetColumnNumber(code, match.Index),
+                RawText = match.Value
+            };
+
+            // Avoid duplicates
+            if (!pattern.Notes.Any(n => n.SourceStart == note.SourceStart))
+            {
+                pattern.Notes.Add(note);
             }
         }
     }
