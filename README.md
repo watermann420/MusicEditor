@@ -34,8 +34,25 @@ This editor is designed to improve workflow, manage patterns, instruments, and o
 
 ---
 
-## Installation
+## Quick Start (Einfach starten)
 
-1. Clone or download this repository:
+**Für Anfänger - keine Programmierkenntnisse nötig:**
+
+1. Repository klonen:
+   ```bash
+   git clone https://github.com/watermann420/MusicEngineEditor.git
+   ```
+2. **`StartEditor.bat` doppelklicken** - fertig!
+
+Der Editor wird automatisch gebaut und gestartet. Das Bauen passiert nur beim ersten Mal.
+
+> **Hinweis:** Falls .NET 10 nicht installiert ist, zeigt das Script einen Link zur Installation.
+
+---
+
+## Manuelle Installation
+
+1. [.NET 10 SDK](https://dotnet.microsoft.com/download) installieren
+2. Repository klonen:
     ```bash
     git clone https://github.com/watermann420/MusicEngineEditor.git
