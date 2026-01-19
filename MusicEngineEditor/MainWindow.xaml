@@ -24,9 +24,16 @@
         <KeyBinding Key="Escape" Command="{Binding StopCommand}"/>
     </Window.InputBindings>
 
-    <DockPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <!-- Menu Bar -->
-        <Menu DockPanel.Dock="Top" Background="{StaticResource MenuBackgroundBrush}">
+        <Menu Grid.Row="0" Background="{StaticResource MenuBackgroundBrush}" Padding="4,2">
             <MenuItem Header="_File">
                 <MenuItem Header="_New Project..." InputGestureText="Ctrl+Shift+N" Click="NewProject_Click"/>
                 <MenuItem Header="_Open Project..." InputGestureText="Ctrl+Shift+O" Click="OpenProject_Click"/>
@@ -74,138 +81,156 @@
             </MenuItem>
         </Menu>
 
-        <!-- Toolbar -->
-        <Border DockPanel.Dock="Top" Background="{StaticResource ToolbarBackgroundBrush}" Padding="4">
-            <DockPanel>
-                <!-- Left: File & Run Buttons -->
+        <!-- Main Toolbar -->
+        <Border Grid.Row="1" Background="{StaticResource ToolbarBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <DockPanel Margin="8,6">
+                <!-- Left: Project Buttons -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <Button Content="New Project" Style="{StaticResource ToolbarButtonStyle}" Click="NewProject_Click" ToolTip="New Project (Ctrl+Shift+N)"/>
-                    <Button Content="Open" Style="{StaticResource ToolbarButtonStyle}" Click="OpenProject_Click" ToolTip="Open Project (Ctrl+Shift+O)" Margin="4,0,0,0"/>
-                    <Button Content="Save All" Style="{StaticResource ToolbarButtonStyle}" Click="SaveAll_Click" ToolTip="Save All (Ctrl+Shift+S)" Margin="4,0,0,0"/>
+                    <Button Style="{StaticResource IconButtonStyle}" Click="NewProject_Click" ToolTip="New Project (Ctrl+Shift+N)">
+                        <TextBlock Text="+" FontSize="16" FontWeight="Bold"/>
+                    </Button>
+                    <Button Style="{StaticResource IconButtonStyle}" Click="OpenProject_Click" ToolTip="Open Project (Ctrl+Shift+O)" Margin="2,0,0,0">
+                        <TextBlock Text="&#x1F4C2;" FontSize="14"/>
+                    </Button>
+                    <Button Style="{StaticResource IconButtonStyle}" Click="SaveAll_Click" ToolTip="Save All (Ctrl+Shift+S)" Margin="2,0,0,0">
+                        <TextBlock Text="&#x1F4BE;" FontSize="14"/>
+                    </Button>
 
-                    <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="12,2"/>
+                    <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="12,4"/>
 
-                    <Button x:Name="RunButton" Content="Run (F5)" Style="{StaticResource RunButtonStyle}" Click="RunScript_Click" ToolTip="Execute Script (F5)"/>
-                    <Button Content="Stop" Style="{StaticResource ToolbarButtonStyle}" Click="Stop_Click" ToolTip="Stop (Shift+F5)" Margin="4,0,0,0"/>
-                    <Button Content="Panic" Style="{StaticResource ToolbarButtonStyle}" Click="Panic_Click" ToolTip="All Notes Off (Esc)" Margin="4,0,0,0"/>
+                    <!-- Run Controls -->
+                    <Button x:Name="RunButton" Content="Run" Style="{StaticResource RunButtonStyle}" Click="RunScript_Click" ToolTip="Execute Script (F5)"/>
+                    <Button Content="Stop" Style="{StaticResource StopButtonStyle}" Click="Stop_Click" ToolTip="Stop (Shift+F5)" Margin="6,0,0,0"/>
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="Panic_Click" ToolTip="All Notes Off (Esc)" Margin="6,0,0,0">
+                        <TextBlock Text="Panic" Foreground="{StaticResource WarningBrush}"/>
+                    </Button>
                 </StackPanel>
 
-                <!-- Right: Status Display -->
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
-                    <TextBlock Text="BPM:" Foreground="{StaticResource SecondaryForegroundBrush}" VerticalAlignment="Center"/>
-                    <TextBox x:Name="BpmBox" Text="120" Width="50" Margin="4,0,16,0"
-                             Background="{StaticResource EditorBackgroundBrush}"
-                             Foreground="{StaticResource ForegroundBrush}"
-                             BorderBrush="{StaticResource BorderBrush}"
-                             VerticalAlignment="Center"
-                             TextAlignment="Center"
-                             KeyDown="BpmBox_KeyDown"/>
+                <!-- Right: Sequencer Status -->
+                <Border DockPanel.Dock="Right" Background="{StaticResource HeaderBackgroundBrush}"
+                        CornerRadius="4" Padding="12,4" Margin="8,0,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="BPM" Foreground="{StaticResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBox x:Name="BpmBox" Text="120" Width="45"
+                                 Style="{StaticResource InputTextBoxStyle}"
+                                 VerticalAlignment="Center"
+                                 TextAlignment="Center"
+                                 KeyDown="BpmBox_KeyDown"/>
 
-                    <TextBlock Text="Beat:" Foreground="{StaticResource SecondaryForegroundBrush}" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="BeatDisplay" Text="0.00" Foreground="{StaticResource ForegroundBrush}" Margin="4,0,16,0" FontWeight="Bold" Width="50" VerticalAlignment="Center"/>
+                        <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="12,2"/>
 
-                    <TextBlock Text="Patterns:" Foreground="{StaticResource SecondaryForegroundBrush}" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="PatternCountDisplay" Text="0" Foreground="{StaticResource ForegroundBrush}" Margin="4,0,0,0" FontWeight="Bold" VerticalAlignment="Center"/>
-                </StackPanel>
+                        <TextBlock Text="Beat" Foreground="{StaticResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock x:Name="BeatDisplay" Text="0.00"
+                                   Foreground="{StaticResource BrightForegroundBrush}"
+                                   FontWeight="SemiBold" FontFamily="JetBrains Mono, Consolas"
+                                   Width="50" VerticalAlignment="Center"/>
+
+                        <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="8,2"/>
+
+                        <TextBlock Text="Patterns" Foreground="{StaticResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock x:Name="PatternCountDisplay" Text="0"
+                                   Foreground="{StaticResource BrightForegroundBrush}"
+                                   FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
 
                 <Border/> <!-- Spacer -->
             </DockPanel>
         </Border>
 
-        <!-- Status Bar -->
-        <StatusBar DockPanel.Dock="Bottom">
-            <StatusBarItem>
-                <TextBlock x:Name="StatusText" Text="Ready"/>
-            </StatusBarItem>
-            <Separator/>
-            <StatusBarItem>
-                <TextBlock x:Name="ProjectNameDisplay" Text="No project loaded"/>
-            </StatusBarItem>
-            <Separator/>
-            <StatusBarItem>
-                <TextBlock x:Name="FileNameDisplay" Text=""/>
-            </StatusBarItem>
-            <StatusBarItem HorizontalAlignment="Right">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="CaretPositionDisplay" Text="Ln 1, Col 1" Margin="0,0,16,0"/>
-                    <TextBlock Text="UTF-8"/>
-                </StackPanel>
-            </StatusBarItem>
-        </StatusBar>
-
-        <!-- Main Content: 3-Column Layout -->
-        <Grid>
+        <!-- Main Content Area -->
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250" MinWidth="150" x:Name="LeftPanelColumn"/>
-                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="240" MinWidth="180" x:Name="LeftPanelColumn"/>
+                <ColumnDefinition Width="1"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="0" MinWidth="0" x:Name="RightPanelColumn"/>
             </Grid.ColumnDefinitions>
 
             <!-- Left Panel: Project Explorer -->
             <Border Grid.Column="0" Background="{StaticResource PanelBackgroundBrush}" x:Name="ProjectExplorerPanel">
                 <DockPanel>
-                    <Border DockPanel.Dock="Top" Background="#252526" Padding="8,4">
-                        <TextBlock Text="PROJECT EXPLORER" FontWeight="SemiBold" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="11"/>
+                    <!-- Panel Header -->
+                    <Border DockPanel.Dock="Top" Background="{StaticResource HeaderBackgroundBrush}"
+                            Padding="12,8" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                        <TextBlock Text="Project"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ForegroundBrush}"
+                                   FontSize="12"/>
                     </Border>
+
+                    <!-- Project Tree -->
                     <TreeView x:Name="ProjectTree"
                               Background="Transparent"
                               BorderThickness="0"
-                              Padding="4"
-                              MouseDoubleClick="ProjectTree_MouseDoubleClick">
-                        <TreeView.ItemContainerStyle>
-                            <Style TargetType="TreeViewItem">
-                                <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
-                                <Setter Property="IsExpanded" Value="True"/>
-                            </Style>
-                        </TreeView.ItemContainerStyle>
-                    </TreeView>
+                              Padding="8,4"
+                              MouseDoubleClick="ProjectTree_MouseDoubleClick"/>
                 </DockPanel>
             </Border>
 
-            <!-- Left Splitter -->
-            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" ResizeDirection="Columns"/>
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" Width="1" HorizontalAlignment="Stretch" ResizeDirection="Columns"
+                          Background="{StaticResource BorderBrush}"/>
 
             <!-- Center: Editor + Output -->
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="3*" MinHeight="100"/>
-                    <RowDefinition Height="5"/>
-                    <RowDefinition Height="*" MinHeight="80"/>
+                    <RowDefinition Height="3*" MinHeight="150"/>
+                    <RowDefinition Height="1"/>
+                    <RowDefinition Height="*" MinHeight="100"/>
                 </Grid.RowDefinitions>
 
-                <!-- Code Editor with Tabs -->
+                <!-- Code Editor Area -->
                 <Border Grid.Row="0" Background="{StaticResource EditorBackgroundBrush}">
                     <DockPanel>
                         <!-- Tab Bar -->
-                        <Border DockPanel.Dock="Top" Background="#252526">
+                        <Border DockPanel.Dock="Top" Background="{StaticResource HeaderBackgroundBrush}"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
                             <TabControl x:Name="EditorTabs"
                                         Background="Transparent"
                                         BorderThickness="0"
+                                        Padding="0"
                                         SelectionChanged="EditorTabs_SelectionChanged">
                                 <TabControl.ItemContainerStyle>
                                     <Style TargetType="TabItem">
                                         <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
                                         <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="Padding" Value="12,6"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="Margin" Value="0"/>
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="TabItem">
                                                     <Border x:Name="Border"
                                                             Background="{TemplateBinding Background}"
-                                                            BorderThickness="0,0,0,2"
-                                                            BorderBrush="Transparent"
-                                                            Padding="{TemplateBinding Padding}">
+                                                            BorderThickness="0,0,1,2"
+                                                            BorderBrush="{StaticResource BorderBrush}"
+                                                            Padding="14,8">
                                                         <StackPanel Orientation="Horizontal">
-                                                            <ContentPresenter ContentSource="Header"/>
-                                                            <Button Content="x" Margin="8,0,0,0"
+                                                            <TextBlock Text="&#x1F4C4;" FontSize="12" Margin="0,0,6,0"
+                                                                       Foreground="{StaticResource SecondaryForegroundBrush}"/>
+                                                            <ContentPresenter ContentSource="Header" VerticalAlignment="Center"/>
+                                                            <Button Content="&#x2715;" Margin="10,0,0,0"
                                                                     Background="Transparent"
                                                                     BorderThickness="0"
                                                                     Foreground="{StaticResource SecondaryForegroundBrush}"
-                                                                    Padding="4,0"
+                                                                    FontSize="10"
+                                                                    Padding="4,2"
+                                                                    Cursor="Hand"
                                                                     Click="CloseTab_Click"
-                                                                    Tag="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
+                                                                    Tag="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+                                                                <Button.Style>
+                                                                    <Style TargetType="Button">
+                                                                        <Style.Triggers>
+                                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                                <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                                                                            </Trigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Button.Style>
+                                                            </Button>
                                                         </StackPanel>
                                                     </Border>
                                                     <ControlTemplate.Triggers>
@@ -213,9 +238,13 @@
                                                             <Setter TargetName="Border" Property="Background" Value="{StaticResource EditorBackgroundBrush}"/>
                                                             <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
                                                         </Trigger>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="Border" Property="Background" Value="#3E3E42"/>
-                                                        </Trigger>
+                                                        <MultiTrigger>
+                                                            <MultiTrigger.Conditions>
+                                                                <Condition Property="IsSelected" Value="False"/>
+                                                                <Condition Property="IsMouseOver" Value="True"/>
+                                                            </MultiTrigger.Conditions>
+                                                            <Setter TargetName="Border" Property="Background" Value="#3C3F41"/>
+                                                        </MultiTrigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
                                             </Setter.Value>
@@ -225,41 +254,44 @@
                             </TabControl>
                         </Border>
 
-                        <!-- Editor Area -->
+                        <!-- Code Editor -->
                         <avalonedit:TextEditor
                             x:Name="CodeEditor"
-                            FontFamily="JetBrains Mono, Consolas, Courier New"
-                            FontSize="14"
+                            FontFamily="JetBrains Mono, Cascadia Code, Consolas, Courier New"
+                            FontSize="13"
                             ShowLineNumbers="True"
                             Background="{StaticResource EditorBackgroundBrush}"
                             Foreground="{StaticResource ForegroundBrush}"
                             LineNumbersForeground="{StaticResource SecondaryForegroundBrush}"
-                            Padding="4"
+                            Padding="8,4"
                             VerticalScrollBarVisibility="Auto"
                             HorizontalScrollBarVisibility="Auto"/>
                     </DockPanel>
                 </Border>
 
                 <!-- Splitter -->
-                <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" ResizeDirection="Rows"/>
+                <GridSplitter Grid.Row="1" Height="1" HorizontalAlignment="Stretch" ResizeDirection="Rows"
+                              Background="{StaticResource BorderBrush}"/>
 
                 <!-- Output Panel -->
                 <Border Grid.Row="2" Background="{StaticResource PanelBackgroundBrush}" x:Name="OutputPanel">
                     <DockPanel>
-                        <!-- Output Header with Tabs -->
-                        <Border DockPanel.Dock="Top" Background="#252526" Padding="0">
-                            <DockPanel>
-                                <Button Content="Clear" Style="{StaticResource ToolbarButtonStyle}" Click="ClearOutput_Click" DockPanel.Dock="Right" FontSize="11" Padding="8,4" Margin="4"/>
-                                <TabControl Background="Transparent" BorderThickness="0">
-                                    <TabControl.ItemContainerStyle>
-                                        <Style TargetType="TabItem">
-                                            <Setter Property="Foreground" Value="{StaticResource SecondaryForegroundBrush}"/>
-                                            <Setter Property="Padding" Value="8,4"/>
-                                        </Style>
-                                    </TabControl.ItemContainerStyle>
-                                    <TabItem Header="OUTPUT" IsSelected="True"/>
-                                    <TabItem Header="ERRORS"/>
-                                </TabControl>
+                        <!-- Output Header -->
+                        <Border DockPanel.Dock="Top" Background="{StaticResource HeaderBackgroundBrush}"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                            <DockPanel Margin="0">
+                                <Button Content="Clear" Style="{StaticResource ToolbarButtonStyle}"
+                                        Click="ClearOutput_Click" DockPanel.Dock="Right"
+                                        FontSize="11" Padding="10,6" Margin="4"/>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Background="{StaticResource AccentBrush}" CornerRadius="0" Padding="14,8">
+                                        <TextBlock Text="Output" FontWeight="SemiBold" Foreground="White" FontSize="11"/>
+                                    </Border>
+                                    <Border Background="Transparent" Padding="14,8" Cursor="Hand">
+                                        <TextBlock Text="Problems" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="11"/>
+                                    </Border>
+                                </StackPanel>
                             </DockPanel>
                         </Border>
 
@@ -271,19 +303,31 @@
                     </DockPanel>
                 </Border>
             </Grid>
-
-            <!-- Right Splitter (hidden by default) -->
-            <GridSplitter Grid.Column="3" Width="5" HorizontalAlignment="Stretch" ResizeDirection="Columns" Visibility="Collapsed"/>
-
-            <!-- Right Panel (Properties - hidden by default) -->
-            <Border Grid.Column="4" Background="{StaticResource PanelBackgroundBrush}" Visibility="Collapsed" x:Name="PropertiesPanel">
-                <DockPanel>
-                    <Border DockPanel.Dock="Top" Background="#252526" Padding="8,4">
-                        <TextBlock Text="PROPERTIES" FontWeight="SemiBold" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="11"/>
-                    </Border>
-                    <TextBlock Text="No item selected" Foreground="{StaticResource SecondaryForegroundBrush}" Padding="8"/>
-                </DockPanel>
-            </Border>
         </Grid>
-    </DockPanel>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="3">
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="8" Height="8" Fill="{StaticResource SuccessBrush}" Margin="0,0,6,0"/>
+                    <TextBlock x:Name="StatusText" Text="Ready"/>
+                </StackPanel>
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock x:Name="ProjectNameDisplay" Text="No project loaded"
+                           Foreground="{StaticResource SecondaryForegroundBrush}"/>
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock x:Name="FileNameDisplay" Text=""/>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="CaretPositionDisplay" Text="Ln 1, Col 1" Margin="0,0,16,0"/>
+                    <TextBlock Text="UTF-8" Foreground="{StaticResource SecondaryForegroundBrush}"/>
+                </StackPanel>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
 </Window>
