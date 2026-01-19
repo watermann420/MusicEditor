@@ -13,7 +13,7 @@ It provides a visual interface and tools to work with MusicEngine projects more 
 
 This editor is designed to improve workflow, manage patterns, instruments, and other engine components in a user-friendly way.
 
-Install: https://github.com/watermann420/MusicEngine
+
 
 ---
 
@@ -29,6 +29,7 @@ Install: https://github.com/watermann420/MusicEngine
 ## Requirements
 
 * MusicEngine must be installed
+* Install: https://github.com/watermann420/MusicEngine
 
 
 ---
