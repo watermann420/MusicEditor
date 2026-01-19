@@ -1,3 +1,9 @@
+
+
+
+<img width="1536" height="1024" alt="BannerEditor" src="https://github.com/user-attachments/assets/6cb0e747-0f30-4f61-8882-1a0368e24d2f" />
+
+
 # MusicEngineEditor
 
 MusicEngineEditor is a standalone extension for **MusicEngine**.  
