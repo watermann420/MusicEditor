@@ -1,23 +1,70 @@
 using System;
+using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using Microsoft.Win32;
 
 namespace MusicEngineEditor.Views.Dialogs;
 
-public partial class NewProjectDialog : Window
+public partial class NewProjectDialog : Window, INotifyPropertyChanged
 {
-    public string ProjectName { get; set; } = "MyMusicProject";
-    public string ProjectLocation { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-    public string Namespace { get; set; } = "MyMusicProject";
+    private string _projectName = "MyMusicProject";
+    private string _projectLocation = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+    private string _namespace = "MyMusicProject";
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string ProjectName
+    {
+        get => _projectName;
+        set
+        {
+            if (_projectName != value)
+            {
+                _projectName = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public string ProjectLocation
+    {
+        get => _projectLocation;
+        set
+        {
+            if (_projectLocation != value)
+            {
+                _projectLocation = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public string Namespace
+    {
+        get => _namespace;
+        set
+        {
+            if (_namespace != value)
+            {
+                _namespace = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     public NewProjectDialog()
     {
         InitializeComponent();
         DataContext = this;
 
-        ProjectNameBox.Focus();
-        ProjectNameBox.SelectAll();
+        // Ensure controls exist before accessing them
+        Loaded += (s, e) =>
+        {
+            ProjectNameBox?.Focus();
+            ProjectNameBox?.SelectAll();
+        };
     }
 
     private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -25,7 +72,7 @@ public partial class NewProjectDialog : Window
         var dialog = new System.Windows.Forms.FolderBrowserDialog
         {
             Description = "Select project location",
-            SelectedPath = ProjectLocation
+            SelectedPath = ProjectLocation ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
         };
 
         if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -62,6 +109,9 @@ public partial class NewProjectDialog : Window
 
     private static string SanitizeNamespace(string name)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            return "MusicProject";
+
         var result = new System.Text.StringBuilder();
         foreach (char c in name)
         {
@@ -71,5 +121,10 @@ public partial class NewProjectDialog : Window
             }
         }
         return result.Length > 0 ? result.ToString() : "MusicProject";
+    }
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

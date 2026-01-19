@@ -21,6 +21,9 @@ public class EngineService : IDisposable
     public int PatternCount { get; private set; }
     public bool IsInitialized { get; private set; }
 
+    /// <summary>Gets the sequencer for visualization integration.</summary>
+    public Sequencer? Sequencer => _sequencer;
+
     public string? InitializationOutput { get; private set; }
 
     public async Task InitializeAsync()

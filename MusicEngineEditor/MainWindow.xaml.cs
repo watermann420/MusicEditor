@@ -11,16 +11,13 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using System.Xml;
-using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Editing;
-using ICSharpCode.AvalonEdit.Highlighting;
-using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using MusicEngineEditor.Editor;
 using MusicEngineEditor.Models;
 using MusicEngineEditor.Services;
+using MusicEngineEditor.Controls;
 using MusicEngineEditor.Views;
 using MusicEngineEditor.Views.Dialogs;
 
@@ -38,7 +35,9 @@ public partial class MainWindow : Window
     private bool _outputVisible = true;
     private bool _isRunning = false;
     private bool _showingOutput = true;
-    private CompletionWindow? _completionWindow;
+    private CompletionProvider? _completionProvider;
+    private InlineSliderService? _inlineSliderService;
+    private VisualizationIntegration? _visualization;
 
     // VST Plugin Windows
     private readonly Dictionary<string, VstPluginWindow> _vstWindows = new();
@@ -52,7 +51,6 @@ public partial class MainWindow : Window
 
     // Data for right panel lists
     public ObservableCollection<MidiDeviceInfo> MidiDevices { get; } = new();
-    public ObservableCollection<VstPluginInfo> VstPlugins { get; } = new();
     public ObservableCollection<AudioFileInfo> AudioFiles { get; } = new();
 
     public MainWindow()
@@ -63,14 +61,14 @@ public partial class MainWindow : Window
         _engineService = App.Services.GetRequiredService<EngineService>();
         _projectService = App.Services.GetRequiredService<IProjectService>();
 
-        // Load syntax highlighting
+        // Load syntax highlighting and configure editor
         EditorSetup.Configure(CodeEditor);
 
-        // Setup autocomplete
-        CodeEditor.TextArea.TextEntering += TextArea_TextEntering;
-        CodeEditor.TextArea.TextEntered += TextArea_TextEntered;
+        // Setup autocomplete using the new CompletionProvider
+        // Triggers on Ctrl+Space and automatically on dot (.)
+        _completionProvider = EditorSetup.SetupCompletion(CodeEditor);
 
-        // Handle Ctrl+Enter for run
+        // Handle Ctrl+Enter for run and other keyboard shortcuts
         CodeEditor.PreviewKeyDown += CodeEditor_PreviewKeyDown;
 
         // Start status update timer
@@ -90,15 +88,29 @@ public partial class MainWindow : Window
 
         // Bind data to lists
         MidiDevicesList.ItemsSource = MidiDevices;
-        VstPluginsList.ItemsSource = VstPlugins;
         AudioFilesList.ItemsSource = AudioFiles;
         ProblemsListView.ItemsSource = Problems;
+
+        // Wire up VstPluginPanel events
+        VstPluginsPanel.OnOpenPluginEditor += VstPluginsPanel_OnOpenPluginEditor;
+        VstPluginsPanel.OnPluginDoubleClick += VstPluginsPanel_OnPluginDoubleClick;
+        VstPluginsPanel.OnScanCompleted += VstPluginsPanel_OnScanCompleted;
 
         // Attach Find/Replace control to editor
         FindReplaceBar.AttachToEditor(CodeEditor);
 
         // Setup hover tooltips for code
         var tooltipService = new Editor.CodeTooltipService(CodeEditor);
+
+        // Setup inline sliders for numeric literals (like Strudel.cc)
+        // Hover over a number to see a slider popup
+        _inlineSliderService = EditorSetup.SetupInlineSliders(CodeEditor);
+        _inlineSliderService.ValueChanged += InlineSlider_ValueChanged;
+        _inlineSliderService.ValueChangeCompleted += InlineSlider_ValueChangeCompleted;
+
+        // Setup visualization integration for real-time playback highlighting
+        _visualization = this.CreateVisualizationIntegration(CodeEditor);
+        _visualization.VisualizationError += (s, msg) => OutputLine($"[Visualization] {msg}");
 
         // Setup context menu for code editor
         SetupEditorContextMenu();
@@ -113,6 +125,11 @@ public partial class MainWindow : Window
         // Set initial content
         CodeEditor.Text = GetDefaultScript();
         _hasUnsavedChanges = false;
+
+        // Wire up WorkshopPanel events
+        WorkshopPanel.OnRunCode += WorkshopPanel_OnRunCode;
+        WorkshopPanel.OnCopyCode += WorkshopPanel_OnCopyCode;
+        WorkshopPanel.OnInsertCode += WorkshopPanel_OnInsertCode;
     }
 
     private void CodeEditor_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -134,6 +151,7 @@ public partial class MainWindow : Window
             {
                 _engineService.AllNotesOff();
                 _isRunning = false;
+                _visualization?.OnPlaybackStopped();
                 StatusText.Text = "Stopped";
                 OutputLine("Stopped (Escape pressed)");
             }
@@ -255,7 +273,7 @@ public partial class MainWindow : Window
         }
 
         // Also check if the word itself matches a known VST plugin
-        foreach (var plugin in VstPlugins)
+        foreach (var plugin in VstPluginsPanel.Plugins)
         {
             if (plugin.Name.Equals(word, StringComparison.OrdinalIgnoreCase))
             {
@@ -285,20 +303,21 @@ public partial class MainWindow : Window
         }
         else
         {
-            // Find the VST plugin in the list
-            var plugin = VstPlugins.FirstOrDefault(p =>
+            // Find the VST plugin in the panel's list
+            var plugin = VstPluginsPanel.Plugins.FirstOrDefault(p =>
                 p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (plugin != null)
             {
-                var window = new VstPluginWindow(plugin.Name, plugin.Path);
+                var window = new VstPluginWindow(plugin.Name, plugin.FullPath);
                 _vstWindows[name] = window;
                 window.Show();
                 OutputLine($"Opened VST window: {name}");
             }
             else
             {
-                OutputLine($"VST plugin not found: {name}");
+                // Plugin not found in panel, open with just the name
+                OpenVstPluginWindow(name, name);
             }
         }
     }
@@ -333,175 +352,6 @@ public partial class MainWindow : Window
 
     #endregion
 
-    #region Autocomplete
-
-    private void TextArea_TextEntering(object sender, TextCompositionEventArgs e)
-    {
-        if (e.Text.Length > 0 && _completionWindow != null)
-        {
-            if (!char.IsLetterOrDigit(e.Text[0]))
-            {
-                _completionWindow.CompletionList.RequestInsertion(e);
-            }
-        }
-    }
-
-    private void TextArea_TextEntered(object sender, TextCompositionEventArgs e)
-    {
-        if (e.Text == ".")
-        {
-            ShowCompletionWindow(GetMemberCompletions());
-        }
-        else if (char.IsLetter(e.Text[0]))
-        {
-            // Check if we should show completions
-            var offset = CodeEditor.CaretOffset;
-            var line = CodeEditor.Document.GetLineByOffset(offset);
-            var lineText = CodeEditor.Document.GetText(line.Offset, offset - line.Offset);
-
-            // Get the current word being typed
-            var wordStart = lineText.LastIndexOfAny(new[] { ' ', '\t', '(', '{', '[', ',', ';', '=' }) + 1;
-            var currentWord = lineText.Substring(wordStart);
-
-            if (currentWord.Length >= 1)
-            {
-                var completions = GetGlobalCompletions()
-                    .Where(c => c.Text.StartsWith(currentWord, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                if (completions.Any())
-                {
-                    ShowCompletionWindow(completions, currentWord.Length);
-                }
-            }
-        }
-    }
-
-    private void ShowCompletionWindow(IEnumerable<CompletionData> completions, int replaceLength = 0)
-    {
-        _completionWindow = new CompletionWindow(CodeEditor.TextArea);
-        _completionWindow.StartOffset -= replaceLength;
-
-        // Style the completion window with dark theme
-        _completionWindow.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2B, 0x2D, 0x30));
-        _completionWindow.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xBC, 0xBE, 0xC4));
-        _completionWindow.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x3C, 0x3F, 0x41));
-        _completionWindow.BorderThickness = new Thickness(1);
-
-        // Style the completion list
-        var completionList = _completionWindow.CompletionList;
-        completionList.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2B, 0x2D, 0x30));
-        completionList.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xBC, 0xBE, 0xC4));
-
-        // Style the ListBox inside the completion list
-        if (completionList.ListBox != null)
-        {
-            completionList.ListBox.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2B, 0x2D, 0x30));
-            completionList.ListBox.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE0, 0xE0, 0xE0));
-            completionList.ListBox.BorderThickness = new Thickness(0);
-        }
-
-        var data = _completionWindow.CompletionList.CompletionData;
-        foreach (var completion in completions)
-        {
-            data.Add(completion);
-        }
-
-        if (data.Count > 0)
-        {
-            _completionWindow.Show();
-            _completionWindow.Closed += (s, e) => _completionWindow = null;
-        }
-    }
-
-    private List<CompletionData> GetGlobalCompletions()
-    {
-        return new List<CompletionData>
-        {
-            // Sequencer
-            new("Sequencer", "Global sequencer for timing and patterns\n\nProperties:\n  .Bpm - Get/set tempo\n  .CurrentBeat - Current beat position\n  .IsRunning - Check if running\n\nMethods:\n  .Start() - Start playback\n  .Stop() - Stop playback\n  .Schedule(beat, action) - Schedule action at beat"),
-
-            // Engine
-            new("Engine", "Audio engine controller\n\nMethods:\n  .RouteMidiInput(deviceIndex, target) - Route MIDI input\n  .MapRange(device, low, high, target, transpose) - Map MIDI range\n  .GetMidiInputCount() - Get number of MIDI inputs\n  .GetMidiOutputCount() - Get number of MIDI outputs"),
-
-            // Functions
-            new("CreateSynth", "CreateSynth() - Create a new synthesizer\n\nReturns: Synth object\n\nExample:\n  var synth = CreateSynth();\n  synth.SetParameter(\"waveform\", 2);"),
-            new("CreateSampler", "CreateSampler() - Create a new sampler\n\nReturns: Sampler object\n\nExample:\n  var sampler = CreateSampler();\n  sampler.LoadSample(\"kick.wav\");"),
-            new("Print", "Print(message) - Output text to console\n\nParameters:\n  message - Text to display\n\nExample:\n  Print(\"Hello World!\");"),
-            new("LoadAudio", "LoadAudio(path) - Load an audio file\n\nParameters:\n  path - Path to audio file\n\nReturns: AudioClip object"),
-
-            // VST
-            new("vst", "VST plugin loader\n\nMethods:\n  .load(name) - Load a VST plugin by name\n  .scan() - Scan for available plugins\n\nExample:\n  var vital = vst.load(\"Vital\");"),
-
-            // Pattern
-            new("Pattern", "Pattern(name, length) - Create a musical pattern\n\nParameters:\n  name - Pattern identifier\n  length - Length in beats\n\nMethods:\n  .Note(beat, pitch, velocity, duration)\n  .Play() - Start pattern\n  .Stop() - Stop pattern"),
-
-            // Common keywords
-            new("var", "var - Declare a variable with inferred type\n\nExample:\n  var synth = CreateSynth();"),
-            new("if", "if (condition) { } - Conditional statement"),
-            new("for", "for (init; condition; increment) { } - Loop statement"),
-            new("while", "while (condition) { } - While loop"),
-            new("return", "return value; - Return from function"),
-            new("true", "true - Boolean true value"),
-            new("false", "false - Boolean false value"),
-            new("null", "null - Null reference"),
-        };
-    }
-
-    private List<CompletionData> GetMemberCompletions()
-    {
-        // Get the word before the dot
-        var offset = CodeEditor.CaretOffset - 1;
-        var line = CodeEditor.Document.GetLineByOffset(offset);
-        var lineText = CodeEditor.Document.GetText(line.Offset, offset - line.Offset);
-        var wordStart = lineText.LastIndexOfAny(new[] { ' ', '\t', '(', '{', '[', ',', ';', '=' }) + 1;
-        var objectName = lineText.Substring(wordStart);
-
-        return objectName.ToLower() switch
-        {
-            "sequencer" => new List<CompletionData>
-            {
-                new("Bpm", "double Bpm { get; set; } - Tempo in beats per minute\n\nExample:\n  Sequencer.Bpm = 140;"),
-                new("CurrentBeat", "double CurrentBeat { get; } - Current playback position in beats"),
-                new("IsRunning", "bool IsRunning { get; } - True if sequencer is playing"),
-                new("Start", "Start() - Begin playback\n\nExample:\n  Sequencer.Start();"),
-                new("Stop", "Stop() - Stop playback"),
-                new("Schedule", "Schedule(double beat, Action action) - Schedule action at beat\n\nParameters:\n  beat - Beat number to trigger\n  action - Code to execute"),
-            },
-            "engine" => new List<CompletionData>
-            {
-                new("RouteMidiInput", "RouteMidiInput(int device, ISoundSource target)\n\nRoute MIDI from input device to a synth/sampler\n\nExample:\n  Engine.RouteMidiInput(0, synth);"),
-                new("MapRange", "MapRange(int device, int low, int high, ISoundSource target, bool transpose)\n\nMap a range of MIDI notes"),
-                new("GetMidiInputCount", "int GetMidiInputCount() - Returns number of MIDI input devices"),
-                new("GetMidiOutputCount", "int GetMidiOutputCount() - Returns number of MIDI output devices"),
-            },
-            "synth" or "s" => new List<CompletionData>
-            {
-                new("NoteOn", "NoteOn(int pitch, int velocity) - Play a note\n\nParameters:\n  pitch - MIDI note (60 = C4)\n  velocity - Volume 0-127\n\nExample:\n  synth.NoteOn(60, 100);"),
-                new("NoteOff", "NoteOff(int pitch) - Stop a note\n\nExample:\n  synth.NoteOff(60);"),
-                new("SetParameter", "SetParameter(string name, float value)\n\nParameters:\n  waveform: 0=Sine, 1=Square, 2=Saw, 3=Triangle, 4=Noise\n  cutoff: Filter cutoff 0.0-1.0\n  resonance: Filter resonance 0.0-1.0\n  attack, decay, sustain, release: ADSR envelope"),
-                new("AllNotesOff", "AllNotesOff() - Stop all playing notes"),
-            },
-            "vst" => new List<CompletionData>
-            {
-                new("load", "load(string name) - Load VST plugin by name\n\nReturns: VstPlugin object or null\n\nExample:\n  var vital = vst.load(\"Vital\");"),
-                new("scan", "scan() - Scan for available VST plugins"),
-                new("list", "list() - List all available plugins"),
-            },
-            "pattern" or "p" => new List<CompletionData>
-            {
-                new("Note", "Note(double beat, int pitch, int velocity, double duration)\n\nAdd a note to the pattern\n\nExample:\n  pattern.Note(0, 60, 100, 0.5);"),
-                new("Play", "Play() - Start playing the pattern"),
-                new("Stop", "Stop() - Stop the pattern"),
-                new("Loop", "bool Loop { get; set; } - Enable/disable looping"),
-                new("Length", "double Length { get; set; } - Pattern length in beats"),
-            },
-            _ => new List<CompletionData>()
-        };
-    }
-
-    #endregion
-
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         StatusText.Text = "Initializing engine...";
@@ -524,6 +374,12 @@ public partial class MainWindow : Window
 
             // Populate MIDI devices list
             RefreshMidiDevices();
+
+            // Connect visualization to the sequencer
+            if (_engineService.Sequencer != null)
+            {
+                _visualization?.ConnectToSequencer(_engineService.Sequencer);
+            }
 
             StatusText.Text = "Ready";
             OutputLine("Engine initialized successfully!");
@@ -561,6 +417,9 @@ public partial class MainWindow : Window
         }
 
         _statusTimer.Stop();
+        _sliderHotReloadTimer?.Stop();
+        _inlineSliderService?.Dispose();
+        _visualization?.Dispose();
         CloseAllVstWindows();
         _engineService.Dispose();
     }
@@ -593,6 +452,72 @@ public partial class MainWindow : Window
         CaretPositionDisplay.Text = $"Ln {CodeEditor.TextArea.Caret.Line}, Col {CodeEditor.TextArea.Caret.Column}";
     }
 
+    #region Inline Slider Events
+
+    private void InlineSlider_ValueChanged(object? sender, SliderValueChangedEventArgs e)
+    {
+        // Mark as having unsaved changes
+        _hasUnsavedChanges = true;
+
+        // If script is running, trigger hot-reload
+        if (_isRunning)
+        {
+            // Debounce hot-reload to avoid too many re-evaluations
+            _sliderHotReloadTimer?.Stop();
+            _sliderHotReloadTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(100)
+            };
+            _sliderHotReloadTimer.Tick += async (s, args) =>
+            {
+                _sliderHotReloadTimer.Stop();
+                await TriggerHotReload();
+            };
+            _sliderHotReloadTimer.Start();
+        }
+    }
+
+    private void InlineSlider_ValueChangeCompleted(object? sender, SliderValueChangedEventArgs e)
+    {
+        // Final update when slider is released
+        _hasUnsavedChanges = true;
+
+        // If script is running, do a final hot-reload
+        if (_isRunning)
+        {
+            _sliderHotReloadTimer?.Stop();
+            _ = TriggerHotReload();
+        }
+
+        // Show feedback in status
+        var context = e.Number.Context ?? e.Number.SliderConfig?.Label ?? "value";
+        StatusText.Text = $"Changed {context}: {e.OldValue:F2} -> {e.NewValue:F2}";
+    }
+
+    private DispatcherTimer? _sliderHotReloadTimer;
+
+    private async Task TriggerHotReload()
+    {
+        try
+        {
+            var code = CodeEditor.Text;
+            var result = await _engineService.ExecuteScriptAsync(code);
+
+            if (!result.Success)
+            {
+                // Don't interrupt with errors during slider manipulation
+                // Just log to output
+                OutputLine($"[Hot-reload] Error: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            OutputLine($"[Hot-reload] Exception: {ex.Message}");
+        }
+    }
+
+    #endregion
+
     #region Project Management
 
     private async void NewProject_Click(object sender, RoutedEventArgs e)
@@ -603,20 +528,62 @@ public partial class MainWindow : Window
         {
             try
             {
+                // Validate dialog inputs before proceeding
+                if (string.IsNullOrWhiteSpace(dialog.ProjectName))
+                {
+                    MessageBox.Show("Project name cannot be empty.", "Validation Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(dialog.ProjectLocation))
+                {
+                    MessageBox.Show("Project location cannot be empty.", "Validation Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 StatusText.Text = "Creating project...";
                 _currentProject = await _projectService.CreateProjectAsync(dialog.ProjectName, dialog.ProjectLocation);
+
+                // Verify project was created successfully
+                if (_currentProject == null)
+                {
+                    StatusText.Text = "Failed to create project";
+                    OutputLine("ERROR: Project creation returned null");
+                    MessageBox.Show("Failed to create project: Project creation returned null.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
                 UpdateProjectExplorer();
                 UpdateAudioFilesList();
                 ProjectNameDisplay.Text = _currentProject.Name;
                 StatusText.Text = $"Created project: {_currentProject.Name}";
                 OutputLine($"Created new project: {_currentProject.Name}");
 
-                // Open entry point script
-                var entryScript = _currentProject.Scripts[0];
-                OpenScriptInTab(entryScript);
+                // Open entry point script (with null checks)
+                if (_currentProject.Scripts != null && _currentProject.Scripts.Count > 0)
+                {
+                    var entryScript = _currentProject.Scripts[0];
+                    if (entryScript != null)
+                    {
+                        OpenScriptInTab(entryScript);
+                    }
+                    else
+                    {
+                        OutputLine("Warning: Entry script is null.");
+                    }
+                }
+                else
+                {
+                    OutputLine("Warning: No scripts were created with the project.");
+                }
             }
             catch (Exception ex)
             {
+                StatusText.Text = "Project creation failed";
+                OutputLine($"ERROR: Failed to create project: {ex.Message}");
                 MessageBox.Show($"Failed to create project: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -637,24 +604,40 @@ public partial class MainWindow : Window
             {
                 StatusText.Text = "Loading project...";
                 _currentProject = await _projectService.OpenProjectAsync(dialog.FileName);
+
+                // Verify project was loaded successfully
+                if (_currentProject == null)
+                {
+                    StatusText.Text = "Failed to load project";
+                    OutputLine("ERROR: Project loading returned null");
+                    MessageBox.Show("Failed to load project: Project file could not be parsed.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
                 UpdateProjectExplorer();
                 UpdateAudioFilesList();
                 ProjectNameDisplay.Text = _currentProject.Name;
                 StatusText.Text = $"Loaded: {_currentProject.Name}";
                 OutputLine($"Loaded project: {_currentProject.Name}");
 
-                // Open entry point script
-                foreach (var script in _currentProject.Scripts)
+                // Open entry point script (with null checks)
+                if (_currentProject.Scripts != null && _currentProject.Scripts.Count > 0)
                 {
-                    if (script.IsEntryPoint)
+                    foreach (var script in _currentProject.Scripts)
                     {
-                        OpenScriptInTab(script);
-                        break;
+                        if (script != null && script.IsEntryPoint)
+                        {
+                            OpenScriptInTab(script);
+                            break;
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
+                StatusText.Text = "Project loading failed";
+                OutputLine($"ERROR: Failed to open project: {ex.Message}");
                 MessageBox.Show($"Failed to open project: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -751,18 +734,32 @@ public partial class MainWindow : Window
 
     private void OpenScriptInTab(MusicScript script)
     {
+        // Null check for script parameter
+        if (script == null)
+        {
+            OutputLine("Warning: Attempted to open a null script.");
+            return;
+        }
+
+        // Validate script has required properties
+        if (string.IsNullOrEmpty(script.FilePath))
+        {
+            OutputLine("Warning: Script has no file path.");
+            return;
+        }
+
         // Check if already open
         if (_openTabs.TryGetValue(script.FilePath, out var existingTab))
         {
             EditorTabs.SelectedItem = existingTab;
-            CodeEditor.Text = script.Content;
+            CodeEditor.Text = script.Content ?? string.Empty;
             return;
         }
 
         // Create new tab
         var tab = new TabItem
         {
-            Header = script.FileName,
+            Header = script.FileName ?? "Untitled",
             Tag = script
         };
 
@@ -771,8 +768,8 @@ public partial class MainWindow : Window
         EditorTabs.Items.Add(tab);
         EditorTabs.SelectedItem = tab;
 
-        CodeEditor.Text = script.Content;
-        FileNameDisplay.Text = script.FileName;
+        CodeEditor.Text = script.Content ?? string.Empty;
+        FileNameDisplay.Text = script.FileName ?? "Untitled";
     }
 
     private void EditorTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -941,6 +938,9 @@ public partial class MainWindow : Window
         OutputLine("----------------------------------------");
         OutputLine($"[{DateTime.Now:HH:mm:ss}] Executing script...");
 
+        // Notify visualization system before execution
+        _visualization?.OnBeforeExecute(code);
+
         var stopwatch = Stopwatch.StartNew();
         var currentFileName = GetCurrentFileName();
 
@@ -958,6 +958,10 @@ public partial class MainWindow : Window
                 {
                     OutputLine(result.Output);
                 }
+
+                // Notify visualization system after successful execution
+                _visualization?.OnAfterExecute(true);
+                _visualization?.OnPlaybackStarted();
 
                 // Parse code to extract instruments and start animation
                 ExtractInstrumentsFromCode(code);
@@ -1085,6 +1089,9 @@ public partial class MainWindow : Window
         _isRunning = false;
         _animationTimer.Stop();
 
+        // Notify visualization system that playback stopped
+        _visualization?.OnPlaybackStopped();
+
         // Switch back to normal style
         RunButton.Style = (Style)FindResource("RunButtonStyle");
         RunButton.Content = "Run";
@@ -1118,6 +1125,38 @@ public partial class MainWindow : Window
         LeftPanelColumn.Width = ProjectExplorerMenuItem.IsChecked
             ? new GridLength(240)
             : new GridLength(0);
+
+        // Hide workshop panel when showing project explorer
+        if (ProjectExplorerMenuItem.IsChecked)
+        {
+            WorkshopPanel.Visibility = Visibility.Collapsed;
+            WorkshopMenuItem.IsChecked = false;
+        }
+    }
+
+    private void ToggleWorkshop_Click(object sender, RoutedEventArgs e)
+    {
+        var showWorkshop = !WorkshopMenuItem.IsChecked;
+        WorkshopMenuItem.IsChecked = showWorkshop;
+
+        if (showWorkshop)
+        {
+            // Show workshop panel, hide project explorer
+            WorkshopPanel.Visibility = Visibility.Visible;
+            ProjectExplorerPanel.Visibility = Visibility.Collapsed;
+            ProjectExplorerMenuItem.IsChecked = false;
+            LeftPanelColumn.Width = new GridLength(500);
+            LeftPanelColumn.MinWidth = 400;
+        }
+        else
+        {
+            // Hide workshop panel, restore project explorer
+            WorkshopPanel.Visibility = Visibility.Collapsed;
+            ProjectExplorerPanel.Visibility = Visibility.Visible;
+            ProjectExplorerMenuItem.IsChecked = true;
+            LeftPanelColumn.Width = new GridLength(240);
+            LeftPanelColumn.MinWidth = 180;
+        }
     }
 
     private void ToggleOutput_Click(object sender, RoutedEventArgs e)
@@ -1266,84 +1305,78 @@ public partial class MainWindow : Window
 
         try
         {
-            // Get MIDI devices from engine
+            // Get MIDI input devices from engine
             var inputCount = _engineService.GetMidiInputCount();
             for (int i = 0; i < inputCount; i++)
             {
+                var deviceName = _engineService.GetMidiInputName(i);
                 MidiDevices.Add(new MidiDeviceInfo
                 {
-                    Name = _engineService.GetMidiInputName(i),
+                    Name = deviceName,
                     Type = "Input",
                     DeviceIndex = i,
-                    Channel = $"Ch {i}"
+                    ChannelInfo = "Ch 1-16"  // MIDI inputs typically receive on all channels
                 });
             }
 
+            // Get MIDI output devices from engine
             var outputCount = _engineService.GetMidiOutputCount();
             for (int i = 0; i < outputCount; i++)
             {
+                var deviceName = _engineService.GetMidiOutputName(i);
                 MidiDevices.Add(new MidiDeviceInfo
                 {
-                    Name = _engineService.GetMidiOutputName(i),
+                    Name = deviceName,
                     Type = "Output",
                     DeviceIndex = i,
-                    Channel = $"Ch {i}"
+                    ChannelInfo = "Ch 1-16"  // MIDI outputs can send on all channels
                 });
             }
+
+            // Show message if no devices found
+            if (MidiDevices.Count == 0)
+            {
+                OutputLine("No MIDI devices found. Connect a MIDI device and click Refresh.");
+            }
+            else
+            {
+                OutputLine($"Found {inputCount} MIDI input(s) and {outputCount} MIDI output(s).");
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            // If engine methods don't exist yet, add placeholder
-            MidiDevices.Add(new MidiDeviceInfo { Name = "No devices found", Type = "-", DeviceIndex = -1, Channel = "-" });
+            // If engine methods don't exist yet or error occurs, add placeholder
+            MidiDevices.Add(new MidiDeviceInfo
+            {
+                Name = "No devices found",
+                Type = "-",
+                DeviceIndex = -1,
+                ChannelInfo = "-"
+            });
+            OutputLine($"Error enumerating MIDI devices: {ex.Message}");
         }
     }
 
-    private void ScanVstPlugins_Click(object sender, RoutedEventArgs e)
+    private async void ScanVstPlugins_Click(object sender, RoutedEventArgs e)
     {
-        VstPlugins.Clear();
+        // The new VstPluginPanel handles scanning internally
+        await VstPluginsPanel.ScanPluginsAsync();
+    }
 
-        // Scan common VST directories
-        var vstPaths = new[]
-        {
-            @"C:\Program Files\Common Files\VST3",
-            @"C:\Program Files\VSTPlugins",
-            @"C:\Program Files\Steinberg\VSTPlugins",
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) + @"\Common Files\VST3"
-        };
+    // VstPluginPanel Event Handlers
+    private void VstPluginsPanel_OnOpenPluginEditor(object? sender, VstPluginEventArgs e)
+    {
+        OpenVstPluginWindow(e.Plugin.Name, e.Plugin.Name);
+    }
 
-        foreach (var path in vstPaths.Where(Directory.Exists))
-        {
-            try
-            {
-                foreach (var file in Directory.GetFiles(path, "*.vst3", SearchOption.AllDirectories))
-                {
-                    VstPlugins.Add(new VstPluginInfo
-                    {
-                        Name = Path.GetFileNameWithoutExtension(file),
-                        Type = "VST3",
-                        Path = Path.GetDirectoryName(file) ?? ""
-                    });
-                }
+    private void VstPluginsPanel_OnPluginDoubleClick(object? sender, VstPluginEventArgs e)
+    {
+        OpenVstPluginWindow(e.Plugin.Name, e.Plugin.Name);
+    }
 
-                foreach (var file in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
-                {
-                    VstPlugins.Add(new VstPluginInfo
-                    {
-                        Name = Path.GetFileNameWithoutExtension(file),
-                        Type = "VST2",
-                        Path = Path.GetDirectoryName(file) ?? ""
-                    });
-                }
-            }
-            catch { /* Skip inaccessible directories */ }
-        }
-
-        if (VstPlugins.Count == 0)
-        {
-            VstPlugins.Add(new VstPluginInfo { Name = "No plugins found", Type = "-", Path = "-" });
-        }
-
-        OutputLine($"Found {VstPlugins.Count} VST plugins");
+    private void VstPluginsPanel_OnScanCompleted(object? sender, VstScanCompletedEventArgs e)
+    {
+        OutputLine($"VST scan completed: Found {e.PluginCount} plugins");
     }
 
     private void UpdateAudioFilesList()
@@ -1519,6 +1552,105 @@ public partial class MainWindow : Window
 
     #endregion
 
+    #region Custom Title Bar
+
+    private bool _isMaximized = true; // Start maximized
+    private bool _isDragging = false;
+    private Point _dragStartPoint;
+    private Point _windowStartPosition;
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ClickCount == 2)
+        {
+            // Double-click to toggle maximize
+            ToggleMaximize();
+        }
+        else
+        {
+            // Start drag
+            _isDragging = true;
+            _dragStartPoint = e.GetPosition(this);
+            _windowStartPosition = new Point(Left, Top);
+            ((UIElement)sender).CaptureMouse();
+        }
+    }
+
+    private void TitleBar_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        _isDragging = false;
+        ((UIElement)sender).ReleaseMouseCapture();
+    }
+
+    private void TitleBar_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
+        {
+            // If maximized and dragging, restore first
+            if (_isMaximized)
+            {
+                // Calculate proportional position
+                var mousePos = e.GetPosition(this);
+                var screenPos = PointToScreen(mousePos);
+
+                _isMaximized = false;
+                WindowState = WindowState.Normal;
+
+                // Position window so the mouse is still over it proportionally
+                Left = screenPos.X - (Width / 2);
+                Top = screenPos.Y - 16; // Center of title bar
+
+                _dragStartPoint = new Point(Width / 2, 16);
+            }
+            else
+            {
+                var currentPos = e.GetPosition(this);
+                var delta = currentPos - _dragStartPoint;
+                Left = _windowStartPosition.X + delta.X;
+                Top = _windowStartPosition.Y + delta.Y;
+                _windowStartPosition = new Point(Left, Top);
+            }
+        }
+    }
+
+    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleMaximize();
+    }
+
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void ToggleMaximize()
+    {
+        if (_isMaximized)
+        {
+            WindowState = WindowState.Normal;
+            _isMaximized = false;
+        }
+        else
+        {
+            WindowState = WindowState.Maximized;
+            _isMaximized = true;
+        }
+    }
+
+    // Update maximize button icon when window state changes
+    protected override void OnStateChanged(EventArgs e)
+    {
+        base.OnStateChanged(e);
+        _isMaximized = WindowState == WindowState.Maximized;
+    }
+
+    #endregion
+
     #region Helpers
 
     private void OutputLine(string text)
@@ -1660,14 +1792,6 @@ public partial class MainWindow : Window
 
     #region VST Plugin Windows
 
-    private void VstPluginsList_DoubleClick(object sender, MouseButtonEventArgs e)
-    {
-        if (VstPluginsList.SelectedItem is VstPluginInfo plugin)
-        {
-            OpenVstPluginWindow(plugin.Name, plugin.Name);
-        }
-    }
-
     public void OpenVstPluginWindow(string pluginName, string variableName)
     {
         var key = $"{variableName}_{pluginName}";
@@ -1793,15 +1917,190 @@ public partial class MainWindow : Window
     }
 
     #endregion
+
+    #region Workshop Panel Event Handlers
+
+    private async void WorkshopPanel_OnRunCode(object? sender, WorkshopCodeEventArgs e)
+    {
+        // Execute the code example from the workshop via the EngineService
+        if (string.IsNullOrWhiteSpace(e.Code))
+        {
+            OutputLine("No code to execute.");
+            return;
+        }
+
+        _isRunning = true;
+        StatusText.Text = "Executing workshop example...";
+        RunButton.IsEnabled = false;
+
+        // Clear previous problems
+        Problems.Clear();
+        UpdateErrorBadge();
+
+        OutputLine("----------------------------------------");
+        OutputLine($"[{DateTime.Now:HH:mm:ss}] Running workshop example...");
+
+        var stopwatch = Stopwatch.StartNew();
+
+        try
+        {
+            var result = await _engineService.ExecuteScriptAsync(e.Code);
+            stopwatch.Stop();
+
+            if (result.Success)
+            {
+                StatusText.Text = $"Running ({stopwatch.ElapsedMilliseconds}ms)";
+                OutputLine($"Workshop example executed successfully ({stopwatch.ElapsedMilliseconds}ms)");
+
+                if (!string.IsNullOrEmpty(result.Output))
+                {
+                    OutputLine(result.Output);
+                }
+
+                // Parse code to extract instruments and start animation
+                ExtractInstrumentsFromCode(e.Code);
+                _animationTimer.Start();
+
+                // Switch to running style with animation
+                RunButton.Style = (Style)FindResource("RunningButtonStyle");
+                RunButton.Content = "Running";
+            }
+            else
+            {
+                _isRunning = false;
+                StatusText.Text = "Workshop example error";
+                OutputLine($"ERROR: {result.ErrorMessage}");
+
+                foreach (var error in result.Errors)
+                {
+                    OutputLine($"  Line {error.Line}: {error.Message}");
+
+                    // Add to Problems panel
+                    Problems.Add(new ProblemItem
+                    {
+                        Severity = error.Severity == "Error" ? ProblemSeverity.Error : ProblemSeverity.Warning,
+                        Message = error.Message,
+                        FileName = "Workshop Example",
+                        FilePath = "",
+                        Line = error.Line,
+                        Column = error.Column
+                    });
+                }
+
+                UpdateErrorBadge();
+
+                // Switch to Problems tab if there are errors
+                if (Problems.Count > 0)
+                {
+                    SwitchOutputTab(false);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            _isRunning = false;
+            StatusText.Text = "Workshop execution failed";
+            OutputLine($"EXCEPTION: {ex.Message}");
+
+            // Add exception to Problems
+            Problems.Add(new ProblemItem
+            {
+                Severity = ProblemSeverity.Error,
+                Message = ex.Message,
+                FileName = "Workshop Example",
+                FilePath = "",
+                Line = 1,
+                Column = 1
+            });
+            UpdateErrorBadge();
+        }
+
+        RunButton.IsEnabled = true;
+    }
+
+    private void WorkshopPanel_OnCopyCode(object? sender, WorkshopCodeEventArgs e)
+    {
+        // Code is already copied to clipboard by the WorkshopPanel itself
+        // Just show feedback in the output
+        OutputLine($"[{DateTime.Now:HH:mm:ss}] Code copied to clipboard.");
+        StatusText.Text = "Code copied to clipboard";
+    }
+
+    private void WorkshopPanel_OnInsertCode(object? sender, WorkshopCodeEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(e.Code))
+        {
+            return;
+        }
+
+        // Insert code at the current cursor position in the editor
+        // If there's a selection, replace it; otherwise, insert at cursor
+        var textArea = CodeEditor.TextArea;
+        var document = CodeEditor.Document;
+
+        if (textArea.Selection.Length > 0)
+        {
+            // Replace selection with the code
+            var selectionStart = textArea.Selection.SurroundingSegment.Offset;
+            var selectionLength = textArea.Selection.SurroundingSegment.Length;
+            document.Replace(selectionStart, selectionLength, e.Code);
+            CodeEditor.CaretOffset = selectionStart + e.Code.Length;
+        }
+        else
+        {
+            // Insert at cursor position
+            var insertPosition = CodeEditor.CaretOffset;
+
+            // Check if we should add a newline before the inserted code
+            if (insertPosition > 0)
+            {
+                var charBefore = document.GetCharAt(insertPosition - 1);
+                if (charBefore != '\n' && charBefore != '\r')
+                {
+                    // Add newline before the code if not at the start of a line
+                    document.Insert(insertPosition, Environment.NewLine);
+                    insertPosition += Environment.NewLine.Length;
+                }
+            }
+
+            document.Insert(insertPosition, e.Code);
+            CodeEditor.CaretOffset = insertPosition + e.Code.Length;
+        }
+
+        // Mark as having unsaved changes
+        _hasUnsavedChanges = true;
+
+        // Show feedback
+        OutputLine($"[{DateTime.Now:HH:mm:ss}] Code inserted into editor.");
+        StatusText.Text = "Code inserted into editor";
+
+        // Focus the editor
+        CodeEditor.Focus();
+    }
+
+    #endregion
 }
 
 // Data classes for the right panel lists
 public class MidiDeviceInfo
 {
     public string Name { get; set; } = "";
-    public string Type { get; set; } = "";
+    public string Type { get; set; } = "";  // "Input" or "Output"
     public int DeviceIndex { get; set; } = -1;
-    public string Channel { get; set; } = "";
+    public string ChannelInfo { get; set; } = "";  // e.g., "Ch 1-16" or "Omni"
+
+    // Display string combining all info for the UI
+    public string DisplayName => $"{Name} ({Type})";
+    public string DisplayChannel => string.IsNullOrEmpty(ChannelInfo) ? "Ch 1-16" : ChannelInfo;
+
+    // Icon based on type
+    public string TypeIcon => Type == "Input" ? "\u2B05" : "\u27A1";  // Left arrow for input, right arrow for output
+
+    // Color for the type indicator
+    public System.Windows.Media.Brush TypeColor => Type == "Input"
+        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6A, 0xAB, 0x73))  // Green for input
+        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4B, 0x6E, 0xAF)); // Blue for output
 }
 
 public class VstPluginInfo
@@ -1816,27 +2115,6 @@ public class AudioFileInfo
     public string Alias { get; set; } = "";
     public string Duration { get; set; } = "";
     public string Format { get; set; } = "";
-}
-
-// Autocomplete data class
-public class CompletionData : ICompletionData
-{
-    public CompletionData(string text, string description)
-    {
-        Text = text;
-        Description = description;
-    }
-
-    public System.Windows.Media.ImageSource? Image => null;
-    public string Text { get; }
-    public object Content => Text;
-    public object Description { get; }
-    public double Priority => 0;
-
-    public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
-    {
-        textArea.Document.Replace(completionSegment, Text);
-    }
 }
 
 // Problem/Error item for the Problems panel

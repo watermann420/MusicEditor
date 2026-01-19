@@ -9,13 +9,17 @@ namespace MusicEngineEditor.Views;
 public partial class EditorView : UserControl
 {
     private EditorTabViewModel? _viewModel;
+    private CompletionProvider? _completionProvider;
 
     public EditorView()
     {
         InitializeComponent();
 
-        // Configure editor
+        // Configure editor with syntax highlighting and folding
         EditorSetup.Configure(CodeEditor);
+
+        // Setup code completion for MusicEngine API
+        _completionProvider = EditorSetup.SetupCompletion(CodeEditor);
 
         // Bind to ViewModel
         DataContextChanged += OnDataContextChanged;

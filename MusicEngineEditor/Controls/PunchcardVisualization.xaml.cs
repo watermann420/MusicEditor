@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using MusicEngine.Core;
 
 namespace MusicEngineEditor.Controls;
 
@@ -84,7 +88,20 @@ public partial class PunchcardVisualization : UserControl
 
     private readonly List<Pattern> _patterns = new();
     private readonly Dictionary<System.Windows.Shapes.Rectangle, NoteInfo> _noteRectangles = new();
+    private readonly Dictionary<System.Windows.Shapes.Rectangle, NoteInfo> _activeNotes = new();
+    private readonly HashSet<int> _triggeredNotes = new();
     private Storyboard? _playheadAnimation;
+
+    // Sequencer synchronization
+    private Sequencer? _sequencer;
+    private bool _isSynced;
+    #pragma warning disable CS0414 // Field is assigned but never used - reserved for future beat-skip detection
+    private double _lastSyncedBeat = -1;
+    #pragma warning restore CS0414
+
+    // Animation constants
+    private const double NotePulseDuration = 0.15; // seconds for note pulse animation
+    private const double NoteGlowIntensity = 1.0;
 
     #endregion
 
@@ -95,6 +112,7 @@ public partial class PunchcardVisualization : UserControl
         InitializeComponent();
         Loaded += OnLoaded;
         SizeChanged += OnSizeChanged;
+        Unloaded += OnUnloaded;
     }
 
     #endregion
@@ -109,6 +127,11 @@ public partial class PunchcardVisualization : UserControl
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
         RenderVisualization();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        StopSync();
     }
 
     private static void OnVisualizationPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -248,6 +271,152 @@ public partial class PunchcardVisualization : UserControl
         _playheadAnimation?.Resume();
         IsPlaying = true;
     }
+
+    #endregion
+
+    #region Public Methods - Sequencer Synchronization
+
+    /// <summary>
+    /// Binds the visualization to a Sequencer for live synchronization.
+    /// The punchcard will automatically update based on the sequencer's current beat.
+    /// </summary>
+    /// <param name="sequencer">The Sequencer to sync with.</param>
+    public void BindToSequencer(Sequencer sequencer)
+    {
+        if (_sequencer == sequencer) return;
+
+        StopSync();
+        _sequencer = sequencer;
+        StartSync();
+    }
+
+    /// <summary>
+    /// Unbinds from the current sequencer and stops synchronization.
+    /// </summary>
+    public void UnbindSequencer()
+    {
+        StopSync();
+        _sequencer = null;
+    }
+
+    /// <summary>
+    /// Starts real-time synchronization with the bound sequencer.
+    /// Uses CompositionTarget.Rendering for smooth frame-by-frame updates.
+    /// </summary>
+    public void StartSync()
+    {
+        if (_sequencer == null || _isSynced) return;
+
+        _isSynced = true;
+        IsPlaying = true;
+        _lastSyncedBeat = -1;
+        CompositionTarget.Rendering += OnRenderFrame;
+    }
+
+    /// <summary>
+    /// Stops real-time synchronization with the sequencer.
+    /// </summary>
+    public void StopSync()
+    {
+        if (!_isSynced) return;
+
+        _isSynced = false;
+        IsPlaying = false;
+        CompositionTarget.Rendering -= OnRenderFrame;
+        ClearActiveNoteEffects();
+    }
+
+    /// <summary>
+    /// Updates the visualization patterns from the sequencer's pattern list.
+    /// Call this when patterns are added or removed from the sequencer.
+    /// </summary>
+    public void SyncPatternsFromSequencer()
+    {
+        if (_sequencer == null) return;
+
+        // This requires access to the sequencer's internal patterns.
+        // Since Sequencer doesn't expose its patterns directly, we provide
+        // a method for the caller to pass pattern data.
+        // For now, this is a placeholder - see UpdatePatternsFromSequencer below.
+    }
+
+    /// <summary>
+    /// Updates the visualization with patterns from the sequencer.
+    /// Converts MusicEngine.Core.Pattern to visualization Pattern objects.
+    /// </summary>
+    /// <param name="sequencerPatterns">The patterns from the sequencer.</param>
+    public void UpdatePatternsFromSequencer(IEnumerable<MusicEngine.Core.Pattern> sequencerPatterns)
+    {
+        _patterns.Clear();
+
+        foreach (var seqPattern in sequencerPatterns)
+        {
+            var vizPattern = new Pattern
+            {
+                Name = $"Pattern {_patterns.Count + 1}",
+                Notes = seqPattern.Events.Select(e => new Note
+                {
+                    Pitch = e.Note,
+                    StartBeat = e.Beat,
+                    Duration = e.Duration,
+                    Velocity = e.Velocity
+                }).ToList()
+            };
+
+            // Store reference to the source pattern for syncing
+            vizPattern.SourcePattern = seqPattern;
+            _patterns.Add(vizPattern);
+        }
+
+        // Update total beats based on patterns
+        if (_patterns.Any())
+        {
+            var maxBeat = _patterns
+                .SelectMany(p => p.Notes)
+                .Select(n => n.StartBeat + n.Duration)
+                .DefaultIfEmpty(TotalBeats)
+                .Max();
+
+            // Round up to nearest multiple of 4
+            TotalBeats = Math.Max(TotalBeats, (int)Math.Ceiling(maxBeat / 4.0) * 4);
+        }
+
+        RenderVisualization();
+    }
+
+    /// <summary>
+    /// Adds a pattern from a MusicEngine.Core.Pattern.
+    /// </summary>
+    /// <param name="sequencerPattern">The sequencer pattern to add.</param>
+    /// <param name="name">Optional name for the pattern.</param>
+    public void AddPatternFromSequencer(MusicEngine.Core.Pattern sequencerPattern, string? name = null)
+    {
+        var vizPattern = new Pattern
+        {
+            Name = name ?? $"Pattern {_patterns.Count + 1}",
+            Notes = sequencerPattern.Events.Select(e => new Note
+            {
+                Pitch = e.Note,
+                StartBeat = e.Beat,
+                Duration = e.Duration,
+                Velocity = e.Velocity
+            }).ToList(),
+            SourcePattern = sequencerPattern
+        };
+
+        _patterns.Add(vizPattern);
+        RenderVisualization();
+    }
+
+    /// <summary>
+    /// Gets the bound sequencer, if any.
+    /// </summary>
+    public Sequencer? BoundSequencer => _sequencer;
+
+    /// <summary>
+    /// Gets whether the visualization is currently synced to a sequencer.
+    /// </summary>
+    public bool IsSynced => _isSynced;
 
     #endregion
 
@@ -447,7 +616,202 @@ public partial class PunchcardVisualization : UserControl
     {
         var x = CurrentBeat * BeatWidth;
         Canvas.SetLeft(Playhead, x);
+        Canvas.SetLeft(PlayheadGlow, x);
         Playhead.Y2 = Math.Max(_patterns.Count, 1) * TrackHeight;
+        PlayheadGlow.Y2 = Playhead.Y2;
+
+        // Auto-scroll to keep playhead visible when playing
+        if (IsPlaying && MainScrollViewer != null)
+        {
+            var viewportWidth = MainScrollViewer.ViewportWidth;
+            var scrollOffset = MainScrollViewer.HorizontalOffset;
+
+            // If playhead is outside the visible area, scroll to center it
+            if (x < scrollOffset || x > scrollOffset + viewportWidth - 50)
+            {
+                var targetOffset = Math.Max(0, x - viewportWidth / 3);
+                MainScrollViewer.ScrollToHorizontalOffset(targetOffset);
+            }
+        }
+    }
+
+    #endregion
+
+    #region Private Methods - Sequencer Sync Animation
+
+    /// <summary>
+    /// Called on each render frame when synced to a sequencer.
+    /// Updates the playhead position and triggers note animations.
+    /// </summary>
+    private void OnRenderFrame(object? sender, EventArgs e)
+    {
+        if (_sequencer == null || !_isSynced) return;
+
+        // Get current beat from sequencer
+        var currentBeat = _sequencer.CurrentBeat;
+
+        // Update playhead position
+        CurrentBeat = currentBeat % TotalBeats;
+
+        // Check for notes that should be triggered
+        CheckAndTriggerNotes(currentBeat);
+    }
+
+    /// <summary>
+    /// Checks for notes that should be triggered at the current beat and applies visual effects.
+    /// </summary>
+    private void CheckAndTriggerNotes(double currentBeat)
+    {
+        // Determine the beat range to check (small window around current beat)
+        const double triggerWindow = 0.1; // beats
+
+        foreach (var kvp in _noteRectangles)
+        {
+            var rect = kvp.Key;
+            var noteInfo = kvp.Value;
+            var note = noteInfo.Note;
+
+            // Get the pattern this note belongs to
+            var patternIndex = _patterns.FindIndex(p => p.Name == noteInfo.PatternName);
+            if (patternIndex < 0) continue;
+
+            var pattern = _patterns[patternIndex];
+
+            // Calculate effective beat position considering loop
+            double loopLength = pattern.SourcePattern?.LoopLength ?? TotalBeats;
+            double effectiveBeat = currentBeat % loopLength;
+
+            // Check if this note should be triggered
+            bool shouldTrigger = Math.Abs(effectiveBeat - note.StartBeat) < triggerWindow ||
+                                 (effectiveBeat >= note.StartBeat && effectiveBeat < note.StartBeat + note.Duration);
+
+            // Check if currently playing (within duration)
+            bool isPlaying = effectiveBeat >= note.StartBeat && effectiveBeat < note.StartBeat + note.Duration;
+
+            if (shouldTrigger && !_activeNotes.ContainsKey(rect))
+            {
+                // Trigger the note animation
+                TriggerNoteAnimation(rect, noteInfo);
+                _activeNotes[rect] = noteInfo;
+            }
+            else if (isPlaying && _activeNotes.ContainsKey(rect))
+            {
+                // Keep the glow effect while note is playing
+                UpdatePlayingNoteEffect(rect, effectiveBeat - note.StartBeat, note.Duration);
+            }
+            else if (!isPlaying && _activeNotes.ContainsKey(rect))
+            {
+                // Note finished playing, remove effects
+                RemoveNoteAnimation(rect);
+                _activeNotes.Remove(rect);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Triggers the visual animation for a note being played.
+    /// </summary>
+    private void TriggerNoteAnimation(System.Windows.Shapes.Rectangle rect, NoteInfo noteInfo)
+    {
+        // Apply glow effect
+        var glowEffect = new DropShadowEffect
+        {
+            Color = Colors.Gold,
+            BlurRadius = 20,
+            ShadowDepth = 0,
+            Opacity = NoteGlowIntensity
+        };
+        rect.Effect = glowEffect;
+
+        // Brighten the note
+        if (rect.Fill is SolidColorBrush originalBrush)
+        {
+            var brighterColor = BrightenColor(originalBrush.Color, 0.3);
+            rect.Fill = new SolidColorBrush(brighterColor);
+        }
+
+        // Scale animation (pulse effect)
+        var scaleTransform = new ScaleTransform(1.0, 1.0);
+        rect.RenderTransform = scaleTransform;
+        rect.RenderTransformOrigin = new System.Windows.Point(0.5, 0.5);
+
+        var pulseAnimation = new DoubleAnimation
+        {
+            From = 1.0,
+            To = 1.08,
+            Duration = TimeSpan.FromSeconds(NotePulseDuration / 2),
+            AutoReverse = true,
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+        };
+
+        scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, pulseAnimation);
+        scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, pulseAnimation);
+
+        // Increase stroke thickness
+        rect.StrokeThickness = 2.5;
+        rect.Stroke = new SolidColorBrush(Colors.White);
+    }
+
+    /// <summary>
+    /// Updates the visual effect for a note that is currently playing.
+    /// </summary>
+    private void UpdatePlayingNoteEffect(System.Windows.Shapes.Rectangle rect, double elapsed, double duration)
+    {
+        // Fade the glow as the note progresses
+        if (rect.Effect is DropShadowEffect effect)
+        {
+            double progress = elapsed / duration;
+            effect.Opacity = NoteGlowIntensity * (1.0 - progress * 0.5);
+        }
+    }
+
+    /// <summary>
+    /// Removes the visual animation effects from a note.
+    /// </summary>
+    private void RemoveNoteAnimation(System.Windows.Shapes.Rectangle rect)
+    {
+        // Remove glow effect
+        rect.Effect = null;
+
+        // Restore original appearance
+        if (_noteRectangles.TryGetValue(rect, out var noteInfo))
+        {
+            var noteColor = GetNoteColor(noteInfo.Note.Pitch);
+            rect.Fill = new SolidColorBrush(noteColor);
+        }
+
+        // Reset transform
+        rect.RenderTransform = null;
+
+        // Reset stroke
+        rect.StrokeThickness = 1;
+        rect.Stroke = new SolidColorBrush(System.Windows.Media.Color.FromArgb(60, 255, 255, 255));
+        rect.Opacity = 0.85;
+    }
+
+    /// <summary>
+    /// Clears all active note effects.
+    /// </summary>
+    private void ClearActiveNoteEffects()
+    {
+        foreach (var rect in _activeNotes.Keys.ToList())
+        {
+            RemoveNoteAnimation(rect);
+        }
+        _activeNotes.Clear();
+    }
+
+    /// <summary>
+    /// Brightens a color by the specified factor.
+    /// </summary>
+    private static System.Windows.Media.Color BrightenColor(System.Windows.Media.Color color, double factor)
+    {
+        return System.Windows.Media.Color.FromArgb(
+            color.A,
+            (byte)Math.Min(255, color.R + (255 - color.R) * factor),
+            (byte)Math.Min(255, color.G + (255 - color.G) * factor),
+            (byte)Math.Min(255, color.B + (255 - color.B) * factor)
+        );
     }
 
     #endregion
@@ -585,6 +949,12 @@ public class Pattern
     /// If null, notes will use pitch-based coloring.
     /// </summary>
     public System.Windows.Media.Color? ColorOverride { get; set; }
+
+    /// <summary>
+    /// Gets or sets the source MusicEngine.Core.Pattern for synchronization.
+    /// This is used when syncing with a Sequencer.
+    /// </summary>
+    public MusicEngine.Core.Pattern? SourcePattern { get; set; }
 }
 
 /// <summary>

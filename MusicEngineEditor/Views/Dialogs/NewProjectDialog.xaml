@@ -27,7 +27,7 @@
         <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center" Margin="0,0,10,10"/>
         <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
                  x:Name="ProjectNameBox"
-                 Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}"
+                 Text="{Binding ProjectName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  Background="{DynamicResource EditorBackgroundBrush}"
                  Foreground="{DynamicResource ForegroundBrush}"
                  BorderBrush="{DynamicResource BorderBrush}"
@@ -37,7 +37,8 @@
         <!-- Location -->
         <TextBlock Grid.Row="1" Grid.Column="0" Text="Location:" VerticalAlignment="Center" Margin="0,0,10,10"/>
         <TextBox Grid.Row="1" Grid.Column="1"
-                 Text="{Binding ProjectLocation, UpdateSourceTrigger=PropertyChanged}"
+                 x:Name="ProjectLocationBox"
+                 Text="{Binding ProjectLocation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  Background="{DynamicResource EditorBackgroundBrush}"
                  Foreground="{DynamicResource ForegroundBrush}"
                  BorderBrush="{DynamicResource BorderBrush}"
@@ -51,7 +52,8 @@
         <!-- Namespace -->
         <TextBlock Grid.Row="2" Grid.Column="0" Text="Namespace:" VerticalAlignment="Center" Margin="0,0,10,10"/>
         <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
-                 Text="{Binding Namespace, UpdateSourceTrigger=PropertyChanged}"
+                 x:Name="NamespaceBox"
+                 Text="{Binding Namespace, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  Background="{DynamicResource EditorBackgroundBrush}"
                  Foreground="{DynamicResource ForegroundBrush}"
                  BorderBrush="{DynamicResource BorderBrush}"

@@ -10,7 +10,11 @@
         MinHeight="500" MinWidth="800"
         Style="{StaticResource DarkWindowStyle}"
         WindowStartupLocation="CenterScreen"
-        WindowState="Maximized">
+        WindowState="Maximized"
+        WindowStyle="None"
+        AllowsTransparency="False"
+        ResizeMode="CanResizeWithGrip"
+        Background="#1E1F22">
 
     <Window.InputBindings>
         <!-- Run with Ctrl+Enter or F5 -->
@@ -37,56 +41,188 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Menu Bar -->
-        <Menu Grid.Row="0" Background="{StaticResource MenuBackgroundBrush}" Padding="4,2">
-            <MenuItem Header="_File">
-                <MenuItem Header="_New Project..." InputGestureText="Ctrl+Shift+N" Click="NewProject_Click"/>
-                <MenuItem Header="_Open Project..." InputGestureText="Ctrl+Shift+O" Click="OpenProject_Click"/>
-                <Separator/>
-                <MenuItem Header="New _File..." InputGestureText="Ctrl+N" Click="NewFile_Click"/>
-                <MenuItem Header="_Save" InputGestureText="Ctrl+S" Click="SaveScript_Click"/>
-                <MenuItem Header="Save _All" InputGestureText="Ctrl+Shift+S" Click="SaveAll_Click"/>
-                <Separator/>
-                <MenuItem Header="Recent Projects" x:Name="RecentProjectsMenu"/>
-                <Separator/>
-                <MenuItem Header="E_xit" Click="Exit_Click"/>
-            </MenuItem>
-            <MenuItem Header="_Edit">
-                <MenuItem Header="_Undo" Command="Undo" InputGestureText="Ctrl+Z"/>
-                <MenuItem Header="_Redo" Command="Redo" InputGestureText="Ctrl+Y"/>
-                <Separator/>
-                <MenuItem Header="Cu_t" Command="Cut" InputGestureText="Ctrl+X"/>
-                <MenuItem Header="_Copy" Command="Copy" InputGestureText="Ctrl+C"/>
-                <MenuItem Header="_Paste" Command="Paste" InputGestureText="Ctrl+V"/>
-                <Separator/>
-                <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="Find_Click"/>
-                <MenuItem Header="Find and _Replace..." InputGestureText="Ctrl+H" Click="Replace_Click"/>
-            </MenuItem>
-            <MenuItem Header="_View">
-                <MenuItem Header="Project Explorer" IsCheckable="True" IsChecked="True" x:Name="ProjectExplorerMenuItem" Click="ToggleProjectExplorer_Click"/>
-                <MenuItem Header="Output" IsCheckable="True" IsChecked="True" x:Name="OutputMenuItem" Click="ToggleOutput_Click"/>
-                <Separator/>
-                <MenuItem Header="MIDI Devices" IsCheckable="True" IsChecked="False" x:Name="MidiPanelMenuItem" Click="ToggleMidiPanel_Click"/>
-                <MenuItem Header="VST Plugins" IsCheckable="True" IsChecked="False" x:Name="VstPanelMenuItem" Click="ToggleVstPanel_Click"/>
-                <MenuItem Header="Audio Files" IsCheckable="True" IsChecked="False" x:Name="AudioPanelMenuItem" Click="ToggleAudioPanel_Click"/>
-            </MenuItem>
-            <MenuItem Header="_Project">
-                <MenuItem Header="_Add New Script..." Click="AddScript_Click"/>
-                <MenuItem Header="Import _Audio..." Click="ImportAudio_Click"/>
-                <Separator/>
-                <MenuItem Header="Add Project _Reference..." Click="AddReference_Click"/>
-                <Separator/>
-                <MenuItem Header="Project _Settings..." Click="ProjectSettings_Click"/>
-            </MenuItem>
-            <MenuItem Header="_Run">
-                <MenuItem Header="_Run" InputGestureText="Ctrl+Enter" Click="RunScript_Click"/>
-                <MenuItem Header="_Stop" InputGestureText="Esc" Click="Stop_Click"/>
-            </MenuItem>
-            <MenuItem Header="_Help">
-                <MenuItem Header="_Documentation" Click="Documentation_Click"/>
-                <MenuItem Header="_About" Click="About_Click"/>
-            </MenuItem>
-        </Menu>
+        <!-- Custom Title Bar with Menu and Window Controls -->
+        <Border Grid.Row="0" Background="#1E1F22" BorderBrush="#393B40" BorderThickness="0,0,0,1"
+                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
+                MouseLeftButtonUp="TitleBar_MouseLeftButtonUp"
+                MouseMove="TitleBar_MouseMove">
+            <Grid Height="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: App Icon + Menu -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- App Icon -->
+                    <Border Margin="8,0,4,0" VerticalAlignment="Center">
+                        <TextBlock Text="&#x266B;" FontSize="16" Foreground="#4B6EAF" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Menu Bar (integrated into title bar) -->
+                    <Menu Background="Transparent" VerticalAlignment="Center">
+                        <Menu.Resources>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="Foreground" Value="#BCBEC4"/>
+                                <Setter Property="Padding" Value="8,6"/>
+                                <Setter Property="FontSize" Value="12"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsHighlighted" Value="True">
+                                        <Setter Property="Background" Value="#3C3F41"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSubmenuOpen" Value="True">
+                                        <Setter Property="Background" Value="#3C3F41"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Menu.Resources>
+                        <MenuItem Header="File">
+                            <MenuItem Header="_New Project..." InputGestureText="Ctrl+Shift+N" Click="NewProject_Click"/>
+                            <MenuItem Header="_Open Project..." InputGestureText="Ctrl+Shift+O" Click="OpenProject_Click"/>
+                            <Separator/>
+                            <MenuItem Header="New _File..." InputGestureText="Ctrl+N" Click="NewFile_Click"/>
+                            <MenuItem Header="_Save" InputGestureText="Ctrl+S" Click="SaveScript_Click"/>
+                            <MenuItem Header="Save _All" InputGestureText="Ctrl+Shift+S" Click="SaveAll_Click"/>
+                            <Separator/>
+                            <MenuItem Header="Recent Projects" x:Name="RecentProjectsMenu"/>
+                            <Separator/>
+                            <MenuItem Header="E_xit" Click="Exit_Click"/>
+                        </MenuItem>
+                        <MenuItem Header="Edit">
+                            <MenuItem Header="_Undo" Command="Undo" InputGestureText="Ctrl+Z"/>
+                            <MenuItem Header="_Redo" Command="Redo" InputGestureText="Ctrl+Y"/>
+                            <Separator/>
+                            <MenuItem Header="Cu_t" Command="Cut" InputGestureText="Ctrl+X"/>
+                            <MenuItem Header="_Copy" Command="Copy" InputGestureText="Ctrl+C"/>
+                            <MenuItem Header="_Paste" Command="Paste" InputGestureText="Ctrl+V"/>
+                            <Separator/>
+                            <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="Find_Click"/>
+                            <MenuItem Header="Find and _Replace..." InputGestureText="Ctrl+H" Click="Replace_Click"/>
+                        </MenuItem>
+                        <MenuItem Header="View">
+                            <MenuItem Header="Project Explorer" IsCheckable="True" IsChecked="True" x:Name="ProjectExplorerMenuItem" Click="ToggleProjectExplorer_Click"/>
+                            <MenuItem Header="Workshop" IsCheckable="True" IsChecked="False" x:Name="WorkshopMenuItem" Click="ToggleWorkshop_Click"/>
+                            <MenuItem Header="Output" IsCheckable="True" IsChecked="True" x:Name="OutputMenuItem" Click="ToggleOutput_Click"/>
+                            <Separator/>
+                            <MenuItem Header="MIDI Devices" IsCheckable="True" IsChecked="False" x:Name="MidiPanelMenuItem" Click="ToggleMidiPanel_Click"/>
+                            <MenuItem Header="VST Plugins" IsCheckable="True" IsChecked="False" x:Name="VstPanelMenuItem" Click="ToggleVstPanel_Click"/>
+                            <MenuItem Header="Audio Files" IsCheckable="True" IsChecked="False" x:Name="AudioPanelMenuItem" Click="ToggleAudioPanel_Click"/>
+                        </MenuItem>
+                        <MenuItem Header="Project">
+                            <MenuItem Header="_Add New Script..." Click="AddScript_Click"/>
+                            <MenuItem Header="Import _Audio..." Click="ImportAudio_Click"/>
+                            <Separator/>
+                            <MenuItem Header="Add Project _Reference..." Click="AddReference_Click"/>
+                            <Separator/>
+                            <MenuItem Header="Project _Settings..." Click="ProjectSettings_Click"/>
+                        </MenuItem>
+                        <MenuItem Header="Run">
+                            <MenuItem Header="_Run" InputGestureText="Ctrl+Enter" Click="RunScript_Click"/>
+                            <MenuItem Header="_Stop" InputGestureText="Esc" Click="Stop_Click"/>
+                        </MenuItem>
+                        <MenuItem Header="Help">
+                            <MenuItem Header="_Documentation" Click="Documentation_Click"/>
+                            <MenuItem Header="_About" Click="About_Click"/>
+                        </MenuItem>
+                    </Menu>
+                </StackPanel>
+
+                <!-- Center: Window Title -->
+                <TextBlock Grid.Column="1" Text="MusicEngine Editor"
+                           Foreground="#6F737A" FontSize="12" FontWeight="Normal"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           IsHitTestVisible="False"/>
+
+                <!-- Right: Window Control Buttons -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch">
+                    <!-- Minimize Button -->
+                    <Button x:Name="MinimizeButton" Click="MinimizeButton_Click"
+                            Width="46" Background="Transparent" BorderThickness="0"
+                            VerticalAlignment="Stretch" Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border" Background="Transparent">
+                                                <Path Data="M 0,0 H 10" Stroke="#BCBEC4" StrokeThickness="1"
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Maximize/Restore Button -->
+                    <Button x:Name="MaximizeButton" Click="MaximizeButton_Click"
+                            Width="46" Background="Transparent" BorderThickness="0"
+                            VerticalAlignment="Stretch" Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border" Background="Transparent">
+                                                <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <!-- Maximize icon (square) -->
+                                                    <Rectangle x:Name="MaximizeIcon" Width="10" Height="10"
+                                                               Stroke="#BCBEC4" StrokeThickness="1" Fill="Transparent"/>
+                                                    <!-- Restore icon (two overlapping squares) - hidden by default -->
+                                                    <Canvas x:Name="RestoreIcon" Width="10" Height="10" Visibility="Collapsed">
+                                                        <Rectangle Width="8" Height="8" Stroke="#BCBEC4" StrokeThickness="1"
+                                                                   Fill="Transparent" Canvas.Left="2" Canvas.Top="0"/>
+                                                        <Rectangle Width="8" Height="8" Stroke="#BCBEC4" StrokeThickness="1"
+                                                                   Fill="#1E1F22" Canvas.Left="0" Canvas.Top="2"/>
+                                                    </Canvas>
+                                                </Grid>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Close Button -->
+                    <Button x:Name="CloseButton" Click="CloseButton_Click"
+                            Width="46" Background="Transparent" BorderThickness="0"
+                            VerticalAlignment="Stretch" Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border" Background="Transparent">
+                                                <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" Stroke="#BCBEC4" StrokeThickness="1"
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#E81123"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <!-- Main Toolbar -->
         <Border Grid.Row="1" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
@@ -166,39 +302,45 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left Panel: Project Explorer -->
-            <Border Grid.Column="0" Background="{StaticResource PanelBackgroundBrush}" x:Name="ProjectExplorerPanel">
-                <DockPanel>
-                    <!-- Panel Header -->
-                    <Border DockPanel.Dock="Top" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Color="#2B2D30" Offset="0"/>
-                                <GradientStop Color="#252628" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                        <DockPanel Margin="12,10">
-                            <TextBlock Text="Project"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource BrightForegroundBrush}"
-                                       FontSize="12"
-                                       VerticalAlignment="Center"/>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button Style="{StaticResource IconButtonStyle}" ToolTip="Refresh" Width="22" Height="22">
-                                    <TextBlock Text="&#x21BB;" FontSize="12"/>
-                                </Button>
-                            </StackPanel>
-                        </DockPanel>
-                    </Border>
+            <!-- Left Panel: Project Explorer / Workshop -->
+            <Grid Grid.Column="0">
+                <!-- Project Explorer Panel -->
+                <Border Background="{StaticResource PanelBackgroundBrush}" x:Name="ProjectExplorerPanel">
+                    <DockPanel>
+                        <!-- Panel Header -->
+                        <Border DockPanel.Dock="Top" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#2B2D30" Offset="0"/>
+                                    <GradientStop Color="#252628" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <DockPanel Margin="12,10">
+                                <TextBlock Text="Project"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource BrightForegroundBrush}"
+                                           FontSize="12"
+                                           VerticalAlignment="Center"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Style="{StaticResource IconButtonStyle}" ToolTip="Refresh" Width="22" Height="22">
+                                        <TextBlock Text="&#x21BB;" FontSize="12"/>
+                                    </Button>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
 
-                    <!-- Project Tree -->
-                    <TreeView x:Name="ProjectTree"
-                              Background="Transparent"
-                              BorderThickness="0"
-                              Padding="8,6"
-                              MouseDoubleClick="ProjectTree_MouseDoubleClick"/>
-                </DockPanel>
-            </Border>
+                        <!-- Project Tree -->
+                        <TreeView x:Name="ProjectTree"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  Padding="8,6"
+                                  MouseDoubleClick="ProjectTree_MouseDoubleClick"/>
+                    </DockPanel>
+                </Border>
+
+                <!-- Workshop Panel (hidden by default) -->
+                <controls:WorkshopPanel x:Name="WorkshopPanel" Visibility="Collapsed"/>
+            </Grid>
 
             <!-- Left Splitter -->
             <GridSplitter Grid.Column="1" Width="1" HorizontalAlignment="Stretch" ResizeDirection="Columns"
@@ -404,39 +546,95 @@
                         <!-- MIDI Devices Panel -->
                         <Border x:Name="MidiDevicesPanel" Visibility="Visible" Padding="8">
                             <DockPanel>
-                                <Button Content="Refresh" Style="{StaticResource ToolbarButtonStyle}"
+                                <Button Content="Refresh Devices" Style="{StaticResource ToolbarButtonStyle}"
                                         DockPanel.Dock="Top" Click="RefreshMidiDevices_Click" Margin="0,0,0,8"/>
-                                <ListView x:Name="MidiDevicesList" Background="Transparent" BorderThickness="0"
-                                          Foreground="{StaticResource ForegroundBrush}">
-                                    <ListView.View>
-                                        <GridView>
-                                            <GridViewColumn Header="Device" Width="150" DisplayMemberBinding="{Binding Name}"/>
-                                            <GridViewColumn Header="Type" Width="60" DisplayMemberBinding="{Binding Type}"/>
-                                            <GridViewColumn Header="Ch" Width="40" DisplayMemberBinding="{Binding Channel}"/>
-                                        </GridView>
-                                    </ListView.View>
-                                </ListView>
+
+                                <!-- Section Headers -->
+                                <TextBlock DockPanel.Dock="Top" Text="Connected MIDI Devices"
+                                           Foreground="{StaticResource SecondaryForegroundBrush}"
+                                           FontSize="10" Margin="0,0,0,8"/>
+
+                                <ListBox x:Name="MidiDevicesList" Background="Transparent" BorderThickness="0"
+                                         Foreground="{StaticResource ForegroundBrush}"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Margin" Value="0,0,0,4"/>
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                        <Border x:Name="Border" Background="{TemplateBinding Background}"
+                                                                BorderBrush="{StaticResource BorderBrush}"
+                                                                BorderThickness="1" CornerRadius="4" Padding="10,8">
+                                                            <ContentPresenter/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Border" Property="Background" Value="#3C3F41"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsSelected" Value="True">
+                                                                <Setter TargetName="Border" Property="Background" Value="#4B6EAF"/>
+                                                                <Setter TargetName="Border" Property="BorderBrush" Value="#4B6EAF"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+
+                                                <!-- Device Name Row -->
+                                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                                    <!-- Type indicator icon -->
+                                                    <TextBlock Text="{Binding TypeIcon}"
+                                                               Foreground="{Binding TypeColor}"
+                                                               FontSize="12" VerticalAlignment="Center"
+                                                               Margin="0,0,6,0" FontWeight="Bold"/>
+                                                    <!-- Device Name -->
+                                                    <TextBlock Text="{Binding Name}"
+                                                               Foreground="{StaticResource BrightForegroundBrush}"
+                                                               FontWeight="SemiBold" FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+
+                                                <!-- Type and Channel Info Row -->
+                                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="18,4,0,0">
+                                                    <!-- Type Badge -->
+                                                    <Border Background="{Binding TypeColor}" CornerRadius="3"
+                                                            Padding="6,2" Margin="0,0,8,0">
+                                                        <TextBlock Text="{Binding Type}" Foreground="White"
+                                                                   FontSize="10" FontWeight="SemiBold"/>
+                                                    </Border>
+                                                    <!-- Channel Info -->
+                                                    <TextBlock Text="{Binding DisplayChannel}"
+                                                               Foreground="{StaticResource SecondaryForegroundBrush}"
+                                                               FontSize="11" VerticalAlignment="Center"/>
+                                                    <!-- Device Index (for scripting reference) -->
+                                                    <TextBlock Text=" - Index: " Foreground="{StaticResource SecondaryForegroundBrush}"
+                                                               FontSize="10" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                    <TextBlock Text="{Binding DeviceIndex}"
+                                                               Foreground="{StaticResource AccentBrush}"
+                                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
                             </DockPanel>
                         </Border>
 
-                        <!-- VST Plugins Panel -->
-                        <Border x:Name="VstPluginsPanel" Visibility="Collapsed" Padding="8">
-                            <DockPanel>
-                                <Button Content="Scan Plugins" Style="{StaticResource ToolbarButtonStyle}"
-                                        DockPanel.Dock="Top" Click="ScanVstPlugins_Click" Margin="0,0,0,8"/>
-                                <ListView x:Name="VstPluginsList" Background="Transparent" BorderThickness="0"
-                                          Foreground="{StaticResource ForegroundBrush}"
-                                          MouseDoubleClick="VstPluginsList_DoubleClick">
-                                    <ListView.View>
-                                        <GridView>
-                                            <GridViewColumn Header="Plugin" Width="150" DisplayMemberBinding="{Binding Name}"/>
-                                            <GridViewColumn Header="Type" Width="60" DisplayMemberBinding="{Binding Type}"/>
-                                            <GridViewColumn Header="Path" Width="100" DisplayMemberBinding="{Binding Path}"/>
-                                        </GridView>
-                                    </ListView.View>
-                                </ListView>
-                            </DockPanel>
-                        </Border>
+                        <!-- VST Plugins Panel (Enhanced) -->
+                        <controls:VstPluginPanel x:Name="VstPluginsPanel" Visibility="Collapsed"/>
 
                         <!-- Audio Files Panel -->
                         <Border x:Name="AudioFilesPanel" Visibility="Collapsed" Padding="8"
@@ -490,6 +688,13 @@
                     <Button Style="{StaticResource IconButtonStyle}" Click="ToggleOutput_Click"
                             ToolTip="Toggle Output" Margin="4" x:Name="OutputToolButton">
                         <TextBlock Text="O" FontWeight="Bold" FontSize="14"/>
+                    </Button>
+
+                    <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>
+
+                    <Button Style="{StaticResource IconButtonStyle}" Click="ToggleWorkshop_Click"
+                            ToolTip="Workshop Tutorials" Margin="4" x:Name="WorkshopToolButton">
+                        <TextBlock Text="W" FontWeight="Bold" FontSize="14"/>
                     </Button>
                 </StackPanel>
             </Border>

@@ -1,15 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Media;
 using System.Windows.Threading;
 using System.Xml;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Folding;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
-using Color = System.Windows.Media.Color;
-using Pen = System.Windows.Media.Pen;
-using SolidColorBrush = System.Windows.Media.SolidColorBrush;
 
 namespace MusicEngineEditor.Editor;
 
@@ -18,6 +17,12 @@ public static class EditorSetup
     private static FoldingManager? _foldingManager;
     private static CSharpFoldingStrategy? _foldingStrategy;
     private static DispatcherTimer? _foldingUpdateTimer;
+
+    // Track completion providers per editor for cleanup
+    private static readonly Dictionary<TextEditor, CompletionProvider> _completionProviders = new();
+
+    // Track inline slider services per editor
+    private static readonly Dictionary<TextEditor, InlineSliderService> _sliderServices = new();
 
     public static void Configure(TextEditor editor)
     {
@@ -49,6 +54,88 @@ public static class EditorSetup
 
         // Setup code folding
         SetupFolding(editor);
+    }
+
+    /// <summary>
+    /// Setup code completion for the editor.
+    /// Call this method to enable intelligent autocomplete for MusicEngine API.
+    /// </summary>
+    /// <param name="editor">The TextEditor to configure completion for</param>
+    /// <returns>The CompletionProvider instance for further configuration if needed</returns>
+    public static CompletionProvider SetupCompletion(TextEditor editor)
+    {
+        // Remove existing provider if any
+        if (_completionProviders.TryGetValue(editor, out var existing))
+        {
+            existing.Detach();
+            _completionProviders.Remove(editor);
+        }
+
+        // Create and attach new provider
+        var provider = new CompletionProvider(editor);
+        _completionProviders[editor] = provider;
+
+        return provider;
+    }
+
+    /// <summary>
+    /// Remove completion provider from an editor
+    /// </summary>
+    public static void RemoveCompletion(TextEditor editor)
+    {
+        if (_completionProviders.TryGetValue(editor, out var provider))
+        {
+            provider.Detach();
+            _completionProviders.Remove(editor);
+        }
+    }
+
+    /// <summary>
+    /// Setup inline sliders for numeric literals in the editor.
+    /// Allows users to hover over numbers and adjust them via slider controls.
+    /// Similar to Strudel.cc's interactive number manipulation.
+    /// </summary>
+    /// <param name="editor">The TextEditor to configure sliders for</param>
+    /// <returns>The InlineSliderService instance for further configuration</returns>
+    public static InlineSliderService SetupInlineSliders(TextEditor editor)
+    {
+        // Remove existing service if any
+        if (_sliderServices.TryGetValue(editor, out var existing))
+        {
+            existing.Dispose();
+            _sliderServices.Remove(editor);
+        }
+
+        // Create and register new service
+        var service = new InlineSliderService(editor);
+        _sliderServices[editor] = service;
+
+        // Optionally add visual highlighting for numbers
+        // Uncomment the next line to add subtle highlighting to numeric literals
+        // editor.TextArea.TextView.BackgroundRenderers.Add(new NumberHighlightRenderer(editor));
+
+        return service;
+    }
+
+    /// <summary>
+    /// Remove inline slider service from an editor
+    /// </summary>
+    public static void RemoveInlineSliders(TextEditor editor)
+    {
+        if (_sliderServices.TryGetValue(editor, out var service))
+        {
+            service.Dispose();
+            _sliderServices.Remove(editor);
+        }
+    }
+
+    /// <summary>
+    /// Get the inline slider service for an editor if one exists
+    /// </summary>
+    public static InlineSliderService? GetInlineSliderService(TextEditor editor)
+    {
+        _sliderServices.TryGetValue(editor, out var service);
+        return service;
     }
 
     public static void SetupFolding(TextEditor editor)
