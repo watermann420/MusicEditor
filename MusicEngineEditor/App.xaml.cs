@@ -29,6 +29,7 @@ public partial class App : Application
         // Services
         services.AddSingleton<IProjectService, ProjectService>();
         services.AddSingleton<IScriptExecutionService, ScriptExecutionService>();
+        services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<EngineService>();
 
         // ViewModels

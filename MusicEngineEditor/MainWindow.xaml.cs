@@ -1504,6 +1504,21 @@ public partial class MainWindow : Window
             MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
+    private void Settings_Click(object sender, RoutedEventArgs e)
+    {
+        var settingsService = App.Services.GetRequiredService<ISettingsService>();
+        var dialog = new SettingsDialog(settingsService)
+        {
+            Owner = this
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            StatusText.Text = "Settings saved";
+            OutputLine("Settings saved successfully.");
+        }
+    }
+
     private void Find_Click(object sender, RoutedEventArgs e)
     {
         FindReplaceBar.ShowFind();

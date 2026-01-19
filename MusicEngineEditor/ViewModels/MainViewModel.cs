@@ -21,6 +21,7 @@ public partial class MainViewModel : ViewModelBase
 {
     private readonly IProjectService _projectService;
     private readonly IScriptExecutionService _executionService;
+    private readonly ISettingsService _settingsService;
 
     [ObservableProperty]
     private MusicProject? _currentProject;
@@ -64,10 +65,11 @@ public partial class MainViewModel : ViewModelBase
     public ObservableCollection<EditorTabViewModel> OpenDocuments { get; } = new();
     public ObservableCollection<string> RecentProjects { get; } = new();
 
-    public MainViewModel(IProjectService projectService, IScriptExecutionService executionService)
+    public MainViewModel(IProjectService projectService, IScriptExecutionService executionService, ISettingsService settingsService)
     {
         _projectService = projectService;
         _executionService = executionService;
+        _settingsService = settingsService;
 
         ProjectExplorer = new ProjectExplorerViewModel();
         Output = new OutputViewModel();
@@ -77,6 +79,9 @@ public partial class MainViewModel : ViewModelBase
         _executionService.OutputReceived += OnOutputReceived;
         _executionService.ExecutionStarted += OnExecutionStarted;
         _executionService.ExecutionStopped += OnExecutionStopped;
+
+        // Load settings
+        _ = _settingsService.LoadSettingsAsync();
     }
 
     [RelayCommand]
@@ -507,6 +512,39 @@ public partial class MainViewModel : ViewModelBase
 
         MessageBox.Show(message, "Project Settings",
             MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    [RelayCommand]
+    private void OpenSettings()
+    {
+        var dialog = new SettingsDialog(_settingsService)
+        {
+            Owner = Application.Current.MainWindow
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            StatusMessage = "Settings saved";
+            // Apply any immediate settings changes (e.g., theme changes)
+            ApplySettings();
+        }
+    }
+
+    /// <summary>
+    /// Applies current settings to the application
+    /// </summary>
+    private void ApplySettings()
+    {
+        var settings = _settingsService.Settings;
+
+        // Apply audio settings if needed
+        // This would be where you'd update the audio engine with new settings
+
+        // Apply editor settings
+        // Theme changes would typically require a restart or dynamic resource update
+
+        // Update status
+        StatusMessage = $"Settings applied (Theme: {settings.Editor.Theme}, Sample Rate: {settings.Audio.SampleRate} Hz)";
     }
 
     [RelayCommand]

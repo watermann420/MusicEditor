@@ -31,6 +31,7 @@
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding NewFileCommand}"/>
         <KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding FindCommand}"/>
         <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding ReplaceCommand}"/>
+        <KeyBinding Key="OemComma" Modifiers="Ctrl" Command="{Binding OpenSettingsCommand}"/>
     </Window.InputBindings>
 
     <Grid>
@@ -86,6 +87,8 @@
                             <MenuItem Header="Save _All" InputGestureText="Ctrl+Shift+S" Click="SaveAll_Click"/>
                             <Separator/>
                             <MenuItem Header="Recent Projects" x:Name="RecentProjectsMenu"/>
+                            <Separator/>
+                            <MenuItem Header="_Settings..." InputGestureText="Ctrl+," Click="Settings_Click"/>
                             <Separator/>
                             <MenuItem Header="E_xit" Click="Exit_Click"/>
                         </MenuItem>
