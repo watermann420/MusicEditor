@@ -1885,6 +1885,7 @@
       "Dirkster.AvalonDock.Themes.VS2013 >= 4.72.1",
       "Microsoft.Extensions.DependencyInjection >= 10.0.2",
       "MusicEngine >= 1.0.0",
+      "NAudio >= 2.2.1",
       "Serilog >= 4.3.0",
       "Serilog.Sinks.File >= 7.0.0"
     ]
@@ -1958,6 +1959,10 @@
           "Microsoft.Extensions.DependencyInjection": {
             "target": "Package",
             "version": "[10.0.2, )"
+          },
+          "NAudio": {
+            "target": "Package",
+            "version": "[2.2.1, )"
           },
           "Serilog": {
             "target": "Package",

@@ -1,0 +1,329 @@
+<Window x:Class="MusicEngineEditor.Views.Dialogs.StemExportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Export Stems"
+        Width="750" Height="700"
+        MinWidth="650" MinHeight="600"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
+
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="300"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel: Stem List -->
+            <Grid Grid.Column="0" Margin="0,0,15,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Stems to Export"
+                           FontWeight="SemiBold"
+                           FontSize="14"
+                           Margin="0,0,0,10"
+                           Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                <!-- Selection buttons -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button Content="All"
+                            Command="{Binding SelectAllCommand}"
+                            Padding="10,4"
+                            Margin="0,0,5,0"
+                            FontSize="11"/>
+                    <Button Content="None"
+                            Command="{Binding SelectNoneCommand}"
+                            Padding="10,4"
+                            Margin="0,0,5,0"
+                            FontSize="11"/>
+                    <Button Content="Invert"
+                            Command="{Binding InvertSelectionCommand}"
+                            Padding="10,4"
+                            FontSize="11"/>
+                </StackPanel>
+
+                <!-- Stem List -->
+                <Border Grid.Row="2"
+                        Background="{DynamicResource EditorBackgroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                    <ListView ItemsSource="{Binding Stems}"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="8,6"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="0,0,0,1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Checkbox -->
+                                        <CheckBox IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,10,0"/>
+
+                                        <!-- Name and Status -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Status}"
+                                                       FontSize="10"
+                                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Progress or Result -->
+                                        <StackPanel Grid.Column="2"
+                                                    Orientation="Horizontal"
+                                                    VerticalAlignment="Center"
+                                                    Margin="10,0">
+                                            <!-- Exporting indicator -->
+                                            <TextBlock Text="..."
+                                                       Visibility="{Binding IsExporting, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                       Foreground="{DynamicResource AccentBrush}"
+                                                       FontWeight="Bold"/>
+                                            <!-- Success indicator -->
+                                            <TextBlock Text="[OK]"
+                                                       Visibility="{Binding IsComplete, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                       Foreground="{DynamicResource SuccessBrush}"
+                                                       FontWeight="Bold"
+                                                       FontSize="11"/>
+                                            <!-- Failed indicator -->
+                                            <TextBlock Text="[!]"
+                                                       Visibility="{Binding HasFailed, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                       Foreground="{DynamicResource ErrorBrush}"
+                                                       FontWeight="Bold"
+                                                       ToolTip="{Binding ErrorMessage}"/>
+                                        </StackPanel>
+
+                                        <!-- Output Loudness -->
+                                        <TextBlock Grid.Column="3"
+                                                   Text="{Binding OutputLoudness}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Right"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                </Border>
+            </Grid>
+
+            <!-- Right Panel: Settings -->
+            <StackPanel Grid.Column="1">
+                <!-- Export Preset -->
+                <TextBlock Text="Export Settings"
+                           FontWeight="SemiBold"
+                           FontSize="14"
+                           Margin="0,0,0,10"
+                           Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Preset:" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding Presets}"
+                              SelectedItem="{Binding SelectedPreset, Mode=TwoWay}"
+                              DisplayMemberPath="Name"
+                              Background="{DynamicResource EditorBackgroundBrush}"
+                              Foreground="{DynamicResource ForegroundBrush}"
+                              BorderBrush="{DynamicResource BorderBrush}"/>
+                </Grid>
+
+                <!-- Preset Description -->
+                <Border Background="{DynamicResource PanelBackgroundBrush}"
+                        CornerRadius="4"
+                        Padding="10"
+                        Margin="0,0,0,15">
+                    <TextBlock Text="{Binding SelectedPreset.Description}"
+                               TextWrapping="Wrap"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                </Border>
+
+                <Separator Background="{DynamicResource BorderBrush}" Margin="0,0,0,15"/>
+
+                <!-- Duration -->
+                <TextBlock Text="Duration"
+                           FontWeight="SemiBold"
+                           FontSize="14"
+                           Margin="0,0,0,10"
+                           Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Minutes" FontSize="10" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBox Text="{Binding DurationMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="{DynamicResource EditorBackgroundBrush}"
+                                 Foreground="{DynamicResource ForegroundBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 Padding="8,6"
+                                 HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text=":" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Seconds" FontSize="10" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBox Text="{Binding DurationSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="{DynamicResource EditorBackgroundBrush}"
+                                 Foreground="{DynamicResource ForegroundBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}"
+                                 Padding="8,6"
+                                 HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <Separator Background="{DynamicResource BorderBrush}" Margin="0,0,0,15"/>
+
+                <!-- Output Settings -->
+                <TextBlock Text="Output"
+                           FontWeight="SemiBold"
+                           FontSize="14"
+                           Margin="0,0,0,10"
+                           Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Text="{Binding OutputDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Background="{DynamicResource EditorBackgroundBrush}"
+                             Foreground="{DynamicResource ForegroundBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             Padding="8,6"
+                             FontSize="11"/>
+                    <Button Grid.Column="1"
+                            Content="..."
+                            Command="{Binding BrowseOutputCommand}"
+                            Padding="10,6"
+                            Margin="5,0,0,0"/>
+                </Grid>
+
+                <CheckBox Content="Create subfolder for stems"
+                          IsChecked="{Binding CreateSubfolder, Mode=TwoWay}"
+                          Margin="0,0,0,10"/>
+
+                <Grid Margin="0,0,0,15" Visibility="{Binding CreateSubfolder, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Project:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding ProjectName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Background="{DynamicResource EditorBackgroundBrush}"
+                             Foreground="{DynamicResource ForegroundBrush}"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             Padding="8,6"/>
+                </Grid>
+
+                <Separator Background="{DynamicResource BorderBrush}" Margin="0,0,0,15"/>
+
+                <!-- Progress Section -->
+                <Border Background="{DynamicResource PanelBackgroundBrush}"
+                        CornerRadius="4"
+                        Padding="12">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,8">
+                            <TextBlock Text="{Binding CurrentStemName}"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock HorizontalAlignment="Right"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}">
+                                <Run Text="{Binding CurrentStemIndex, Mode=OneWay}"/>
+                                <Run Text="/"/>
+                                <Run Text="{Binding TotalStems, Mode=OneWay}"/>
+                            </TextBlock>
+                        </Grid>
+
+                        <ProgressBar Value="{Binding OverallProgress}"
+                                     Height="6"
+                                     Margin="0,0,0,8"/>
+
+                        <TextBlock Text="{Binding ProgressText}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+
+                        <TextBlock Text="{Binding ResultSummary}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Margin="0,8,0,0"
+                                   Visibility="{Binding ResultSummary, Converter={StaticResource StringToVisibilityConverter}}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- Bottom Button Panel -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="20,15">
+            <Grid>
+                <Button Content="Open Output Folder"
+                        Command="{Binding OpenOutputFolderCommand}"
+                        HorizontalAlignment="Left"
+                        Padding="15,8"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Export Stems"
+                            Command="{Binding ExportCommand}"
+                            IsEnabled="{Binding CanExport}"
+                            Padding="20,8"
+                            Margin="0,0,10,0"
+                            Background="{DynamicResource AccentBrush}"
+                            Foreground="White"/>
+                    <Button Content="Cancel"
+                            Command="{Binding CancelExportCommand}"
+                            IsCancel="True"
+                            Padding="20,8"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"
+                                           xmlns:local="clr-namespace:MusicEngineEditor.Views.Dialogs"/>
+    </Window.Resources>
+</Window>

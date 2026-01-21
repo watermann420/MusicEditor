@@ -10,7 +10,7 @@ public partial class App : Application
 {
     public static IServiceProvider Services { get; private set; } = null!;
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
@@ -18,6 +18,9 @@ public partial class App : Application
         var services = new ServiceCollection();
         ConfigureServices(services);
         Services = services.BuildServiceProvider();
+
+        // Load settings and apply saved theme
+        await ApplyStartupThemeAsync();
 
         // Create and show main window
         var mainWindow = new MainWindow();
@@ -30,6 +33,8 @@ public partial class App : Application
         services.AddSingleton<IProjectService, ProjectService>();
         services.AddSingleton<IScriptExecutionService, ScriptExecutionService>();
         services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<ISoundPackService, SoundPackService>();
         services.AddSingleton<EngineService>();
 
         // ViewModels
@@ -37,5 +42,33 @@ public partial class App : Application
         services.AddTransient<ProjectExplorerViewModel>();
         services.AddTransient<OutputViewModel>();
         services.AddTransient<EditorTabViewModel>();
+        services.AddTransient<SampleBrowserViewModel>();
+    }
+
+    /// <summary>
+    /// Loads settings and applies the saved theme on startup
+    /// </summary>
+    private static async System.Threading.Tasks.Task ApplyStartupThemeAsync()
+    {
+        try
+        {
+            var settingsService = Services.GetRequiredService<ISettingsService>();
+            var themeService = Services.GetRequiredService<IThemeService>();
+
+            // Load settings to get the saved theme
+            var settings = await settingsService.LoadSettingsAsync();
+            var savedTheme = settings.Editor.Theme;
+
+            // Apply the saved theme (or default to Dark if not set)
+            if (!string.IsNullOrWhiteSpace(savedTheme))
+            {
+                themeService.ApplyTheme(savedTheme);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to apply startup theme: {ex.Message}");
+            // Fall back to default theme (Dark) which is already loaded in App.xaml
+        }
     }
 }

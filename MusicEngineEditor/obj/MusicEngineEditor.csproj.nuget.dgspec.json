@@ -71,6 +71,10 @@
               "target": "Package",
               "version": "[10.0.2, )"
             },
+            "NAudio": {
+              "target": "Package",
+              "version": "[2.2.1, )"
+            },
             "Serilog": {
               "target": "Package",
               "version": "[4.3.0, )"
