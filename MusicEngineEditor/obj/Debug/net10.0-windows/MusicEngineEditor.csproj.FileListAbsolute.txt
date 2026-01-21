@@ -281,3 +281,5 @@ C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-wind
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\PianoKeyboard.g.cs
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\PianoRollView.g.cs
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\PianoRollView.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\ProjectBrowserView.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\ProjectBrowserView.baml
