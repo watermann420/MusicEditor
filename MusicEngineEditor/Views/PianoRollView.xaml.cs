@@ -1,0 +1,756 @@
+// MusicEngineEditor - Piano Roll View Code-Behind
+// Copyright (c) 2026 MusicEngine Watermann420 and Contributors
+
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using MusicEngineEditor.Controls;
+using Shapes = System.Windows.Shapes;
+using MusicEngineEditor.Models;
+using MusicEngineEditor.ViewModels;
+
+namespace MusicEngineEditor.Views;
+
+/// <summary>
+/// Code-behind for the PianoRollView user control.
+/// Manages the piano roll editor interface with synchronized scrolling,
+/// keyboard shortcuts, and note canvas event wiring.
+/// </summary>
+public partial class PianoRollView : UserControl
+{
+    #region Constants
+
+    private const double DefaultBeatWidth = 40.0;
+    private const double DefaultNoteHeight = 20.0;
+    private const int BeatsPerBar = 4;
+    private const double RulerHeight = 24.0;
+
+    #endregion
+
+    #region Private Fields
+
+    private readonly PianoRollViewModel _viewModel;
+    private ScrollViewer? _keyboardScrollViewer;
+    private ScrollViewer? _canvasScrollViewer;
+    private Canvas? _rulerCanvas;
+    private bool _isSyncingScroll;
+
+    #endregion
+
+    #region Constructor
+
+    /// <summary>
+    /// Creates a new PianoRollView and initializes the PianoRollViewModel.
+    /// </summary>
+    public PianoRollView()
+    {
+        InitializeComponent();
+
+        // Initialize ViewModel and set as DataContext
+        _viewModel = new PianoRollViewModel();
+        DataContext = _viewModel;
+
+        // Wire up events
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+    }
+
+    #endregion
+
+    #region Properties
+
+    /// <summary>
+    /// Gets the PianoRollViewModel associated with this view.
+    /// </summary>
+    public PianoRollViewModel ViewModel => _viewModel;
+
+    #endregion
+
+    #region Lifecycle Event Handlers
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        // Find scroll viewers by traversing the visual tree
+        FindScrollViewers();
+
+        // Wire up NoteCanvas events
+        WireUpNoteCanvasEvents();
+
+        // Set up keyboard focus
+        Focusable = true;
+        Focus();
+
+        // Wire up keyboard events
+        PreviewKeyDown += OnPreviewKeyDown;
+
+        // Draw the ruler
+        DrawRuler();
+
+        // Load demo notes for testing (optional)
+        LoadDemoNotes();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        // Clean up event handlers
+        PreviewKeyDown -= OnPreviewKeyDown;
+
+        UnwireNoteCanvasEvents();
+        UnwireScrollSynchronization();
+    }
+
+    #endregion
+
+    #region Scroll Viewer Management
+
+    /// <summary>
+    /// Finds the scroll viewers for keyboard and canvas synchronization.
+    /// </summary>
+    private void FindScrollViewers()
+    {
+        // Find the PianoKeyboard's parent ScrollViewer
+        var pianoKeyboard = FindChild<PianoKeyboard>(this, "PianoKeyboard");
+        if (pianoKeyboard != null)
+        {
+            _keyboardScrollViewer = FindParent<ScrollViewer>(pianoKeyboard);
+        }
+
+        // Find the NoteCanvas's parent ScrollViewer
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        if (noteCanvas != null)
+        {
+            _canvasScrollViewer = FindParent<ScrollViewer>(noteCanvas);
+        }
+
+        // Find the ruler canvas
+        _rulerCanvas = FindChild<Canvas>(this, "RulerCanvas");
+
+        // Wire up scroll synchronization
+        WireUpScrollSynchronization();
+    }
+
+    /// <summary>
+    /// Wires up scroll synchronization between keyboard and canvas.
+    /// </summary>
+    private void WireUpScrollSynchronization()
+    {
+        if (_keyboardScrollViewer != null)
+        {
+            _keyboardScrollViewer.ScrollChanged += OnKeyboardScrollChanged;
+        }
+
+        if (_canvasScrollViewer != null)
+        {
+            _canvasScrollViewer.ScrollChanged += OnCanvasScrollChanged;
+        }
+    }
+
+    /// <summary>
+    /// Removes scroll synchronization event handlers.
+    /// </summary>
+    private void UnwireScrollSynchronization()
+    {
+        if (_keyboardScrollViewer != null)
+        {
+            _keyboardScrollViewer.ScrollChanged -= OnKeyboardScrollChanged;
+        }
+
+        if (_canvasScrollViewer != null)
+        {
+            _canvasScrollViewer.ScrollChanged -= OnCanvasScrollChanged;
+        }
+    }
+
+    private void OnKeyboardScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        if (_isSyncingScroll) return;
+
+        _isSyncingScroll = true;
+        try
+        {
+            // Sync vertical scroll from keyboard to canvas
+            if (_canvasScrollViewer != null && Math.Abs(e.VerticalChange) > 0.001)
+            {
+                _canvasScrollViewer.ScrollToVerticalOffset(_keyboardScrollViewer!.VerticalOffset);
+            }
+        }
+        finally
+        {
+            _isSyncingScroll = false;
+        }
+    }
+
+    private void OnCanvasScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        if (_isSyncingScroll) return;
+
+        _isSyncingScroll = true;
+        try
+        {
+            // Sync vertical scroll from canvas to keyboard
+            if (_keyboardScrollViewer != null && Math.Abs(e.VerticalChange) > 0.001)
+            {
+                _keyboardScrollViewer.ScrollToVerticalOffset(_canvasScrollViewer!.VerticalOffset);
+            }
+
+            // Update ruler position based on horizontal scroll
+            UpdateRulerPosition(e.HorizontalOffset);
+
+            // Update ViewModel scroll properties
+            _viewModel.ScrollX = e.HorizontalOffset;
+            _viewModel.ScrollY = e.VerticalOffset;
+        }
+        finally
+        {
+            _isSyncingScroll = false;
+        }
+    }
+
+    #endregion
+
+    #region NoteCanvas Event Wiring
+
+    /// <summary>
+    /// Wires up events from the NoteCanvas to ViewModel methods.
+    /// </summary>
+    private void WireUpNoteCanvasEvents()
+    {
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        if (noteCanvas == null) return;
+
+        noteCanvas.NoteAdded += OnNoteAdded;
+        noteCanvas.NoteDeleted += OnNoteDeleted;
+        noteCanvas.NoteSelected += OnNoteSelected;
+        noteCanvas.NoteMoved += OnNoteMoved;
+        noteCanvas.NoteResized += OnNoteResized;
+        noteCanvas.SelectionChanged += OnSelectionChanged;
+
+        // Bind dependency properties
+        BindNoteCanvasProperties(noteCanvas);
+    }
+
+    /// <summary>
+    /// Removes event handlers from the NoteCanvas.
+    /// </summary>
+    private void UnwireNoteCanvasEvents()
+    {
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        if (noteCanvas == null) return;
+
+        noteCanvas.NoteAdded -= OnNoteAdded;
+        noteCanvas.NoteDeleted -= OnNoteDeleted;
+        noteCanvas.NoteSelected -= OnNoteSelected;
+        noteCanvas.NoteMoved -= OnNoteMoved;
+        noteCanvas.NoteResized -= OnNoteResized;
+        noteCanvas.SelectionChanged -= OnSelectionChanged;
+    }
+
+    /// <summary>
+    /// Binds NoteCanvas dependency properties to ViewModel properties.
+    /// </summary>
+    private void BindNoteCanvasProperties(NoteCanvas noteCanvas)
+    {
+        // Set up bindings from ViewModel to NoteCanvas
+        noteCanvas.Notes = _viewModel.Notes;
+        noteCanvas.SelectedNotes = _viewModel.SelectedNotes;
+        noteCanvas.LowestNote = _viewModel.LowestNote;
+        noteCanvas.HighestNote = _viewModel.HighestNote;
+        noteCanvas.TotalBeats = _viewModel.TotalBeats;
+        noteCanvas.GridSnapValue = _viewModel.GridSnapValue;
+        noteCanvas.ZoomX = _viewModel.ZoomX;
+        noteCanvas.ZoomY = _viewModel.ZoomY;
+        noteCanvas.PlayheadPosition = _viewModel.PlayheadPosition;
+
+        // Convert tool enum (ViewModel uses ViewModels.PianoRollTool, NoteCanvas uses Controls.PianoRollTool)
+        noteCanvas.CurrentTool = ConvertToControlsTool(_viewModel.CurrentTool);
+
+        // Listen for ViewModel property changes
+        _viewModel.PropertyChanged += (s, e) =>
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(PianoRollViewModel.ZoomX):
+                    noteCanvas.ZoomX = _viewModel.ZoomX;
+                    DrawRuler();
+                    break;
+                case nameof(PianoRollViewModel.ZoomY):
+                    noteCanvas.ZoomY = _viewModel.ZoomY;
+                    break;
+                case nameof(PianoRollViewModel.GridSnapValue):
+                    noteCanvas.GridSnapValue = _viewModel.GridSnapValue;
+                    break;
+                case nameof(PianoRollViewModel.TotalBeats):
+                    noteCanvas.TotalBeats = _viewModel.TotalBeats;
+                    DrawRuler();
+                    break;
+                case nameof(PianoRollViewModel.PlayheadPosition):
+                    noteCanvas.PlayheadPosition = _viewModel.PlayheadPosition;
+                    break;
+                case nameof(PianoRollViewModel.CurrentTool):
+                    noteCanvas.CurrentTool = ConvertToControlsTool(_viewModel.CurrentTool);
+                    break;
+                case nameof(PianoRollViewModel.LowestNote):
+                    noteCanvas.LowestNote = _viewModel.LowestNote;
+                    break;
+                case nameof(PianoRollViewModel.HighestNote):
+                    noteCanvas.HighestNote = _viewModel.HighestNote;
+                    break;
+            }
+        };
+    }
+
+    /// <summary>
+    /// Converts ViewModels.PianoRollTool to Controls.PianoRollTool.
+    /// </summary>
+    private static Controls.PianoRollTool ConvertToControlsTool(ViewModels.PianoRollTool tool)
+    {
+        return tool switch
+        {
+            ViewModels.PianoRollTool.Select => Controls.PianoRollTool.Select,
+            ViewModels.PianoRollTool.Draw => Controls.PianoRollTool.Draw,
+            ViewModels.PianoRollTool.Erase => Controls.PianoRollTool.Erase,
+            ViewModels.PianoRollTool.Slice => Controls.PianoRollTool.Select, // Map Slice to Select as fallback
+            _ => Controls.PianoRollTool.Select
+        };
+    }
+
+    #endregion
+
+    #region NoteCanvas Event Handlers
+
+    private void OnNoteAdded(object? sender, NoteEventArgs e)
+    {
+        // Add note to ViewModel
+        if (e.PianoRollNote != null)
+        {
+            _viewModel.AddNote(e.PianoRollNote.Note, e.PianoRollNote.StartBeat, e.PianoRollNote.Duration, e.PianoRollNote.Velocity);
+        }
+    }
+
+    private void OnNoteDeleted(object? sender, NoteEventArgs e)
+    {
+        // Remove note from ViewModel
+        if (e.PianoRollNote != null)
+        {
+            _viewModel.RemoveNote(e.PianoRollNote);
+        }
+    }
+
+    private void OnNoteSelected(object? sender, NoteEventArgs e)
+    {
+        // Note selection is handled through the SelectedNotes collection binding
+    }
+
+    private void OnNoteMoved(object? sender, NoteMovedEventArgs e)
+    {
+        // Update note position in ViewModel
+        e.Note.StartBeat = e.NewBeat;
+        e.Note.Note = e.NewNote;
+    }
+
+    private void OnNoteResized(object? sender, NoteResizedEventArgs e)
+    {
+        // Update note duration in ViewModel
+        e.Note.Duration = e.NewDuration;
+    }
+
+    private void OnSelectionChanged(object? sender, EventArgs e)
+    {
+        // Selection changes are synchronized through the SelectedNotes collection
+    }
+
+    #endregion
+
+    #region Keyboard Shortcut Handling
+
+    /// <summary>
+    /// Handles keyboard shortcuts for the piano roll.
+    /// </summary>
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        bool ctrlPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+
+        switch (e.Key)
+        {
+            // Delete: Delete selected notes
+            case Key.Delete:
+                _viewModel.DeleteSelectedCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // Ctrl+A: Select all notes
+            case Key.A when ctrlPressed:
+                _viewModel.SelectAllCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // Ctrl+D: Duplicate selected notes
+            case Key.D when ctrlPressed:
+                _viewModel.DuplicateSelectedCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // Ctrl+Z: Undo
+            case Key.Z when ctrlPressed:
+                _viewModel.UndoCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // Ctrl+Y: Redo
+            case Key.Y when ctrlPressed:
+                _viewModel.RedoCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // 1: Select tool
+            case Key.D1:
+            case Key.NumPad1:
+                _viewModel.SetToolCommand.Execute(ViewModels.PianoRollTool.Select);
+                e.Handled = true;
+                break;
+
+            // 2: Draw tool
+            case Key.D2:
+            case Key.NumPad2:
+                _viewModel.SetToolCommand.Execute(ViewModels.PianoRollTool.Draw);
+                e.Handled = true;
+                break;
+
+            // 3: Erase tool
+            case Key.D3:
+            case Key.NumPad3:
+                _viewModel.SetToolCommand.Execute(ViewModels.PianoRollTool.Erase);
+                e.Handled = true;
+                break;
+
+            // +/=: Zoom in
+            case Key.OemPlus:
+            case Key.Add:
+                if (ctrlPressed)
+                {
+                    _viewModel.ZoomInYCommand.Execute(null);
+                }
+                else
+                {
+                    _viewModel.ZoomInXCommand.Execute(null);
+                }
+                e.Handled = true;
+                break;
+
+            // -: Zoom out
+            case Key.OemMinus:
+            case Key.Subtract:
+                if (ctrlPressed)
+                {
+                    _viewModel.ZoomOutYCommand.Execute(null);
+                }
+                else
+                {
+                    _viewModel.ZoomOutXCommand.Execute(null);
+                }
+                e.Handled = true;
+                break;
+
+            // Escape: Deselect all
+            case Key.Escape:
+                _viewModel.DeselectAllCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // Q: Quantize selected notes
+            case Key.Q:
+                _viewModel.QuantizeSelectedCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // Up arrow: Transpose up
+            case Key.Up when ctrlPressed:
+                _viewModel.TransposeCommand.Execute(12); // Octave up
+                e.Handled = true;
+                break;
+            case Key.Up:
+                _viewModel.TransposeCommand.Execute(1); // Semitone up
+                e.Handled = true;
+                break;
+
+            // Down arrow: Transpose down
+            case Key.Down when ctrlPressed:
+                _viewModel.TransposeCommand.Execute(-12); // Octave down
+                e.Handled = true;
+                break;
+            case Key.Down:
+                _viewModel.TransposeCommand.Execute(-1); // Semitone down
+                e.Handled = true;
+                break;
+        }
+    }
+
+    #endregion
+
+    #region Ruler Drawing
+
+    /// <summary>
+    /// Draws the beat/bar ruler at the top of the piano roll.
+    /// </summary>
+    private void DrawRuler()
+    {
+        if (_rulerCanvas == null) return;
+
+        _rulerCanvas.Children.Clear();
+
+        double effectiveBeatWidth = DefaultBeatWidth * _viewModel.ZoomX;
+        double totalWidth = _viewModel.TotalBeats * effectiveBeatWidth;
+        int totalBeats = (int)Math.Ceiling(_viewModel.TotalBeats);
+
+        // Set canvas size
+        _rulerCanvas.Width = totalWidth;
+        _rulerCanvas.Height = RulerHeight;
+
+        // Background
+        var background = new Shapes.Rectangle
+        {
+            Width = totalWidth,
+            Height = RulerHeight,
+            Fill = new SolidColorBrush(Color.FromRgb(0x2B, 0x2D, 0x30))
+        };
+        _rulerCanvas.Children.Add(background);
+
+        // Draw beat markers and bar numbers
+        for (int beat = 0; beat <= totalBeats; beat++)
+        {
+            double x = beat * effectiveBeatWidth;
+            bool isBarLine = beat % BeatsPerBar == 0;
+            int barNumber = beat / BeatsPerBar + 1;
+
+            // Draw tick line
+            var line = new Shapes.Line
+            {
+                X1 = x,
+                Y1 = isBarLine ? 0 : RulerHeight * 0.6,
+                X2 = x,
+                Y2 = RulerHeight,
+                Stroke = new SolidColorBrush(isBarLine ? Color.FromRgb(0x6F, 0x73, 0x7A) : Color.FromRgb(0x43, 0x45, 0x4A)),
+                StrokeThickness = isBarLine ? 1.5 : 1
+            };
+            _rulerCanvas.Children.Add(line);
+
+            // Draw bar number at bar lines
+            if (isBarLine)
+            {
+                var text = new TextBlock
+                {
+                    Text = barNumber.ToString(),
+                    Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4)),
+                    FontSize = 10,
+                    FontWeight = FontWeights.SemiBold
+                };
+
+                Canvas.SetLeft(text, x + 4);
+                Canvas.SetTop(text, 2);
+                _rulerCanvas.Children.Add(text);
+            }
+        }
+
+        // Draw bottom border
+        var bottomBorder = new Shapes.Line
+        {
+            X1 = 0,
+            Y1 = RulerHeight - 1,
+            X2 = totalWidth,
+            Y2 = RulerHeight - 1,
+            Stroke = new SolidColorBrush(Color.FromRgb(0x39, 0x3B, 0x40)),
+            StrokeThickness = 1
+        };
+        _rulerCanvas.Children.Add(bottomBorder);
+    }
+
+    /// <summary>
+    /// Updates the ruler position based on horizontal scroll offset.
+    /// </summary>
+    private void UpdateRulerPosition(double horizontalOffset)
+    {
+        if (_rulerCanvas == null) return;
+
+        // Apply transform to synchronize with canvas scroll
+        _rulerCanvas.RenderTransform = new TranslateTransform(-horizontalOffset, 0);
+    }
+
+    #endregion
+
+    #region Demo Notes
+
+    /// <summary>
+    /// Loads demo notes for testing purposes.
+    /// </summary>
+    private void LoadDemoNotes()
+    {
+        // Add a simple C major scale pattern for demonstration
+        int[] cMajorScale = { 60, 62, 64, 65, 67, 69, 71, 72 }; // C4 to C5
+
+        for (int i = 0; i < cMajorScale.Length; i++)
+        {
+            _viewModel.AddNote(
+                note: cMajorScale[i],
+                startBeat: i * 0.5,
+                duration: 0.5,
+                velocity: 80 + (i * 5) // Gradually increasing velocity
+            );
+        }
+
+        // Add a simple chord at beat 4
+        _viewModel.AddNote(60, 4.0, 2.0, 100); // C4
+        _viewModel.AddNote(64, 4.0, 2.0, 100); // E4
+        _viewModel.AddNote(67, 4.0, 2.0, 100); // G4
+
+        // Add another chord at beat 6
+        _viewModel.AddNote(65, 6.0, 2.0, 90); // F4
+        _viewModel.AddNote(69, 6.0, 2.0, 90); // A4
+        _viewModel.AddNote(72, 6.0, 2.0, 90); // C5
+
+        // Add bass notes
+        _viewModel.AddNote(48, 0.0, 1.0, 100);  // C3
+        _viewModel.AddNote(48, 2.0, 1.0, 100);  // C3
+        _viewModel.AddNote(53, 4.0, 2.0, 100);  // F3
+        _viewModel.AddNote(55, 6.0, 2.0, 100);  // G3
+    }
+
+    #endregion
+
+    #region Visual Tree Helpers
+
+    /// <summary>
+    /// Finds a child element of a specific type with the given name.
+    /// </summary>
+    private static T? FindChild<T>(DependencyObject parent, string childName) where T : FrameworkElement
+    {
+        if (parent == null) return null;
+
+        int childCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+
+            if (child is T typedChild && typedChild.Name == childName)
+            {
+                return typedChild;
+            }
+
+            var foundChild = FindChild<T>(child, childName);
+            if (foundChild != null)
+            {
+                return foundChild;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Finds a parent element of a specific type.
+    /// </summary>
+    private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
+    {
+        if (child == null) return null;
+
+        var parent = VisualTreeHelper.GetParent(child);
+
+        while (parent != null)
+        {
+            if (parent is T typedParent)
+            {
+                return typedParent;
+            }
+
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Finds a child element of a specific type (first match).
+    /// </summary>
+    private static T? FindChildOfType<T>(DependencyObject parent) where T : DependencyObject
+    {
+        if (parent == null) return null;
+
+        int childCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+
+            if (child is T typedChild)
+            {
+                return typedChild;
+            }
+
+            var foundChild = FindChildOfType<T>(child);
+            if (foundChild != null)
+            {
+                return foundChild;
+            }
+        }
+
+        return null;
+    }
+
+    #endregion
+
+    #region Public Methods
+
+    /// <summary>
+    /// Refreshes the entire piano roll display.
+    /// </summary>
+    public void Refresh()
+    {
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        noteCanvas?.Refresh();
+
+        var pianoKeyboard = FindChild<PianoKeyboard>(this, "PianoKeyboard");
+        pianoKeyboard?.Refresh();
+
+        DrawRuler();
+    }
+
+    /// <summary>
+    /// Scrolls to make a specific beat visible.
+    /// </summary>
+    /// <param name="beat">The beat position to scroll to.</param>
+    public void ScrollToBeat(double beat)
+    {
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        noteCanvas?.ScrollToBeat(beat);
+    }
+
+    /// <summary>
+    /// Scrolls to make a specific note visible.
+    /// </summary>
+    /// <param name="midiNote">The MIDI note number to scroll to.</param>
+    public void ScrollToNote(int midiNote)
+    {
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        noteCanvas?.ScrollToNote(midiNote);
+    }
+
+    /// <summary>
+    /// Clears all notes from the piano roll.
+    /// </summary>
+    public void ClearAllNotes()
+    {
+        _viewModel.Notes.Clear();
+        _viewModel.SelectedNotes.Clear();
+    }
+
+    /// <summary>
+    /// Sets the playhead position.
+    /// </summary>
+    /// <param name="beat">The beat position for the playhead.</param>
+    public void SetPlayheadPosition(double beat)
+    {
+        _viewModel.PlayheadPosition = Math.Max(0, beat);
+    }
+
+    #endregion
+}

@@ -1,0 +1,52 @@
+<UserControl x:Class="MusicEngineEditor.Controls.PianoKeyboard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="80"
+             Background="#1E1F22"
+             MinWidth="60"
+             MinHeight="100">
+
+    <UserControl.Resources>
+        <!-- Dark theme colors matching the editor -->
+        <Color x:Key="BackgroundColor">#1E1F22</Color>
+        <Color x:Key="WhiteKeyColor">#E8E8E8</Color>
+        <Color x:Key="WhiteKeyPressedColor">#C8C8C8</Color>
+        <Color x:Key="BlackKeyColor">#2D2D2D</Color>
+        <Color x:Key="BlackKeyPressedColor">#1A1A1A</Color>
+        <Color x:Key="ActiveKeyColor">#4A9EFF</Color>
+        <Color x:Key="KeyBorderColor">#393B40</Color>
+        <Color x:Key="NoteLabelColor">#6F737A</Color>
+        <Color x:Key="OctaveLabelColor">#BCBEC4</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="WhiteKeyBrush" Color="{StaticResource WhiteKeyColor}"/>
+        <SolidColorBrush x:Key="WhiteKeyPressedBrush" Color="{StaticResource WhiteKeyPressedColor}"/>
+        <SolidColorBrush x:Key="BlackKeyBrush" Color="{StaticResource BlackKeyColor}"/>
+        <SolidColorBrush x:Key="BlackKeyPressedBrush" Color="{StaticResource BlackKeyPressedColor}"/>
+        <SolidColorBrush x:Key="ActiveKeyBrush" Color="{StaticResource ActiveKeyColor}"/>
+        <SolidColorBrush x:Key="KeyBorderBrush" Color="{StaticResource KeyBorderColor}"/>
+        <SolidColorBrush x:Key="NoteLabelBrush" Color="{StaticResource NoteLabelColor}"/>
+        <SolidColorBrush x:Key="OctaveLabelBrush" Color="{StaticResource OctaveLabelColor}"/>
+
+        <!-- Glow effect for active keys -->
+        <DropShadowEffect x:Key="ActiveKeyGlowEffect"
+                          Color="#4A9EFF"
+                          BlurRadius="8"
+                          ShadowDepth="0"
+                          Opacity="0.6"/>
+    </UserControl.Resources>
+
+    <Grid x:Name="MainGrid" ClipToBounds="True">
+        <!-- Canvas for drawing piano keys -->
+        <Canvas x:Name="KeyboardCanvas"
+                Background="{StaticResource BackgroundBrush}"
+                MouseLeftButtonDown="OnCanvasMouseLeftButtonDown"
+                MouseLeftButtonUp="OnCanvasMouseLeftButtonUp"
+                MouseMove="OnCanvasMouseMove"
+                MouseLeave="OnCanvasMouseLeave"/>
+    </Grid>
+</UserControl>
