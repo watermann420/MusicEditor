@@ -2,6 +2,7 @@
 // Copyright (c) 2026 MusicEngine Watermann420 and Contributors
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,6 +10,7 @@ using System.Windows.Media;
 using MusicEngineEditor.Controls;
 using Shapes = System.Windows.Shapes;
 using MusicEngineEditor.Models;
+using MusicEngineEditor.Services;
 using MusicEngineEditor.ViewModels;
 using MusicEngineEditor.Views.Dialogs;
 
@@ -37,6 +39,10 @@ public partial class PianoRollView : UserControl
     private ScrollViewer? _canvasScrollViewer;
     private Canvas? _rulerCanvas;
     private bool _isSyncingScroll;
+
+    // Scrubbing support
+    private bool _isRulerScrubbing;
+    private Point _scrubStartPoint;
 
     #endregion
 
@@ -82,6 +88,9 @@ public partial class PianoRollView : UserControl
         // Wire up VelocityLane
         WireUpVelocityLane();
 
+        // Wire up CC Lanes
+        WireUpCCLanes();
+
         // Wire up Note Preview
         WireUpNotePreview();
 
@@ -95,6 +104,9 @@ public partial class PianoRollView : UserControl
         // Draw the ruler
         DrawRuler();
 
+        // Wire up ruler scrubbing
+        WireUpRulerScrubbing();
+
         // Load demo notes for testing (optional)
         LoadDemoNotes();
     }
@@ -107,6 +119,8 @@ public partial class PianoRollView : UserControl
         UnwireNoteCanvasEvents();
         UnwireScrollSynchronization();
         UnwireNotePreview();
+        UnwireRulerScrubbing();
+        UnwireCCLanes();
     }
 
     #endregion
@@ -377,6 +391,123 @@ public partial class PianoRollView : UserControl
 
     #endregion
 
+    #region CC Lanes Wiring
+
+    /// <summary>
+    /// Wires up the CC Lanes section.
+    /// </summary>
+    private void WireUpCCLanes()
+    {
+        // Subscribe to collection changes to wire up new lanes
+        _viewModel.CCLanes.CollectionChanged += OnCCLanesCollectionChanged;
+
+        // Wire up existing lanes
+        foreach (var lane in _viewModel.CCLanes)
+        {
+            WireUpSingleCCLane(lane);
+        }
+
+        // Listen for ViewModel property changes that affect all CC lanes
+        _viewModel.PropertyChanged += OnViewModelPropertyChangedForCCLanes;
+    }
+
+    /// <summary>
+    /// Unwires CC lanes event handlers.
+    /// </summary>
+    private void UnwireCCLanes()
+    {
+        _viewModel.CCLanes.CollectionChanged -= OnCCLanesCollectionChanged;
+        _viewModel.PropertyChanged -= OnViewModelPropertyChangedForCCLanes;
+    }
+
+    private void OnCCLanesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+        {
+            foreach (MidiCCLaneViewModel lane in e.NewItems)
+            {
+                WireUpSingleCCLane(lane);
+            }
+        }
+
+        // Update all CC lane controls with current scroll/zoom
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            UpdateAllCCLaneControls();
+        }), System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    private void OnViewModelPropertyChangedForCCLanes(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(PianoRollViewModel.ZoomX):
+            case nameof(PianoRollViewModel.TotalBeats):
+            case nameof(PianoRollViewModel.GridSnapValue):
+            case nameof(PianoRollViewModel.ScrollX):
+                UpdateAllCCLaneControls();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Wires up a single CC lane view model.
+    /// </summary>
+    /// <param name="laneViewModel">The lane view model to wire up.</param>
+    private void WireUpSingleCCLane(MidiCCLaneViewModel laneViewModel)
+    {
+        // The lane will be created by the ItemsControl via DataTemplate
+        // We just need to make sure it gets the correct initial values
+        // This is handled by UpdateAllCCLaneControls when the control is loaded
+    }
+
+    /// <summary>
+    /// Updates all CC lane controls with current view model values.
+    /// </summary>
+    private void UpdateAllCCLaneControls()
+    {
+        var ccLanesItemsControl = FindChild<ItemsControl>(this, "CCLanesItemsControl");
+        if (ccLanesItemsControl == null) return;
+
+        // Find all MidiCCLane controls within the ItemsControl
+        var ccLaneControls = FindAllChildrenOfType<MidiCCLane>(ccLanesItemsControl);
+
+        foreach (var ccLane in ccLaneControls)
+        {
+            ccLane.TotalBeats = _viewModel.TotalBeats;
+            ccLane.ZoomX = _viewModel.ZoomX;
+            ccLane.GridSnapValue = _viewModel.GridSnapValue;
+            ccLane.ScrollX = _viewModel.ScrollX;
+        }
+    }
+
+    /// <summary>
+    /// Finds all children of a specific type in the visual tree.
+    /// </summary>
+    private static List<T> FindAllChildrenOfType<T>(DependencyObject parent) where T : DependencyObject
+    {
+        var results = new List<T>();
+
+        if (parent == null) return results;
+
+        int childCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+
+            if (child is T typedChild)
+            {
+                results.Add(typedChild);
+            }
+
+            results.AddRange(FindAllChildrenOfType<T>(child));
+        }
+
+        return results;
+    }
+
+    #endregion
+
     #region Note Preview Wiring
 
     /// <summary>
@@ -575,13 +706,13 @@ public partial class PianoRollView : UserControl
 
             // Ctrl+Z: Undo
             case Key.Z when ctrlPressed:
-                _viewModel.UndoCommand.Execute(null);
+                Services.EditorUndoService.Instance.Undo();
                 e.Handled = true;
                 break;
 
             // Ctrl+Y: Redo
             case Key.Y when ctrlPressed:
-                _viewModel.RedoCommand.Execute(null);
+                Services.EditorUndoService.Instance.Redo();
                 e.Handled = true;
                 break;
 
@@ -834,6 +965,132 @@ public partial class PianoRollView : UserControl
 
         // Apply transform to synchronize with canvas scroll
         _rulerCanvas.RenderTransform = new TranslateTransform(-horizontalOffset, 0);
+    }
+
+    #endregion
+
+    #region Ruler Scrubbing
+
+    /// <summary>
+    /// Wires up ruler scrubbing functionality.
+    /// </summary>
+    private void WireUpRulerScrubbing()
+    {
+        if (_rulerCanvas == null) return;
+
+        _rulerCanvas.MouseLeftButtonDown += OnRulerMouseLeftButtonDown;
+        _rulerCanvas.MouseMove += OnRulerMouseMove;
+        _rulerCanvas.MouseLeftButtonUp += OnRulerMouseLeftButtonUp;
+        _rulerCanvas.MouseLeave += OnRulerMouseLeave;
+    }
+
+    /// <summary>
+    /// Unwires ruler scrubbing functionality.
+    /// </summary>
+    private void UnwireRulerScrubbing()
+    {
+        if (_rulerCanvas == null) return;
+
+        _rulerCanvas.MouseLeftButtonDown -= OnRulerMouseLeftButtonDown;
+        _rulerCanvas.MouseMove -= OnRulerMouseMove;
+        _rulerCanvas.MouseLeftButtonUp -= OnRulerMouseLeftButtonUp;
+        _rulerCanvas.MouseLeave -= OnRulerMouseLeave;
+    }
+
+    private void OnRulerMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_rulerCanvas == null) return;
+
+        _isRulerScrubbing = true;
+        _scrubStartPoint = e.GetPosition(_rulerCanvas);
+
+        // Calculate beat position from x coordinate
+        var beat = PixelToBeat(_scrubStartPoint.X);
+
+        // Start scrubbing
+        Services.ScrubService.Instance.StartScrub(beat);
+
+        // Capture mouse for drag tracking
+        _rulerCanvas.CaptureMouse();
+        _rulerCanvas.Cursor = Cursors.IBeam;
+
+        // Update playhead position
+        _viewModel.PlayheadPosition = beat;
+
+        e.Handled = true;
+    }
+
+    private void OnRulerMouseMove(object sender, MouseEventArgs e)
+    {
+        if (!_isRulerScrubbing || _rulerCanvas == null) return;
+
+        if (e.LeftButton != MouseButtonState.Pressed)
+        {
+            EndRulerScrub(false);
+            return;
+        }
+
+        var position = e.GetPosition(_rulerCanvas);
+        var beat = PixelToBeat(position.X);
+
+        // Update scrub position
+        Services.ScrubService.Instance.UpdateScrub(beat);
+
+        // Update playhead position
+        _viewModel.PlayheadPosition = beat;
+    }
+
+    private void OnRulerMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (!_isRulerScrubbing) return;
+
+        // Check if Shift is held to continue playback
+        var continuePlayback = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+        EndRulerScrub(continuePlayback);
+    }
+
+    private void OnRulerMouseLeave(object sender, MouseEventArgs e)
+    {
+        // Don't end scrub on leave if mouse is still pressed (allow dragging outside)
+        if (_isRulerScrubbing && e.LeftButton != MouseButtonState.Pressed)
+        {
+            EndRulerScrub(false);
+        }
+    }
+
+    /// <summary>
+    /// Ends the ruler scrubbing operation.
+    /// </summary>
+    /// <param name="continuePlayback">Whether to continue playback from the scrub position.</param>
+    private void EndRulerScrub(bool continuePlayback)
+    {
+        if (!_isRulerScrubbing) return;
+
+        _isRulerScrubbing = false;
+        _rulerCanvas?.ReleaseMouseCapture();
+
+        if (_rulerCanvas != null)
+        {
+            _rulerCanvas.Cursor = Cursors.Arrow;
+        }
+
+        Services.ScrubService.Instance.EndScrub(continuePlayback);
+    }
+
+    /// <summary>
+    /// Converts a pixel x-coordinate to a beat position.
+    /// </summary>
+    /// <param name="pixelX">The x coordinate in pixels.</param>
+    /// <returns>The corresponding beat position.</returns>
+    private double PixelToBeat(double pixelX)
+    {
+        // Account for scroll offset
+        var scrollOffset = _canvasScrollViewer?.HorizontalOffset ?? 0;
+        var adjustedX = pixelX + scrollOffset;
+
+        // Convert to beats based on zoom
+        var effectiveBeatWidth = DefaultBeatWidth * _viewModel.ZoomX;
+        return adjustedX / effectiveBeatWidth;
     }
 
     #endregion

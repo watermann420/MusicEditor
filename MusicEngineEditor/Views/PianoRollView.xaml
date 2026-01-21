@@ -34,6 +34,19 @@
         <SolidColorBrush x:Key="RulerBackgroundBrush" Color="{StaticResource RulerBackgroundColor}"/>
         <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
 
+        <!-- Value Converters -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <!-- Zero to Visibility Converter (shows when count is 0) -->
+        <Style x:Key="ZeroCountVisibilityStyle" TargetType="Border">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CCLanes.Count}" Value="0">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- Toolbar Button Style -->
         <Style x:Key="PianoRollToolbarButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -415,6 +428,10 @@
                 <RowDefinition Height="Auto"/>
                 <!-- Velocity Lane -->
                 <RowDefinition Height="100" MinHeight="60" MaxHeight="200"/>
+                <!-- CC Lanes Splitter -->
+                <RowDefinition Height="Auto"/>
+                <!-- CC Lanes Section -->
+                <RowDefinition Height="Auto" MinHeight="0"/>
             </Grid.RowDefinitions>
 
             <!-- Top-Left Corner (empty, above piano keyboard) -->
@@ -495,6 +512,141 @@
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1,0,0,0"
                     Width="16"/>
+
+            <!-- CC Lanes Splitter -->
+            <GridSplitter Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
+                          Height="5"
+                          HorizontalAlignment="Stretch"
+                          Background="{StaticResource BorderBrush}"
+                          ResizeDirection="Rows"
+                          ShowsPreview="True"/>
+
+            <!-- CC Lanes Section -->
+            <Border Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3"
+                    Background="{StaticResource BackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <!-- CC Lanes Header -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- CC Lanes Content -->
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- CC Lanes Header Bar -->
+                    <Border Grid.Row="0"
+                            Background="{StaticResource ToolbarBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            Padding="4,2">
+                        <DockPanel>
+                            <!-- Title and Expand Toggle -->
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                                <ToggleButton x:Name="CCLanesExpandToggle"
+                                              Style="{StaticResource PianoRollToolToggleButtonStyle}"
+                                              IsChecked="{Binding CCLanesExpanded}"
+                                              ToolTip="Expand/Collapse CC Lanes"
+                                              Padding="4,2"
+                                              MinWidth="20">
+                                    <TextBlock x:Name="CCLanesExpandArrow"
+                                               Text="&#x25BC;"
+                                               FontSize="8"
+                                               FontFamily="Segoe UI Symbol"/>
+                                </ToggleButton>
+                                <TextBlock Text="CC Automation"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           Margin="4,0,0,0"/>
+                            </StackPanel>
+
+                            <!-- Add/Remove Buttons -->
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Margin="8,0,0,0">
+                                <Button x:Name="AddCCLaneButton"
+                                        Style="{StaticResource PianoRollToolbarButtonStyle}"
+                                        Content="+ Add Lane"
+                                        ToolTip="Add CC Lane"
+                                        Command="{Binding AddCCLaneCommand}"
+                                        Padding="8,2"
+                                        FontSize="10"/>
+                                <Button x:Name="RemoveCCLaneButton"
+                                        Style="{StaticResource PianoRollDangerButtonStyle}"
+                                        Content="- Remove"
+                                        ToolTip="Remove Selected Lane"
+                                        Command="{Binding RemoveSelectedCCLaneCommand}"
+                                        Padding="8,2"
+                                        FontSize="10"
+                                        Margin="4,0,0,0"/>
+                            </StackPanel>
+
+                            <!-- Spacer -->
+                            <Border/>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- CC Lanes ItemsControl -->
+                    <ItemsControl x:Name="CCLanesItemsControl"
+                                  Grid.Row="1"
+                                  ItemsSource="{Binding CCLanes}"
+                                  Visibility="{Binding CCLanesExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                  VirtualizingStackPanel.IsVirtualizing="True">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:MidiCCLaneViewModel}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Lane Separator -->
+                                    <Border Grid.Row="0"
+                                            Height="1"
+                                            Background="{StaticResource BorderBrush}"/>
+
+                                    <!-- CC Lane Control -->
+                                    <controls:MidiCCLane x:Name="CCLaneControl"
+                                                         Grid.Row="1"
+                                                         Height="{Binding LaneHeight}"
+                                                         MinHeight="40"
+                                                         MaxHeight="150"
+                                                         CCEvents="{Binding CCEvents}"
+                                                         SelectedEvents="{Binding SelectedEvents}"
+                                                         SelectedController="{Binding SelectedController}"
+                                                         EditMode="{Binding EditMode}"
+                                                         InterpolationEnabled="{Binding InterpolationEnabled}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Empty State Message (shown when no CC lanes) -->
+                    <Border x:Name="EmptyStateBorder"
+                            Grid.Row="1"
+                            Background="{StaticResource BackgroundBrush}"
+                            Padding="20"
+                            Style="{StaticResource ZeroCountVisibilityStyle}">
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="No CC Lanes"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Click '+ Add Lane' to add CC automation"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="10"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
         </Grid>
 
         <!-- Horizontal ScrollBar (for beats) -->

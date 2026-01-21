@@ -108,6 +108,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header / Toolbar -->
@@ -282,15 +283,79 @@
             </ScrollViewer>
         </Grid>
 
+        <!-- Audio Track with Waveform Display -->
+        <Border Grid.Row="3"
+                x:Name="AudioTrackBorder"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Height="80"
+                Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Track Header -->
+                <Border Grid.Column="0"
+                        Width="100"
+                        Background="{DynamicResource ToolbarBackgroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,1,0"
+                        Padding="8,4">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Audio"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource BrightForegroundBrush}"/>
+                        <TextBlock x:Name="AudioTrackName"
+                                   Text=""
+                                   FontSize="10"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Button x:Name="LoadAudioButton"
+                                    Content="Load"
+                                    FontSize="9"
+                                    Padding="4,2"
+                                    Style="{StaticResource ToolbarButtonStyle}"
+                                    Click="LoadAudio_Click"
+                                    ToolTip="Load audio file"/>
+                            <Button x:Name="ClearAudioButton"
+                                    Content="Clear"
+                                    FontSize="9"
+                                    Padding="4,2"
+                                    Style="{StaticResource ToolbarButtonStyle}"
+                                    Click="ClearAudio_Click"
+                                    Margin="4,0,0,0"
+                                    ToolTip="Clear audio track"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Waveform Display -->
+                <local:WaveformDisplay Grid.Column="1"
+                                       x:Name="AudioWaveformDisplay"
+                                       WaveformColor="#4CAF50"
+                                       WaveformColorRight="#2196F3"
+                                       ShowPlayhead="True"
+                                       ShowCenterLine="True"
+                                       DisplayMode="Mixed"
+                                       PlayheadRequested="AudioWaveformDisplay_PlayheadRequested"/>
+            </Grid>
+        </Border>
+
         <!-- Marker Track -->
-        <local:MarkerTrackControl Grid.Row="3"
+        <local:MarkerTrackControl Grid.Row="4"
                                    x:Name="MarkerTrackControl"
                                    Height="60"
                                    MarkerSelected="MarkerTrackControl_MarkerSelected"
                                    JumpRequested="MarkerTrackControl_JumpRequested"/>
 
         <!-- Status Bar -->
-        <Border Grid.Row="3"
+        <Border Grid.Row="5"
                 Background="{DynamicResource StatusBarBackgroundBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,1,0,0"

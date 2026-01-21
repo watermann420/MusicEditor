@@ -18,6 +18,7 @@ using MusicEngineEditor.Editor;
 using MusicEngineEditor.Models;
 using MusicEngineEditor.Services;
 using MusicEngineEditor.Controls;
+using MusicEngineEditor.ViewModels;
 using MusicEngineEditor.Views;
 using MusicEngineEditor.Views.Dialogs;
 
@@ -41,6 +42,13 @@ public partial class MainWindow : Window
 
     // VST Plugin Windows
     private readonly Dictionary<string, VstPluginWindow> _vstWindows = new();
+
+    // Transport ViewModel
+    private TransportViewModel? _transportViewModel;
+
+    // Performance Monitoring
+    private readonly PerformanceMonitorService _performanceMonitorService;
+    private readonly PerformanceViewModel _performanceViewModel;
 
     // Problems/Errors
     public ObservableCollection<ProblemItem> Problems { get; } = new();
@@ -130,6 +138,11 @@ public partial class MainWindow : Window
         WorkshopPanel.OnRunCode += WorkshopPanel_OnRunCode;
         WorkshopPanel.OnCopyCode += WorkshopPanel_OnCopyCode;
         WorkshopPanel.OnInsertCode += WorkshopPanel_OnInsertCode;
+
+        // Initialize Performance Monitoring
+        _performanceMonitorService = new PerformanceMonitorService();
+        _performanceViewModel = new PerformanceViewModel(_performanceMonitorService);
+        PerformanceMeterControl.ConnectToViewModel(_performanceViewModel);
     }
 
     private void CodeEditor_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -381,6 +394,13 @@ public partial class MainWindow : Window
                 _visualization?.ConnectToSequencer(_engineService.Sequencer);
             }
 
+            // Initialize Transport Toolbar with ViewModel
+            _transportViewModel = new TransportViewModel();
+            TransportToolbar.BindToViewModel(_transportViewModel);
+
+            // Start Performance Monitoring
+            _performanceMonitorService.Start();
+
             StatusText.Text = "Ready";
             OutputLine("Engine initialized successfully!");
             OutputLine("Press Ctrl+Enter to run the script, Escape to stop.");
@@ -420,6 +440,9 @@ public partial class MainWindow : Window
         _sliderHotReloadTimer?.Stop();
         _inlineSliderService?.Dispose();
         _visualization?.Dispose();
+        TransportToolbar.Unbind();
+        _transportViewModel?.Dispose();
+        _performanceMonitorService.Dispose();
         CloseAllVstWindows();
         _engineService.Dispose();
     }
@@ -1238,6 +1261,7 @@ public partial class MainWindow : Window
         MidiDevicesPanel.Visibility = Visibility.Collapsed;
         VstPluginsPanel.Visibility = Visibility.Collapsed;
         AudioFilesPanel.Visibility = Visibility.Collapsed;
+        TrackPropertiesPanel.Visibility = Visibility.Collapsed;
 
         // Show selected tab
         switch (tab)
@@ -1259,6 +1283,10 @@ public partial class MainWindow : Window
                 ((TextBlock)AudioTabHeader.Child).Foreground = System.Windows.Media.Brushes.White;
                 ((TextBlock)AudioTabHeader.Child).FontWeight = FontWeights.SemiBold;
                 AudioFilesPanel.Visibility = Visibility.Visible;
+                break;
+            case "trackproperties":
+                // Track properties panel is standalone (no tab header in the tabbed area)
+                TrackPropertiesPanel.Visibility = Visibility.Visible;
                 break;
         }
     }
@@ -1288,6 +1316,65 @@ public partial class MainWindow : Window
     private void AudioTab_Click(object sender, MouseButtonEventArgs e)
     {
         SwitchRightPanelTab("audio");
+    }
+
+    private void ToggleTrackPropertiesPanel_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("trackproperties");
+    }
+
+    private void TrackPropertiesPanel_CloseRequested(object? sender, EventArgs e)
+    {
+        HideRightPanel();
+    }
+
+    private void TrackPropertiesPanel_TrackPropertyChanged(object? sender, TrackPropertyChangedEventArgs e)
+    {
+        // Handle track property changes - update any connected views
+        OutputLine($"Track '{e.Track.Name}' property '{e.PropertyName}' changed: {e.OldValue} -> {e.NewValue}");
+    }
+
+    private void TrackPropertiesPanel_TrackDuplicateRequested(object? sender, TrackEventArgs e)
+    {
+        // Create a duplicate of the track
+        var duplicate = e.Track.Duplicate();
+        OutputLine($"Duplicated track '{e.Track.Name}' -> '{duplicate.Name}'");
+
+        // TODO: Add the duplicate track to the arrangement/track list
+        // For now, just select the duplicate in the properties panel
+        TrackPropertiesPanel.SelectedTrack = duplicate;
+    }
+
+    private void TrackPropertiesPanel_TrackDeleteRequested(object? sender, TrackEventArgs e)
+    {
+        var result = MessageBox.Show(
+            $"Are you sure you want to delete track '{e.Track.Name}'?",
+            "Delete Track",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            OutputLine($"Deleted track: {e.Track.Name}");
+            // TODO: Remove track from arrangement/track list
+            TrackPropertiesPanel.ClearSelection();
+        }
+    }
+
+    private void TrackPropertiesPanel_TrackFreezeRequested(object? sender, TrackEventArgs e)
+    {
+        if (e.Track.IsFrozen)
+        {
+            OutputLine($"Freezing track: {e.Track.Name}...");
+            // TODO: Implement freeze logic (render track to audio)
+            StatusText.Text = $"Track '{e.Track.Name}' frozen";
+        }
+        else
+        {
+            OutputLine($"Unfreezing track: {e.Track.Name}...");
+            // TODO: Implement unfreeze logic
+            StatusText.Text = $"Track '{e.Track.Name}' unfrozen";
+        }
     }
 
     #endregion

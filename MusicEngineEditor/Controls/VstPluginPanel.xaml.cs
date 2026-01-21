@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using MusicEngine.Core;
 
 namespace MusicEngineEditor.Controls;
 
@@ -33,6 +34,16 @@ public partial class VstPluginPanel : UserControl
     /// Occurs when plugins have been scanned
     /// </summary>
     public event EventHandler<VstScanCompletedEventArgs>? OnScanCompleted;
+
+    /// <summary>
+    /// Occurs when the bypass state of a plugin is toggled
+    /// </summary>
+    public event EventHandler<VstBypassEventArgs>? OnBypassToggled;
+
+    /// <summary>
+    /// Occurs when a preset is selected from the quick selector
+    /// </summary>
+    public event EventHandler<VstPresetSelectedEventArgs>? OnPresetSelected;
 
     #endregion
 
@@ -206,6 +217,55 @@ public partial class VstPluginPanel : UserControl
         UpdatePluginStatuses();
     }
 
+    /// <summary>
+    /// Associates a plugin instance with a displayed plugin for bypass/preset sync
+    /// </summary>
+    /// <param name="pluginName">Name of the plugin to associate</param>
+    /// <param name="pluginInstance">The IVstPlugin instance to associate</param>
+    public void AssociatePluginInstance(string pluginName, IVstPlugin pluginInstance)
+    {
+        var plugin = _allPlugins.FirstOrDefault(p =>
+            p.Name.Equals(pluginName, StringComparison.OrdinalIgnoreCase));
+
+        if (plugin != null)
+        {
+            plugin.PluginInstance = pluginInstance;
+            plugin.IsLoaded = true;
+        }
+    }
+
+    /// <summary>
+    /// Updates the bypass state of a plugin by name
+    /// </summary>
+    /// <param name="pluginName">Name of the plugin</param>
+    /// <param name="isBypassed">New bypass state</param>
+    public void SetPluginBypassState(string pluginName, bool isBypassed)
+    {
+        var plugin = _allPlugins.FirstOrDefault(p =>
+            p.Name.Equals(pluginName, StringComparison.OrdinalIgnoreCase));
+
+        if (plugin != null)
+        {
+            plugin.IsBypassed = isBypassed;
+        }
+    }
+
+    /// <summary>
+    /// Updates the preset name of a plugin by name
+    /// </summary>
+    /// <param name="pluginName">Name of the plugin</param>
+    /// <param name="presetName">New preset name</param>
+    public void SetPluginPresetName(string pluginName, string presetName)
+    {
+        var plugin = _allPlugins.FirstOrDefault(p =>
+            p.Name.Equals(pluginName, StringComparison.OrdinalIgnoreCase));
+
+        if (plugin != null)
+        {
+            plugin.CurrentPresetName = presetName;
+        }
+    }
+
     #endregion
 
     #region Event Handlers
@@ -250,6 +310,27 @@ public partial class VstPluginPanel : UserControl
         if (e.ClickCount == 2 && sender is Border border && border.Tag is VstPluginDisplayInfo plugin)
         {
             OnPluginDoubleClick?.Invoke(this, new VstPluginEventArgs(plugin));
+        }
+    }
+
+    private void BypassToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is VstPluginDisplayInfo plugin)
+        {
+            plugin.IsBypassed = !plugin.IsBypassed;
+            OnBypassToggled?.Invoke(this, new VstBypassEventArgs(plugin, plugin.IsBypassed));
+        }
+    }
+
+    private void PresetComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.ComboBox comboBox && comboBox.Tag is VstPluginDisplayInfo plugin && e.AddedItems.Count > 0)
+        {
+            var selectedPreset = e.AddedItems[0] as string;
+            if (!string.IsNullOrEmpty(selectedPreset))
+            {
+                OnPresetSelected?.Invoke(this, new VstPresetSelectedEventArgs(plugin, selectedPreset));
+            }
         }
     }
 
@@ -325,6 +406,11 @@ public class VstPluginDisplayInfo : INotifyPropertyChanged
     private string _type = "";
     private string _fullPath = "";
     private bool _isLoaded;
+    private bool _isBypassed;
+    private string _currentPresetName = "";
+    private IVstPlugin? _pluginInstance;
+    private ObservableCollection<string> _presetNames = new();
+    private string _selectedPresetName = "";
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -375,6 +461,110 @@ public class VstPluginDisplayInfo : INotifyPropertyChanged
             OnPropertyChanged(nameof(StatusForeground));
             OnPropertyChanged(nameof(StatusDotColor));
             OnPropertyChanged(nameof(StatusVisibility));
+            OnPropertyChanged(nameof(LoadedVisibility));
+            OnPropertyChanged(nameof(PresetSelectorVisibility));
+        }
+    }
+
+    public bool IsBypassed
+    {
+        get => _isBypassed;
+        set
+        {
+            _isBypassed = value;
+            OnPropertyChanged(nameof(IsBypassed));
+            OnPropertyChanged(nameof(BypassVisibility));
+            OnPropertyChanged(nameof(BypassButtonText));
+            OnPropertyChanged(nameof(BypassButtonBackground));
+            OnPropertyChanged(nameof(BypassButtonForeground));
+            OnPropertyChanged(nameof(BypassedOpacity));
+
+            // Sync with plugin instance if available
+            if (_pluginInstance != null && _pluginInstance.IsBypassed != value)
+            {
+                _pluginInstance.IsBypassed = value;
+            }
+        }
+    }
+
+    public string CurrentPresetName
+    {
+        get => _currentPresetName;
+        set
+        {
+            _currentPresetName = value;
+            OnPropertyChanged(nameof(CurrentPresetName));
+            OnPropertyChanged(nameof(CurrentPresetDisplay));
+            OnPropertyChanged(nameof(HasPreset));
+            OnPropertyChanged(nameof(PresetVisibility));
+        }
+    }
+
+    public IVstPlugin? PluginInstance
+    {
+        get => _pluginInstance;
+        set
+        {
+            _pluginInstance = value;
+            if (value != null)
+            {
+                // Load presets from the plugin
+                _presetNames.Clear();
+                var presets = value.GetPresetNames();
+                foreach (var preset in presets)
+                {
+                    _presetNames.Add(preset);
+                }
+
+                CurrentPresetName = value.CurrentPresetName;
+                IsBypassed = value.IsBypassed;
+
+                // Subscribe to bypass changes
+                value.BypassChanged += OnPluginBypassChanged;
+            }
+            OnPropertyChanged(nameof(PluginInstance));
+            OnPropertyChanged(nameof(PresetNames));
+            OnPropertyChanged(nameof(PresetSelectorVisibility));
+        }
+    }
+
+    private void OnPluginBypassChanged(object? sender, bool isBypassed)
+    {
+        if (_isBypassed != isBypassed)
+        {
+            _isBypassed = isBypassed;
+            OnPropertyChanged(nameof(IsBypassed));
+            OnPropertyChanged(nameof(BypassVisibility));
+            OnPropertyChanged(nameof(BypassButtonText));
+            OnPropertyChanged(nameof(BypassButtonBackground));
+            OnPropertyChanged(nameof(BypassButtonForeground));
+            OnPropertyChanged(nameof(BypassedOpacity));
+        }
+    }
+
+    public ObservableCollection<string> PresetNames => _presetNames;
+
+    public string SelectedPresetName
+    {
+        get => _selectedPresetName;
+        set
+        {
+            if (_selectedPresetName != value)
+            {
+                _selectedPresetName = value;
+                OnPropertyChanged(nameof(SelectedPresetName));
+
+                // Apply preset if plugin is available
+                if (_pluginInstance != null && !string.IsNullOrEmpty(value))
+                {
+                    var index = _presetNames.IndexOf(value);
+                    if (index >= 0)
+                    {
+                        _pluginInstance.SetPreset(index);
+                        CurrentPresetName = _pluginInstance.CurrentPresetName;
+                    }
+                }
+            }
         }
     }
 
@@ -460,7 +650,78 @@ public class VstPluginDisplayInfo : INotifyPropertyChanged
     /// <summary>
     /// Gets the visibility for the status indicator
     /// </summary>
-    public Visibility StatusVisibility => IsLoaded
+    public Visibility StatusVisibility => IsLoaded && !IsBypassed
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    /// <summary>
+    /// Gets the visibility for loaded state
+    /// </summary>
+    public Visibility LoadedVisibility => IsLoaded
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    // Bypass-related display properties
+
+    /// <summary>
+    /// Gets the bypass indicator visibility
+    /// </summary>
+    public Visibility BypassVisibility => IsLoaded && IsBypassed
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    /// <summary>
+    /// Gets the bypass button text
+    /// </summary>
+    public string BypassButtonText => IsBypassed ? "Enable" : "Bypass";
+
+    /// <summary>
+    /// Gets the bypass button background color
+    /// </summary>
+    public Brush BypassButtonBackground => IsBypassed
+        ? new SolidColorBrush(Color.FromRgb(0xE8, 0x9C, 0x4B))
+        : new SolidColorBrush(Color.FromRgb(0x3C, 0x3F, 0x41));
+
+    /// <summary>
+    /// Gets the bypass button foreground color
+    /// </summary>
+    public Brush BypassButtonForeground => IsBypassed
+        ? Brushes.White
+        : new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4));
+
+    /// <summary>
+    /// Gets the opacity when bypassed
+    /// </summary>
+    public double BypassedOpacity => IsBypassed ? 0.7 : 1.0;
+
+    // Preset-related display properties
+
+    /// <summary>
+    /// Gets whether a preset name is available
+    /// </summary>
+    public bool HasPreset => !string.IsNullOrEmpty(CurrentPresetName);
+
+    /// <summary>
+    /// Gets the display text for the current preset
+    /// </summary>
+    public string CurrentPresetDisplay => HasPreset ? $"- {CurrentPresetName}" : "";
+
+    /// <summary>
+    /// Gets the visibility for preset display
+    /// </summary>
+    public Visibility PresetVisibility => HasPreset
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    /// <summary>
+    /// Gets whether to show the preset selector dropdown
+    /// </summary>
+    public bool ShowPresetSelector => IsLoaded && _presetNames.Count > 0;
+
+    /// <summary>
+    /// Gets the visibility for preset selector
+    /// </summary>
+    public Visibility PresetSelectorVisibility => ShowPresetSelector
         ? Visibility.Visible
         : Visibility.Collapsed;
 
@@ -493,6 +754,36 @@ public class VstScanCompletedEventArgs : EventArgs
     public VstScanCompletedEventArgs(int pluginCount)
     {
         PluginCount = pluginCount;
+    }
+}
+
+/// <summary>
+/// Event args for bypass toggle events
+/// </summary>
+public class VstBypassEventArgs : EventArgs
+{
+    public VstPluginDisplayInfo Plugin { get; }
+    public bool IsBypassed { get; }
+
+    public VstBypassEventArgs(VstPluginDisplayInfo plugin, bool isBypassed)
+    {
+        Plugin = plugin;
+        IsBypassed = isBypassed;
+    }
+}
+
+/// <summary>
+/// Event args for preset selection events
+/// </summary>
+public class VstPresetSelectedEventArgs : EventArgs
+{
+    public VstPluginDisplayInfo Plugin { get; }
+    public string PresetName { get; }
+
+    public VstPresetSelectedEventArgs(VstPluginDisplayInfo plugin, string presetName)
+    {
+        Plugin = plugin;
+        PresetName = presetName;
     }
 }
 

@@ -38,6 +38,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -294,8 +295,11 @@
             </DockPanel>
         </Border>
 
+        <!-- Transport Toolbar -->
+        <controls:TransportToolbar x:Name="TransportToolbar" Grid.Row="2"/>
+
         <!-- Main Content Area -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="240" MinWidth="180" x:Name="LeftPanelColumn"/>
                 <ColumnDefinition Width="1"/>
@@ -665,6 +669,14 @@
                                 </ListView>
                             </DockPanel>
                         </Border>
+
+                        <!-- Track Properties Panel -->
+                        <controls:TrackPropertiesPanel x:Name="TrackPropertiesPanel" Visibility="Collapsed"
+                                                       CloseRequested="TrackPropertiesPanel_CloseRequested"
+                                                       TrackPropertyChanged="TrackPropertiesPanel_TrackPropertyChanged"
+                                                       TrackDuplicateRequested="TrackPropertiesPanel_TrackDuplicateRequested"
+                                                       TrackDeleteRequested="TrackPropertiesPanel_TrackDeleteRequested"
+                                                       TrackFreezeRequested="TrackPropertiesPanel_TrackFreezeRequested"/>
                     </Grid>
                 </DockPanel>
             </Border>
@@ -688,6 +700,13 @@
 
                     <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>
 
+                    <Button Style="{StaticResource IconButtonStyle}" Click="ToggleTrackPropertiesPanel_Click"
+                            ToolTip="Track Properties" Margin="4" x:Name="TrackPropertiesToolButton">
+                        <TextBlock Text="T" FontWeight="Bold" FontSize="14"/>
+                    </Button>
+
+                    <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>
+
                     <Button Style="{StaticResource IconButtonStyle}" Click="ToggleOutput_Click"
                             ToolTip="Toggle Output" Margin="4" x:Name="OutputToolButton">
                         <TextBlock Text="O" FontWeight="Bold" FontSize="14"/>
@@ -704,7 +723,7 @@
         </Grid>
 
         <!-- Status Bar -->
-        <StatusBar Grid.Row="3">
+        <StatusBar Grid.Row="4">
             <StatusBar.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                     <GradientStop Color="#2B2D30" Offset="0"/>
@@ -739,12 +758,19 @@
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right">
                 <StackPanel Orientation="Horizontal">
+                    <!-- Performance Meter -->
+                    <controls:PerformanceMeter x:Name="PerformanceMeterControl"
+                                               Margin="0,0,12,0"
+                                               VerticalAlignment="Center"/>
+
+                    <TextBlock Text="|" Foreground="{StaticResource BorderBrush}" Margin="0,0,8,0" FontSize="11"/>
+
                     <Border Background="#1E1F22" CornerRadius="3" Padding="8,2" Margin="0,0,12,0">
                         <TextBlock x:Name="CaretPositionDisplay" Text="Ln 1, Col 1" FontSize="11"/>
                     </Border>
-                  
+
                     <TextBlock Text="|" Foreground="{StaticResource BorderBrush}" Margin="0,0,8,0" FontSize="11"/>
-                  
+
                     <Border Background="{StaticResource AccentBrush}" CornerRadius="3" Padding="6,2">
                         <TextBlock Text="UTF-8" Foreground="White" FontSize="10" FontWeight="SemiBold"/>
                     </Border>

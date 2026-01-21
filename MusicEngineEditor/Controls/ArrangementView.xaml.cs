@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using MusicEngine.Core;
+using MusicEngineEditor.Models;
+using MusicEngineEditor.Services;
 using MusicEngineEditor.ViewModels;
 using Rectangle = System.Windows.Shapes.Rectangle;
 using Line = System.Windows.Shapes.Line;
@@ -30,6 +33,16 @@ public partial class ArrangementView : UserControl
     private bool _isResizing;
     private bool _isResizingLeft;
     private double _contextMenuPosition;
+
+    // Scrubbing support
+    private bool _isScrubbing;
+    private bool _isRulerDragging;
+    private Point _scrubStartPoint;
+
+    // Waveform support
+    private WaveformService? _waveformService;
+    private WaveformData? _audioWaveformData;
+    private string? _loadedAudioFilePath;
 
     /// <summary>
     /// Gets or sets the view model.
@@ -92,16 +105,19 @@ public partial class ArrangementView : UserControl
             case nameof(ArrangementViewModel.Arrangement):
                 MarkerTrackControl.MarkerTrack = _viewModel?.Arrangement?.MarkerTrack;
                 RefreshSections();
+                UpdateWaveformSync();
                 break;
             case nameof(ArrangementViewModel.PlaybackPosition):
                 UpdatePlayhead();
                 MarkerTrackControl.PlaybackPosition = _viewModel?.PlaybackPosition ?? 0;
+                UpdateWaveformSync();
                 break;
             case nameof(ArrangementViewModel.VisibleBeats):
             case nameof(ArrangementViewModel.ScrollOffset):
                 RefreshView();
                 MarkerTrackControl.VisibleBeats = _viewModel?.VisibleBeats ?? 64;
                 MarkerTrackControl.ScrollOffset = _viewModel?.ScrollOffset ?? 0;
+                UpdateWaveformSync();
                 break;
         }
     }
@@ -469,6 +485,15 @@ public partial class ArrangementView : UserControl
         {
             var position = PositionToBeats(e.GetPosition(SectionCanvas).X);
             SeekRequested?.Invoke(this, position);
+            return;
+        }
+
+        // Single click - start scrubbing if clicking in empty area (not on a section)
+        var clickedSection = GetSectionAtPosition(e.GetPosition(SectionCanvas));
+        if (clickedSection == null)
+        {
+            StartTimelineScrub(e.GetPosition(SectionCanvas));
+            e.Handled = true;
         }
     }
 
@@ -493,6 +518,14 @@ public partial class ArrangementView : UserControl
 
     private void SectionCanvas_MouseMove(object sender, MouseEventArgs e)
     {
+        // Handle timeline scrubbing
+        if (_isScrubbing && e.LeftButton == MouseButtonState.Pressed)
+        {
+            UpdateTimelineScrub(e.GetPosition(SectionCanvas));
+            return;
+        }
+
+        // Handle section dragging
         if (_draggingSection != null && e.LeftButton == MouseButtonState.Pressed)
         {
             var currentPoint = e.GetPosition(SectionCanvas);
@@ -537,6 +570,16 @@ public partial class ArrangementView : UserControl
 
     private void SectionCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
+        // Handle timeline scrub end
+        if (_isScrubbing)
+        {
+            // Check if Shift is held to continue playback
+            var continuePlayback = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+            EndTimelineScrub(continuePlayback);
+            return;
+        }
+
+        // Handle section drag end
         if (_draggingSection != null)
         {
             // Find and release the container
@@ -729,6 +772,261 @@ public partial class ArrangementView : UserControl
             "Outro" => SectionType.Outro,
             _ => SectionType.Custom
         };
+    }
+
+    #endregion
+
+    #region Timeline Scrubbing
+
+    /// <summary>
+    /// Starts scrubbing on the timeline.
+    /// </summary>
+    /// <param name="position">The mouse position on the canvas.</param>
+    private void StartTimelineScrub(Point position)
+    {
+        if (_isScrubbing)
+        {
+            return;
+        }
+
+        _isScrubbing = true;
+        _scrubStartPoint = position;
+
+        var beat = PositionToBeats(position.X);
+        ScrubService.Instance.StartScrub(beat);
+
+        // Capture mouse for tracking drag outside control bounds
+        SectionCanvas.CaptureMouse();
+
+        // Update cursor to indicate scrubbing
+        SectionCanvas.Cursor = Cursors.IBeam;
+    }
+
+    /// <summary>
+    /// Updates the scrub position during drag.
+    /// </summary>
+    /// <param name="position">The current mouse position.</param>
+    private void UpdateTimelineScrub(Point position)
+    {
+        if (!_isScrubbing)
+        {
+            return;
+        }
+
+        var beat = PositionToBeats(position.X);
+        ScrubService.Instance.UpdateScrub(beat);
+
+        // Also update the view model's playback position for visual feedback
+        if (_viewModel != null)
+        {
+            _viewModel.PlaybackPosition = beat;
+        }
+    }
+
+    /// <summary>
+    /// Ends the timeline scrubbing operation.
+    /// </summary>
+    /// <param name="continuePlayback">Whether to continue playback from the scrub position.</param>
+    private void EndTimelineScrub(bool continuePlayback = false)
+    {
+        if (!_isScrubbing)
+        {
+            return;
+        }
+
+        _isScrubbing = false;
+        SectionCanvas.ReleaseMouseCapture();
+        SectionCanvas.Cursor = Cursors.Arrow;
+
+        ScrubService.Instance.EndScrub(continuePlayback);
+
+        // Notify that seek was requested
+        SeekRequested?.Invoke(this, ScrubService.Instance.ScrubPosition);
+    }
+
+    /// <summary>
+    /// Cancels the scrubbing operation.
+    /// </summary>
+    private void CancelTimelineScrub()
+    {
+        if (!_isScrubbing)
+        {
+            return;
+        }
+
+        _isScrubbing = false;
+        SectionCanvas.ReleaseMouseCapture();
+        SectionCanvas.Cursor = Cursors.Arrow;
+
+        ScrubService.Instance.CancelScrub();
+    }
+
+    #endregion
+
+    #region Waveform / Audio Track
+
+    /// <summary>
+    /// Gets or sets whether the audio track is visible.
+    /// </summary>
+    public bool IsAudioTrackVisible
+    {
+        get => AudioTrackBorder.Visibility == Visibility.Visible;
+        set => AudioTrackBorder.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// Gets the currently loaded waveform data.
+    /// </summary>
+    public WaveformData? AudioWaveformData => _audioWaveformData;
+
+    /// <summary>
+    /// Gets or sets the waveform service for loading audio files.
+    /// </summary>
+    public WaveformService WaveformService
+    {
+        get
+        {
+            _waveformService ??= new WaveformService();
+            return _waveformService;
+        }
+        set => _waveformService = value;
+    }
+
+    /// <summary>
+    /// Loads an audio file into the audio track.
+    /// </summary>
+    /// <param name="filePath">Path to the audio file.</param>
+    public async Task LoadAudioFileAsync(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            return;
+
+        try
+        {
+            AudioWaveformDisplay.IsLoading = true;
+            IsAudioTrackVisible = true;
+
+            _audioWaveformData = await WaveformService.LoadFromFileAsync(filePath);
+            _loadedAudioFilePath = filePath;
+
+            AudioWaveformDisplay.WaveformData = _audioWaveformData;
+            AudioTrackName.Text = Path.GetFileName(filePath);
+
+            // Sync zoom and scroll
+            SyncWaveformToArrangement();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to load audio file: {ex.Message}");
+            MessageBox.Show($"Failed to load audio file:\n{ex.Message}", "Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            AudioWaveformDisplay.IsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Clears the audio track.
+    /// </summary>
+    public void ClearAudioTrack()
+    {
+        _audioWaveformData = null;
+        _loadedAudioFilePath = null;
+        AudioWaveformDisplay.WaveformData = null;
+        AudioTrackName.Text = "";
+        IsAudioTrackVisible = false;
+    }
+
+    /// <summary>
+    /// Shows the audio track (empty if no audio loaded).
+    /// </summary>
+    public void ShowAudioTrack()
+    {
+        IsAudioTrackVisible = true;
+    }
+
+    /// <summary>
+    /// Hides the audio track.
+    /// </summary>
+    public void HideAudioTrack()
+    {
+        IsAudioTrackVisible = false;
+    }
+
+    private void SyncWaveformToArrangement()
+    {
+        if (_viewModel == null || _audioWaveformData == null || !_audioWaveformData.IsLoaded)
+            return;
+
+        // Calculate samples per pixel based on visible beats and BPM
+        var bpm = _viewModel.Arrangement?.Bpm ?? 120;
+        var visibleBeats = _viewModel.VisibleBeats;
+        var visibleSeconds = visibleBeats / (bpm / 60.0);
+        var visibleSamples = (int)(visibleSeconds * _audioWaveformData.SampleRate);
+        var canvasWidth = SectionCanvas.ActualWidth;
+
+        if (canvasWidth > 0 && visibleSamples > 0)
+        {
+            AudioWaveformDisplay.SamplesPerPixel = Math.Max(1, visibleSamples / (int)canvasWidth);
+        }
+
+        // Calculate scroll offset
+        var scrollBeats = _viewModel.ScrollOffset;
+        var scrollSeconds = scrollBeats / (bpm / 60.0);
+        var scrollSamples = (long)(scrollSeconds * _audioWaveformData.SampleRate);
+        AudioWaveformDisplay.ScrollOffset = scrollSamples;
+
+        // Calculate playhead position
+        var playbackBeats = _viewModel.PlaybackPosition;
+        var playbackSeconds = playbackBeats / (bpm / 60.0);
+        var playbackSamples = (long)(playbackSeconds * _audioWaveformData.SampleRate);
+        AudioWaveformDisplay.PlayheadPosition = playbackSamples;
+    }
+
+    private void LoadAudio_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "Load Audio File",
+            Filter = "Audio Files|*.wav;*.mp3;*.aiff;*.aif|WAV Files|*.wav|MP3 Files|*.mp3|All Files|*.*",
+            CheckFileExists = true
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            _ = LoadAudioFileAsync(dialog.FileName);
+        }
+    }
+
+    private void ClearAudio_Click(object sender, RoutedEventArgs e)
+    {
+        ClearAudioTrack();
+    }
+
+    private void AudioWaveformDisplay_PlayheadRequested(object? sender, WaveformPositionEventArgs e)
+    {
+        if (_viewModel == null || _audioWaveformData == null || !_audioWaveformData.IsLoaded)
+            return;
+
+        // Convert sample position to beats
+        var bpm = _viewModel.Arrangement?.Bpm ?? 120;
+        var seconds = (double)e.SamplePosition / _audioWaveformData.SampleRate;
+        var beats = seconds * (bpm / 60.0);
+
+        SeekRequested?.Invoke(this, beats);
+    }
+
+    /// <summary>
+    /// Updates the waveform display when the arrangement view changes.
+    /// </summary>
+    private void UpdateWaveformSync()
+    {
+        if (_audioWaveformData != null && _audioWaveformData.IsLoaded)
+        {
+            SyncWaveformToArrangement();
+        }
     }
 
     #endregion

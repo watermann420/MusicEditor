@@ -1,0 +1,437 @@
+<Window x:Class="MusicEngineEditor.Views.Dialogs.RecordingSetupDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Recording Setup"
+        Width="500" Height="550"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Background="#1E1F22">
+
+    <Window.Resources>
+        <!-- Colors matching the dark theme -->
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#1E1F22"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="CardHoverBrush" Color="#313335"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="BrightForegroundBrush" Color="#DFE1E5"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
+        <SolidColorBrush x:Key="RecordBrush" Color="#FF3333"/>
+        <SolidColorBrush x:Key="RecordHoverBrush" Color="#FF5555"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="#E8B339"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#F75464"/>
+
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- Section Header Style -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryForegroundBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- Card Style -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <!-- Primary Button Style -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Record Button Style -->
+        <Style x:Key="RecordButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource RecordBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="6">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Ellipse Width="10" Height="10" Fill="White" Margin="0,0,8,0"/>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource RecordHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Secondary Button Style -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#3C3F44"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#4A4D52"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- CheckBox Style -->
+        <Style x:Key="SettingsCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="SettingsComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="#252628"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinWidth" Value="120"/>
+        </Style>
+
+        <!-- Level Meter Style -->
+        <Style x:Key="LevelMeterStyle" TargetType="ProgressBar">
+            <Setter Property="Height" Value="6"/>
+            <Setter Property="Background" Value="#252628"/>
+            <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Maximum" Value="1"/>
+        </Style>
+
+        <!-- Armed Track Item Template -->
+        <DataTemplate x:Key="ArmedTrackTemplate">
+            <Border Background="#252628" CornerRadius="4" Padding="10,8" Margin="0,2">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Color indicator -->
+                    <Border Grid.Column="0" Width="4" CornerRadius="2" Margin="0,0,10,0">
+                        <Border.Background>
+                            <SolidColorBrush Color="{Binding Color}"/>
+                        </Border.Background>
+                    </Border>
+
+                    <!-- Track info -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding TrackName}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ForegroundBrush}"
+                                   FontSize="12"/>
+                        <TextBlock Text="{Binding InputSourceName}"
+                                   Foreground="{StaticResource SecondaryForegroundBrush}"
+                                   FontSize="10"/>
+                    </StackPanel>
+
+                    <!-- Input level meter -->
+                    <ProgressBar Grid.Column="2"
+                                 Style="{StaticResource LevelMeterStyle}"
+                                 Value="{Binding InputLevel}"
+                                 VerticalAlignment="Center"/>
+
+                    <!-- Clipping indicator -->
+                    <Ellipse Grid.Column="3"
+                             Width="8" Height="8"
+                             Margin="8,0,0,0"
+                             VerticalAlignment="Center">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="#3C3F44"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsClipping}" Value="True">
+                                        <Setter Property="Fill" Value="{StaticResource ErrorBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="16,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#2B2D30" Offset="0"/>
+                    <GradientStop Color="#252628" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel>
+                <TextBlock Text="Recording Setup"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource BrightForegroundBrush}"/>
+                <TextBlock Text="Configure multi-track recording settings"
+                           FontSize="11"
+                           Foreground="{StaticResource SecondaryForegroundBrush}"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="16">
+            <StackPanel>
+                <!-- Armed Tracks Section -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="ARMED TRACKS" Style="{StaticResource SectionHeaderStyle}" Margin="0"/>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding ArmedTrackCount, StringFormat={}{0} track(s)}"
+                                       Foreground="{StaticResource SecondaryForegroundBrush}"
+                                       FontSize="11"/>
+                        </Grid>
+
+                        <!-- No tracks armed message -->
+                        <Border Visibility="{Binding HasArmedTracks, Converter={StaticResource BoolToVis}, ConverterParameter=Inverse}"
+                                Background="#252628" CornerRadius="4" Padding="20">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="No tracks armed"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ForegroundBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="Arm tracks in the mixer or arrangement view to record"
+                                           Foreground="{StaticResource SecondaryForegroundBrush}"
+                                           FontSize="11"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Armed tracks list -->
+                        <ItemsControl ItemsSource="{Binding ArmedTracks}"
+                                      ItemTemplate="{StaticResource ArmedTrackTemplate}"
+                                      Visibility="{Binding HasArmedTracks, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Recording Settings Section -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="RECORDING FORMAT" Style="{StaticResource SectionHeaderStyle}"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Sample Rate -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Sample Rate"
+                                       Foreground="{StaticResource ForegroundBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,0,8"/>
+                            <ComboBox Grid.Row="0" Grid.Column="1"
+                                      Style="{StaticResource SettingsComboBoxStyle}"
+                                      SelectedItem="{Binding SampleRate}"
+                                      Margin="0,0,0,8">
+                                <ComboBoxItem Content="44100 Hz"/>
+                                <ComboBoxItem Content="48000 Hz"/>
+                                <ComboBoxItem Content="88200 Hz"/>
+                                <ComboBoxItem Content="96000 Hz"/>
+                            </ComboBox>
+
+                            <!-- Bit Depth -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Bit Depth"
+                                       Foreground="{StaticResource ForegroundBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,0,8"/>
+                            <ComboBox Grid.Row="1" Grid.Column="1"
+                                      Style="{StaticResource SettingsComboBoxStyle}"
+                                      SelectedItem="{Binding BitDepth}"
+                                      Margin="0,0,0,8">
+                                <ComboBoxItem Content="16-bit"/>
+                                <ComboBoxItem Content="24-bit"/>
+                                <ComboBoxItem Content="32-bit float"/>
+                            </ComboBox>
+
+                            <!-- Channels -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Channels"
+                                       Foreground="{StaticResource ForegroundBrush}"
+                                       VerticalAlignment="Center"/>
+                            <ComboBox Grid.Row="2" Grid.Column="1"
+                                      Style="{StaticResource SettingsComboBoxStyle}"
+                                      SelectedItem="{Binding Channels}">
+                                <ComboBoxItem Content="Mono"/>
+                                <ComboBoxItem Content="Stereo"/>
+                            </ComboBox>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Count-In and Click Section -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="COUNT-IN AND CLICK" Style="{StaticResource SectionHeaderStyle}"/>
+
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Count-In Bars"
+                                       Foreground="{StaticResource ForegroundBrush}"
+                                       VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="1"
+                                      Style="{StaticResource SettingsComboBoxStyle}"
+                                      SelectedIndex="{Binding CountInBarsIndex}">
+                                <ComboBoxItem Content="None"/>
+                                <ComboBoxItem Content="1 Bar"/>
+                                <ComboBoxItem Content="2 Bars"/>
+                                <ComboBoxItem Content="4 Bars"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <CheckBox Style="{StaticResource SettingsCheckBoxStyle}"
+                                  IsChecked="{Binding ClickTrackEnabled}"
+                                  Content="Enable click track during recording"/>
+
+                        <CheckBox Style="{StaticResource SettingsCheckBoxStyle}"
+                                  IsChecked="{Binding PlaybackDuringRecording}"
+                                  Content="Play existing tracks during recording"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Recording Path Section -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="RECORDING LOCATION" Style="{StaticResource SectionHeaderStyle}"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding RecordingsPath}"
+                                     Background="#252628"
+                                     Foreground="{StaticResource ForegroundBrush}"
+                                     BorderBrush="{StaticResource BorderBrush}"
+                                     Padding="8,6"
+                                     IsReadOnly="True"/>
+                            <Button Grid.Column="1"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Content="Browse..."
+                                    Click="BrowsePath_Click"
+                                    Margin="8,0,0,0"
+                                    Padding="12,6"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer Buttons -->
+        <Border Grid.Row="2" Padding="16,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Status message -->
+                <TextBlock Grid.Column="0"
+                           Text="{Binding StatusMessage}"
+                           Foreground="{StaticResource SecondaryForegroundBrush}"
+                           VerticalAlignment="Center"
+                           FontSize="11"/>
+
+                <Button Grid.Column="1"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Content="Cancel"
+                        Click="Cancel_Click"
+                        Margin="0,0,8,0"/>
+
+                <Button Grid.Column="2"
+                        Style="{StaticResource RecordButtonStyle}"
+                        Content="Start Recording"
+                        Click="StartRecording_Click"
+                        IsEnabled="{Binding CanRecord}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

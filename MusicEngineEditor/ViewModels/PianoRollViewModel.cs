@@ -7,7 +7,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MusicEngineEditor.Commands;
 using MusicEngineEditor.Models;
+using MusicEngineEditor.Services;
 
 namespace MusicEngineEditor.ViewModels;
 
@@ -39,14 +41,26 @@ public enum PianoRollTool
 
 /// <summary>
 /// ViewModel for the Piano Roll editor, managing notes, selection, tools, and playback state.
+/// Integrates with PlaybackService for synchronized playback and note preview.
 /// </summary>
-public partial class PianoRollViewModel : ViewModelBase
+public partial class PianoRollViewModel : ViewModelBase, IDisposable
 {
     #region Constants
 
     private const double MinZoom = 0.1;
     private const double MaxZoom = 10.0;
     private const double ZoomStep = 0.25;
+
+    #endregion
+
+    #region Private Fields
+
+    private readonly PlaybackService _playbackService;
+    private readonly AudioEngineService _audioEngineService;
+    private EventBus.SubscriptionToken? _beatSubscription;
+    private EventBus.SubscriptionToken? _playbackStartedSubscription;
+    private EventBus.SubscriptionToken? _playbackStoppedSubscription;
+    private bool _disposed;
 
     #endregion
 
@@ -61,6 +75,32 @@ public partial class PianoRollViewModel : ViewModelBase
     /// Gets the collection of currently selected notes.
     /// </summary>
     public ObservableCollection<PianoRollNote> SelectedNotes { get; } = new();
+
+    /// <summary>
+    /// Gets the collection of all MIDI CC events across all controllers.
+    /// </summary>
+    public ObservableCollection<MidiCCEvent> AllCCEvents { get; } = new();
+
+    /// <summary>
+    /// Gets the collection of CC lane view models.
+    /// </summary>
+    public ObservableCollection<MidiCCLaneViewModel> CCLanes { get; } = new();
+
+    #endregion
+
+    #region CC Lane Properties
+
+    /// <summary>
+    /// Gets or sets the currently selected CC lane.
+    /// </summary>
+    [ObservableProperty]
+    private MidiCCLaneViewModel? _selectedCCLane;
+
+    /// <summary>
+    /// Gets or sets whether the CC lanes section is expanded.
+    /// </summary>
+    [ObservableProperty]
+    private bool _ccLanesExpanded = true;
 
     #endregion
 
@@ -212,8 +252,226 @@ public partial class PianoRollViewModel : ViewModelBase
     /// </summary>
     public PianoRollViewModel()
     {
+        _playbackService = PlaybackService.Instance;
+        _audioEngineService = AudioEngineService.Instance;
+
         Notes.CollectionChanged += (_, _) => OnPropertyChanged(nameof(Notes));
         SelectedNotes.CollectionChanged += (_, _) => OnPropertyChanged(nameof(SelectedNotes));
+
+        // Subscribe to playback events
+        SubscribeToPlaybackEvents();
+    }
+
+    #endregion
+
+    #region Playback Integration
+
+    /// <summary>
+    /// Subscribes to playback service events for synchronized playback.
+    /// </summary>
+    private void SubscribeToPlaybackEvents()
+    {
+        // Subscribe via EventBus for thread-safe UI updates
+        var eventBus = EventBus.Instance;
+
+        _beatSubscription = eventBus.SubscribeBeatChanged(OnBeatChanged);
+        _playbackStartedSubscription = eventBus.SubscribePlaybackStarted(OnPlaybackStarted);
+        _playbackStoppedSubscription = eventBus.SubscribePlaybackStopped(OnPlaybackStopped);
+    }
+
+    private void OnBeatChanged(EventBus.BeatChangedEventArgs args)
+    {
+        // Update playhead position
+        PlayheadPosition = args.CurrentBeat;
+
+        // Handle looping within the piano roll
+        if (LoopEnabled && PlayheadPosition >= LoopEnd)
+        {
+            // Let the PlaybackService handle global looping
+            // This is just for visual feedback
+        }
+
+        // Trigger notes at current position during playback
+        if (IsPlaying)
+        {
+            TriggerNotesAtPosition(args.CurrentBeat);
+        }
+    }
+
+    private void OnPlaybackStarted(EventBus.PlaybackStartedEventArgs args)
+    {
+        IsPlaying = true;
+    }
+
+    private void OnPlaybackStopped(EventBus.PlaybackStoppedEventArgs args)
+    {
+        IsPlaying = false;
+        AllNotesOff();
+    }
+
+    /// <summary>
+    /// Triggers notes that should sound at the given beat position.
+    /// </summary>
+    /// <param name="beat">The current beat position.</param>
+    private void TriggerNotesAtPosition(double beat)
+    {
+        // Find notes that start at this beat (within a small tolerance)
+        const double tolerance = 0.05; // About 50ms at 120 BPM
+
+        foreach (var note in Notes)
+        {
+            if (Math.Abs(note.StartBeat - beat) < tolerance)
+            {
+                // Trigger note on
+                PlayNoteDuringPlayback(note);
+            }
+            else if (Math.Abs(note.GetEndBeat() - beat) < tolerance)
+            {
+                // Trigger note off
+                StopNoteDuringPlayback(note);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Plays a note during playback through the audio engine.
+    /// </summary>
+    /// <param name="note">The note to play.</param>
+    private void PlayNoteDuringPlayback(PianoRollNote note)
+    {
+        try
+        {
+            _audioEngineService.PlayNotePreview(note.Note, note.Velocity);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error playing note: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Stops a note during playback.
+    /// </summary>
+    /// <param name="note">The note to stop.</param>
+    private void StopNoteDuringPlayback(PianoRollNote note)
+    {
+        try
+        {
+            _audioEngineService.StopNotePreview(note.Note);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error stopping note: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Stops all currently playing notes.
+    /// </summary>
+    private void AllNotesOff()
+    {
+        try
+        {
+            _audioEngineService.AllNotesOff();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error stopping all notes: {ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region Playback Commands
+
+    /// <summary>
+    /// Starts or resumes playback.
+    /// </summary>
+    [RelayCommand]
+    private void Play()
+    {
+        _playbackService.Play();
+    }
+
+    /// <summary>
+    /// Pauses playback.
+    /// </summary>
+    [RelayCommand]
+    private void PausePlayback()
+    {
+        _playbackService.Pause();
+    }
+
+    /// <summary>
+    /// Stops playback and resets position.
+    /// </summary>
+    [RelayCommand]
+    private void StopPlayback()
+    {
+        _playbackService.Stop();
+        PlayheadPosition = 0;
+    }
+
+    /// <summary>
+    /// Toggles play/pause.
+    /// </summary>
+    [RelayCommand]
+    private void TogglePlayPause()
+    {
+        _playbackService.TogglePlayPause();
+    }
+
+    /// <summary>
+    /// Jumps playhead to the specified beat position.
+    /// </summary>
+    /// <param name="beat">The beat position to jump to.</param>
+    [RelayCommand]
+    private void JumpToPosition(double beat)
+    {
+        _playbackService.SetPosition(beat);
+        PlayheadPosition = beat;
+    }
+
+    /// <summary>
+    /// Toggles loop mode.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleLoopMode()
+    {
+        LoopEnabled = !LoopEnabled;
+        _playbackService.LoopEnabled = LoopEnabled;
+    }
+
+    /// <summary>
+    /// Sets the loop region from the current pattern bounds.
+    /// </summary>
+    [RelayCommand]
+    private void SetLoopToPattern()
+    {
+        _playbackService.SetLoopRegion(0, TotalBeats);
+        LoopStart = 0;
+        LoopEnd = TotalBeats;
+    }
+
+    /// <summary>
+    /// Sets the loop region from selected notes.
+    /// </summary>
+    [RelayCommand]
+    private void SetLoopToSelection()
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            StatusMessage = "No notes selected";
+            return;
+        }
+
+        var minStart = SelectedNotes.Min(n => n.StartBeat);
+        var maxEnd = SelectedNotes.Max(n => n.GetEndBeat());
+
+        LoopStart = minStart;
+        LoopEnd = maxEnd;
+        _playbackService.SetLoopRegion(minStart, maxEnd);
+        StatusMessage = $"Loop set: {minStart:F1} - {maxEnd:F1}";
     }
 
     #endregion
@@ -393,26 +651,231 @@ public partial class PianoRollViewModel : ViewModelBase
 
     #endregion
 
-    #region Undo/Redo Commands (Placeholder)
+    #region Undo/Redo Integration
 
     /// <summary>
-    /// Undoes the last action (placeholder implementation).
+    /// Gets the editor undo service.
     /// </summary>
-    [RelayCommand]
-    private void Undo()
+    private EditorUndoService UndoService => EditorUndoService.Instance;
+
+    /// <summary>
+    /// Adds a note with undo support.
+    /// </summary>
+    /// <param name="note">MIDI note number (0-127).</param>
+    /// <param name="startBeat">Start position in beats.</param>
+    /// <param name="duration">Duration in beats.</param>
+    /// <param name="velocity">Velocity (0-127).</param>
+    /// <returns>The created note.</returns>
+    public PianoRollNote AddNoteWithUndo(int note, double startBeat, double duration, int velocity)
     {
-        // TODO: Implement undo functionality with command pattern or memento
-        StatusMessage = "Undo not yet implemented";
+        var pianoNote = new PianoRollNote
+        {
+            Note = Math.Clamp(note, 0, 127),
+            StartBeat = Math.Max(0, startBeat),
+            Duration = Math.Max(GridSnapValue, duration),
+            Velocity = Math.Clamp(velocity, 0, 127)
+        };
+
+        var command = new NoteAddCommand(Notes, pianoNote);
+        UndoService.Execute(command);
+        return pianoNote;
     }
 
     /// <summary>
-    /// Redoes the last undone action (placeholder implementation).
+    /// Removes a note with undo support.
+    /// </summary>
+    /// <param name="note">The note to remove.</param>
+    public void RemoveNoteWithUndo(PianoRollNote note)
+    {
+        if (note.IsSelected)
+        {
+            SelectedNotes.Remove(note);
+        }
+        var command = new NoteDeleteCommand(Notes, note);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Deletes selected notes with undo support.
     /// </summary>
     [RelayCommand]
-    private void Redo()
+    private void DeleteSelectedWithUndo()
     {
-        // TODO: Implement redo functionality with command pattern or memento
-        StatusMessage = "Redo not yet implemented";
+        if (SelectedNotes.Count == 0)
+        {
+            StatusMessage = "No notes selected to delete";
+            return;
+        }
+
+        var notesToRemove = SelectedNotes.ToList();
+        var command = new NoteDeleteCommand(Notes, notesToRemove);
+        UndoService.Execute(command);
+        SelectedNotes.Clear();
+        StatusMessage = $"Deleted {notesToRemove.Count} note(s)";
+    }
+
+    /// <summary>
+    /// Moves notes with undo support.
+    /// </summary>
+    /// <param name="notes">The notes to move.</param>
+    /// <param name="beatDelta">Horizontal movement in beats.</param>
+    /// <param name="noteDelta">Vertical movement in semitones.</param>
+    public void MoveNotesWithUndo(IEnumerable<PianoRollNote> notes, double beatDelta, int noteDelta)
+    {
+        var notesList = notes.ToList();
+        if (notesList.Count == 0) return;
+
+        var newPositions = notesList.Select(n => (
+            Math.Max(0, n.StartBeat + beatDelta),
+            Math.Clamp(n.Note + noteDelta, 0, 127)
+        )).ToList();
+
+        var command = new NoteMoveCommand(notesList, newPositions);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Resizes notes with undo support.
+    /// </summary>
+    /// <param name="notes">The notes to resize.</param>
+    /// <param name="newDurations">The new durations.</param>
+    public void ResizeNotesWithUndo(IEnumerable<PianoRollNote> notes, IEnumerable<double> newDurations)
+    {
+        var notesList = notes.ToList();
+        var durationsList = newDurations.Select(d => Math.Max(GridSnapValue, d)).ToList();
+
+        if (notesList.Count == 0 || notesList.Count != durationsList.Count) return;
+
+        var command = new NoteResizeCommand(notesList, durationsList);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Sets velocity of selected notes with undo support.
+    /// </summary>
+    /// <param name="velocity">The velocity value (0-127).</param>
+    [RelayCommand]
+    private void SetVelocityWithUndo(int velocity)
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            StatusMessage = "No notes selected";
+            return;
+        }
+
+        velocity = Math.Clamp(velocity, 0, 127);
+        var command = new NoteVelocityCommand(SelectedNotes, velocity);
+        UndoService.Execute(command);
+        StatusMessage = $"Set velocity to {velocity} for {SelectedNotes.Count} note(s)";
+    }
+
+    /// <summary>
+    /// Transposes selected notes with undo support.
+    /// </summary>
+    /// <param name="semitones">Number of semitones to transpose.</param>
+    [RelayCommand]
+    private void TransposeWithUndo(int semitones)
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            StatusMessage = "No notes selected";
+            return;
+        }
+
+        var notesList = SelectedNotes.ToList();
+        var newPositions = notesList.Select(n => (
+            n.StartBeat,
+            Math.Clamp(n.Note + semitones, 0, 127)
+        )).ToList();
+
+        var command = new NoteMoveCommand(notesList, newPositions);
+        UndoService.Execute(command);
+        StatusMessage = $"Transposed {SelectedNotes.Count} note(s) by {semitones} semitones";
+    }
+
+    /// <summary>
+    /// Pastes notes with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void PasteWithUndo()
+    {
+        if (_clipboard.Count == 0)
+        {
+            StatusMessage = "Clipboard is empty";
+            return;
+        }
+
+        DeselectAll();
+        double pastePosition = PlayheadPosition;
+
+        using var batch = UndoService.BeginBatch($"Paste {_clipboard.Count} Note(s)");
+
+        foreach (var clipboardNote in _clipboard)
+        {
+            var newNote = clipboardNote.Clone();
+            newNote.StartBeat = pastePosition + clipboardNote.StartBeat;
+            newNote.IsSelected = true;
+
+            var command = new NoteAddCommand(Notes, newNote);
+            batch.Execute(command);
+            SelectedNotes.Add(newNote);
+        }
+
+        StatusMessage = $"Pasted {_clipboard.Count} note(s) at beat {pastePosition:F2}";
+    }
+
+    /// <summary>
+    /// Cuts selected notes with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void CutWithUndo()
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            StatusMessage = "No notes selected to cut";
+            return;
+        }
+
+        Copy();
+        var count = SelectedNotes.Count;
+        DeleteSelectedWithUndo();
+        StatusMessage = $"Cut {count} note(s)";
+    }
+
+    /// <summary>
+    /// Duplicates selected notes with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void DuplicateSelectedWithUndo()
+    {
+        if (SelectedNotes.Count == 0)
+            return;
+
+        var duplicates = new List<PianoRollNote>();
+        double offset = GridSnapValue;
+
+        using var batch = UndoService.BeginBatch($"Duplicate {SelectedNotes.Count} Note(s)");
+
+        foreach (var note in SelectedNotes)
+        {
+            var duplicate = note.Clone();
+            duplicate.StartBeat += offset;
+            duplicate.IsSelected = false;
+
+            var command = new NoteAddCommand(Notes, duplicate);
+            batch.Execute(command);
+            duplicates.Add(duplicate);
+        }
+
+        // Deselect original notes and select duplicates
+        DeselectAll();
+        foreach (var duplicate in duplicates)
+        {
+            duplicate.IsSelected = true;
+            SelectedNotes.Add(duplicate);
+        }
+
+        StatusMessage = $"Duplicated {duplicates.Count} note(s)";
     }
 
     #endregion
@@ -648,6 +1111,178 @@ public partial class PianoRollViewModel : ViewModelBase
 
     #endregion
 
+    #region CC Lane Commands
+
+    /// <summary>
+    /// Adds a new CC lane with the specified controller.
+    /// </summary>
+    /// <param name="controller">The CC controller number (0-127). If null, uses a default controller.</param>
+    [RelayCommand]
+    private void AddCCLane(int? controller = null)
+    {
+        // Find a controller not already used, or use the specified one
+        int ccNumber = controller ?? GetNextAvailableCCController();
+
+        var newLane = new MidiCCLaneViewModel(AllCCEvents)
+        {
+            SelectedController = ccNumber
+        };
+
+        CCLanes.Add(newLane);
+        SelectedCCLane = newLane;
+        StatusMessage = $"Added CC lane: CC{ccNumber} ({MidiCCEvent.GetControllerName(ccNumber)})";
+    }
+
+    /// <summary>
+    /// Removes a CC lane.
+    /// </summary>
+    /// <param name="lane">The lane to remove.</param>
+    [RelayCommand]
+    private void RemoveCCLane(MidiCCLaneViewModel? lane)
+    {
+        if (lane == null) return;
+
+        CCLanes.Remove(lane);
+
+        if (SelectedCCLane == lane)
+        {
+            SelectedCCLane = CCLanes.FirstOrDefault();
+        }
+
+        StatusMessage = $"Removed CC lane: {lane.DisplayName}";
+    }
+
+    /// <summary>
+    /// Removes the currently selected CC lane.
+    /// </summary>
+    [RelayCommand]
+    private void RemoveSelectedCCLane()
+    {
+        RemoveCCLane(SelectedCCLane);
+    }
+
+    /// <summary>
+    /// Toggles the CC lanes section visibility.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleCCLanesExpanded()
+    {
+        CcLanesExpanded = !CcLanesExpanded;
+    }
+
+    /// <summary>
+    /// Clears all CC events for a specific controller.
+    /// </summary>
+    /// <param name="controller">The CC controller number.</param>
+    [RelayCommand]
+    private void ClearCCController(int controller)
+    {
+        var eventsToRemove = AllCCEvents
+            .Where(e => e.Controller == controller)
+            .ToList();
+
+        foreach (var evt in eventsToRemove)
+        {
+            AllCCEvents.Remove(evt);
+        }
+
+        StatusMessage = $"Cleared all CC{controller} events";
+    }
+
+    /// <summary>
+    /// Gets the next available CC controller number not already used by a lane.
+    /// </summary>
+    /// <returns>An unused CC controller number.</returns>
+    private int GetNextAvailableCCController()
+    {
+        var usedControllers = CCLanes.Select(l => l.SelectedController).ToHashSet();
+
+        // Try common controllers first
+        int[] preferredControllers = [1, 7, 10, 11, 64, 74, 91, 93];
+        foreach (var cc in preferredControllers)
+        {
+            if (!usedControllers.Contains(cc))
+            {
+                return cc;
+            }
+        }
+
+        // Otherwise find any unused controller
+        for (int cc = 0; cc < 128; cc++)
+        {
+            if (!usedControllers.Contains(cc))
+            {
+                return cc;
+            }
+        }
+
+        return 1; // Fallback to modulation
+    }
+
+    /// <summary>
+    /// Adds a CC event to the shared collection.
+    /// </summary>
+    /// <param name="beat">Beat position.</param>
+    /// <param name="controller">CC controller number.</param>
+    /// <param name="value">CC value (0-127).</param>
+    /// <returns>The created CC event.</returns>
+    public MidiCCEvent AddCCEvent(double beat, int controller, int value)
+    {
+        var evt = new MidiCCEvent(beat, controller, value);
+        AllCCEvents.Add(evt);
+        return evt;
+    }
+
+    /// <summary>
+    /// Removes a CC event from the shared collection.
+    /// </summary>
+    /// <param name="evt">The event to remove.</param>
+    /// <returns>True if the event was removed; otherwise false.</returns>
+    public bool RemoveCCEvent(MidiCCEvent evt)
+    {
+        return AllCCEvents.Remove(evt);
+    }
+
+    /// <summary>
+    /// Gets all CC events for a specific controller.
+    /// </summary>
+    /// <param name="controller">The CC controller number.</param>
+    /// <returns>Collection of CC events for the controller.</returns>
+    public IEnumerable<MidiCCEvent> GetCCEventsForController(int controller)
+    {
+        return AllCCEvents.Where(e => e.Controller == controller).OrderBy(e => e.Beat);
+    }
+
+    /// <summary>
+    /// Gets the interpolated CC value at a specific beat for a controller.
+    /// </summary>
+    /// <param name="controller">The CC controller number.</param>
+    /// <param name="beat">The beat position.</param>
+    /// <returns>The interpolated value, or null if no events exist.</returns>
+    public int? GetCCValueAtBeat(int controller, double beat)
+    {
+        var events = GetCCEventsForController(controller).ToList();
+
+        if (events.Count == 0) return null;
+
+        if (beat <= events[0].Beat) return events[0].Value;
+        if (beat >= events[^1].Beat) return events[^1].Value;
+
+        for (int i = 0; i < events.Count - 1; i++)
+        {
+            if (beat >= events[i].Beat && beat < events[i + 1].Beat)
+            {
+                // Linear interpolation
+                double t = (beat - events[i].Beat) / (events[i + 1].Beat - events[i].Beat);
+                return (int)Math.Round(events[i].Value + t * (events[i + 1].Value - events[i].Value));
+            }
+        }
+
+        return events[^1].Value;
+    }
+
+    #endregion
+
     #region Note Preview
 
     /// <summary>
@@ -659,6 +1294,17 @@ public partial class PianoRollViewModel : ViewModelBase
     {
         if (!NotePreviewEnabled) return;
 
+        // Play through audio engine service
+        try
+        {
+            _audioEngineService.PlayNotePreview(midiNote, velocity);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Note preview error: {ex.Message}");
+        }
+
+        // Also raise event for any other listeners
         NotePreviewRequested?.Invoke(this, new NotePreviewEventArgs(midiNote, velocity));
     }
 
@@ -668,6 +1314,17 @@ public partial class PianoRollViewModel : ViewModelBase
     /// <param name="midiNote">The MIDI note number to stop.</param>
     public void RequestNotePreviewStop(int midiNote)
     {
+        // Stop through audio engine service
+        try
+        {
+            _audioEngineService.StopNotePreview(midiNote);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Note preview stop error: {ex.Message}");
+        }
+
+        // Also raise event for any other listeners
         NotePreviewRequested?.Invoke(this, new NotePreviewEventArgs(midiNote, 0, isNoteOff: true));
     }
 
@@ -817,6 +1474,31 @@ public partial class PianoRollViewModel : ViewModelBase
         {
             LoopEnd = TotalBeats;
         }
+    }
+
+    #endregion
+
+    #region IDisposable
+
+    /// <summary>
+    /// Disposes the PianoRollViewModel, cleaning up event subscriptions.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        // Stop any playing notes
+        AllNotesOff();
+
+        // Dispose EventBus subscriptions
+        _beatSubscription?.Dispose();
+        _playbackStartedSubscription?.Dispose();
+        _playbackStoppedSubscription?.Dispose();
     }
 
     #endregion

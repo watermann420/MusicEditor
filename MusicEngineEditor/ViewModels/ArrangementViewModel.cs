@@ -1,18 +1,57 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MusicEngine.Core;
+using MusicEngineEditor.Commands;
+using MusicEngineEditor.Models;
+using MusicEngineEditor.Services;
 
 namespace MusicEngineEditor.ViewModels;
 
 /// <summary>
 /// ViewModel for the Arrangement view, managing song structure and sections.
+/// Integrates with PlaybackService for synchronized playhead and position control.
 /// </summary>
-public partial class ArrangementViewModel : ViewModelBase
+public partial class ArrangementViewModel : ViewModelBase, IDisposable
 {
     private Arrangement? _arrangement;
+    private readonly PlaybackService _playbackService;
+    private readonly RecordingService _recordingService;
+    private EventBus.SubscriptionToken? _beatSubscription;
+    private EventBus.SubscriptionToken? _playbackStartedSubscription;
+    private EventBus.SubscriptionToken? _playbackStoppedSubscription;
+    private bool _disposed;
+
+    /// <summary>
+    /// Gets or sets whether playback is currently active.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isPlaying;
+
+    /// <summary>
+    /// Gets or sets whether recording is currently active.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isRecording;
+
+    /// <summary>
+    /// Gets or sets whether count-in is active.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isCountingIn;
+
+    /// <summary>
+    /// Gets the collection of active recording clips.
+    /// </summary>
+    public ObservableCollection<RecordingClip> ActiveRecordingClips { get; } = [];
+
+    /// <summary>
+    /// Gets the collection of completed recording clips.
+    /// </summary>
+    public ObservableCollection<RecordingClip> CompletedRecordingClips { get; } = [];
 
     /// <summary>
     /// Gets or sets the arrangement being edited.
@@ -165,14 +204,363 @@ public partial class ArrangementViewModel : ViewModelBase
 
     public ArrangementViewModel()
     {
+        _playbackService = PlaybackService.Instance;
+        _recordingService = RecordingService.Instance;
+
         // Create a default arrangement
         Arrangement = new Arrangement { Name = "New Arrangement" };
+
+        // Subscribe to playback events
+        SubscribeToPlaybackEvents();
+
+        // Subscribe to recording events
+        SubscribeToRecordingEvents();
     }
 
     public ArrangementViewModel(Arrangement arrangement)
     {
+        _playbackService = PlaybackService.Instance;
+        _recordingService = RecordingService.Instance;
         Arrangement = arrangement;
+
+        // Subscribe to playback events
+        SubscribeToPlaybackEvents();
+
+        // Subscribe to recording events
+        SubscribeToRecordingEvents();
     }
+
+    #region Playback Integration
+
+    /// <summary>
+    /// Subscribes to playback service events for synchronized playhead.
+    /// </summary>
+    private void SubscribeToPlaybackEvents()
+    {
+        var eventBus = EventBus.Instance;
+
+        _beatSubscription = eventBus.SubscribeBeatChanged(args =>
+        {
+            PlaybackPosition = args.CurrentBeat;
+        });
+
+        _playbackStartedSubscription = eventBus.SubscribePlaybackStarted(args =>
+        {
+            IsPlaying = true;
+        });
+
+        _playbackStoppedSubscription = eventBus.SubscribePlaybackStopped(args =>
+        {
+            IsPlaying = false;
+        });
+    }
+
+    /// <summary>
+    /// Starts playback from the current position.
+    /// </summary>
+    [RelayCommand]
+    private void Play()
+    {
+        _playbackService.Play();
+    }
+
+    /// <summary>
+    /// Pauses playback.
+    /// </summary>
+    [RelayCommand]
+    private void Pause()
+    {
+        _playbackService.Pause();
+    }
+
+    /// <summary>
+    /// Stops playback and resets position.
+    /// </summary>
+    [RelayCommand]
+    private void Stop()
+    {
+        _playbackService.Stop();
+        PlaybackPosition = 0;
+    }
+
+    /// <summary>
+    /// Toggles play/pause.
+    /// </summary>
+    [RelayCommand]
+    private void TogglePlayPause()
+    {
+        _playbackService.TogglePlayPause();
+    }
+
+    /// <summary>
+    /// Handles double-click to jump to position.
+    /// </summary>
+    /// <param name="beat">The beat position to jump to.</param>
+    [RelayCommand]
+    private void JumpToPosition(double beat)
+    {
+        _playbackService.SetPosition(beat);
+        PlaybackPosition = beat;
+        SeekRequested?.Invoke(this, beat);
+    }
+
+    /// <summary>
+    /// Sets the loop region for the arrangement.
+    /// </summary>
+    /// <param name="start">Loop start position in beats.</param>
+    /// <param name="end">Loop end position in beats.</param>
+    [RelayCommand]
+    private void SetLoopRegion((double start, double end) region)
+    {
+        _playbackService.SetLoopRegion(region.start, region.end);
+    }
+
+    /// <summary>
+    /// Enables or disables looping.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleLoop()
+    {
+        _playbackService.ToggleLoop();
+    }
+
+    /// <summary>
+    /// Sets the loop region to the selected section.
+    /// </summary>
+    [RelayCommand]
+    private void SetLoopToSelectedSection()
+    {
+        if (SelectedSection == null)
+        {
+            StatusMessage = "No section selected";
+            return;
+        }
+
+        _playbackService.SetLoopRegion(SelectedSection.StartPosition, SelectedSection.EndPosition);
+        _playbackService.LoopEnabled = true;
+        StatusMessage = $"Loop set to: {SelectedSection.Name}";
+    }
+
+    #endregion
+
+    #region Recording Integration
+
+    /// <summary>
+    /// Subscribes to recording service events.
+    /// </summary>
+    private void SubscribeToRecordingEvents()
+    {
+        _recordingService.RecordingStarted += OnRecordingStarted;
+        _recordingService.RecordingStopped += OnRecordingStopped;
+        _recordingService.RecordingStateChanged += OnRecordingStateChanged;
+        _recordingService.CountInStarted += OnCountInStarted;
+        _recordingService.CountInBeat += OnCountInBeat;
+    }
+
+    /// <summary>
+    /// Starts recording on all armed tracks.
+    /// </summary>
+    [RelayCommand]
+    private async Task StartRecordingAsync()
+    {
+        if (IsRecording || !_recordingService.HasArmedTracks)
+        {
+            StatusMessage = IsRecording ? "Already recording" : "No tracks armed";
+            return;
+        }
+
+        try
+        {
+            await _recordingService.StartRecordingAsync(useCountIn: true);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed to start recording: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Stops the current recording.
+    /// </summary>
+    [RelayCommand]
+    private void StopRecording()
+    {
+        if (!IsRecording && !IsCountingIn)
+        {
+            return;
+        }
+
+        _recordingService.StopRecording(cancel: false);
+    }
+
+    /// <summary>
+    /// Cancels the current recording, discarding all data.
+    /// </summary>
+    [RelayCommand]
+    private void CancelRecording()
+    {
+        if (!IsRecording && !IsCountingIn)
+        {
+            return;
+        }
+
+        _recordingService.StopRecording(cancel: true);
+    }
+
+    /// <summary>
+    /// Toggles recording state.
+    /// </summary>
+    [RelayCommand]
+    private async Task ToggleRecordingAsync()
+    {
+        if (IsRecording || IsCountingIn)
+        {
+            StopRecording();
+        }
+        else
+        {
+            await StartRecordingAsync();
+        }
+    }
+
+    private void OnRecordingStarted(object? sender, RecordingEventArgs e)
+    {
+        IsRecording = true;
+        IsCountingIn = false;
+
+        // Add active recording clips to the view
+        ActiveRecordingClips.Clear();
+        foreach (var clip in _recordingService.ActiveClips.Values)
+        {
+            ActiveRecordingClips.Add(clip);
+        }
+
+        StatusMessage = $"Recording {e.ArmedTracks.Count} track(s)";
+    }
+
+    private void OnRecordingStopped(object? sender, RecordingStoppedEventArgs e)
+    {
+        IsRecording = false;
+        IsCountingIn = false;
+
+        // Move completed clips to the completed collection
+        ActiveRecordingClips.Clear();
+
+        if (!e.WasCancelled)
+        {
+            foreach (var clip in e.RecordedClips)
+            {
+                CompletedRecordingClips.Add(clip);
+            }
+
+            StatusMessage = $"Recorded {e.RecordedClips.Count} clip(s)";
+        }
+        else
+        {
+            StatusMessage = "Recording cancelled";
+        }
+    }
+
+    private void OnRecordingStateChanged(object? sender, bool isRecording)
+    {
+        IsRecording = isRecording;
+        if (!isRecording)
+        {
+            IsCountingIn = false;
+        }
+    }
+
+    private void OnCountInStarted(object? sender, int totalBars)
+    {
+        IsCountingIn = true;
+        StatusMessage = $"Count-in: {totalBars} bar(s)";
+    }
+
+    private void OnCountInBeat(object? sender, int beatNumber)
+    {
+        StatusMessage = $"Count-in: Beat {beatNumber}";
+    }
+
+    /// <summary>
+    /// Gets the recording clip for a specific track at a specific position.
+    /// </summary>
+    /// <param name="trackId">The track ID.</param>
+    /// <param name="beat">The beat position.</param>
+    /// <returns>The recording clip or null if none found.</returns>
+    public RecordingClip? GetRecordingClipAt(int trackId, double beat)
+    {
+        // First check active clips
+        foreach (var clip in ActiveRecordingClips)
+        {
+            if (clip.TrackId == trackId && beat >= clip.StartBeat && beat < clip.EndBeat)
+            {
+                return clip;
+            }
+        }
+
+        // Then check completed clips
+        foreach (var clip in CompletedRecordingClips)
+        {
+            if (clip.TrackId == trackId && beat >= clip.StartBeat && beat < clip.EndBeat)
+            {
+                return clip;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets all recording clips for a specific track.
+    /// </summary>
+    /// <param name="trackId">The track ID.</param>
+    /// <returns>Enumerable of recording clips for the track.</returns>
+    public System.Collections.Generic.IEnumerable<RecordingClip> GetRecordingClipsForTrack(int trackId)
+    {
+        foreach (var clip in ActiveRecordingClips)
+        {
+            if (clip.TrackId == trackId)
+            {
+                yield return clip;
+            }
+        }
+
+        foreach (var clip in CompletedRecordingClips)
+        {
+            if (clip.TrackId == trackId)
+            {
+                yield return clip;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes a recording clip from the arrangement.
+    /// </summary>
+    /// <param name="clip">The clip to remove.</param>
+    public void RemoveRecordingClip(RecordingClip clip)
+    {
+        if (ActiveRecordingClips.Contains(clip))
+        {
+            ActiveRecordingClips.Remove(clip);
+        }
+        else if (CompletedRecordingClips.Contains(clip))
+        {
+            CompletedRecordingClips.Remove(clip);
+        }
+    }
+
+    /// <summary>
+    /// Clears all completed recording clips.
+    /// </summary>
+    [RelayCommand]
+    private void ClearCompletedRecordings()
+    {
+        CompletedRecordingClips.Clear();
+        StatusMessage = "Cleared all recorded clips";
+    }
+
+    #endregion
 
     private void OnArrangementChanged(object? sender, ArrangementChangedEventArgs e)
     {
@@ -220,6 +608,159 @@ public partial class ArrangementViewModel : ViewModelBase
             StatusMessage = $"Selected: {value.Name} ({value.StartPosition:F1} - {value.EndPosition:F1})";
         }
     }
+
+    #region Undo/Redo Integration
+
+    /// <summary>
+    /// Gets the editor undo service.
+    /// </summary>
+    private EditorUndoService UndoService => EditorUndoService.Instance;
+
+    /// <summary>
+    /// Adds a new section at the specified position with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void AddSectionWithUndo(SectionType type)
+    {
+        if (_arrangement == null) return;
+
+        var startPosition = _arrangement.TotalLength;
+        var length = 16.0; // 4 bars at 4/4
+
+        var command = new SectionAddCommand(_arrangement, startPosition, startPosition + length, type);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Adds a custom section with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void AddCustomSectionWithUndo()
+    {
+        if (_arrangement == null) return;
+
+        var startPosition = _arrangement.TotalLength;
+        var length = 16.0;
+
+        var command = new SectionAddCommand(_arrangement, startPosition, startPosition + length, "New Section");
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Deletes the selected section with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void DeleteSelectedSectionWithUndo()
+    {
+        if (_arrangement == null || SelectedSection == null) return;
+
+        if (SelectedSection.IsLocked)
+        {
+            StatusMessage = "Cannot delete locked section";
+            return;
+        }
+
+        var command = new SectionDeleteCommand(_arrangement, SelectedSection);
+        UndoService.Execute(command);
+        SelectedSection = null;
+    }
+
+    /// <summary>
+    /// Moves the selected section to a new position with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void MoveSectionWithUndo(double newPosition)
+    {
+        if (_arrangement == null || SelectedSection == null) return;
+
+        if (SelectedSection.IsLocked)
+        {
+            StatusMessage = "Cannot move locked section";
+            return;
+        }
+
+        var command = new SectionMoveCommand(_arrangement, SelectedSection, newPosition);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Resizes the selected section with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void ResizeSectionWithUndo((double newStart, double newEnd) bounds)
+    {
+        if (_arrangement == null || SelectedSection == null) return;
+
+        if (SelectedSection.IsLocked)
+        {
+            StatusMessage = "Cannot resize locked section";
+            return;
+        }
+
+        var command = new SectionMoveCommand(_arrangement, SelectedSection, bounds.newStart, bounds.newEnd);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Toggles mute for the selected section with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleMuteWithUndo()
+    {
+        if (SelectedSection == null) return;
+
+        var oldValue = SelectedSection.IsMuted;
+        var command = new SectionPropertyCommand(SelectedSection, nameof(ArrangementSection.IsMuted), oldValue, !oldValue);
+        UndoService.Execute(command);
+
+        StatusMessage = SelectedSection.IsMuted
+            ? $"Muted: {SelectedSection.Name}"
+            : $"Unmuted: {SelectedSection.Name}";
+    }
+
+    /// <summary>
+    /// Toggles lock for the selected section with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleLockWithUndo()
+    {
+        if (SelectedSection == null) return;
+
+        var oldValue = SelectedSection.IsLocked;
+        var command = new SectionPropertyCommand(SelectedSection, nameof(ArrangementSection.IsLocked), oldValue, !oldValue);
+        UndoService.Execute(command);
+
+        StatusMessage = SelectedSection.IsLocked
+            ? $"Locked: {SelectedSection.Name}"
+            : $"Unlocked: {SelectedSection.Name}";
+    }
+
+    /// <summary>
+    /// Sets the repeat count for the selected section with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void SetRepeatCountWithUndo(int count)
+    {
+        if (SelectedSection == null) return;
+
+        if (SelectedSection.IsLocked)
+        {
+            StatusMessage = "Cannot modify locked section";
+            return;
+        }
+
+        var oldValue = SelectedSection.RepeatCount;
+        var newValue = Math.Max(1, count);
+        var command = new SectionPropertyCommand(SelectedSection, nameof(ArrangementSection.RepeatCount), oldValue, newValue);
+        UndoService.Execute(command);
+
+        OnPropertyChanged(nameof(TotalLength));
+        OnPropertyChanged(nameof(TotalLengthFormatted));
+    }
+
+    #endregion
+
+    #region Legacy Section Commands (without undo)
 
     /// <summary>
     /// Adds a new section at the specified position.
@@ -345,6 +886,8 @@ public partial class ArrangementViewModel : ViewModelBase
             ? $"Locked: {SelectedSection.Name}"
             : $"Unlocked: {SelectedSection.Name}";
     }
+
+    #endregion
 
     /// <summary>
     /// Clears all sections.
@@ -494,4 +1037,39 @@ public partial class ArrangementViewModel : ViewModelBase
         OnPropertyChanged(nameof(CurrentPositionFormatted));
         OnPropertyChanged(nameof(CurrentSectionName));
     }
+
+    #region IDisposable
+
+    /// <summary>
+    /// Disposes the ArrangementViewModel, cleaning up event subscriptions.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        // Dispose EventBus subscriptions
+        _beatSubscription?.Dispose();
+        _playbackStartedSubscription?.Dispose();
+        _playbackStoppedSubscription?.Dispose();
+
+        // Unsubscribe from arrangement events
+        if (_arrangement != null)
+        {
+            _arrangement.ArrangementChanged -= OnArrangementChanged;
+        }
+
+        // Unsubscribe from recording events
+        _recordingService.RecordingStarted -= OnRecordingStarted;
+        _recordingService.RecordingStopped -= OnRecordingStopped;
+        _recordingService.RecordingStateChanged -= OnRecordingStateChanged;
+        _recordingService.CountInStarted -= OnCountInStarted;
+        _recordingService.CountInBeat -= OnCountInBeat;
+    }
+
+    #endregion
 }

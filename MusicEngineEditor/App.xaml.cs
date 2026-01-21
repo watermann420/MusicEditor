@@ -37,12 +37,17 @@ public partial class App : Application
         services.AddSingleton<ISoundPackService, SoundPackService>();
         services.AddSingleton<EngineService>();
 
+        // Playback services (singletons accessed via Instance property)
+        services.AddSingleton(_ => PlaybackService.Instance);
+        services.AddSingleton(_ => AudioEngineService.Instance);
+
         // ViewModels
         services.AddTransient<MainViewModel>();
         services.AddTransient<ProjectExplorerViewModel>();
         services.AddTransient<OutputViewModel>();
         services.AddTransient<EditorTabViewModel>();
         services.AddTransient<SampleBrowserViewModel>();
+        services.AddTransient<TransportViewModel>();
     }
 
     /// <summary>

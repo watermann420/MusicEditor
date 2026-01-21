@@ -1,7 +1,12 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MusicEngine.Core.Automation;
+using MusicEngineEditor.Commands;
+using MusicEngineEditor.Services;
 
 namespace MusicEngineEditor.ViewModels;
 
@@ -146,6 +151,98 @@ public partial class AutomationViewModel : ViewModelBase
         if (SelectedLane?.Lane == null) return;
 
         SelectedLane.Lane.ClearPoints();
+    }
+
+    #endregion
+
+    #region Undo/Redo Integration
+
+    /// <summary>
+    /// Gets the editor undo service.
+    /// </summary>
+    private EditorUndoService UndoService => EditorUndoService.Instance;
+
+    /// <summary>
+    /// Adds an automation point with undo support.
+    /// </summary>
+    /// <param name="lane">The automation lane.</param>
+    /// <param name="time">The time position.</param>
+    /// <param name="value">The value at this point.</param>
+    /// <param name="curveType">The curve type for interpolation.</param>
+    public void AddPointWithUndo(AutomationLane lane, double time, float value, AutomationCurveType curveType)
+    {
+        var command = new AutomationPointAddCommand(lane, time, value, curveType);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Adds an automation point with undo support using default curve type.
+    /// </summary>
+    /// <param name="lane">The automation lane.</param>
+    /// <param name="time">The time position.</param>
+    /// <param name="value">The value at this point.</param>
+    public void AddPointWithUndo(AutomationLane lane, double time, float value)
+    {
+        AddPointWithUndo(lane, time, value, DefaultCurveType);
+    }
+
+    /// <summary>
+    /// Deletes an automation point with undo support.
+    /// </summary>
+    /// <param name="lane">The automation lane.</param>
+    /// <param name="point">The point to delete.</param>
+    public void DeletePointWithUndo(AutomationLane lane, AutomationPoint point)
+    {
+        var command = new AutomationPointDeleteCommand(lane, point);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Deletes multiple automation points with undo support.
+    /// </summary>
+    /// <param name="lane">The automation lane.</param>
+    /// <param name="points">The points to delete.</param>
+    public void DeletePointsWithUndo(AutomationLane lane, IEnumerable<AutomationPoint> points)
+    {
+        var command = new AutomationPointDeleteCommand(lane, points);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Moves an automation point with undo support.
+    /// </summary>
+    /// <param name="lane">The automation lane.</param>
+    /// <param name="point">The point to move.</param>
+    /// <param name="newTime">The new time position.</param>
+    /// <param name="newValue">The new value.</param>
+    public void MovePointWithUndo(AutomationLane lane, AutomationPoint point, double newTime, float newValue)
+    {
+        var command = new AutomationPointMoveCommand(lane, point, newTime, newValue);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Changes the curve type of an automation point with undo support.
+    /// </summary>
+    /// <param name="lane">The automation lane.</param>
+    /// <param name="point">The point to modify.</param>
+    /// <param name="newCurveType">The new curve type.</param>
+    public void ChangeCurveTypeWithUndo(AutomationLane lane, AutomationPoint point, AutomationCurveType newCurveType)
+    {
+        var command = new AutomationPointCurveTypeCommand(lane, point, newCurveType);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Clears all points from a lane with undo support.
+    /// </summary>
+    [RelayCommand]
+    private void ClearAllPointsWithUndo()
+    {
+        if (SelectedLane?.Lane == null) return;
+
+        var command = new AutomationClearCommand(SelectedLane.Lane);
+        UndoService.Execute(command);
     }
 
     [RelayCommand]

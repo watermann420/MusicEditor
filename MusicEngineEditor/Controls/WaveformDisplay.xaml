@@ -1,0 +1,105 @@
+<UserControl x:Class="MusicEngineEditor.Controls.WaveformDisplay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="100" d:DesignWidth="400"
+             Background="{DynamicResource BackgroundBrush}"
+             ClipToBounds="True">
+
+    <UserControl.Resources>
+        <!-- Waveform Colors -->
+        <SolidColorBrush x:Key="WaveformFillBrush" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="WaveformStrokeBrush" Color="#66BB6A"/>
+        <SolidColorBrush x:Key="WaveformRightChannelBrush" Color="#2196F3"/>
+        <SolidColorBrush x:Key="WaveformRightChannelStrokeBrush" Color="#64B5F6"/>
+        <SolidColorBrush x:Key="PlayheadBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="SelectionBrush" Color="#404B6EAF"/>
+        <SolidColorBrush x:Key="SelectionBorderBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="CenterLineBrush" Color="#40FFFFFF"/>
+        <SolidColorBrush x:Key="LoadingTextBrush" Color="#6F737A"/>
+    </UserControl.Resources>
+
+    <Grid x:Name="RootGrid">
+        <!-- Loading Indicator -->
+        <Border x:Name="LoadingOverlay"
+                Background="{DynamicResource BackgroundBrush}"
+                Visibility="Collapsed"
+                Panel.ZIndex="100">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <ProgressBar x:Name="LoadingProgress"
+                             IsIndeterminate="True"
+                             Width="100"
+                             Height="4"
+                             Margin="0,0,0,8"/>
+                <TextBlock x:Name="LoadingText"
+                           Text="Loading waveform..."
+                           FontSize="11"
+                           Foreground="{StaticResource LoadingTextBrush}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Canvas for Waveform Drawing -->
+        <Canvas x:Name="WaveformCanvas"
+                Background="Transparent"
+                ClipToBounds="True"
+                MouseLeftButtonDown="WaveformCanvas_MouseLeftButtonDown"
+                MouseLeftButtonUp="WaveformCanvas_MouseLeftButtonUp"
+                MouseMove="WaveformCanvas_MouseMove"
+                MouseWheel="WaveformCanvas_MouseWheel"
+                SizeChanged="WaveformCanvas_SizeChanged">
+
+            <!-- Center Line -->
+            <Line x:Name="CenterLine"
+                  Stroke="{StaticResource CenterLineBrush}"
+                  StrokeThickness="1"
+                  X1="0"
+                  Y1="0"
+                  X2="0"
+                  Y2="0"
+                  IsHitTestVisible="False"/>
+
+            <!-- Selection Rectangle -->
+            <Rectangle x:Name="SelectionRect"
+                       Fill="{StaticResource SelectionBrush}"
+                       Stroke="{StaticResource SelectionBorderBrush}"
+                       StrokeThickness="1"
+                       Visibility="Collapsed"
+                       IsHitTestVisible="False"/>
+
+            <!-- Waveform Path (filled polygon) - Left/Mono Channel -->
+            <Path x:Name="WaveformPath"
+                  Fill="{StaticResource WaveformFillBrush}"
+                  Stroke="{StaticResource WaveformStrokeBrush}"
+                  StrokeThickness="0.5"
+                  IsHitTestVisible="False"/>
+
+            <!-- Waveform Path - Right Channel (for stereo overlay) -->
+            <Path x:Name="WaveformPathRight"
+                  Fill="{StaticResource WaveformRightChannelBrush}"
+                  Stroke="{StaticResource WaveformRightChannelStrokeBrush}"
+                  StrokeThickness="0.5"
+                  Opacity="0.7"
+                  Visibility="Collapsed"
+                  IsHitTestVisible="False"/>
+
+            <!-- Playhead -->
+            <Rectangle x:Name="Playhead"
+                       Fill="{StaticResource PlayheadBrush}"
+                       Width="2"
+                       Visibility="Collapsed"
+                       IsHitTestVisible="False"/>
+        </Canvas>
+
+        <!-- No Data Message -->
+        <TextBlock x:Name="NoDataText"
+                   Text="No audio data"
+                   FontSize="11"
+                   Foreground="{StaticResource LoadingTextBrush}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Visibility="Collapsed"/>
+    </Grid>
+</UserControl>

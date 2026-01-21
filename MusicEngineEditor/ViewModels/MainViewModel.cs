@@ -1,10 +1,12 @@
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
@@ -15,13 +17,21 @@ using MusicEngineEditor.Views.Dialogs;
 namespace MusicEngineEditor.ViewModels;
 
 /// <summary>
-/// Main ViewModel for the IDE
+/// Main ViewModel for the IDE with global playback control.
 /// </summary>
-public partial class MainViewModel : ViewModelBase
+public partial class MainViewModel : ViewModelBase, IDisposable
 {
     private readonly IProjectService _projectService;
     private readonly IScriptExecutionService _executionService;
     private readonly ISettingsService _settingsService;
+    private readonly PlaybackService _playbackService;
+    private readonly EditorUndoService _undoService;
+    private readonly DispatcherTimer _statusUpdateTimer;
+    private EventBus.SubscriptionToken? _playbackStartedSubscription;
+    private EventBus.SubscriptionToken? _playbackStoppedSubscription;
+    private EventBus.SubscriptionToken? _bpmChangedSubscription;
+    private EventBus.SubscriptionToken? _beatChangedSubscription;
+    private bool _disposed;
 
     [ObservableProperty]
     private MusicProject? _currentProject;
@@ -34,6 +44,9 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private OutputViewModel? _output;
+
+    [ObservableProperty]
+    private TransportViewModel? _transport;
 
     [ObservableProperty]
     private bool _isProjectExplorerVisible = true;
@@ -49,6 +62,21 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _playbackStatus = "Stopped";
+
+    [ObservableProperty]
+    private string _currentPosition = "1:1";
+
+    [ObservableProperty]
+    private string _currentTimeDisplay = "00:00.000";
+
+    [ObservableProperty]
+    private bool _isPlaying;
+
+    [ObservableProperty]
+    private bool _isPaused;
+
+    [ObservableProperty]
+    private bool _loopEnabled;
 
     [ObservableProperty]
     private string _caretPosition = "1:1";
@@ -70,19 +98,307 @@ public partial class MainViewModel : ViewModelBase
         _projectService = projectService;
         _executionService = executionService;
         _settingsService = settingsService;
+        _playbackService = PlaybackService.Instance;
+        _undoService = EditorUndoService.Instance;
 
         ProjectExplorer = new ProjectExplorerViewModel();
         Output = new OutputViewModel();
+        Transport = new TransportViewModel();
 
-        // Subscribe to events
+        // Subscribe to project/execution events
         _projectService.ProjectLoaded += OnProjectLoaded;
         _executionService.OutputReceived += OnOutputReceived;
         _executionService.ExecutionStarted += OnExecutionStarted;
         _executionService.ExecutionStopped += OnExecutionStopped;
 
+        // Subscribe to playback events via EventBus
+        SubscribeToPlaybackEvents();
+
+        // Subscribe to undo service property changes
+        _undoService.PropertyChanged += OnUndoServicePropertyChanged;
+
+        // Setup status update timer for UI updates (30fps)
+        _statusUpdateTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(1000.0 / 30.0)
+        };
+        _statusUpdateTimer.Tick += OnStatusUpdateTimerTick;
+
         // Load settings
         _ = _settingsService.LoadSettingsAsync();
     }
+
+    #region Playback Event Subscriptions
+
+    /// <summary>
+    /// Subscribes to EventBus playback events.
+    /// </summary>
+    private void SubscribeToPlaybackEvents()
+    {
+        var eventBus = EventBus.Instance;
+
+        _playbackStartedSubscription = eventBus.SubscribePlaybackStarted(args =>
+        {
+            IsPlaying = true;
+            IsPaused = false;
+            PlaybackStatus = "Playing";
+            CurrentBpm = (int)args.Bpm;
+            _statusUpdateTimer.Start();
+        });
+
+        _playbackStoppedSubscription = eventBus.SubscribePlaybackStopped(args =>
+        {
+            IsPlaying = false;
+            IsPaused = false;
+            PlaybackStatus = "Stopped";
+            _statusUpdateTimer.Stop();
+            CurrentPosition = "1:1";
+            CurrentTimeDisplay = "00:00.000";
+        });
+
+        _bpmChangedSubscription = eventBus.SubscribeBpmChanged(args =>
+        {
+            CurrentBpm = (int)args.NewBpm;
+        });
+
+        _beatChangedSubscription = eventBus.SubscribeBeatChanged(args =>
+        {
+            UpdatePositionDisplay(args.CurrentBeat);
+        });
+    }
+
+    /// <summary>
+    /// Updates the position display from the current beat.
+    /// </summary>
+    private void UpdatePositionDisplay(double currentBeat)
+    {
+        // Calculate bar:beat (assuming 4/4 time)
+        int bar = (int)(currentBeat / 4) + 1;
+        int beat = (int)(currentBeat % 4) + 1;
+        CurrentPosition = $"{bar}:{beat}";
+
+        // Calculate time display
+        double currentTime = _playbackService.BeatToTime(currentBeat);
+        int minutes = (int)(currentTime / 60);
+        int seconds = (int)(currentTime % 60);
+        int milliseconds = (int)((currentTime % 1) * 1000);
+        CurrentTimeDisplay = $"{minutes:D2}:{seconds:D2}.{milliseconds:D3}";
+    }
+
+    private void OnStatusUpdateTimerTick(object? sender, EventArgs e)
+    {
+        // Update position display from playback service
+        UpdatePositionDisplay(_playbackService.CurrentBeat);
+    }
+
+    #endregion
+
+    #region Global Playback Commands
+
+    /// <summary>
+    /// Starts or resumes playback (Space key shortcut).
+    /// </summary>
+    [RelayCommand]
+    private void PlayPause()
+    {
+        _playbackService.TogglePlayPause();
+    }
+
+    /// <summary>
+    /// Stops playback and resets position (Enter key shortcut).
+    /// </summary>
+    [RelayCommand]
+    private void StopPlayback()
+    {
+        _playbackService.Stop();
+    }
+
+    /// <summary>
+    /// Pauses playback.
+    /// </summary>
+    [RelayCommand]
+    private void PausePlayback()
+    {
+        _playbackService.Pause();
+    }
+
+    /// <summary>
+    /// Toggles loop playback.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleLoop()
+    {
+        _playbackService.ToggleLoop();
+        LoopEnabled = _playbackService.LoopEnabled;
+    }
+
+    /// <summary>
+    /// Jumps to the beginning of the sequence.
+    /// </summary>
+    [RelayCommand]
+    private void JumpToStart()
+    {
+        _playbackService.JumpToStart();
+    }
+
+    /// <summary>
+    /// Sets the BPM value.
+    /// </summary>
+    [RelayCommand]
+    private void SetBpm(int bpm)
+    {
+        if (bpm > 0 && bpm <= 999)
+        {
+            _playbackService.BPM = bpm;
+            CurrentBpm = bpm;
+        }
+    }
+
+    /// <summary>
+    /// Increases BPM by 1.
+    /// </summary>
+    [RelayCommand]
+    private void IncreaseBpm()
+    {
+        SetBpm(CurrentBpm + 1);
+    }
+
+    /// <summary>
+    /// Decreases BPM by 1.
+    /// </summary>
+    [RelayCommand]
+    private void DecreaseBpm()
+    {
+        SetBpm(CurrentBpm - 1);
+    }
+
+    #endregion
+
+    #region Undo/Redo Commands
+
+    /// <summary>
+    /// Gets whether undo is available.
+    /// </summary>
+    public bool CanUndo => _undoService.CanUndo;
+
+    /// <summary>
+    /// Gets whether redo is available.
+    /// </summary>
+    public bool CanRedo => _undoService.CanRedo;
+
+    /// <summary>
+    /// Gets the undo menu text with description.
+    /// </summary>
+    public string UndoMenuText => _undoService.UndoMenuText;
+
+    /// <summary>
+    /// Gets the redo menu text with description.
+    /// </summary>
+    public string RedoMenuText => _undoService.RedoMenuText;
+
+    /// <summary>
+    /// Gets the list of undo descriptions for displaying in a dropdown.
+    /// </summary>
+    public System.Collections.Generic.IReadOnlyList<string> UndoDescriptions => _undoService.UndoDescriptions;
+
+    /// <summary>
+    /// Gets the list of redo descriptions for displaying in a dropdown.
+    /// </summary>
+    public System.Collections.Generic.IReadOnlyList<string> RedoDescriptions => _undoService.RedoDescriptions;
+
+    /// <summary>
+    /// Undoes the last action (Ctrl+Z shortcut).
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanUndo))]
+    private void Undo()
+    {
+        if (_undoService.Undo())
+        {
+            StatusMessage = $"Undone: {_undoService.NextRedoDescription ?? "action"}";
+        }
+    }
+
+    /// <summary>
+    /// Redoes the last undone action (Ctrl+Y shortcut).
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanRedo))]
+    private void Redo()
+    {
+        if (_undoService.Redo())
+        {
+            StatusMessage = $"Redone: {_undoService.NextUndoDescription ?? "action"}";
+        }
+    }
+
+    /// <summary>
+    /// Undoes multiple actions.
+    /// </summary>
+    /// <param name="count">Number of actions to undo.</param>
+    [RelayCommand]
+    private void UndoMultiple(int count)
+    {
+        var undone = _undoService.UndoMultiple(count);
+        if (undone > 0)
+        {
+            StatusMessage = $"Undone {undone} action(s)";
+        }
+    }
+
+    /// <summary>
+    /// Redoes multiple actions.
+    /// </summary>
+    /// <param name="count">Number of actions to redo.</param>
+    [RelayCommand]
+    private void RedoMultiple(int count)
+    {
+        var redone = _undoService.RedoMultiple(count);
+        if (redone > 0)
+        {
+            StatusMessage = $"Redone {redone} action(s)";
+        }
+    }
+
+    /// <summary>
+    /// Clears all undo/redo history.
+    /// </summary>
+    [RelayCommand]
+    private void ClearUndoHistory()
+    {
+        _undoService.Clear();
+        StatusMessage = "Undo history cleared";
+    }
+
+    /// <summary>
+    /// Handles property changes from the undo service.
+    /// </summary>
+    private void OnUndoServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(EditorUndoService.CanUndo):
+                OnPropertyChanged(nameof(CanUndo));
+                UndoCommand.NotifyCanExecuteChanged();
+                break;
+            case nameof(EditorUndoService.CanRedo):
+                OnPropertyChanged(nameof(CanRedo));
+                RedoCommand.NotifyCanExecuteChanged();
+                break;
+            case nameof(EditorUndoService.UndoMenuText):
+                OnPropertyChanged(nameof(UndoMenuText));
+                break;
+            case nameof(EditorUndoService.RedoMenuText):
+                OnPropertyChanged(nameof(RedoMenuText));
+                break;
+            case nameof(EditorUndoService.UndoDescriptions):
+                OnPropertyChanged(nameof(UndoDescriptions));
+                break;
+            case nameof(EditorUndoService.RedoDescriptions):
+                OnPropertyChanged(nameof(RedoDescriptions));
+                break;
+        }
+    }
+
+    #endregion
 
     [RelayCommand]
     private async Task NewProjectAsync()
@@ -693,4 +1009,42 @@ public partial class MainViewModel : ViewModelBase
     {
         PlaybackStatus = "Stopped";
     }
+
+    #region IDisposable
+
+    /// <summary>
+    /// Disposes the MainViewModel and cleans up resources.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        // Stop timer
+        _statusUpdateTimer?.Stop();
+
+        // Unsubscribe from project/execution events
+        _projectService.ProjectLoaded -= OnProjectLoaded;
+        _executionService.OutputReceived -= OnOutputReceived;
+        _executionService.ExecutionStarted -= OnExecutionStarted;
+        _executionService.ExecutionStopped -= OnExecutionStopped;
+
+        // Unsubscribe from undo service events
+        _undoService.PropertyChanged -= OnUndoServicePropertyChanged;
+
+        // Dispose EventBus subscriptions
+        _playbackStartedSubscription?.Dispose();
+        _playbackStoppedSubscription?.Dispose();
+        _bpmChangedSubscription?.Dispose();
+        _beatChangedSubscription?.Dispose();
+
+        // Dispose Transport ViewModel
+        Transport?.Dispose();
+    }
+
+    #endregion
 }

@@ -1,11 +1,15 @@
 //MusicEngineEditor - Mixer ViewModel
 // copyright (c) 2026 MusicEngine Watermann420 and Contributors
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MusicEngineEditor.Commands;
 using MusicEngineEditor.Models;
+using MusicEngineEditor.Services;
 
 namespace MusicEngineEditor.ViewModels;
 
@@ -13,8 +17,11 @@ namespace MusicEngineEditor.ViewModels;
 /// ViewModel for the mixer view, managing multiple channel strips, bus channels,
 /// send/return routing, and the master channel.
 /// </summary>
-public partial class MixerViewModel : ViewModelBase
+public partial class MixerViewModel : ViewModelBase, IDisposable
 {
+    private readonly RecordingService _recordingService;
+    private bool _disposed;
+
     /// <summary>
     /// Gets the collection of mixer channels.
     /// </summary>
@@ -66,7 +73,19 @@ public partial class MixerViewModel : ViewModelBase
     private bool _hasSoloedBus;
 
     /// <summary>
-    /// Gets or sets whether the mixer is in narrow channel mode.
+    /// Gets or sets whether any channel is currently armed for recording.
+    /// </summary>
+    [ObservableProperty]
+    private bool _hasArmedChannel;
+
+    /// <summary>
+    /// Gets or sets whether recording is currently active.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isRecording;
+
+    /// <summary>
+    /// Gets or sets the mixer is in narrow channel mode.
     /// </summary>
     [ObservableProperty]
     private bool _narrowMode;
@@ -100,10 +119,30 @@ public partial class MixerViewModel : ViewModelBase
     public int BusCount => Buses.Count;
 
     /// <summary>
+    /// Gets the count of armed channels.
+    /// </summary>
+    public int ArmedChannelCount => Channels.Count(c => c.IsArmed);
+
+    /// <summary>
+    /// Gets the armed channels.
+    /// </summary>
+    public IEnumerable<MixerChannel> ArmedChannels => Channels.Where(c => c.IsArmed);
+
+    /// <summary>
     /// Creates a new MixerViewModel with default channels.
     /// </summary>
     public MixerViewModel()
     {
+        _recordingService = RecordingService.Instance;
+
+        // Subscribe to recording service events
+        _recordingService.TrackArmed += OnTrackArmed;
+        _recordingService.TrackDisarmed += OnTrackDisarmed;
+        _recordingService.RecordingStarted += OnRecordingStarted;
+        _recordingService.RecordingStopped += OnRecordingStopped;
+        _recordingService.RecordingStateChanged += OnRecordingStateChanged;
+        _recordingService.InputLevelsUpdated += OnInputLevelsUpdated;
+
         InitializeDefaultChannels();
         InitializeDefaultBuses();
     }
@@ -560,4 +599,368 @@ public partial class MixerViewModel : ViewModelBase
             }
         }
     }
+
+    #region Undo/Redo Integration
+
+    /// <summary>
+    /// Gets the editor undo service.
+    /// </summary>
+    private EditorUndoService UndoService => EditorUndoService.Instance;
+
+    /// <summary>
+    /// Sets channel volume with undo support (for fader movement).
+    /// </summary>
+    /// <param name="channel">The mixer channel.</param>
+    /// <param name="newVolume">The new volume value.</param>
+    public void SetChannelVolumeWithUndo(MixerChannel channel, float newVolume)
+    {
+        var command = new MixerVolumeCommand(channel, newVolume);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Sets channel pan with undo support (for pan knob movement).
+    /// </summary>
+    /// <param name="channel">The mixer channel.</param>
+    /// <param name="newPan">The new pan value.</param>
+    public void SetChannelPanWithUndo(MixerChannel channel, float newPan)
+    {
+        var command = new MixerPanCommand(channel, newPan);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Toggles channel mute with undo support.
+    /// </summary>
+    /// <param name="channel">The mixer channel.</param>
+    [RelayCommand]
+    private void ToggleMuteWithUndo(MixerChannel? channel)
+    {
+        if (channel == null) return;
+
+        var command = new MixerMuteCommand(channel, !channel.IsMuted);
+        UndoService.Execute(command);
+        UpdateEffectiveMuteStates();
+    }
+
+    /// <summary>
+    /// Toggles channel solo with undo support.
+    /// </summary>
+    /// <param name="channel">The mixer channel.</param>
+    [RelayCommand]
+    private void ToggleSoloWithUndo(MixerChannel? channel)
+    {
+        if (channel == null) return;
+
+        var command = new MixerSoloCommand(channel, !channel.IsSoloed);
+        UndoService.Execute(command);
+        UpdateEffectiveMuteStates();
+    }
+
+    /// <summary>
+    /// Renames a channel with undo support.
+    /// </summary>
+    /// <param name="channel">The mixer channel.</param>
+    /// <param name="newName">The new name.</param>
+    public void RenameChannelWithUndo(MixerChannel channel, string newName)
+    {
+        var command = new MixerChannelRenameCommand(channel, newName);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Changes channel color with undo support.
+    /// </summary>
+    /// <param name="channel">The mixer channel.</param>
+    /// <param name="newColor">The new color hex string.</param>
+    public void SetChannelColorWithUndo(MixerChannel channel, string newColor)
+    {
+        var command = new MixerChannelColorCommand(channel, newColor);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Sets bus volume with undo support (for fader movement).
+    /// </summary>
+    /// <param name="bus">The bus channel.</param>
+    /// <param name="newVolume">The new volume value.</param>
+    public void SetBusVolumeWithUndo(BusChannel bus, float newVolume)
+    {
+        var command = new BusVolumeCommand(bus, newVolume);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Sets send level with undo support (for send knob movement).
+    /// </summary>
+    /// <param name="send">The send.</param>
+    /// <param name="newLevel">The new level value.</param>
+    public void SetSendLevelWithUndo(Send send, float newLevel)
+    {
+        var command = new SendLevelCommand(send, newLevel);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Sets master channel property with undo support.
+    /// </summary>
+    /// <param name="propertyName">The property name.</param>
+    /// <param name="oldValue">The old value.</param>
+    /// <param name="newValue">The new value.</param>
+    public void SetMasterPropertyWithUndo(string propertyName, object? oldValue, object? newValue)
+    {
+        var command = new MasterChannelPropertyCommand(MasterChannel, propertyName, oldValue, newValue);
+        UndoService.Execute(command);
+    }
+
+    /// <summary>
+    /// Sets master volume with undo support.
+    /// </summary>
+    /// <param name="newVolume">The new volume value.</param>
+    public void SetMasterVolumeWithUndo(float newVolume)
+    {
+        var oldVolume = MasterChannel.Volume;
+        SetMasterPropertyWithUndo(nameof(MasterChannel.Volume), oldVolume, newVolume);
+    }
+
+    #endregion
+
+    #region Recording/Arm Functionality
+
+    /// <summary>
+    /// Event raised when a channel's armed state changes.
+    /// </summary>
+    public event EventHandler<MixerChannel>? ChannelArmedChanged;
+
+    /// <summary>
+    /// Toggles the armed state for a channel.
+    /// </summary>
+    /// <param name="channel">The mixer channel.</param>
+    [RelayCommand]
+    private void ToggleArm(MixerChannel? channel)
+    {
+        if (channel == null) return;
+
+        if (IsRecording)
+        {
+            StatusMessage = "Cannot change arm state while recording";
+            return;
+        }
+
+        channel.IsArmed = !channel.IsArmed;
+
+        if (channel.IsArmed)
+        {
+            // Arm the track in the recording service
+            _recordingService.ArmTrack(
+                channel.Index,
+                channel.Name,
+                channel.Color,
+                null, // Input source would come from track settings
+                "Default Input");
+        }
+        else
+        {
+            // Disarm the track
+            _recordingService.DisarmTrack(channel.Index);
+        }
+
+        UpdateArmedState();
+        ChannelArmedChanged?.Invoke(this, channel);
+    }
+
+    /// <summary>
+    /// Arms a channel for recording.
+    /// </summary>
+    /// <param name="channel">The channel to arm.</param>
+    public void ArmChannel(MixerChannel channel)
+    {
+        if (channel == null || IsRecording) return;
+
+        if (!channel.IsArmed)
+        {
+            channel.IsArmed = true;
+            _recordingService.ArmTrack(
+                channel.Index,
+                channel.Name,
+                channel.Color,
+                null,
+                "Default Input");
+            UpdateArmedState();
+            ChannelArmedChanged?.Invoke(this, channel);
+        }
+    }
+
+    /// <summary>
+    /// Disarms a channel from recording.
+    /// </summary>
+    /// <param name="channel">The channel to disarm.</param>
+    public void DisarmChannel(MixerChannel channel)
+    {
+        if (channel == null || IsRecording) return;
+
+        if (channel.IsArmed)
+        {
+            channel.IsArmed = false;
+            _recordingService.DisarmTrack(channel.Index);
+            UpdateArmedState();
+            ChannelArmedChanged?.Invoke(this, channel);
+        }
+    }
+
+    /// <summary>
+    /// Arms all channels for recording.
+    /// </summary>
+    [RelayCommand]
+    private void ArmAllChannels()
+    {
+        if (IsRecording) return;
+
+        foreach (var channel in Channels)
+        {
+            if (!channel.IsArmed)
+            {
+                channel.IsArmed = true;
+                _recordingService.ArmTrack(
+                    channel.Index,
+                    channel.Name,
+                    channel.Color,
+                    null,
+                    "Default Input");
+            }
+        }
+
+        UpdateArmedState();
+        StatusMessage = $"Armed {Channels.Count} channels";
+    }
+
+    /// <summary>
+    /// Disarms all channels from recording.
+    /// </summary>
+    [RelayCommand]
+    private void DisarmAllChannels()
+    {
+        if (IsRecording) return;
+
+        foreach (var channel in Channels)
+        {
+            if (channel.IsArmed)
+            {
+                channel.IsArmed = false;
+                _recordingService.DisarmTrack(channel.Index);
+            }
+        }
+
+        UpdateArmedState();
+        StatusMessage = "All channels disarmed";
+    }
+
+    /// <summary>
+    /// Updates the HasArmedChannel state.
+    /// </summary>
+    private void UpdateArmedState()
+    {
+        HasArmedChannel = Channels.Any(c => c.IsArmed);
+        OnPropertyChanged(nameof(ArmedChannelCount));
+        OnPropertyChanged(nameof(ArmedChannels));
+    }
+
+    /// <summary>
+    /// Syncs channel armed states with the recording service.
+    /// </summary>
+    public void SyncArmedStatesFromService()
+    {
+        foreach (var channel in Channels)
+        {
+            channel.IsArmed = _recordingService.IsTrackArmed(channel.Index);
+        }
+        UpdateArmedState();
+    }
+
+    #endregion
+
+    #region Recording Service Event Handlers
+
+    private void OnTrackArmed(object? sender, TrackArmEventArgs e)
+    {
+        // Update channel armed state
+        var channel = Channels.FirstOrDefault(c => c.Index == e.TrackId);
+        if (channel != null && !channel.IsArmed)
+        {
+            channel.IsArmed = true;
+            UpdateArmedState();
+        }
+    }
+
+    private void OnTrackDisarmed(object? sender, TrackArmEventArgs e)
+    {
+        // Update channel armed state
+        var channel = Channels.FirstOrDefault(c => c.Index == e.TrackId);
+        if (channel != null && channel.IsArmed)
+        {
+            channel.IsArmed = false;
+            UpdateArmedState();
+        }
+    }
+
+    private void OnRecordingStarted(object? sender, RecordingEventArgs e)
+    {
+        IsRecording = true;
+        StatusMessage = $"Recording {e.ArmedTracks.Count} track(s)";
+    }
+
+    private void OnRecordingStopped(object? sender, RecordingStoppedEventArgs e)
+    {
+        IsRecording = false;
+        if (e.WasCancelled)
+        {
+            StatusMessage = "Recording cancelled";
+        }
+        else
+        {
+            StatusMessage = $"Recorded {e.RecordedClips.Count} clip(s)";
+        }
+    }
+
+    private void OnRecordingStateChanged(object? sender, bool isRecording)
+    {
+        IsRecording = isRecording;
+    }
+
+    private void OnInputLevelsUpdated(object? sender, EventArgs e)
+    {
+        // Update meter levels for armed channels from recording service
+        foreach (var channel in Channels.Where(c => c.IsArmed))
+        {
+            var armedTrack = _recordingService.GetArmedTrack(channel.Index);
+            if (armedTrack != null)
+            {
+                // Use input level for armed channels
+                channel.UpdateMeters(armedTrack.InputLevel, armedTrack.InputLevel);
+            }
+        }
+    }
+
+    #endregion
+
+    #region IDisposable
+
+    /// <summary>
+    /// Disposes the MixerViewModel.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        // Unsubscribe from recording service events
+        _recordingService.TrackArmed -= OnTrackArmed;
+        _recordingService.TrackDisarmed -= OnTrackDisarmed;
+        _recordingService.RecordingStarted -= OnRecordingStarted;
+        _recordingService.RecordingStopped -= OnRecordingStopped;
+        _recordingService.RecordingStateChanged -= OnRecordingStateChanged;
+        _recordingService.InputLevelsUpdated -= OnInputLevelsUpdated;
+    }
+
+    #endregion
 }

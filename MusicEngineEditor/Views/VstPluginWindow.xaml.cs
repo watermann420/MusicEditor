@@ -1,5 +1,7 @@
 using System;
 using System.Windows;
+using System.Windows.Media;
+using MusicEngine.Core;
 
 namespace MusicEngineEditor.Views;
 
@@ -7,13 +9,24 @@ public partial class VstPluginWindow : Window
 {
     private readonly string _pluginName;
     private readonly string _variableName;
-    private readonly object? _vstPlugin;
+    private readonly IVstPlugin? _vstPlugin;
     private bool _isBypassed;
     private bool _keepRunning = true;
 
     public string PluginName => _pluginName;
     public string VariableName => _variableName;
     public bool KeepRunning => _keepRunning;
+    public IVstPlugin? VstPlugin => _vstPlugin;
+
+    /// <summary>
+    /// Gets whether the plugin is currently bypassed.
+    /// </summary>
+    public bool IsBypassed => _isBypassed;
+
+    /// <summary>
+    /// Event raised when bypass state changes.
+    /// </summary>
+    public event EventHandler<bool>? BypassStateChanged;
 
     public VstPluginWindow(string pluginName, string variableName, object? vstPlugin = null)
     {
@@ -21,14 +34,28 @@ public partial class VstPluginWindow : Window
 
         _pluginName = pluginName;
         _variableName = variableName;
-        _vstPlugin = vstPlugin;
+        _vstPlugin = vstPlugin as IVstPlugin;
 
         Title = $"{pluginName} - VST Plugin";
         PluginNameText.Text = pluginName;
         VariableNameText.Text = variableName;
 
-        // Determine plugin type based on name
-        if (pluginName.EndsWith(".vst3", StringComparison.OrdinalIgnoreCase))
+        // Determine plugin type based on name or actual type
+        if (_vstPlugin != null)
+        {
+            PluginTypeText.Text = _vstPlugin.IsVst3 ? "(VST3)" : "(VST2)";
+
+            // Sync bypass state with plugin
+            _isBypassed = _vstPlugin.IsBypassed;
+            UpdateBypassVisuals();
+
+            // Update preset name if available
+            UpdatePresetDisplay();
+
+            // Subscribe to bypass changes from the plugin
+            _vstPlugin.BypassChanged += OnPluginBypassChanged;
+        }
+        else if (pluginName.EndsWith(".vst3", StringComparison.OrdinalIgnoreCase))
         {
             PluginTypeText.Text = "(VST3)";
         }
@@ -39,6 +66,15 @@ public partial class VstPluginWindow : Window
 
         // Try to initialize plugin UI
         InitializePluginUI();
+    }
+
+    private void OnPluginBypassChanged(object? sender, bool isBypassed)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            _isBypassed = isBypassed;
+            UpdateBypassVisuals();
+        });
     }
 
     private void InitializePluginUI()
@@ -87,6 +123,11 @@ public partial class VstPluginWindow : Window
         }
         else
         {
+            // Unsubscribe from events
+            if (_vstPlugin != null)
+            {
+                _vstPlugin.BypassChanged -= OnPluginBypassChanged;
+            }
             base.OnClosing(e);
         }
     }
@@ -94,6 +135,13 @@ public partial class VstPluginWindow : Window
     public void ForceClose()
     {
         _keepRunning = false;
+
+        // Unsubscribe from events
+        if (_vstPlugin != null)
+        {
+            _vstPlugin.BypassChanged -= OnPluginBypassChanged;
+        }
+
         Close();
     }
 
@@ -110,25 +158,136 @@ public partial class VstPluginWindow : Window
     private void BypassButton_Click(object sender, RoutedEventArgs e)
     {
         _isBypassed = !_isBypassed;
+
+        // Update the actual plugin bypass state
+        if (_vstPlugin != null)
+        {
+            _vstPlugin.IsBypassed = _isBypassed;
+        }
+
+        UpdateBypassVisuals();
+
+        // Raise event for external listeners
+        BypassStateChanged?.Invoke(this, _isBypassed);
+    }
+
+    /// <summary>
+    /// Sets the bypass state programmatically.
+    /// </summary>
+    public void SetBypass(bool bypassed)
+    {
+        if (_isBypassed != bypassed)
+        {
+            _isBypassed = bypassed;
+
+            if (_vstPlugin != null)
+            {
+                _vstPlugin.IsBypassed = bypassed;
+            }
+
+            UpdateBypassVisuals();
+            BypassStateChanged?.Invoke(this, _isBypassed);
+        }
+    }
+
+    private void UpdateBypassVisuals()
+    {
+        // Update button text
         BypassButton.Content = _isBypassed ? "Enable" : "Bypass";
 
-        // Update visual feedback
+        // Update button styling
         if (_isBypassed)
         {
+            // Active bypass state - orange/warning colors
+            BypassButtonBorder.Background = (Brush)FindResource("BypassButtonActiveBrush");
+            BypassButtonBorder.BorderBrush = (Brush)FindResource("BypassBorderBrush");
+            BypassButton.Foreground = Brushes.White;
+
+            // Show bypass overlay
+            BypassOverlay.Visibility = Visibility.Visible;
+
+            // Gray out the plugin host area
             PluginHostBorder.Opacity = 0.5;
+
+            // Show bypass badge in header
+            HeaderBypassBadge.Visibility = Visibility.Visible;
+
+            // Update window title
+            Title = $"{_pluginName} [BYPASSED] - VST Plugin";
         }
         else
         {
+            // Normal state
+            BypassButtonBorder.Background = Brushes.Transparent;
+            BypassButtonBorder.BorderBrush = (Brush)FindResource("SubtleBorderBrush");
+            BypassButton.Foreground = (Brush)FindResource("ForegroundBrush");
+
+            // Hide bypass overlay
+            BypassOverlay.Visibility = Visibility.Collapsed;
+
+            // Restore plugin host opacity
             PluginHostBorder.Opacity = 1.0;
+
+            // Hide bypass badge in header
+            HeaderBypassBadge.Visibility = Visibility.Collapsed;
+
+            // Restore window title
+            UpdateWindowTitle();
+        }
+    }
+
+    private void UpdateWindowTitle()
+    {
+        string presetPart = "";
+        if (_vstPlugin != null && !string.IsNullOrEmpty(_vstPlugin.CurrentPresetName))
+        {
+            presetPart = $" - {_vstPlugin.CurrentPresetName}";
         }
 
-        // TODO: Actually bypass the plugin in the audio engine
+        Title = $"{_pluginName}{presetPart} - VST Plugin";
+    }
+
+    private void UpdatePresetDisplay()
+    {
+        if (_vstPlugin != null && !string.IsNullOrEmpty(_vstPlugin.CurrentPresetName))
+        {
+            PresetNameText.Text = $"- {_vstPlugin.CurrentPresetName}";
+        }
+        else
+        {
+            PresetNameText.Text = "";
+        }
+
+        UpdateWindowTitle();
+    }
+
+    /// <summary>
+    /// Refreshes the preset display from the plugin.
+    /// </summary>
+    public void RefreshPresetDisplay()
+    {
+        UpdatePresetDisplay();
     }
 
     private void PresetsButton_Click(object sender, RoutedEventArgs e)
     {
-        // TODO: Show preset browser/manager
-        MessageBox.Show("Preset management is not yet implemented.",
-            "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+        if (_vstPlugin == null)
+        {
+            MessageBox.Show("No plugin instance available for preset management.",
+                "Preset Browser", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // Open the preset browser dialog
+        var presetDialog = new Dialogs.VstPresetBrowserDialog(_vstPlugin, _pluginName)
+        {
+            Owner = this
+        };
+
+        if (presetDialog.ShowDialog() == true)
+        {
+            // Preset was loaded, update the display
+            UpdatePresetDisplay();
+        }
     }
 }
