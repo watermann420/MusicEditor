@@ -70,18 +70,18 @@ public partial class WorkshopPanel : UserControl
             {
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "MusicEngine is a live coding environment for creating music using C# scripts. " +
                               "You can create synthesizers, load VST plugins, sequence patterns, and control everything with MIDI."
                 },
                 new()
                 {
-                    Type = SectionType.Heading,
+                    Type = WorkshopSectionType.Heading,
                     Content = "What you'll learn"
                 },
                 new()
                 {
-                    Type = SectionType.BulletList,
+                    Type = WorkshopSectionType.BulletList,
                     Items = new List<string>
                     {
                         "Create and control synthesizers",
@@ -93,7 +93,7 @@ public partial class WorkshopPanel : UserControl
                 },
                 new()
                 {
-                    Type = SectionType.Info,
+                    Type = WorkshopSectionType.Info,
                     Content = "Press Ctrl+Enter to run code, Escape to stop. Let's get started!"
                 }
             }
@@ -108,29 +108,29 @@ public partial class WorkshopPanel : UserControl
             {
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "Let's create your first sound! The simplest way to make noise in MusicEngine is to create a synthesizer."
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = "// Create a simple synth\nvar synth = CreateSynth();",
                     Description = "This creates a basic synthesizer with default settings."
                 },
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "Now let's play a note! MIDI notes go from 0 to 127, where 60 is middle C."
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = "// Create synth and play middle C\nvar synth = CreateSynth();\nsynth.NoteOn(60, 100);  // Note 60 = C4, velocity 100",
                     Description = "Click Run to hear your first note!"
                 },
                 new()
                 {
-                    Type = SectionType.Tip,
+                    Type = WorkshopSectionType.Tip,
                     Content = "The velocity (0-127) controls how loud the note is. Try different values!"
                 }
             }
@@ -145,12 +145,12 @@ public partial class WorkshopPanel : UserControl
             {
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "To play melodies, we need to turn notes on and off with timing. Use await Task.Delay() to wait between notes."
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Play a simple melody
 var synth = CreateSynth();
 
@@ -169,12 +169,12 @@ synth.NoteOff(67);",
                 },
                 new()
                 {
-                    Type = SectionType.Heading,
+                    Type = WorkshopSectionType.Heading,
                     Content = "Common MIDI Notes"
                 },
                 new()
                 {
-                    Type = SectionType.Table,
+                    Type = WorkshopSectionType.Table,
                     TableData = new List<string[]>
                     {
                         new[] { "Note", "MIDI Number" },
@@ -200,18 +200,18 @@ synth.NoteOff(67);",
             {
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "MIDI (Musical Instrument Digital Interface) lets you connect keyboards, controllers, and other devices. " +
                               "MusicEngine automatically detects connected MIDI devices."
                 },
                 new()
                 {
-                    Type = SectionType.Heading,
+                    Type = WorkshopSectionType.Heading,
                     Content = "Listing MIDI Devices"
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// List all MIDI input devices
 var inputCount = Engine.GetMidiInputCount();
 Print($""Found {inputCount} MIDI inputs"");
@@ -224,7 +224,7 @@ for (int i = 0; i < inputCount; i++)
                 },
                 new()
                 {
-                    Type = SectionType.Info,
+                    Type = WorkshopSectionType.Info,
                     Content = "Check the MIDI panel on the right side of the editor to see your devices with their channel numbers."
                 }
             }
@@ -239,12 +239,12 @@ for (int i = 0; i < inputCount; i++)
             {
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "Now let's connect your MIDI keyboard to control a synthesizer!"
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Route MIDI keyboard to synth
 var synth = CreateSynth();
 
@@ -256,17 +256,17 @@ Print(""Play your keyboard!"");",
                 },
                 new()
                 {
-                    Type = SectionType.Heading,
+                    Type = WorkshopSectionType.Heading,
                     Content = "Mapping MIDI CC"
                 },
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "You can also map MIDI control change (CC) messages to synth parameters:"
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Map CC to filter cutoff
 var synth = CreateSynth();
 midi.device(0).route(synth);
@@ -287,12 +287,12 @@ midi.device(0).cc(1).to(synth, ""cutoff"");",
             {
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "MusicEngine can load VST2 and VST3 plugins. This lets you use any professional synthesizer like Serum, Vital, Massive, or any other plugin you have installed."
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Load a VST plugin by name
 var synth = vst.load(""MyPluginName"");
 synth.ShowEditor();
@@ -301,12 +301,12 @@ synth.NoteOn(60, 100);",
                 },
                 new()
                 {
-                    Type = SectionType.Heading,
+                    Type = WorkshopSectionType.Heading,
                     Content = "Connect MIDI Keyboard"
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Load plugin and connect your keyboard
 var synth = vst.load(""MyPluginName"");
 synth.ShowEditor();
@@ -315,17 +315,17 @@ synth.from(0);  // MIDI device 0",
                 },
                 new()
                 {
-                    Type = SectionType.Tip,
+                    Type = WorkshopSectionType.Tip,
                     Content = "Common VST locations: C:\\Program Files\\Common Files\\VST3 or C:\\Program Files\\VSTPlugins"
                 },
                 new()
                 {
-                    Type = SectionType.Heading,
+                    Type = WorkshopSectionType.Heading,
                     Content = "Popular Free VST Plugins"
                 },
                 new()
                 {
-                    Type = SectionType.BulletList,
+                    Type = WorkshopSectionType.BulletList,
                     Items = new List<string>
                     {
                         "Vital - Free wavetable synth (vital.audio)",
@@ -347,12 +347,12 @@ synth.from(0);  // MIDI device 0",
             {
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "Patterns let you create repeating musical sequences. Use pattern.Note(note, beat, duration, velocity) to add notes."
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Simple 4-beat pattern
 var synth = CreateSynth();
 var p = CreatePattern(synth);
@@ -368,12 +368,12 @@ p.Play();",
                 },
                 new()
                 {
-                    Type = SectionType.Heading,
+                    Type = WorkshopSectionType.Heading,
                     Content = "Drum Pattern Example"
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Basic drum beat
 var drums = CreateSynth();
 var p = CreatePattern(drums);
@@ -389,7 +389,7 @@ p.Play();",
                 },
                 new()
                 {
-                    Type = SectionType.Tip,
+                    Type = WorkshopSectionType.Tip,
                     Content = "The white box around code shows what's currently playing!"
                 }
             }
@@ -404,12 +404,12 @@ p.Play();",
             {
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "The Sequencer controls the tempo. Use sequencer.Bpm to set the speed."
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Set tempo to 120 BPM
 sequencer.Bpm = 120;
 
@@ -425,7 +425,7 @@ p.Play();",
                 },
                 new()
                 {
-                    Type = SectionType.Tip,
+                    Type = WorkshopSectionType.Tip,
                     Content = "Use lowercase 'sequencer' or uppercase 'Sequencer' - both work!"
                 }
             }
@@ -441,12 +441,12 @@ p.Play();",
             {
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "SampleInstrument lets you load audio files (WAV, MP3, etc.) and play them like an instrument. Map different sounds to different MIDI notes!"
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Load a single sample
 var drums = CreateSampler();
 drums.LoadSample(36, ""kick.wav"");
@@ -457,12 +457,12 @@ drums.NoteOn(36, 100);  // Play kick",
                 },
                 new()
                 {
-                    Type = SectionType.Heading,
+                    Type = WorkshopSectionType.Heading,
                     Content = "Load from a folder"
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Load all samples from a folder
 var sampler = CreateSamplerFromDirectory(""C:/Samples/DrumKit"");
 
@@ -473,12 +473,12 @@ sampler.NoteOn(36, 100);",
                 },
                 new()
                 {
-                    Type = SectionType.Heading,
+                    Type = WorkshopSectionType.Heading,
                     Content = "Use in Patterns"
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Create drum loop with samples
 var drums = CreateSampler();
 drums.LoadSample(36, ""kick.wav"");
@@ -496,7 +496,7 @@ p.Play();",
                 },
                 new()
                 {
-                    Type = SectionType.Tip,
+                    Type = WorkshopSectionType.Tip,
                     Content = "Samples are automatically pitch-shifted when played on different notes!"
                 }
             }
@@ -511,12 +511,12 @@ p.Play();",
             {
                 new()
                 {
-                    Type = SectionType.Text,
+                    Type = WorkshopSectionType.Text,
                     Content = "Let's combine everything you've learned into a complete track!"
                 },
                 new()
                 {
-                    Type = SectionType.Code,
+                    Type = WorkshopSectionType.Code,
                     Content = @"// Set tempo
 sequencer.Bpm = 128;
 
@@ -543,7 +543,7 @@ leadP.Play();",
                 },
                 new()
                 {
-                    Type = SectionType.Success,
+                    Type = WorkshopSectionType.Success,
                     Content = "Congratulations! You've completed the workshop. Keep experimenting and have fun making music!"
                 }
             }
@@ -667,31 +667,31 @@ leadP.Play();",
     {
         switch (section.Type)
         {
-            case SectionType.Text:
+            case WorkshopSectionType.Text:
                 RenderText(section.Content);
                 break;
-            case SectionType.Heading:
+            case WorkshopSectionType.Heading:
                 RenderHeading(section.Content);
                 break;
-            case SectionType.Code:
+            case WorkshopSectionType.Code:
                 RenderCode(section.Content, section.Description);
                 break;
-            case SectionType.BulletList:
+            case WorkshopSectionType.BulletList:
                 RenderBulletList(section.Items!);
                 break;
-            case SectionType.Table:
+            case WorkshopSectionType.Table:
                 RenderTable(section.TableData!);
                 break;
-            case SectionType.Tip:
+            case WorkshopSectionType.Tip:
                 RenderCallout(section.Content, "Tip", "#4B6EAF");
                 break;
-            case SectionType.Warning:
+            case WorkshopSectionType.Warning:
                 RenderCallout(section.Content, "Warning", "#E9B85B");
                 break;
-            case SectionType.Info:
+            case WorkshopSectionType.Info:
                 RenderCallout(section.Content, "Info", "#6F737A");
                 break;
-            case SectionType.Success:
+            case WorkshopSectionType.Success:
                 RenderCallout(section.Content, "Success", "#6AAB73");
                 break;
         }
@@ -996,14 +996,14 @@ public class WorkshopLesson
 
 public class LessonSection
 {
-    public SectionType Type { get; set; }
+    public WorkshopSectionType Type { get; set; }
     public string Content { get; set; } = "";
     public string? Description { get; set; }
     public List<string>? Items { get; set; }
     public List<string[]>? TableData { get; set; }
 }
 
-public enum SectionType
+public enum WorkshopSectionType
 {
     Text,
     Heading,
