@@ -33,7 +33,7 @@ public class ScriptExecutionService : IScriptExecutionService, IDisposable
 
         await Task.Run(() =>
         {
-            _audioEngine = new AudioEngine();
+            _audioEngine = new AudioEngine(sampleRate: null, logger: null);
             _audioEngine.Initialize();
 
             _sequencer = new Sequencer();

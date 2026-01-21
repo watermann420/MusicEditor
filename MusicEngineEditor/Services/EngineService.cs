@@ -38,7 +38,7 @@ public class EngineService : IDisposable
 
             await Task.Run(() =>
             {
-                _engine = new AudioEngine();
+                _engine = new AudioEngine(sampleRate: null, logger: null);
                 _engine.Initialize();
 
                 _sequencer = new Sequencer();
