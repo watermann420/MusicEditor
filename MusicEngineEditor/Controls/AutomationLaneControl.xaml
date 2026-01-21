@@ -1,0 +1,321 @@
+<UserControl x:Class="MusicEngineEditor.Controls.AutomationLaneControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="150" d:DesignWidth="600"
+             Background="#1E1F22"
+             Loaded="UserControl_Loaded"
+             SizeChanged="UserControl_SizeChanged">
+
+    <UserControl.Resources>
+        <!-- Theme Colors -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1F22"/>
+        <SolidColorBrush x:Key="CanvasBackgroundBrush" Color="#252628"/>
+        <SolidColorBrush x:Key="GridLineBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="GridLineStrongBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
+        <SolidColorBrush x:Key="CurveBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="PointBrush" Color="#E8E8E8"/>
+        <SolidColorBrush x:Key="PointSelectedBrush" Color="#FF9B4B"/>
+        <SolidColorBrush x:Key="PlayheadBrush" Color="#CC4B4B"/>
+        <SolidColorBrush x:Key="SelectionBrush" Color="#404B6EAF"/>
+
+        <!-- Lane Header Button Style -->
+        <Style x:Key="LaneHeaderButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#393B40"/>
+                                <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toggle Button Style (Mute/Solo/Arm) -->
+        <Style x:Key="ToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="MinWidth" Value="24"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Mute Toggle Style -->
+        <Style x:Key="MuteToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToggleButtonStyle}">
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#C75450"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="BorderBrush" Value="#C75450"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Solo Toggle Style -->
+        <Style x:Key="SoloToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToggleButtonStyle}">
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#D9A343"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="BorderBrush" Value="#D9A343"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Arm Toggle Style -->
+        <Style x:Key="ArmToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToggleButtonStyle}">
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#CC4B4B"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="BorderBrush" Value="#CC4B4B"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Curve Type ComboBox Style -->
+        <Style x:Key="CurveTypeComboStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="#2B2D30"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Height" Value="24"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="140"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Lane Header -->
+        <Border Grid.Column="0"
+                Background="{StaticResource BackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,1,0"
+                Padding="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Lane Name and Color -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                    <Border x:Name="ColorIndicator"
+                            Width="4" Height="16"
+                            CornerRadius="2"
+                            Background="{StaticResource AccentBrush}"
+                            Margin="0,0,6,0"
+                            Cursor="Hand"
+                            MouseLeftButtonDown="ColorIndicator_MouseLeftButtonDown"
+                            ToolTip="Click to change color"/>
+                    <TextBlock x:Name="LaneNameText"
+                               Text="Parameter"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ForegroundBrush}"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               MaxWidth="100"/>
+                </StackPanel>
+
+                <!-- Target Info -->
+                <TextBlock x:Name="TargetInfoText"
+                           Grid.Row="1"
+                           Text="Target: None"
+                           FontSize="10"
+                           Foreground="{StaticResource SecondaryForegroundBrush}"
+                           TextTrimming="CharacterEllipsis"
+                           Margin="0,0,0,6"/>
+
+                <!-- Mute/Solo/Arm Buttons -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,6">
+                    <ToggleButton x:Name="MuteButton"
+                                  Style="{StaticResource MuteToggleStyle}"
+                                  Content="M"
+                                  ToolTip="Mute"
+                                  Click="MuteButton_Click"
+                                  Margin="0,0,4,0"/>
+                    <ToggleButton x:Name="SoloButton"
+                                  Style="{StaticResource SoloToggleStyle}"
+                                  Content="S"
+                                  ToolTip="Solo"
+                                  Click="SoloButton_Click"
+                                  Margin="0,0,4,0"/>
+                    <ToggleButton x:Name="ArmButton"
+                                  Style="{StaticResource ArmToggleStyle}"
+                                  Content="R"
+                                  ToolTip="Arm for Recording"
+                                  Click="ArmButton_Click"/>
+                </StackPanel>
+
+                <!-- Value Display -->
+                <StackPanel Grid.Row="3" VerticalAlignment="Center">
+                    <TextBlock x:Name="CurrentValueText"
+                               Text="0.000"
+                               FontSize="18"
+                               FontWeight="Light"
+                               Foreground="{StaticResource ForegroundBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="ValueRangeText"
+                               Text="0.0 - 1.0"
+                               FontSize="9"
+                               Foreground="{StaticResource SecondaryForegroundBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Curve Type Selector -->
+                <ComboBox x:Name="CurveTypeCombo"
+                          Grid.Row="4"
+                          Style="{StaticResource CurveTypeComboStyle}"
+                          SelectedIndex="0"
+                          SelectionChanged="CurveTypeCombo_SelectionChanged"
+                          ToolTip="Default curve type for new points">
+                    <ComboBoxItem Content="Linear"/>
+                    <ComboBoxItem Content="Bezier"/>
+                    <ComboBoxItem Content="Step"/>
+                    <ComboBoxItem Content="Exponential"/>
+                    <ComboBoxItem Content="S-Curve"/>
+                </ComboBox>
+            </Grid>
+        </Border>
+
+        <!-- Automation Canvas -->
+        <Border Grid.Column="1"
+                Background="{StaticResource CanvasBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0"
+                ClipToBounds="True">
+            <Grid>
+                <!-- Grid Lines Canvas -->
+                <Canvas x:Name="GridCanvas"
+                        IsHitTestVisible="False"/>
+
+                <!-- Curve Canvas -->
+                <Canvas x:Name="CurveCanvas"
+                        IsHitTestVisible="False"/>
+
+                <!-- Points Canvas -->
+                <Canvas x:Name="PointsCanvas"
+                        Background="Transparent"
+                        MouseLeftButtonDown="PointsCanvas_MouseLeftButtonDown"
+                        MouseLeftButtonUp="PointsCanvas_MouseLeftButtonUp"
+                        MouseRightButtonDown="PointsCanvas_MouseRightButtonDown"
+                        MouseMove="PointsCanvas_MouseMove"
+                        MouseWheel="PointsCanvas_MouseWheel"/>
+
+                <!-- Selection Rectangle -->
+                <Rectangle x:Name="SelectionRect"
+                           Fill="{StaticResource SelectionBrush}"
+                           Stroke="{StaticResource AccentBrush}"
+                           StrokeThickness="1"
+                           Visibility="Collapsed"
+                           IsHitTestVisible="False"/>
+
+                <!-- Playhead -->
+                <Line x:Name="Playhead"
+                      Y1="0" Y2="1000"
+                      Stroke="{StaticResource PlayheadBrush}"
+                      StrokeThickness="1"
+                      IsHitTestVisible="False"
+                      Visibility="Collapsed"/>
+
+                <!-- Value at Cursor -->
+                <Border x:Name="CursorValuePopup"
+                        Background="#E0252628"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Padding="6,3"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Visibility="Collapsed"
+                        IsHitTestVisible="False">
+                    <StackPanel>
+                        <TextBlock x:Name="CursorTimeText"
+                                   Text="Time: 0.000"
+                                   FontSize="10"
+                                   Foreground="{StaticResource ForegroundBrush}"/>
+                        <TextBlock x:Name="CursorValueText"
+                                   Text="Value: 0.000"
+                                   FontSize="10"
+                                   Foreground="{StaticResource CurveBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Context Menu -->
+                <Grid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Add Point" Click="AddPoint_Click"/>
+                        <MenuItem Header="Delete Selected Points" Click="DeleteSelectedPoints_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Select All" Click="SelectAll_Click"/>
+                        <MenuItem Header="Clear Selection" Click="ClearSelection_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Curve Type">
+                            <MenuItem Header="Linear" Click="SetCurveType_Click" Tag="Linear"/>
+                            <MenuItem Header="Bezier" Click="SetCurveType_Click" Tag="Bezier"/>
+                            <MenuItem Header="Step" Click="SetCurveType_Click" Tag="Step"/>
+                            <MenuItem Header="Exponential" Click="SetCurveType_Click" Tag="Exponential"/>
+                            <MenuItem Header="S-Curve" Click="SetCurveType_Click" Tag="SCurve"/>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Reset to Default" Click="ResetToDefault_Click"/>
+                        <MenuItem Header="Clear All Points" Click="ClearAllPoints_Click"/>
+                    </ContextMenu>
+                </Grid.ContextMenu>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,187 @@
+<UserControl x:Class="MusicEngineEditor.Controls.MarkerTrackControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="60" d:DesignWidth="800"
+             Background="{DynamicResource PanelBackgroundBrush}"
+             ClipToBounds="True">
+
+    <UserControl.Resources>
+        <!-- Marker Flag Style -->
+        <Style x:Key="MarkerFlagStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="2,2,0,0"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Marker Line Style -->
+        <Style x:Key="MarkerLineStyle" TargetType="Rectangle">
+            <Setter Property="Width" Value="2"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Add Marker Button Style -->
+        <Style x:Key="AddMarkerButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Marker Type ComboBox Item Style -->
+        <Style x:Key="MarkerTypeItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource ToolbarBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Markers"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrightForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding MarkerCount, StringFormat=' ({0})'}"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0"/>
+                </StackPanel>
+
+                <!-- Marker Type Selector -->
+                <ComboBox Grid.Column="1"
+                          x:Name="MarkerTypeComboBox"
+                          SelectedIndex="0"
+                          Width="100"
+                          Margin="12,0,0,0"
+                          VerticalAlignment="Center">
+                    <ComboBoxItem Content="Cue" Tag="Cue"/>
+                    <ComboBoxItem Content="Loop" Tag="Loop"/>
+                    <ComboBoxItem Content="Section" Tag="Section"/>
+                </ComboBox>
+
+                <!-- Add Marker Buttons -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="+ Add at Position"
+                            Style="{StaticResource AddMarkerButtonStyle}"
+                            Click="AddMarkerAtPosition_Click"
+                            ToolTip="Add marker at current playback position"/>
+                    <Button Content="+ Add at Cursor"
+                            Style="{StaticResource AddMarkerButtonStyle}"
+                            Click="AddMarkerAtCursor_Click"
+                            ToolTip="Add marker at cursor position"/>
+                </StackPanel>
+
+                <!-- Navigation Buttons -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+                    <Button Content="&lt;"
+                            Style="{StaticResource AddMarkerButtonStyle}"
+                            Width="28"
+                            Click="PreviousMarker_Click"
+                            ToolTip="Jump to previous marker"/>
+                    <Button Content="&gt;"
+                            Style="{StaticResource AddMarkerButtonStyle}"
+                            Width="28"
+                            Click="NextMarker_Click"
+                            ToolTip="Jump to next marker"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Marker Track Canvas -->
+        <Canvas Grid.Row="1"
+                x:Name="MarkerCanvas"
+                Background="Transparent"
+                MouseLeftButtonDown="MarkerCanvas_MouseLeftButtonDown"
+                MouseRightButtonDown="MarkerCanvas_MouseRightButtonDown"
+                MouseMove="MarkerCanvas_MouseMove"
+                MouseLeftButtonUp="MarkerCanvas_MouseLeftButtonUp">
+
+            <!-- Markers are drawn programmatically -->
+
+            <!-- Playhead indicator -->
+            <Rectangle x:Name="Playhead"
+                       Width="2"
+                       Fill="{DynamicResource AccentBrush}"
+                       Canvas.Top="0"
+                       Visibility="Collapsed"/>
+
+            <!-- Selection rectangle for range selection -->
+            <Rectangle x:Name="SelectionRect"
+                       Fill="#20007ACC"
+                       Stroke="{DynamicResource AccentBrush}"
+                       StrokeThickness="1"
+                       Visibility="Collapsed"/>
+            <!-- Context Menu -->
+            <Canvas.ContextMenu>
+                <ContextMenu x:Name="MarkerContextMenu">
+                    <MenuItem Header="Add Cue Marker" Click="AddCueMarker_Click"/>
+                    <MenuItem Header="Add Loop Marker" Click="AddLoopMarker_Click"/>
+                    <MenuItem Header="Add Section Marker" Click="AddSectionMarker_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="EditMarkerMenuItem" Header="Edit Marker..." Click="EditMarker_Click"/>
+                    <MenuItem x:Name="DeleteMarkerMenuItem" Header="Delete Marker" Click="DeleteMarker_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="JumpToMarkerMenuItem" Header="Jump to Marker" Click="JumpToMarker_Click"/>
+                    <MenuItem x:Name="LockMarkerMenuItem" Header="Lock Marker" Click="LockMarker_Click"/>
+                </ContextMenu>
+            </Canvas.ContextMenu>
+        </Canvas>
+    </Grid>
+</UserControl>

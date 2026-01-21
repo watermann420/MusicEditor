@@ -1,0 +1,593 @@
+<Window x:Class="MusicEngineEditor.Views.Dialogs.ThemeSettingsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:MusicEngineEditor.ViewModels"
+        mc:Ignorable="d"
+        Title="Theme Settings"
+        Width="850" Height="650"
+        MinWidth="750" MinHeight="550"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}"
+        d:DataContext="{d:DesignInstance Type=vm:ThemeSettingsViewModel, IsDesignTimeCreatable=False}">
+
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="20,20,20,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Theme List Panel -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource PanelBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <Border Grid.Row="0"
+                            Background="{DynamicResource HeaderBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            Padding="12,10">
+                        <TextBlock Text="Available Themes"
+                                   FontWeight="SemiBold"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource BrightForegroundBrush}"/>
+                    </Border>
+
+                    <!-- Theme List -->
+                    <ListBox Grid.Row="1"
+                             ItemsSource="{Binding Themes}"
+                             SelectedItem="{Binding SelectedTheme, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Padding="8"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Theme Color Preview -->
+                                    <Border Grid.Column="0"
+                                            Width="32" Height="24"
+                                            CornerRadius="3"
+                                            BorderBrush="{DynamicResource SubtleBorderBrush}"
+                                            BorderThickness="1"
+                                            Margin="0,0,10,0">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="{Binding Colors.Background, FallbackValue=#1E1F22}" Offset="0"/>
+                                                <GradientStop Color="{Binding Colors.Accent, FallbackValue=#4B6EAF}" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
+
+                                    <!-- Theme Name -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontWeight="Medium"
+                                                   Foreground="{DynamicResource ForegroundBrush}"/>
+                                        <TextBlock Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                                   FontSize="10">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0} Theme">
+                                                    <Binding Path="IsDark" Converter="{StaticResource BoolToStringConverter}" ConverterParameter="Dark|Light"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!-- Built-in Badge -->
+                                    <Border Grid.Column="2"
+                                            Visibility="{Binding IsBuiltIn, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Background="{DynamicResource AccentBrush}"
+                                            CornerRadius="3"
+                                            Padding="6,2"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="Built-in"
+                                                   FontSize="9"
+                                                   Foreground="White"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Theme Actions -->
+                    <StackPanel Grid.Row="2"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="8,10">
+                        <Button Content="New"
+                                Command="{Binding CreateThemeCommand}"
+                                ToolTip="Create a new theme based on the selected one"
+                                Padding="12,6"
+                                Margin="0,0,5,0"/>
+                        <Button Content="Duplicate"
+                                Command="{Binding DuplicateThemeCommand}"
+                                ToolTip="Duplicate the selected theme"
+                                Padding="12,6"
+                                Margin="0,0,5,0"/>
+                        <Button Content="Delete"
+                                Command="{Binding DeleteThemeCommand}"
+                                ToolTip="Delete the selected custom theme"
+                                Padding="12,6"
+                                IsEnabled="{Binding CanDeleteSelectedTheme}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Theme Editor Panel -->
+            <Border Grid.Column="2"
+                    Background="{DynamicResource PanelBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <Border Grid.Row="0"
+                            Background="{DynamicResource HeaderBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            Padding="12,10">
+                        <Grid>
+                            <TextBlock Text="Theme Editor"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource BrightForegroundBrush}"/>
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}">
+                                <Run Text="Editing: "/>
+                                <Run Text="{Binding SelectedTheme.Name, FallbackValue='No theme selected'}"
+                                     FontWeight="SemiBold"
+                                     Foreground="{DynamicResource ForegroundBrush}"/>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+
+                    <!-- Editor Content -->
+                    <TabControl Grid.Row="1"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="10">
+
+                        <!-- General Tab -->
+                        <TabItem Header="General" Padding="12,6">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
+                                <StackPanel>
+                                    <!-- Theme Name -->
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Theme Name:" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="1"
+                                                 Text="{Binding ThemeName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 IsEnabled="{Binding IsCustomThemeSelected}"
+                                                 Style="{DynamicResource InputTextBoxStyle}"/>
+                                    </Grid>
+
+                                    <!-- Dark Mode Toggle -->
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Mode:" VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <RadioButton Content="Dark"
+                                                         IsChecked="{Binding IsDarkTheme}"
+                                                         IsEnabled="{Binding IsCustomThemeSelected}"
+                                                         Margin="0,0,20,0"/>
+                                            <RadioButton Content="Light"
+                                                         IsChecked="{Binding IsLightTheme}"
+                                                         IsEnabled="{Binding IsCustomThemeSelected}"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Separator Background="{DynamicResource BorderBrush}" Margin="0,10,0,20"/>
+
+                                    <!-- Font Settings -->
+                                    <TextBlock Text="Font Settings"
+                                               FontWeight="SemiBold"
+                                               FontSize="13"
+                                               Margin="0,0,0,15"
+                                               Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="UI Font:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="1"
+                                                  ItemsSource="{Binding AvailableFonts}"
+                                                  SelectedItem="{Binding FontFamily, Mode=TwoWay}"
+                                                  IsEnabled="{Binding IsCustomThemeSelected}"/>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="UI Font Size:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="1"
+                                                  ItemsSource="{Binding AvailableFontSizes}"
+                                                  SelectedItem="{Binding FontSize, Mode=TwoWay}"
+                                                  IsEnabled="{Binding IsCustomThemeSelected}"/>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Editor Font:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="1"
+                                                  ItemsSource="{Binding AvailableMonoFonts}"
+                                                  SelectedItem="{Binding EditorFontFamily, Mode=TwoWay}"
+                                                  IsEnabled="{Binding IsCustomThemeSelected}"/>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Editor Font Size:" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="1"
+                                                  ItemsSource="{Binding AvailableEditorFontSizes}"
+                                                  SelectedItem="{Binding EditorFontSize, Mode=TwoWay}"
+                                                  IsEnabled="{Binding IsCustomThemeSelected}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- Colors Tab -->
+                        <TabItem Header="Colors" Padding="12,6">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
+                                <StackPanel>
+                                    <!-- Background Colors -->
+                                    <TextBlock Text="Background Colors"
+                                               FontWeight="SemiBold"
+                                               FontSize="13"
+                                               Margin="0,0,0,10"
+                                               Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                                    <ItemsControl ItemsSource="{Binding BackgroundColors}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="140"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               VerticalAlignment="Center"/>
+                                                    <Button Grid.Column="1"
+                                                            Command="{Binding DataContext.PickColorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{DynamicResource ColorPickerButtonStyle}"
+                                                            IsEnabled="{Binding DataContext.IsCustomThemeSelected, RelativeSource={RelativeSource AncestorType=Window}}">
+                                                        <Button.Background>
+                                                            <SolidColorBrush Color="{Binding ColorValue}"/>
+                                                        </Button.Background>
+                                                    </Button>
+                                                    <TextBox Grid.Column="2"
+                                                             Text="{Binding HexValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                             IsEnabled="{Binding DataContext.IsCustomThemeSelected, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                             Style="{DynamicResource InputTextBoxStyle}"
+                                                             Margin="10,0,0,0"
+                                                             FontFamily="Consolas"
+                                                             FontSize="11"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Separator Background="{DynamicResource BorderBrush}" Margin="0,15,0,20"/>
+
+                                    <!-- Text Colors -->
+                                    <TextBlock Text="Text Colors"
+                                               FontWeight="SemiBold"
+                                               FontSize="13"
+                                               Margin="0,0,0,10"
+                                               Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                                    <ItemsControl ItemsSource="{Binding TextColors}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="140"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               VerticalAlignment="Center"/>
+                                                    <Button Grid.Column="1"
+                                                            Command="{Binding DataContext.PickColorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{DynamicResource ColorPickerButtonStyle}"
+                                                            IsEnabled="{Binding DataContext.IsCustomThemeSelected, RelativeSource={RelativeSource AncestorType=Window}}">
+                                                        <Button.Background>
+                                                            <SolidColorBrush Color="{Binding ColorValue}"/>
+                                                        </Button.Background>
+                                                    </Button>
+                                                    <TextBox Grid.Column="2"
+                                                             Text="{Binding HexValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                             IsEnabled="{Binding DataContext.IsCustomThemeSelected, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                             Style="{DynamicResource InputTextBoxStyle}"
+                                                             Margin="10,0,0,0"
+                                                             FontFamily="Consolas"
+                                                             FontSize="11"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Separator Background="{DynamicResource BorderBrush}" Margin="0,15,0,20"/>
+
+                                    <!-- Accent Colors -->
+                                    <TextBlock Text="Accent Colors"
+                                               FontWeight="SemiBold"
+                                               FontSize="13"
+                                               Margin="0,0,0,10"
+                                               Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                                    <ItemsControl ItemsSource="{Binding AccentColors}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="140"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               VerticalAlignment="Center"/>
+                                                    <Button Grid.Column="1"
+                                                            Command="{Binding DataContext.PickColorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{DynamicResource ColorPickerButtonStyle}"
+                                                            IsEnabled="{Binding DataContext.IsCustomThemeSelected, RelativeSource={RelativeSource AncestorType=Window}}">
+                                                        <Button.Background>
+                                                            <SolidColorBrush Color="{Binding ColorValue}"/>
+                                                        </Button.Background>
+                                                    </Button>
+                                                    <TextBox Grid.Column="2"
+                                                             Text="{Binding HexValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                             IsEnabled="{Binding DataContext.IsCustomThemeSelected, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                             Style="{DynamicResource InputTextBoxStyle}"
+                                                             Margin="10,0,0,0"
+                                                             FontFamily="Consolas"
+                                                             FontSize="11"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- Preview Tab -->
+                        <TabItem Header="Preview" Padding="12,6">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
+                                <StackPanel>
+                                    <TextBlock Text="Theme Preview"
+                                               FontWeight="SemiBold"
+                                               FontSize="13"
+                                               Margin="0,0,0,15"
+                                               Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                                    <!-- Mini UI Preview -->
+                                    <Border Background="{DynamicResource BackgroundBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="15"
+                                            Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <!-- Sample Panel -->
+                                            <Border Background="{DynamicResource PanelBackgroundBrush}"
+                                                    CornerRadius="4"
+                                                    Padding="10"
+                                                    Margin="0,0,0,10">
+                                                <StackPanel>
+                                                    <TextBlock Text="Sample Panel Header"
+                                                               FontWeight="SemiBold"
+                                                               Margin="0,0,0,8"/>
+                                                    <TextBlock Text="This is regular foreground text."
+                                                               Margin="0,0,0,4"/>
+                                                    <TextBlock Text="This is secondary text."
+                                                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Sample Buttons -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                                <Button Content="Primary"
+                                                        Style="{DynamicResource PrimaryButtonStyle}"
+                                                        Margin="0,0,10,0"/>
+                                                <Button Content="Secondary"
+                                                        Style="{DynamicResource SecondaryButtonStyle}"
+                                                        Margin="0,0,10,0"/>
+                                                <Button Content="Run"
+                                                        Style="{DynamicResource RunButtonStyle}"
+                                                        Margin="0,0,10,0"/>
+                                                <Button Content="Stop"
+                                                        Style="{DynamicResource StopButtonStyle}"/>
+                                            </StackPanel>
+
+                                            <!-- Sample Form Elements -->
+                                            <Grid Margin="0,0,0,10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="10"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBox Text="Sample input text"
+                                                         Style="{DynamicResource InputTextBoxStyle}"/>
+                                                <ComboBox Grid.Column="2">
+                                                    <ComboBoxItem Content="Option 1" IsSelected="True"/>
+                                                    <ComboBoxItem Content="Option 2"/>
+                                                </ComboBox>
+                                            </Grid>
+
+                                            <!-- Sample Checkboxes and Status -->
+                                            <StackPanel Orientation="Horizontal">
+                                                <CheckBox Content="Checkbox" IsChecked="True" Margin="0,0,20,0"/>
+                                                <TextBlock Text="Success" Foreground="{DynamicResource SuccessBrush}" Margin="0,0,15,0"/>
+                                                <TextBlock Text="Warning" Foreground="{DynamicResource WarningBrush}" Margin="0,0,15,0"/>
+                                                <TextBlock Text="Error" Foreground="{DynamicResource ErrorBrush}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Apply Preview Button -->
+                                    <Button Content="Apply Preview"
+                                            Command="{Binding ApplyPreviewCommand}"
+                                            Style="{DynamicResource SecondaryButtonStyle}"
+                                            HorizontalAlignment="Left"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- Import/Export Tab -->
+                        <TabItem Header="Import/Export" Padding="12,6">
+                            <StackPanel Margin="15">
+                                <TextBlock Text="Theme Import/Export"
+                                           FontWeight="SemiBold"
+                                           FontSize="13"
+                                           Margin="0,0,0,15"
+                                           Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                                <TextBlock Text="Export your custom themes to share with others, or import themes from files."
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                           Margin="0,0,0,20"/>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                    <Button Content="Export Theme..."
+                                            Command="{Binding ExportThemeCommand}"
+                                            Style="{DynamicResource SecondaryButtonStyle}"
+                                            Padding="20,8"
+                                            Margin="0,0,10,0"/>
+                                    <Button Content="Import Theme..."
+                                            Command="{Binding ImportThemeCommand}"
+                                            Style="{DynamicResource SecondaryButtonStyle}"
+                                            Padding="20,8"/>
+                                </StackPanel>
+
+                                <Separator Background="{DynamicResource BorderBrush}" Margin="0,10,0,20"/>
+
+                                <TextBlock Text="Custom Themes Directory"
+                                           FontWeight="SemiBold"
+                                           FontSize="13"
+                                           Margin="0,0,0,10"
+                                           Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding CustomThemesDirectory, Mode=OneWay}"
+                                             IsReadOnly="True"
+                                             Style="{DynamicResource InputTextBoxStyle}"/>
+                                    <Button Grid.Column="1"
+                                            Content="Open Folder"
+                                            Command="{Binding OpenThemesFolderCommand}"
+                                            Padding="12,6"
+                                            Margin="10,0,0,0"/>
+                                </Grid>
+                            </StackPanel>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Bottom Button Panel -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="20,15">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button Content="Reset Colors"
+                            Command="{Binding ResetColorsCommand}"
+                            ToolTip="Reset colors to theme defaults"
+                            Padding="15,8"
+                            IsEnabled="{Binding IsCustomThemeSelected}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Apply"
+                            Command="{Binding ApplyCommand}"
+                            Padding="20,8"
+                            Margin="0,0,10,0"
+                            Style="{DynamicResource PrimaryButtonStyle}"/>
+                    <Button Content="OK"
+                            IsDefault="True"
+                            Command="{Binding OkCommand}"
+                            Padding="20,8"
+                            Margin="0,0,10,0"
+                            Style="{DynamicResource PrimaryButtonStyle}"/>
+                    <Button Content="Cancel"
+                            IsCancel="True"
+                            Command="{Binding CancelCommand}"
+                            Padding="20,8"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+
+    <Window.Resources>
+        <!-- Bool to Visibility Converter -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Bool to String Converter -->
+        <local:BoolToStringConverter x:Key="BoolToStringConverter"
+                                     xmlns:local="clr-namespace:MusicEngineEditor.Views.Dialogs"/>
+    </Window.Resources>
+</Window>

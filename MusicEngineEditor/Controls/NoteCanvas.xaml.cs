@@ -200,6 +200,11 @@ public partial class NoteCanvas : UserControl
     public event EventHandler<NoteResizedEventArgs>? NoteResized;
     public event EventHandler? SelectionChanged;
 
+    /// <summary>
+    /// Occurs when a note preview should be played (while drawing/hovering).
+    /// </summary>
+    public event EventHandler<NotePreviewArgs>? NotePreviewRequested;
+
     #endregion
 
     #region Private Fields
@@ -229,6 +234,9 @@ public partial class NoteCanvas : UserControl
     private static readonly Color BlackKeyLaneColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#151515")!;
     private static readonly Color PlayheadColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF5555")!;
     private static readonly Color GhostNoteColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#4A9EFF")!;
+
+    // Note preview tracking
+    private int _lastPreviewedNote = -1;
 
     #endregion
 
@@ -573,7 +581,16 @@ public partial class NoteCanvas : UserControl
         var beat = SnapToBeat(XToBeat(position.X + ScrollX));
         var midiNote = YToNote(position.Y + ScrollY);
 
-        if (midiNote < LowestNote || midiNote > HighestNote) return;
+        if (midiNote < LowestNote || midiNote > HighestNote)
+        {
+            // Stop preview if moving out of range
+            if (_lastPreviewedNote >= 0)
+            {
+                NotePreviewRequested?.Invoke(this, new NotePreviewArgs(_lastPreviewedNote, 0, isNoteOff: true));
+                _lastPreviewedNote = -1;
+            }
+            return;
+        }
 
         var effectiveBeatWidth = BeatWidth * ZoomX;
         var effectiveNoteHeight = NoteHeight * ZoomY;
@@ -603,6 +620,20 @@ public partial class NoteCanvas : UserControl
 
         Canvas.SetLeft(_ghostNoteRect, x + 1);
         Canvas.SetTop(_ghostNoteRect, y + 1);
+
+        // Trigger note preview when hovering over a different note
+        if (midiNote != _lastPreviewedNote)
+        {
+            // Stop previous preview
+            if (_lastPreviewedNote >= 0)
+            {
+                NotePreviewRequested?.Invoke(this, new NotePreviewArgs(_lastPreviewedNote, 0, isNoteOff: true));
+            }
+
+            // Start new preview
+            _lastPreviewedNote = midiNote;
+            NotePreviewRequested?.Invoke(this, new NotePreviewArgs(midiNote, 80, isNoteOff: false));
+        }
     }
 
     private void HideGhostNote()
@@ -610,6 +641,13 @@ public partial class NoteCanvas : UserControl
         if (_ghostNoteRect != null)
         {
             _ghostNoteRect.Visibility = Visibility.Collapsed;
+        }
+
+        // Stop any active preview
+        if (_lastPreviewedNote >= 0)
+        {
+            NotePreviewRequested?.Invoke(this, new NotePreviewArgs(_lastPreviewedNote, 0, isNoteOff: true));
+            _lastPreviewedNote = -1;
         }
     }
 
@@ -1119,4 +1157,38 @@ public partial class NoteCanvas : UserControl
     }
 
     #endregion
+}
+
+/// <summary>
+/// Event arguments for note preview requests from the NoteCanvas.
+/// </summary>
+public class NotePreviewArgs : EventArgs
+{
+    /// <summary>
+    /// Gets the MIDI note number (0-127).
+    /// </summary>
+    public int MidiNote { get; }
+
+    /// <summary>
+    /// Gets the velocity (0-127).
+    /// </summary>
+    public int Velocity { get; }
+
+    /// <summary>
+    /// Gets whether this is a note-off event.
+    /// </summary>
+    public bool IsNoteOff { get; }
+
+    /// <summary>
+    /// Creates a new NotePreviewArgs.
+    /// </summary>
+    /// <param name="midiNote">MIDI note number.</param>
+    /// <param name="velocity">Velocity value.</param>
+    /// <param name="isNoteOff">Whether this is a note-off event.</param>
+    public NotePreviewArgs(int midiNote, int velocity, bool isNoteOff = false)
+    {
+        MidiNote = midiNote;
+        Velocity = velocity;
+        IsNoteOff = isNoteOff;
+    }
 }

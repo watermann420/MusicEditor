@@ -1,0 +1,209 @@
+<UserControl x:Class="MusicEngineEditor.Controls.PresetCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             xmlns:models="clr-namespace:MusicEngineEditor.Models"
+             mc:Ignorable="d"
+             d:DesignHeight="120" d:DesignWidth="160"
+             x:Name="PresetCardControl">
+
+    <UserControl.Resources>
+        <!-- Favorite Button Style -->
+        <Style x:Key="FavoriteButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="12">
+                            <TextBlock x:Name="heart"
+                                       Text="&#x2661;"
+                                       FontSize="{TemplateBinding FontSize}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="heart" Property="Foreground" Value="#FF6B6B"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="heart" Property="Text" Value="&#x2665;"/>
+                                <Setter TargetName="heart" Property="Foreground" Value="#FF6B6B"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Rating Star Style -->
+        <Style x:Key="RatingStarStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Width" Value="14"/>
+            <Setter Property="Height" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <TextBlock x:Name="star"
+                                   Text="&#x2606;"
+                                   FontSize="{TemplateBinding FontSize}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{TemplateBinding Foreground}"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="star" Property="Foreground" Value="#FFD700"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="star" Property="Text" Value="&#x2605;"/>
+                                <Setter TargetName="star" Property="Foreground" Value="#FFD700"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Type Badge Style -->
+        <Style x:Key="TypeBadgeStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border x:Name="CardBorder"
+            Background="{DynamicResource PanelBackgroundBrush}"
+            BorderBrush="{DynamicResource SubtleBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="10"
+            Cursor="Hand">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                        <Setter Property="Background" Value="#3C3F41"/>
+                    </Trigger>
+                    <DataTrigger Binding="{Binding IsSelected, ElementName=PresetCardControl}" Value="True">
+                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                        <Setter Property="BorderThickness" Value="2"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header: Type Badge + Favorite -->
+            <Grid Grid.Row="0" Margin="0,0,0,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Type Badge -->
+                <Border Grid.Column="0"
+                        HorizontalAlignment="Left">
+                    <Border.Style>
+                        <Style TargetType="Border" BasedOn="{StaticResource TypeBadgeStyle}">
+                            <Setter Property="Background" Value="#4A90D9"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Preset.TargetType, ElementName=PresetCardControl}" Value="Effect">
+                                    <Setter Property="Background" Value="#9B59B6"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding Preset.TargetTypeDisplay, ElementName=PresetCardControl, FallbackValue=Synth}"
+                               FontSize="9"
+                               Foreground="White"
+                               FontWeight="Medium"/>
+                </Border>
+
+                <!-- Favorite Button -->
+                <ToggleButton Grid.Column="1"
+                              Style="{StaticResource FavoriteButtonStyle}"
+                              IsChecked="{Binding Preset.IsFavorite, ElementName=PresetCardControl, Mode=TwoWay}"
+                              Click="FavoriteButton_Click"/>
+            </Grid>
+
+            <!-- Preset Name -->
+            <TextBlock Grid.Row="1"
+                       Text="{Binding Preset.Name, ElementName=PresetCardControl, FallbackValue=Preset Name}"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource BrightForegroundBrush}"
+                       TextTrimming="CharacterEllipsis"
+                       ToolTip="{Binding Preset.Name, ElementName=PresetCardControl}"/>
+
+            <!-- Category -->
+            <TextBlock Grid.Row="2"
+                       Text="{Binding Preset.Category, ElementName=PresetCardControl, FallbackValue=Category}"
+                       FontSize="11"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                       Margin="0,2,0,0"
+                       TextTrimming="CharacterEllipsis"/>
+
+            <!-- Author -->
+            <TextBlock Grid.Row="3"
+                       FontSize="10"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                       Margin="0,4,0,0"
+                       TextTrimming="CharacterEllipsis">
+                <Run Text="by "/>
+                <Run Text="{Binding Preset.Author, ElementName=PresetCardControl, FallbackValue=Unknown}"/>
+            </TextBlock>
+
+            <!-- Rating Stars -->
+            <StackPanel Grid.Row="4"
+                        Orientation="Horizontal"
+                        Margin="0,6,0,0">
+                <ToggleButton Style="{StaticResource RatingStarStyle}"
+                              IsChecked="{Binding Preset.Rating, ElementName=PresetCardControl, Converter={local:RatingConverter}, ConverterParameter=1}"
+                              Click="RatingStar_Click"
+                              Tag="1"/>
+                <ToggleButton Style="{StaticResource RatingStarStyle}"
+                              IsChecked="{Binding Preset.Rating, ElementName=PresetCardControl, Converter={local:RatingConverter}, ConverterParameter=2}"
+                              Click="RatingStar_Click"
+                              Tag="2"/>
+                <ToggleButton Style="{StaticResource RatingStarStyle}"
+                              IsChecked="{Binding Preset.Rating, ElementName=PresetCardControl, Converter={local:RatingConverter}, ConverterParameter=3}"
+                              Click="RatingStar_Click"
+                              Tag="3"/>
+                <ToggleButton Style="{StaticResource RatingStarStyle}"
+                              IsChecked="{Binding Preset.Rating, ElementName=PresetCardControl, Converter={local:RatingConverter}, ConverterParameter=4}"
+                              Click="RatingStar_Click"
+                              Tag="4"/>
+                <ToggleButton Style="{StaticResource RatingStarStyle}"
+                              IsChecked="{Binding Preset.Rating, ElementName=PresetCardControl, Converter={local:RatingConverter}, ConverterParameter=5}"
+                              Click="RatingStar_Click"
+                              Tag="5"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

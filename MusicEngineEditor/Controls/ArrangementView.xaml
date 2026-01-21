@@ -1,0 +1,327 @@
+<UserControl x:Class="MusicEngineEditor.Controls.ArrangementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             xmlns:viewmodels="clr-namespace:MusicEngineEditor.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="200" d:DesignWidth="1000"
+             Background="{DynamicResource BackgroundBrush}">
+
+    <UserControl.Resources>
+        <!-- Section Item Style -->
+        <Style x:Key="SectionItemStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Section Type Button Style -->
+        <Style x:Key="SectionTypeButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle x:Name="colorIndicator"
+                                           Width="12" Height="12"
+                                           RadiusX="2" RadiusY="2"
+                                           Margin="0,0,6,0"
+                                           Fill="{TemplateBinding Tag}"/>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toolbar Button Style -->
+        <Style x:Key="ToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Zoom Slider Style -->
+        <Style x:Key="ZoomSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="8"/>
+            <Setter Property="Maximum" Value="256"/>
+            <Setter Property="Value" Value="64"/>
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header / Toolbar -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="12,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title and Info -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Arrangement"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrightForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SectionCount, StringFormat=' - {0} sections'}"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0"/>
+                    <TextBlock Text="{Binding TotalLengthFormatted, StringFormat=' ({0})'}"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- BPM and Time Signature -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <TextBlock Text="BPM:"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0"/>
+                    <TextBox Text="{Binding Bpm, UpdateSourceTrigger=PropertyChanged}"
+                             Width="50"
+                             FontSize="11"
+                             VerticalAlignment="Center"
+                             Padding="4,2"/>
+                    <TextBlock Text="{Binding TimeSignature}"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="12,0,0,0"/>
+                </StackPanel>
+
+                <!-- Zoom Control -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Zoom:"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <Slider x:Name="ZoomSlider"
+                            Style="{StaticResource ZoomSliderStyle}"
+                            Value="{Binding VisibleBeats, Mode=TwoWay}"/>
+                    <TextBlock Text="{Binding VisibleBeats, StringFormat={}{0:F0} beats}"
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0"
+                               Width="60"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Section Type Quick-Add Buttons -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource ToolbarBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,4">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Add Section:"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="4,0,8,0"/>
+                    <Button Content="Intro" Style="{StaticResource SectionTypeButtonStyle}" Tag="#9B59B6" Click="AddSection_Click"/>
+                    <Button Content="Verse" Style="{StaticResource SectionTypeButtonStyle}" Tag="#2ECC71" Click="AddSection_Click"/>
+                    <Button Content="Pre-Chorus" Style="{StaticResource SectionTypeButtonStyle}" Tag="#F39C12" Click="AddSection_Click"/>
+                    <Button Content="Chorus" Style="{StaticResource SectionTypeButtonStyle}" Tag="#E74C3C" Click="AddSection_Click"/>
+                    <Button Content="Bridge" Style="{StaticResource SectionTypeButtonStyle}" Tag="#1ABC9C" Click="AddSection_Click"/>
+                    <Button Content="Breakdown" Style="{StaticResource SectionTypeButtonStyle}" Tag="#34495E" Click="AddSection_Click"/>
+                    <Button Content="Build-up" Style="{StaticResource SectionTypeButtonStyle}" Tag="#F1C40F" Click="AddSection_Click"/>
+                    <Button Content="Drop" Style="{StaticResource SectionTypeButtonStyle}" Tag="#C0392B" Click="AddSection_Click"/>
+                    <Button Content="Solo" Style="{StaticResource SectionTypeButtonStyle}" Tag="#8E44AD" Click="AddSection_Click"/>
+                    <Button Content="Outro" Style="{StaticResource SectionTypeButtonStyle}" Tag="#7F8C8D" Click="AddSection_Click"/>
+                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="8,0"/>
+                    <Button Content="Standard Structure"
+                            Style="{StaticResource ToolbarButtonStyle}"
+                            Click="CreateStandardStructure_Click"
+                            ToolTip="Create a standard song structure (Intro, Verse, Chorus, etc.)"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Main Arrangement Canvas -->
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Timeline Ruler -->
+            <Canvas Grid.Row="0"
+                    x:Name="TimelineRuler"
+                    Height="24"
+                    Background="{DynamicResource PanelBackgroundBrush}"
+                    ClipToBounds="True"/>
+
+            <!-- Section Canvas -->
+            <ScrollViewer Grid.Row="1"
+                          x:Name="SectionScrollViewer"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          ScrollChanged="SectionScrollViewer_ScrollChanged">
+                <Canvas x:Name="SectionCanvas"
+                        Background="{DynamicResource BackgroundBrush}"
+                        MinHeight="100"
+                        ClipToBounds="True"
+                        MouseLeftButtonDown="SectionCanvas_MouseLeftButtonDown"
+                        MouseRightButtonDown="SectionCanvas_MouseRightButtonDown"
+                        MouseMove="SectionCanvas_MouseMove"
+                        MouseLeftButtonUp="SectionCanvas_MouseLeftButtonUp">
+
+                    <!-- Grid lines drawn programmatically -->
+
+                    <!-- Playhead -->
+                    <Rectangle x:Name="Playhead"
+                               Width="2"
+                               Fill="{DynamicResource AccentBrush}"
+                               Canvas.Top="0"
+                               Visibility="Collapsed"
+                               IsHitTestVisible="False"/>
+
+                    <!-- Context Menu -->
+                    <Canvas.ContextMenu>
+                <ContextMenu x:Name="SectionContextMenu">
+                    <MenuItem Header="Add Section Here..." Click="AddSectionHere_Click"/>
+                    <MenuItem Header="Add Standard Section">
+                        <MenuItem Header="Intro" Tag="Intro" Click="AddSectionType_Click"/>
+                        <MenuItem Header="Verse" Tag="Verse" Click="AddSectionType_Click"/>
+                        <MenuItem Header="Pre-Chorus" Tag="PreChorus" Click="AddSectionType_Click"/>
+                        <MenuItem Header="Chorus" Tag="Chorus" Click="AddSectionType_Click"/>
+                        <MenuItem Header="Bridge" Tag="Bridge" Click="AddSectionType_Click"/>
+                        <MenuItem Header="Breakdown" Tag="Breakdown" Click="AddSectionType_Click"/>
+                        <MenuItem Header="Build-up" Tag="Buildup" Click="AddSectionType_Click"/>
+                        <MenuItem Header="Drop" Tag="Drop" Click="AddSectionType_Click"/>
+                        <MenuItem Header="Solo" Tag="Solo" Click="AddSectionType_Click"/>
+                        <MenuItem Header="Outro" Tag="Outro" Click="AddSectionType_Click"/>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem x:Name="EditSectionMenuItem" Header="Edit Section..." Click="EditSection_Click"/>
+                    <MenuItem x:Name="DuplicateSectionMenuItem" Header="Duplicate Section" Click="DuplicateSection_Click"/>
+                    <MenuItem x:Name="DeleteSectionMenuItem" Header="Delete Section" Click="DeleteSection_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="SetRepeatMenuItem" Header="Set Repeat Count..." Click="SetRepeat_Click"/>
+                    <MenuItem x:Name="MuteSectionMenuItem" Header="Mute Section" Click="MuteSection_Click"/>
+                    <MenuItem x:Name="LockSectionMenuItem" Header="Lock Section" Click="LockSection_Click"/>
+                    </ContextMenu>
+                </Canvas.ContextMenu>
+                </Canvas>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Marker Track -->
+        <local:MarkerTrackControl Grid.Row="3"
+                                   x:Name="MarkerTrackControl"
+                                   Height="60"
+                                   MarkerSelected="MarkerTrackControl_MarkerSelected"
+                                   JumpRequested="MarkerTrackControl_JumpRequested"/>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="3"
+                Background="{DynamicResource StatusBarBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="8,4"
+                Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="{Binding StatusMessage}"
+                           FontSize="11"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           VerticalAlignment="Center"/>
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding CurrentPositionFormatted}"
+                           FontSize="11"
+                           Foreground="{DynamicResource ForegroundBrush}"
+                           VerticalAlignment="Center"
+                           Margin="16,0"/>
+
+                <TextBlock Grid.Column="2"
+                           Text="{Binding CurrentSectionName}"
+                           FontSize="11"
+                           Foreground="{DynamicResource AccentBrush}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

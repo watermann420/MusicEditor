@@ -1,0 +1,298 @@
+<UserControl x:Class="MusicEngineEditor.Controls.EffectChainControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:MusicEngineEditor.Models"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="200" d:DesignWidth="300"
+             MinWidth="80">
+
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="EffectChainBackgroundColor">#1E1F22</Color>
+        <Color x:Key="SlotBackgroundColor">#2B2D30</Color>
+        <Color x:Key="SlotBorderColor">#393B40</Color>
+        <Color x:Key="SlotHoverColor">#3C3F41</Color>
+        <Color x:Key="SlotSelectedColor">#4B6EAF</Color>
+        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
+        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="BypassedColor">#FF5555</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="EffectChainBackgroundBrush" Color="{StaticResource EffectChainBackgroundColor}"/>
+        <SolidColorBrush x:Key="SlotBackgroundBrush" Color="{StaticResource SlotBackgroundColor}"/>
+        <SolidColorBrush x:Key="SlotBorderBrush" Color="{StaticResource SlotBorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+
+        <!-- Effect Slot Style -->
+        <Style x:Key="EffectSlotStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource SlotBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SlotBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Bypass Toggle Style -->
+        <Style x:Key="BypassToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="16"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="Background" Value="#3C3F44"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="2"
+                                ToolTip="Bypass Effect">
+                            <Path x:Name="icon"
+                                  Data="M2,2 L6,6 M6,2 L2,6"
+                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  StrokeThickness="1.5"
+                                  Width="8" Height="8"
+                                  Stretch="Uniform"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#5C3535"/>
+                                <Setter TargetName="icon" Property="Stroke" Value="#FF5555"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Mix Slider Style -->
+        <Style x:Key="MixSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="1"/>
+            <Setter Property="Height" Value="4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Height="4">
+                            <Border Height="4"
+                                    Background="#1A1A1A"
+                                    CornerRadius="2"/>
+                            <Border x:Name="PART_TrackFill"
+                                    Height="4"
+                                    Background="#4B6EAF"
+                                    CornerRadius="2"
+                                    HorizontalAlignment="Left"
+                                    Width="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static local:PercentageConverter.Instance}}"/>
+                            <Track x:Name="PART_Track">
+                                <Track.Thumb>
+                                    <Thumb Width="8" Height="8" Opacity="0"/>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Effect Slot DataTemplate -->
+        <DataTemplate x:Key="EffectSlotTemplate" DataType="{x:Type models:EffectSlot}">
+            <Border Style="{StaticResource EffectSlotStyle}"
+                    MouseLeftButtonDown="EffectSlot_MouseLeftButtonDown"
+                    AllowDrop="True"
+                    Drop="EffectSlot_Drop"
+                    DragOver="EffectSlot_DragOver">
+                <Border.Background>
+                    <SolidColorBrush Color="{StaticResource SlotBackgroundColor}"/>
+                </Border.Background>
+                <Border.Triggers>
+                    <EventTrigger RoutedEvent="MouseEnter">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                To="{StaticResource SlotHoverColor}"
+                                                Duration="0:0:0.1"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="MouseLeave">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                To="{StaticResource SlotBackgroundColor}"
+                                                Duration="0:0:0.1"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Border.Triggers>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Effect Color Indicator -->
+                    <Border Grid.Column="0"
+                            Width="4"
+                            CornerRadius="2"
+                            Margin="0,0,6,0"
+                            Background="{Binding EffectColor}"/>
+
+                    <!-- Effect Info -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <!-- Effect Name -->
+                        <TextBlock Text="{Binding DisplayName}"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   FontSize="11"
+                                   FontWeight="Medium"
+                                   TextTrimming="CharacterEllipsis"/>
+
+                        <!-- Category / Empty indicator -->
+                        <TextBlock FontSize="9"
+                                   Foreground="{StaticResource TextSecondaryBrush}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="{Binding Category}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEmpty}" Value="True">
+                                            <Setter Property="Text" Value="Click to add"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Controls (only show if not empty) -->
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                Visibility="{Binding IsEmpty, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                        <!-- Bypass Button -->
+                        <ToggleButton Style="{StaticResource BypassToggleStyle}"
+                                      IsChecked="{Binding IsBypassed}"
+                                      Margin="0,0,4,0"/>
+
+                        <!-- Remove Button -->
+                        <Button Width="16" Height="16"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Click="RemoveEffect_Click"
+                                ToolTip="Remove Effect"
+                                Cursor="Hand">
+                            <Path Data="M3,3 L9,9 M9,3 L3,9"
+                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  StrokeThickness="1.5"
+                                  Width="6" Height="6"
+                                  Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- Boolean to Visibility Converter -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Inverse Boolean to Visibility Converter -->
+        <local:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource EffectChainBackgroundBrush}"
+            BorderBrush="{StaticResource SlotBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="6">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                <TextBlock Text="FX"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           FontSize="10"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           DockPanel.Dock="Left"/>
+
+                <!-- Effect Count Badge -->
+                <Border Background="#4B6EAF"
+                        CornerRadius="8"
+                        Padding="5,1"
+                        DockPanel.Dock="Right"
+                        Visibility="{Binding HasEffects, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock Text="{Binding EffectCount}"
+                               Foreground="White"
+                               FontSize="9"
+                               FontWeight="Bold"/>
+                </Border>
+
+                <!-- Bypass All Button -->
+                <ToggleButton x:Name="BypassAllButton"
+                              DockPanel.Dock="Right"
+                              Style="{StaticResource BypassToggleStyle}"
+                              Margin="4,0"
+                              ToolTip="Bypass All Effects"
+                              IsChecked="{Binding IsChainBypassed, Mode=TwoWay}"/>
+
+                <Border/>
+            </DockPanel>
+
+            <!-- Effect Slots List -->
+            <ItemsControl Grid.Row="1"
+                          ItemsSource="{Binding EffectSlots}"
+                          ItemTemplate="{StaticResource EffectSlotTemplate}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+
+            <!-- Add Effect Button -->
+            <Button Grid.Row="2"
+                    Content="+ Add Effect"
+                    Click="AddEffect_Click"
+                    Background="Transparent"
+                    Foreground="{StaticResource TextSecondaryBrush}"
+                    BorderBrush="{StaticResource SlotBorderBrush}"
+                    BorderThickness="1"
+                    Padding="8,4"
+                    Margin="0,6,0,0"
+                    Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#4B6EAF"/>
+                                <Setter Property="Foreground" Value="#BCBEC4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>

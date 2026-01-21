@@ -10,6 +10,7 @@ using MusicEngineEditor.Controls;
 using Shapes = System.Windows.Shapes;
 using MusicEngineEditor.Models;
 using MusicEngineEditor.ViewModels;
+using MusicEngineEditor.Views.Dialogs;
 
 namespace MusicEngineEditor.Views;
 
@@ -78,6 +79,12 @@ public partial class PianoRollView : UserControl
         // Wire up NoteCanvas events
         WireUpNoteCanvasEvents();
 
+        // Wire up VelocityLane
+        WireUpVelocityLane();
+
+        // Wire up Note Preview
+        WireUpNotePreview();
+
         // Set up keyboard focus
         Focusable = true;
         Focus();
@@ -99,6 +106,7 @@ public partial class PianoRollView : UserControl
 
         UnwireNoteCanvasEvents();
         UnwireScrollSynchronization();
+        UnwireNotePreview();
     }
 
     #endregion
@@ -318,6 +326,161 @@ public partial class PianoRollView : UserControl
 
     #endregion
 
+    #region VelocityLane Wiring
+
+    /// <summary>
+    /// Wires up the VelocityLane control.
+    /// </summary>
+    private void WireUpVelocityLane()
+    {
+        var velocityLane = FindChild<VelocityLane>(this, "VelocityLane");
+        if (velocityLane == null) return;
+
+        // Bind properties
+        velocityLane.Notes = _viewModel.Notes;
+        velocityLane.SelectedNotes = _viewModel.SelectedNotes;
+        velocityLane.TotalBeats = _viewModel.TotalBeats;
+        velocityLane.ZoomX = _viewModel.ZoomX;
+        velocityLane.GridSnapValue = _viewModel.GridSnapValue;
+
+        // Listen for ViewModel property changes
+        _viewModel.PropertyChanged += (s, e) =>
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(PianoRollViewModel.ZoomX):
+                    velocityLane.ZoomX = _viewModel.ZoomX;
+                    break;
+                case nameof(PianoRollViewModel.TotalBeats):
+                    velocityLane.TotalBeats = _viewModel.TotalBeats;
+                    break;
+                case nameof(PianoRollViewModel.GridSnapValue):
+                    velocityLane.GridSnapValue = _viewModel.GridSnapValue;
+                    break;
+                case nameof(PianoRollViewModel.ScrollX):
+                    velocityLane.ScrollX = _viewModel.ScrollX;
+                    break;
+            }
+        };
+
+        // Wire up velocity changed event
+        velocityLane.VelocityChanged += OnVelocityChanged;
+    }
+
+    private void OnVelocityChanged(object? sender, VelocityChangedEventArgs e)
+    {
+        // The note's velocity is already updated by the VelocityLane
+        // Refresh the NoteCanvas to reflect the visual change
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        noteCanvas?.UpdateNote(e.Note);
+    }
+
+    #endregion
+
+    #region Note Preview Wiring
+
+    /// <summary>
+    /// Wires up note preview functionality.
+    /// </summary>
+    private void WireUpNotePreview()
+    {
+        // Subscribe to ViewModel note preview events
+        _viewModel.NotePreviewRequested += OnNotePreviewRequested;
+
+        // Wire up NoteCanvas for note preview when drawing
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        if (noteCanvas != null)
+        {
+            noteCanvas.NoteAdded += OnNoteAddedForPreview;
+            noteCanvas.NotePreviewRequested += OnNoteCanvasPreviewRequested;
+        }
+
+        // Wire up PianoKeyboard for note preview
+        var pianoKeyboard = FindChild<PianoKeyboard>(this, "PianoKeyboard");
+        if (pianoKeyboard != null)
+        {
+            pianoKeyboard.NotePressed += OnPianoKeyPressed;
+            pianoKeyboard.NoteReleased += OnPianoKeyReleased;
+        }
+    }
+
+    /// <summary>
+    /// Unwires note preview functionality.
+    /// </summary>
+    private void UnwireNotePreview()
+    {
+        _viewModel.NotePreviewRequested -= OnNotePreviewRequested;
+
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        if (noteCanvas != null)
+        {
+            noteCanvas.NoteAdded -= OnNoteAddedForPreview;
+            noteCanvas.NotePreviewRequested -= OnNoteCanvasPreviewRequested;
+        }
+
+        var pianoKeyboard = FindChild<PianoKeyboard>(this, "PianoKeyboard");
+        if (pianoKeyboard != null)
+        {
+            pianoKeyboard.NotePressed -= OnPianoKeyPressed;
+            pianoKeyboard.NoteReleased -= OnPianoKeyReleased;
+        }
+    }
+
+    private void OnNoteCanvasPreviewRequested(object? sender, NotePreviewArgs e)
+    {
+        if (_viewModel.NotePreviewEnabled)
+        {
+            PlayNotePreview(e.MidiNote, e.Velocity, e.IsNoteOff);
+        }
+    }
+
+    private void OnNotePreviewRequested(object? sender, NotePreviewEventArgs e)
+    {
+        // Play or stop the note preview
+        // This would typically call into an audio service
+        PlayNotePreview(e.MidiNote, e.Velocity, e.IsNoteOff);
+    }
+
+    private void OnNoteAddedForPreview(object? sender, NoteEventArgs e)
+    {
+        if (e.PianoRollNote != null && _viewModel.NotePreviewEnabled)
+        {
+            _viewModel.RequestNotePreview(e.PianoRollNote.Note, e.PianoRollNote.Velocity);
+            // Auto-stop after a short delay (handled by audio service)
+        }
+    }
+
+    private void OnPianoKeyPressed(object sender, NoteEventArgs e)
+    {
+        _viewModel.RequestNotePreview(e.Note, 100);
+    }
+
+    private void OnPianoKeyReleased(object sender, NoteEventArgs e)
+    {
+        _viewModel.RequestNotePreviewStop(e.Note);
+    }
+
+    /// <summary>
+    /// Plays a note preview sound.
+    /// </summary>
+    /// <param name="midiNote">The MIDI note number.</param>
+    /// <param name="velocity">The velocity.</param>
+    /// <param name="isNoteOff">Whether this is a note-off event.</param>
+    private void PlayNotePreview(int midiNote, int velocity, bool isNoteOff)
+    {
+        // TODO: Integrate with audio engine for actual sound playback
+        // For now, this is a placeholder that could be connected to:
+        // - NAudio MIDI output
+        // - Internal synthesizer
+        // - VST plugin
+        System.Diagnostics.Debug.WriteLine(
+            isNoteOff
+                ? $"Note Off: {PianoRollNote.GetNoteName(midiNote)}"
+                : $"Note On: {PianoRollNote.GetNoteName(midiNote)} @ velocity {velocity}");
+    }
+
+    #endregion
+
     #region NoteCanvas Event Handlers
 
     private void OnNoteAdded(object? sender, NoteEventArgs e)
@@ -392,6 +555,24 @@ public partial class PianoRollView : UserControl
                 e.Handled = true;
                 break;
 
+            // Ctrl+C: Copy selected notes
+            case Key.C when ctrlPressed:
+                _viewModel.CopyCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // Ctrl+V: Paste notes
+            case Key.V when ctrlPressed:
+                _viewModel.PasteCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // Ctrl+X: Cut selected notes
+            case Key.X when ctrlPressed:
+                _viewModel.CutCommand.Execute(null);
+                e.Handled = true;
+                break;
+
             // Ctrl+Z: Undo
             case Key.Z when ctrlPressed:
                 _viewModel.UndoCommand.Execute(null);
@@ -459,9 +640,15 @@ public partial class PianoRollView : UserControl
                 e.Handled = true;
                 break;
 
-            // Q: Quantize selected notes
-            case Key.Q:
+            // Q: Quantize selected notes (quick quantize)
+            case Key.Q when !ctrlPressed:
                 _viewModel.QuantizeSelectedCommand.Execute(null);
+                e.Handled = true;
+                break;
+
+            // Ctrl+Q: Open quantize dialog
+            case Key.Q when ctrlPressed:
+                OpenQuantizeDialog();
                 e.Handled = true;
                 break;
 
@@ -485,6 +672,78 @@ public partial class PianoRollView : UserControl
                 e.Handled = true;
                 break;
         }
+    }
+
+    #endregion
+
+    #region Quantize Dialog
+
+    /// <summary>
+    /// Opens the quantize dialog for advanced quantize options.
+    /// </summary>
+    private void OpenQuantizeDialog()
+    {
+        if (_viewModel.SelectedNotes.Count == 0)
+        {
+            _viewModel.StatusMessage = "No notes selected to quantize";
+            return;
+        }
+
+        var dialog = new QuantizeDialog(_viewModel.GridSnapValue)
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            ApplyQuantize(dialog.GridValue, dialog.Mode, dialog.Strength);
+        }
+    }
+
+    /// <summary>
+    /// Applies quantize settings to selected notes.
+    /// </summary>
+    /// <param name="gridValue">The grid value to quantize to.</param>
+    /// <param name="mode">The quantize mode.</param>
+    /// <param name="strength">The quantize strength (0-100).</param>
+    private void ApplyQuantize(double gridValue, QuantizeMode mode, double strength)
+    {
+        var strengthFactor = strength / 100.0;
+
+        foreach (var note in _viewModel.SelectedNotes)
+        {
+            switch (mode)
+            {
+                case QuantizeMode.StartAndEnd:
+                    // Quantize both start and end
+                    double targetStart = Math.Round(note.StartBeat / gridValue) * gridValue;
+                    double targetEnd = Math.Round(note.GetEndBeat() / gridValue) * gridValue;
+
+                    note.StartBeat = note.StartBeat + (targetStart - note.StartBeat) * strengthFactor;
+                    double newEnd = note.GetEndBeat() + (targetEnd - note.GetEndBeat()) * strengthFactor;
+                    note.Duration = Math.Max(gridValue, newEnd - note.StartBeat);
+                    break;
+
+                case QuantizeMode.StartOnly:
+                    // Quantize start only, preserve duration
+                    double targetStartOnly = Math.Round(note.StartBeat / gridValue) * gridValue;
+                    note.StartBeat = note.StartBeat + (targetStartOnly - note.StartBeat) * strengthFactor;
+                    break;
+
+                case QuantizeMode.EndOnly:
+                    // Quantize end only, adjust duration
+                    double targetEndOnly = Math.Round(note.GetEndBeat() / gridValue) * gridValue;
+                    double newEndOnly = note.GetEndBeat() + (targetEndOnly - note.GetEndBeat()) * strengthFactor;
+                    note.Duration = Math.Max(gridValue, newEndOnly - note.StartBeat);
+                    break;
+            }
+        }
+
+        // Refresh the NoteCanvas
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        noteCanvas?.Refresh();
+
+        _viewModel.StatusMessage = $"Quantized {_viewModel.SelectedNotes.Count} note(s) at {strength:F0}% strength";
     }
 
     #endregion

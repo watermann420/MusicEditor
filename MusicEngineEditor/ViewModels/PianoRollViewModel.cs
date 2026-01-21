@@ -180,6 +180,31 @@ public partial class PianoRollViewModel : ViewModelBase
 
     #endregion
 
+    #region Clipboard and Preview Properties
+
+    /// <summary>
+    /// Internal clipboard for copied notes.
+    /// </summary>
+    private List<PianoRollNote> _clipboard = [];
+
+    /// <summary>
+    /// Gets whether the clipboard has content.
+    /// </summary>
+    public bool HasClipboardContent => _clipboard.Count > 0;
+
+    /// <summary>
+    /// Gets or sets whether note preview (sound playback while drawing) is enabled.
+    /// </summary>
+    [ObservableProperty]
+    private bool _notePreviewEnabled = true;
+
+    /// <summary>
+    /// Event raised when a note should be previewed (played).
+    /// </summary>
+    public event EventHandler<NotePreviewEventArgs>? NotePreviewRequested;
+
+    #endregion
+
     #region Constructor
 
     /// <summary>
@@ -392,6 +417,262 @@ public partial class PianoRollViewModel : ViewModelBase
 
     #endregion
 
+    #region Copy/Paste Commands
+
+    /// <summary>
+    /// Copies the selected notes to the internal clipboard.
+    /// </summary>
+    [RelayCommand]
+    private void Copy()
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            StatusMessage = "No notes selected to copy";
+            return;
+        }
+
+        _clipboard.Clear();
+
+        // Find the earliest start beat among selected notes for relative positioning
+        double minStartBeat = SelectedNotes.Min(n => n.StartBeat);
+
+        foreach (var note in SelectedNotes)
+        {
+            var copiedNote = note.Clone();
+            // Store relative position from the earliest note
+            copiedNote.StartBeat = note.StartBeat - minStartBeat;
+            _clipboard.Add(copiedNote);
+        }
+
+        OnPropertyChanged(nameof(HasClipboardContent));
+        StatusMessage = $"Copied {_clipboard.Count} note(s)";
+    }
+
+    /// <summary>
+    /// Pastes notes from the clipboard at the current playhead position.
+    /// </summary>
+    [RelayCommand]
+    private void Paste()
+    {
+        if (_clipboard.Count == 0)
+        {
+            StatusMessage = "Clipboard is empty";
+            return;
+        }
+
+        // Deselect current selection
+        DeselectAll();
+
+        // Paste at playhead position
+        double pastePosition = PlayheadPosition;
+
+        var pastedNotes = new List<PianoRollNote>();
+        foreach (var clipboardNote in _clipboard)
+        {
+            var newNote = clipboardNote.Clone();
+            newNote.StartBeat = pastePosition + clipboardNote.StartBeat;
+            newNote.IsSelected = true;
+            Notes.Add(newNote);
+            SelectedNotes.Add(newNote);
+            pastedNotes.Add(newNote);
+        }
+
+        StatusMessage = $"Pasted {pastedNotes.Count} note(s) at beat {pastePosition:F2}";
+    }
+
+    /// <summary>
+    /// Cuts the selected notes (copy + delete).
+    /// </summary>
+    [RelayCommand]
+    private void Cut()
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            StatusMessage = "No notes selected to cut";
+            return;
+        }
+
+        Copy();
+        var count = SelectedNotes.Count;
+        DeleteSelected();
+        StatusMessage = $"Cut {count} note(s)";
+    }
+
+    /// <summary>
+    /// Checks if copy operation can be executed.
+    /// </summary>
+    private bool CanCopy() => SelectedNotes.Count > 0;
+
+    /// <summary>
+    /// Checks if paste operation can be executed.
+    /// </summary>
+    private bool CanPaste() => _clipboard.Count > 0;
+
+    /// <summary>
+    /// Checks if cut operation can be executed.
+    /// </summary>
+    private bool CanCut() => SelectedNotes.Count > 0;
+
+    #endregion
+
+    #region Quantize Commands
+
+    /// <summary>
+    /// Quantizes selected notes to the specified grid value.
+    /// </summary>
+    /// <param name="gridValue">The grid value to quantize to (e.g., 0.25 for 1/16, 0.5 for 1/8).</param>
+    [RelayCommand]
+    private void QuantizeToGrid(double gridValue)
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            StatusMessage = "No notes selected to quantize";
+            return;
+        }
+
+        if (gridValue <= 0)
+        {
+            gridValue = GridSnapValue;
+        }
+
+        foreach (var note in SelectedNotes)
+        {
+            note.StartBeat = Math.Round(note.StartBeat / gridValue) * gridValue;
+            note.Duration = Math.Max(gridValue, Math.Round(note.Duration / gridValue) * gridValue);
+        }
+
+        StatusMessage = $"Quantized {SelectedNotes.Count} note(s) to 1/{(int)(4 / gridValue)}";
+    }
+
+    /// <summary>
+    /// Quantizes note start positions only (preserves duration).
+    /// </summary>
+    [RelayCommand]
+    private void QuantizeStartOnly()
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            StatusMessage = "No notes selected to quantize";
+            return;
+        }
+
+        foreach (var note in SelectedNotes)
+        {
+            note.StartBeat = SnapToBeat(note.StartBeat);
+        }
+
+        StatusMessage = $"Quantized start positions of {SelectedNotes.Count} note(s)";
+    }
+
+    /// <summary>
+    /// Quantizes note end positions only (adjusts duration).
+    /// </summary>
+    [RelayCommand]
+    private void QuantizeEndOnly()
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            StatusMessage = "No notes selected to quantize";
+            return;
+        }
+
+        foreach (var note in SelectedNotes)
+        {
+            double snappedEnd = SnapToBeat(note.GetEndBeat());
+            double newDuration = snappedEnd - note.StartBeat;
+            note.Duration = Math.Max(GridSnapValue, newDuration);
+        }
+
+        StatusMessage = $"Quantized end positions of {SelectedNotes.Count} note(s)";
+    }
+
+    #endregion
+
+    #region Velocity Commands
+
+    /// <summary>
+    /// Sets the velocity of all selected notes.
+    /// </summary>
+    /// <param name="velocity">The velocity value (0-127).</param>
+    [RelayCommand]
+    private void SetVelocity(int velocity)
+    {
+        velocity = Math.Clamp(velocity, 0, 127);
+        foreach (var note in SelectedNotes)
+        {
+            note.Velocity = velocity;
+        }
+        StatusMessage = $"Set velocity to {velocity} for {SelectedNotes.Count} note(s)";
+    }
+
+    /// <summary>
+    /// Adjusts the velocity of all selected notes by a delta.
+    /// </summary>
+    /// <param name="delta">The velocity change (positive or negative).</param>
+    [RelayCommand]
+    private void AdjustVelocity(int delta)
+    {
+        foreach (var note in SelectedNotes)
+        {
+            note.Velocity = Math.Clamp(note.Velocity + delta, 0, 127);
+        }
+        StatusMessage = $"Adjusted velocity by {delta:+#;-#;0} for {SelectedNotes.Count} note(s)";
+    }
+
+    /// <summary>
+    /// Creates a velocity ramp across selected notes (humanization).
+    /// </summary>
+    /// <param name="startVelocity">Starting velocity.</param>
+    /// <param name="endVelocity">Ending velocity.</param>
+    [RelayCommand]
+    private void CreateVelocityRamp((int start, int end) velocities)
+    {
+        if (SelectedNotes.Count < 2)
+        {
+            StatusMessage = "Need at least 2 notes for velocity ramp";
+            return;
+        }
+
+        var sortedNotes = SelectedNotes.OrderBy(n => n.StartBeat).ToList();
+        int count = sortedNotes.Count;
+
+        for (int i = 0; i < count; i++)
+        {
+            double t = (double)i / (count - 1);
+            int velocity = (int)Math.Round(velocities.start + (velocities.end - velocities.start) * t);
+            sortedNotes[i].Velocity = Math.Clamp(velocity, 0, 127);
+        }
+
+        StatusMessage = $"Created velocity ramp {velocities.start} to {velocities.end}";
+    }
+
+    #endregion
+
+    #region Note Preview
+
+    /// <summary>
+    /// Requests a note preview (plays the note sound).
+    /// </summary>
+    /// <param name="midiNote">The MIDI note number to preview.</param>
+    /// <param name="velocity">The velocity for the preview.</param>
+    public void RequestNotePreview(int midiNote, int velocity = 100)
+    {
+        if (!NotePreviewEnabled) return;
+
+        NotePreviewRequested?.Invoke(this, new NotePreviewEventArgs(midiNote, velocity));
+    }
+
+    /// <summary>
+    /// Requests stopping a note preview.
+    /// </summary>
+    /// <param name="midiNote">The MIDI note number to stop.</param>
+    public void RequestNotePreviewStop(int midiNote)
+    {
+        NotePreviewRequested?.Invoke(this, new NotePreviewEventArgs(midiNote, 0, isNoteOff: true));
+    }
+
+    #endregion
+
     #region Note Management Methods
 
     /// <summary>
@@ -539,4 +820,38 @@ public partial class PianoRollViewModel : ViewModelBase
     }
 
     #endregion
+}
+
+/// <summary>
+/// Event arguments for note preview requests.
+/// </summary>
+public class NotePreviewEventArgs : EventArgs
+{
+    /// <summary>
+    /// Gets the MIDI note number (0-127).
+    /// </summary>
+    public int MidiNote { get; }
+
+    /// <summary>
+    /// Gets the velocity (0-127, 0 for note off).
+    /// </summary>
+    public int Velocity { get; }
+
+    /// <summary>
+    /// Gets whether this is a note-off event.
+    /// </summary>
+    public bool IsNoteOff { get; }
+
+    /// <summary>
+    /// Creates a new NotePreviewEventArgs.
+    /// </summary>
+    /// <param name="midiNote">MIDI note number.</param>
+    /// <param name="velocity">Velocity value.</param>
+    /// <param name="isNoteOff">Whether this is a note-off event.</param>
+    public NotePreviewEventArgs(int midiNote, int velocity, bool isNoteOff = false)
+    {
+        MidiNote = midiNote;
+        Velocity = velocity;
+        IsNoteOff = isNoteOff;
+    }
 }

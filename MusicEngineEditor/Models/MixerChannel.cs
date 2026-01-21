@@ -2,12 +2,14 @@
 // copyright (c) 2026 MusicEngine Watermann420 and Contributors
 
 using System;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MusicEngineEditor.Models;
 
 /// <summary>
-/// Represents a single channel in the mixer with volume, pan, mute/solo, and metering.
+/// Represents a single channel in the mixer with volume, pan, mute/solo, metering,
+/// effect slots, and send/return routing.
 /// </summary>
 public partial class MixerChannel : ObservableObject
 {
@@ -106,6 +108,34 @@ public partial class MixerChannel : ObservableObject
     private bool _isEffectivelyMuted;
 
     /// <summary>
+    /// Gets or sets the output bus ID (null = direct to master).
+    /// </summary>
+    [ObservableProperty]
+    private string? _outputBusId;
+
+    /// <summary>
+    /// Gets or sets the output bus name for display.
+    /// </summary>
+    [ObservableProperty]
+    private string _outputBusName = "Master";
+
+    /// <summary>
+    /// Gets or sets whether the effect chain is bypassed.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isEffectChainBypassed;
+
+    /// <summary>
+    /// Gets the effect slots for this channel.
+    /// </summary>
+    public ObservableCollection<EffectSlot> EffectSlots { get; } = [];
+
+    /// <summary>
+    /// Gets the sends for this channel.
+    /// </summary>
+    public ObservableCollection<Send> Sends { get; } = [];
+
+    /// <summary>
     /// Creates a new mixer channel.
     /// </summary>
     /// <param name="index">The channel index.</param>
@@ -114,6 +144,7 @@ public partial class MixerChannel : ObservableObject
     {
         _index = index;
         _name = name;
+        InitializeEffectSlots();
     }
 
     /// <summary>
@@ -122,6 +153,18 @@ public partial class MixerChannel : ObservableObject
     /// <param name="index">The channel index.</param>
     public MixerChannel(int index) : this(index, $"Ch {index + 1}")
     {
+    }
+
+    /// <summary>
+    /// Initializes the default effect slots for this channel.
+    /// </summary>
+    private void InitializeEffectSlots()
+    {
+        // Start with 4 empty effect slots
+        for (int i = 0; i < 4; i++)
+        {
+            EffectSlots.Add(new EffectSlot(i));
+        }
     }
 
     /// <summary>
@@ -136,6 +179,20 @@ public partial class MixerChannel : ObservableObject
         IsArmed = false;
         MeterLeft = 0f;
         MeterRight = 0f;
+        OutputBusId = null;
+        OutputBusName = "Master";
+        IsEffectChainBypassed = false;
+
+        // Clear effects
+        foreach (var slot in EffectSlots)
+        {
+            slot.ClearEffect();
+        }
+
+        // Clear sends
+        Sends.Clear();
+
+        UpdateEffectCount();
     }
 
     /// <summary>
@@ -147,6 +204,113 @@ public partial class MixerChannel : ObservableObject
     {
         MeterLeft = left;
         MeterRight = right;
+    }
+
+    /// <summary>
+    /// Adds an effect to the first available slot.
+    /// </summary>
+    /// <param name="effectType">The effect type identifier.</param>
+    /// <param name="displayName">The display name.</param>
+    /// <returns>True if the effect was added.</returns>
+    public bool AddEffect(string effectType, string displayName)
+    {
+        foreach (var slot in EffectSlots)
+        {
+            if (slot.IsEmpty)
+            {
+                slot.LoadEffect(effectType, displayName);
+                UpdateEffectCount();
+                return true;
+            }
+        }
+
+        // Add a new slot if all are full
+        var newSlot = new EffectSlot(EffectSlots.Count, effectType, displayName);
+        EffectSlots.Add(newSlot);
+        UpdateEffectCount();
+        return true;
+    }
+
+    /// <summary>
+    /// Removes an effect at the specified slot index.
+    /// </summary>
+    /// <param name="slotIndex">The slot index.</param>
+    public void RemoveEffect(int slotIndex)
+    {
+        if (slotIndex >= 0 && slotIndex < EffectSlots.Count)
+        {
+            EffectSlots[slotIndex].ClearEffect();
+            UpdateEffectCount();
+        }
+    }
+
+    /// <summary>
+    /// Adds a send to a bus.
+    /// </summary>
+    /// <param name="targetBusId">The target bus ID.</param>
+    /// <param name="targetBusName">The target bus name.</param>
+    /// <param name="level">The send level.</param>
+    public void AddSend(string targetBusId, string targetBusName, float level = 0.5f)
+    {
+        // Check if send already exists
+        foreach (var send in Sends)
+        {
+            if (send.TargetBusId == targetBusId)
+            {
+                return;
+            }
+        }
+
+        Sends.Add(new Send(targetBusId, targetBusName, level));
+    }
+
+    /// <summary>
+    /// Removes a send to the specified bus.
+    /// </summary>
+    /// <param name="targetBusId">The target bus ID.</param>
+    public void RemoveSend(string targetBusId)
+    {
+        Send? toRemove = null;
+        foreach (var send in Sends)
+        {
+            if (send.TargetBusId == targetBusId)
+            {
+                toRemove = send;
+                break;
+            }
+        }
+
+        if (toRemove != null)
+        {
+            Sends.Remove(toRemove);
+        }
+    }
+
+    /// <summary>
+    /// Sets the output bus for this channel.
+    /// </summary>
+    /// <param name="busId">The bus ID (null for master).</param>
+    /// <param name="busName">The bus name.</param>
+    public void SetOutputBus(string? busId, string busName)
+    {
+        OutputBusId = busId;
+        OutputBusName = busName;
+    }
+
+    /// <summary>
+    /// Updates the effect count and HasEffects property.
+    /// </summary>
+    private void UpdateEffectCount()
+    {
+        int count = 0;
+        foreach (var slot in EffectSlots)
+        {
+            if (!slot.IsEmpty)
+                count++;
+        }
+
+        EffectCount = count;
+        HasEffects = count > 0;
     }
 }
 
@@ -168,11 +332,31 @@ public partial class MasterChannel : MixerChannel
     private float _limiterCeiling = -0.3f;
 
     /// <summary>
+    /// Gets or sets the master stereo width (0.0 = mono, 1.0 = stereo, 2.0 = wide).
+    /// </summary>
+    [ObservableProperty]
+    private float _stereoWidth = 1.0f;
+
+    /// <summary>
     /// Creates the master channel.
     /// </summary>
     public MasterChannel() : base(-1, "Master")
     {
         Color = "#FF9500";
         Volume = 1.0f;
+        OutputBusName = "Output";
+    }
+
+    /// <summary>
+    /// Resets the master channel to default values.
+    /// </summary>
+    public new void Reset()
+    {
+        base.Reset();
+        Volume = 1.0f;
+        LimiterEnabled = true;
+        LimiterCeiling = -0.3f;
+        StereoWidth = 1.0f;
+        OutputBusName = "Output";
     }
 }

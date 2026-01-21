@@ -411,6 +411,10 @@
                 <RowDefinition Height="24"/>
                 <!-- Main Canvas -->
                 <RowDefinition Height="*"/>
+                <!-- Velocity Lane Splitter -->
+                <RowDefinition Height="Auto"/>
+                <!-- Velocity Lane -->
+                <RowDefinition Height="100" MinHeight="60" MaxHeight="200"/>
             </Grid.RowDefinitions>
 
             <!-- Top-Left Corner (empty, above piano keyboard) -->
@@ -464,6 +468,33 @@
                        SmallChange="1"
                        LargeChange="12"
                        Style="{StaticResource DarkScrollBarStyle}"/>
+
+            <!-- Velocity Lane Splitter -->
+            <GridSplitter Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                          Height="5"
+                          HorizontalAlignment="Stretch"
+                          Background="{StaticResource BorderBrush}"
+                          ResizeDirection="Rows"
+                          ShowsPreview="True"/>
+
+            <!-- Velocity Lane Label Area -->
+            <Border Grid.Row="3" Grid.Column="0"
+                    Background="{StaticResource RulerBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,0,1,0"/>
+
+            <!-- Velocity Lane -->
+            <controls:VelocityLane x:Name="VelocityLane"
+                                   Grid.Row="3" Grid.Column="1"
+                                   HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Stretch"/>
+
+            <!-- Velocity Lane Right Corner -->
+            <Border Grid.Row="3" Grid.Column="2"
+                    Background="{StaticResource BackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1,0,0,0"
+                    Width="16"/>
         </Grid>
 
         <!-- Horizontal ScrollBar (for beats) -->
