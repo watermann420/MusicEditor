@@ -545,7 +545,7 @@
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                                 <ToggleButton x:Name="CCLanesExpandToggle"
                                               Style="{StaticResource PianoRollToolToggleButtonStyle}"
-                                              IsChecked="{Binding CCLanesExpanded}"
+                                              IsChecked="{Binding CcLanesExpanded}"
                                               ToolTip="Expand/Collapse CC Lanes"
                                               Padding="4,2"
                                               MinWidth="20">
@@ -590,7 +590,7 @@
                     <ItemsControl x:Name="CCLanesItemsControl"
                                   Grid.Row="1"
                                   ItemsSource="{Binding CCLanes}"
-                                  Visibility="{Binding CCLanesExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                  Visibility="{Binding CcLanesExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"
                                   VirtualizingStackPanel.IsVirtualizing="True">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
