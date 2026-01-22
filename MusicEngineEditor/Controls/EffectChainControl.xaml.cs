@@ -1,6 +1,9 @@
 //MusicEngineEditor - Effect Chain Control
 // copyright (c) 2026 MusicEngine Watermann420 and Contributors
 
+// Event is declared for future use / public API
+#pragma warning disable CS0067
+
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;

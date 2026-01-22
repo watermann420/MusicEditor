@@ -1,6 +1,9 @@
 //MusicEngineEditor - Bus Channel Control
 // copyright (c) 2026 MusicEngine Watermann420 and Contributors
 
+// Event is declared for future use / public API
+#pragma warning disable CS0067
+
 using System;
 using System.Globalization;
 using System.Windows;

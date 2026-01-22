@@ -176,7 +176,7 @@ public partial class ArrangementViewModel : ViewModelBase, IDisposable
         get
         {
             if (_arrangement == null) return "1:1";
-            return _arrangement.FormatPosition(_playbackPosition);
+            return _arrangement.FormatPosition(PlaybackPosition);
         }
     }
 
@@ -187,7 +187,7 @@ public partial class ArrangementViewModel : ViewModelBase, IDisposable
     {
         get
         {
-            var section = _arrangement?.GetSectionAt(_playbackPosition);
+            var section = _arrangement?.GetSectionAt(PlaybackPosition);
             return section?.Name ?? "No Section";
         }
     }
@@ -926,7 +926,7 @@ public partial class ArrangementViewModel : ViewModelBase, IDisposable
     {
         if (_arrangement == null) return;
 
-        var nextSection = _arrangement.GetNextSection(_playbackPosition);
+        var nextSection = _arrangement.GetNextSection(PlaybackPosition);
         if (nextSection != null)
         {
             PlaybackPosition = nextSection.StartPosition;
@@ -943,11 +943,11 @@ public partial class ArrangementViewModel : ViewModelBase, IDisposable
     {
         if (_arrangement == null) return;
 
-        var currentSection = _arrangement.GetSectionAt(_playbackPosition);
+        var currentSection = _arrangement.GetSectionAt(PlaybackPosition);
 
         // If we're at the start of a section, go to the previous one
         // Otherwise, go to the start of the current section
-        if (currentSection != null && Math.Abs(_playbackPosition - currentSection.StartPosition) < 0.5)
+        if (currentSection != null && Math.Abs(PlaybackPosition - currentSection.StartPosition) < 0.5)
         {
             var prevSection = _arrangement.GetPreviousSection(currentSection.StartPosition);
             if (prevSection != null)
@@ -999,7 +999,7 @@ public partial class ArrangementViewModel : ViewModelBase, IDisposable
     private void ScrollToPlayhead()
     {
         // Center the playhead in the view
-        ScrollOffset = Math.Max(0, _playbackPosition - VisibleBeats / 2);
+        ScrollOffset = Math.Max(0, PlaybackPosition - VisibleBeats / 2);
     }
 
     /// <summary>
@@ -1032,8 +1032,7 @@ public partial class ArrangementViewModel : ViewModelBase, IDisposable
     /// </summary>
     public void UpdatePlaybackPosition(double position)
     {
-        _playbackPosition = position;
-        OnPropertyChanged(nameof(PlaybackPosition));
+        PlaybackPosition = position;
         OnPropertyChanged(nameof(CurrentPositionFormatted));
         OnPropertyChanged(nameof(CurrentSectionName));
     }

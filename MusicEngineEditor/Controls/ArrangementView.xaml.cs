@@ -36,7 +36,6 @@ public partial class ArrangementView : UserControl
 
     // Scrubbing support
     private bool _isScrubbing;
-    private bool _isRulerDragging;
     private Point _scrubStartPoint;
 
     // Waveform support
