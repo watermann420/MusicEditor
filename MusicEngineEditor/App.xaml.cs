@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using MusicEngineEditor.Services;
@@ -11,26 +10,9 @@ public partial class App : Application
 {
     public static IServiceProvider Services { get; private set; } = null!;
 
-    /// <summary>
-    /// Safe Mode flag - when true, audio engine initialization is skipped.
-    /// Use --safe or --safe-mode command line argument to enable.
-    /// </summary>
-    public static bool SafeMode { get; private set; }
-
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-
-        // Check for safe mode command line argument
-        SafeMode = e.Args.Any(arg =>
-            arg.Equals("--safe", StringComparison.OrdinalIgnoreCase) ||
-            arg.Equals("--safe-mode", StringComparison.OrdinalIgnoreCase) ||
-            arg.Equals("/safe", StringComparison.OrdinalIgnoreCase));
-
-        if (SafeMode)
-        {
-            System.Diagnostics.Debug.WriteLine("Starting in SAFE MODE - Audio engine disabled");
-        }
 
         // Configure services
         var services = new ServiceCollection();
@@ -42,12 +24,6 @@ public partial class App : Application
 
         // Create and show main window
         var mainWindow = new MainWindow();
-
-        if (SafeMode)
-        {
-            mainWindow.Title += " [SAFE MODE - Audio Disabled]";
-        }
-
         mainWindow.Show();
     }
 
