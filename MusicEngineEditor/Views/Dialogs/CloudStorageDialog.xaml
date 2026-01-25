@@ -1,0 +1,449 @@
+<Window x:Class="MusicEngineEditor.Views.Dialogs.CloudStorageDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Cloud Storage"
+        Width="800" Height="600"
+        MinWidth="600" MinHeight="450"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Provider Badge Colors -->
+        <SolidColorBrush x:Key="DropboxBadgeBrush" Color="#0061FF"/>
+        <SolidColorBrush x:Key="GoogleDriveBadgeBrush" Color="#4285F4"/>
+        <SolidColorBrush x:Key="OneDriveBadgeBrush" Color="#0078D4"/>
+        <SolidColorBrush x:Key="LocalBadgeBrush" Color="#6AAB73"/>
+
+        <!-- Sync Status Colors -->
+        <SolidColorBrush x:Key="SyncedBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="PendingBrush" Color="#E8B339"/>
+        <SolidColorBrush x:Key="ConflictBrush" Color="#F75464"/>
+
+        <!-- Project Card Style -->
+        <Style x:Key="ProjectCardStyle" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd"
+                                Background="{DynamicResource PanelBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="6">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with Provider Selection -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title and Description -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="Cloud Storage"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrightForegroundBrush}"/>
+                    <TextBlock Text="Sync your projects across devices"
+                               FontSize="12"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Provider Dropdown -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Provider:"
+                               FontSize="12"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <ComboBox x:Name="ProviderComboBox"
+                              Width="150"
+                              SelectionChanged="ProviderComboBox_SelectionChanged">
+                        <ComboBoxItem Content="All Providers" IsSelected="True"/>
+                        <ComboBoxItem Content="Dropbox"/>
+                        <ComboBoxItem Content="Google Drive"/>
+                        <ComboBoxItem Content="OneDrive"/>
+                        <ComboBoxItem Content="Local"/>
+                    </ComboBox>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content: Project List -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Projects List -->
+            <Border Grid.Column="0" Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Search Box -->
+                    <Border Grid.Row="0"
+                            Background="#252628"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="10,8"
+                            Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Text="&#x1F50D;"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,10,0"/>
+
+                            <TextBox x:Name="SearchBox"
+                                     Grid.Column="1"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Foreground="{DynamicResource ForegroundBrush}"
+                                     CaretBrush="{DynamicResource ForegroundBrush}"
+                                     FontSize="13"
+                                     VerticalAlignment="Center"
+                                     TextChanged="SearchBox_TextChanged"/>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="Search projects..."
+                                       FontSize="13"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+
+                    <!-- Project List -->
+                    <ListBox Grid.Row="1"
+                             x:Name="ProjectList"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ItemContainerStyle="{StaticResource ProjectCardStyle}"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             SelectionChanged="ProjectList_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Thumbnail -->
+                                    <Border Grid.Column="0"
+                                            Width="48" Height="48"
+                                            Background="#393B40"
+                                            CornerRadius="4"
+                                            Margin="0,0,12,0">
+                                        <TextBlock Text="&#x266B;"
+                                                   FontSize="24"
+                                                   Foreground="{DynamicResource AccentBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Project Info -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource BrightForegroundBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <TextBlock Text="{Binding LastModified, StringFormat='{}{0:MMM d, yyyy HH:mm}'}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                            <TextBlock Text=" - "
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                            <TextBlock Text="{Binding Size}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Provider Badge -->
+                                    <Border Grid.Column="2"
+                                            CornerRadius="3"
+                                            Padding="8,4"
+                                            Margin="8,0"
+                                            VerticalAlignment="Center"
+                                            Background="{Binding ProviderBrush}">
+                                        <TextBlock Text="{Binding Provider}"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="White"/>
+                                    </Border>
+
+                                    <!-- Sync Status -->
+                                    <StackPanel Grid.Column="3"
+                                                Orientation="Horizontal"
+                                                VerticalAlignment="Center">
+                                        <Ellipse Width="8" Height="8"
+                                                 Fill="{Binding StatusBrush}"
+                                                 Margin="0,0,6,0"/>
+                                        <TextBlock Text="{Binding SyncStatus}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                                   MinWidth="60"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Empty State -->
+                    <StackPanel Grid.Row="1"
+                                x:Name="EmptyState"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Visibility="Collapsed">
+                        <TextBlock Text="&#x2601;"
+                                   FontSize="48"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="No cloud projects found"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,8,0,0"/>
+                        <Button Content="Connect a Cloud Provider"
+                                Style="{DynamicResource PrimaryButtonStyle}"
+                                Margin="0,16,0,0"
+                                Click="ConnectProvider_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Action Sidebar -->
+            <Border Grid.Column="1"
+                    Width="200"
+                    Background="{DynamicResource PanelBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1,0,0,0"
+                    Padding="16">
+                <StackPanel>
+                    <TextBlock Text="Actions"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               Margin="0,0,0,12"/>
+
+                    <Button x:Name="UploadButton"
+                            Content="Upload Project"
+                            Style="{DynamicResource PrimaryButtonStyle}"
+                            Click="UploadButton_Click"
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Stretch"/>
+
+                    <Button x:Name="DownloadButton"
+                            Content="Download"
+                            Style="{DynamicResource SecondaryButtonStyle}"
+                            Click="DownloadButton_Click"
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="False"/>
+
+                    <Button x:Name="SyncButton"
+                            Content="Sync Now"
+                            Style="{DynamicResource SecondaryButtonStyle}"
+                            Click="SyncButton_Click"
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="False"/>
+
+                    <Separator Margin="0,8"/>
+
+                    <Button x:Name="DeleteButton"
+                            Content="Delete from Cloud"
+                            Style="{DynamicResource SecondaryButtonStyle}"
+                            Click="DeleteButton_Click"
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="False"
+                            Foreground="{DynamicResource ErrorBrush}"/>
+
+                    <!-- Conflict Resolution Section -->
+                    <Border x:Name="ConflictPanel"
+                            Visibility="Collapsed"
+                            Background="#3D2D30"
+                            CornerRadius="4"
+                            Padding="12"
+                            Margin="0,16,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Conflict Detected"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource ErrorBrush}"/>
+                            <TextBlock Text="Choose version to keep:"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       Margin="0,4,0,8"/>
+                            <Button Content="Keep Local"
+                                    Style="{DynamicResource SecondaryButtonStyle}"
+                                    Click="KeepLocal_Click"
+                                    Margin="0,0,0,4"
+                                    HorizontalAlignment="Stretch"/>
+                            <Button Content="Keep Cloud"
+                                    Style="{DynamicResource SecondaryButtonStyle}"
+                                    Click="KeepCloud_Click"
+                                    Margin="0,0,0,4"
+                                    HorizontalAlignment="Stretch"/>
+                            <Button Content="Keep Both"
+                                    Style="{DynamicResource SecondaryButtonStyle}"
+                                    Click="KeepBoth_Click"
+                                    HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Progress Section -->
+        <Border Grid.Row="2"
+                x:Name="ProgressPanel"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,12"
+                Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock x:Name="ProgressText"
+                               Text="Uploading project..."
+                               FontSize="12"
+                               Foreground="{DynamicResource ForegroundBrush}"/>
+                    <ProgressBar x:Name="ProgressBar"
+                                 Height="6"
+                                 Margin="0,8,0,0"
+                                 Value="0"/>
+                </StackPanel>
+
+                <TextBlock Grid.Column="1"
+                           x:Name="ProgressPercentage"
+                           Text="0%"
+                           FontSize="12"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           VerticalAlignment="Center"
+                           Margin="16,0"/>
+
+                <Button Grid.Column="2"
+                        Content="Cancel"
+                        Style="{DynamicResource SecondaryButtonStyle}"
+                        Click="CancelOperation_Click"
+                        VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Footer -->
+        <Border Grid.Row="3"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Status -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="StatusText"
+                               Text="Connected"
+                               FontSize="12"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                    <TextBlock Text=" | "
+                               FontSize="12"
+                               Foreground="{DynamicResource BorderBrush}"
+                               Margin="8,0"/>
+                    <TextBlock x:Name="StorageUsage"
+                               Text="2.5 GB of 15 GB used"
+                               FontSize="12"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                </StackPanel>
+
+                <!-- Close Button -->
+                <Button Grid.Column="1"
+                        Content="Close"
+                        Style="{DynamicResource SecondaryButtonStyle}"
+                        Click="CloseButton_Click"
+                        IsCancel="True"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

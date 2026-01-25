@@ -114,6 +114,10 @@
                             <MenuItem Header="MIDI Devices" IsCheckable="True" IsChecked="False" x:Name="MidiPanelMenuItem" Click="ToggleMidiPanel_Click"/>
                             <MenuItem Header="VST Plugins" IsCheckable="True" IsChecked="False" x:Name="VstPanelMenuItem" Click="ToggleVstPanel_Click"/>
                             <MenuItem Header="Audio Files" IsCheckable="True" IsChecked="False" x:Name="AudioPanelMenuItem" Click="ToggleAudioPanel_Click"/>
+                            <Separator/>
+                            <MenuItem Header="Cloud Storage..." Click="CloudStorage_Click"/>
+                            <MenuItem Header="Collaboration..." Click="Collaboration_Click"/>
+                            <MenuItem Header="Network MIDI..." Click="NetworkMidi_Click"/>
                         </MenuItem>
                         <MenuItem Header="Project">
                             <MenuItem Header="_Add New Script..." Click="AddScript_Click"/>
@@ -719,6 +723,22 @@
                     <Button Style="{StaticResource IconButtonStyle}" Click="ToggleWorkshop_Click"
                             ToolTip="Workshop Tutorials" Margin="4" x:Name="WorkshopToolButton">
                         <TextBlock Text="W" FontWeight="Bold" FontSize="14"/>
+                    </Button>
+
+                    <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>
+
+                    <!-- Network & Cloud Features -->
+                    <Button Style="{StaticResource IconButtonStyle}" Click="CloudStorage_Click"
+                            ToolTip="Cloud Storage" Margin="4" x:Name="CloudStorageToolButton">
+                        <TextBlock Text="&#x2601;" FontSize="14"/>
+                    </Button>
+                    <Button Style="{StaticResource IconButtonStyle}" Click="Collaboration_Click"
+                            ToolTip="Collaboration" Margin="4" x:Name="CollaborationToolButton">
+                        <TextBlock Text="&#x1F465;" FontSize="12"/>
+                    </Button>
+                    <Button Style="{StaticResource IconButtonStyle}" Click="NetworkMidi_Click"
+                            ToolTip="Network MIDI" Margin="4" x:Name="NetworkMidiToolButton">
+                        <TextBlock Text="&#x1F50C;" FontSize="12"/>
                     </Button>
                 </StackPanel>
             </Border>

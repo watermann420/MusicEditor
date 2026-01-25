@@ -1,0 +1,361 @@
+<UserControl x:Class="MusicEngineEditor.Controls.NoiseReductionPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="320"
+             Background="{DynamicResource PanelBackgroundBrush}">
+
+    <UserControl.Resources>
+        <!-- Parameter Slider Style -->
+        <Style x:Key="ParameterSliderStyle" TargetType="Slider" BasedOn="{StaticResource {x:Type Slider}}">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="TickFrequency" Value="1"/>
+            <Setter Property="IsSnapToTickEnabled" Value="True"/>
+        </Style>
+
+        <!-- Parameter Label Style -->
+        <Style x:Key="ParameterLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <!-- Parameter Value Style -->
+        <Style x:Key="ParameterValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="MinWidth" Value="40"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="16">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Noise Reduction"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource BrightForegroundBrush}"/>
+
+                <ToggleButton Grid.Column="1"
+                              x:Name="BypassToggle"
+                              Content="Bypass"
+                              Padding="8,4"
+                              Click="BypassToggle_Click">
+                    <ToggleButton.Style>
+                        <Style TargetType="ToggleButton">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="3"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource WarningBrush}"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ToggleButton.Style>
+                </ToggleButton>
+            </Grid>
+
+            <!-- Preset Selection -->
+            <Grid Grid.Row="1" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Preset:"
+                           Style="{StaticResource ParameterLabelStyle}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+
+                <ComboBox Grid.Column="1"
+                          x:Name="PresetComboBox"
+                          SelectionChanged="PresetComboBox_SelectionChanged">
+                    <ComboBoxItem Content="Light Hiss Removal" IsSelected="True"/>
+                    <ComboBoxItem Content="Medium Noise Reduction"/>
+                    <ComboBoxItem Content="Heavy Noise Reduction"/>
+                    <ComboBoxItem Content="Broadband Noise"/>
+                    <ComboBoxItem Content="Air Conditioning/HVAC"/>
+                    <ComboBoxItem Content="Hum Removal (50/60 Hz)"/>
+                    <ComboBoxItem Content="Custom"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Noise Profile Section -->
+            <Border Grid.Row="2"
+                    Background="{DynamicResource BackgroundBrush}"
+                    CornerRadius="4"
+                    Padding="12"
+                    Margin="0,0,0,16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="Noise Profile"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ForegroundBrush}"
+                               Margin="0,0,0,8"/>
+
+                    <TextBlock Grid.Row="1"
+                               x:Name="NoiseProfileStatus"
+                               Text="No noise profile captured"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               Margin="0,0,0,8"/>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                x:Name="LearnNoiseButton"
+                                Content="Learn Noise"
+                                Style="{DynamicResource PrimaryButtonStyle}"
+                                Click="LearnNoiseButton_Click"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,8,0"/>
+
+                        <Button Grid.Column="1"
+                                x:Name="ClearProfileButton"
+                                Content="Clear"
+                                Style="{DynamicResource SecondaryButtonStyle}"
+                                Click="ClearProfileButton_Click"
+                                IsEnabled="False"/>
+                    </Grid>
+
+                    <!-- Learning Progress -->
+                    <StackPanel Grid.Row="2"
+                                x:Name="LearningProgress"
+                                Visibility="Collapsed">
+                        <ProgressBar x:Name="LearnProgressBar"
+                                     Height="6"
+                                     Margin="0,0,0,4"/>
+                        <TextBlock x:Name="LearnProgressText"
+                                   Text="Learning noise profile... 0%"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Reduction Amount -->
+            <StackPanel Grid.Row="3" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Reduction Amount"
+                               Style="{StaticResource ParameterLabelStyle}"/>
+                    <TextBlock Grid.Column="1"
+                               x:Name="ReductionValue"
+                               Text="50%"
+                               Style="{StaticResource ParameterValueStyle}"/>
+                </Grid>
+                <Slider x:Name="ReductionSlider"
+                        Style="{StaticResource ParameterSliderStyle}"
+                        Value="50"
+                        ValueChanged="ReductionSlider_ValueChanged"/>
+            </StackPanel>
+
+            <!-- Sensitivity -->
+            <StackPanel Grid.Row="4" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Sensitivity"
+                               Style="{StaticResource ParameterLabelStyle}"/>
+                    <TextBlock Grid.Column="1"
+                               x:Name="SensitivityValue"
+                               Text="30%"
+                               Style="{StaticResource ParameterValueStyle}"/>
+                </Grid>
+                <Slider x:Name="SensitivitySlider"
+                        Style="{StaticResource ParameterSliderStyle}"
+                        Value="30"
+                        ValueChanged="SensitivitySlider_ValueChanged"/>
+            </StackPanel>
+
+            <!-- Frequency Smoothing -->
+            <StackPanel Grid.Row="5" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Frequency Smoothing"
+                               Style="{StaticResource ParameterLabelStyle}"/>
+                    <TextBlock Grid.Column="1"
+                               x:Name="FrequencySmoothingValue"
+                               Text="3 bands"
+                               Style="{StaticResource ParameterValueStyle}"/>
+                </Grid>
+                <Slider x:Name="FrequencySmoothingSlider"
+                        Minimum="0"
+                        Maximum="10"
+                        Value="3"
+                        TickFrequency="1"
+                        IsSnapToTickEnabled="True"
+                        ValueChanged="FrequencySmoothingSlider_ValueChanged"/>
+            </StackPanel>
+
+            <!-- Attack/Release -->
+            <Grid Grid.Row="6" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Attack -->
+                <StackPanel Grid.Column="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="Attack"
+                                   Style="{StaticResource ParameterLabelStyle}"/>
+                        <TextBlock Grid.Column="1"
+                                   x:Name="AttackValue"
+                                   Text="5 ms"
+                                   Style="{StaticResource ParameterValueStyle}"/>
+                    </Grid>
+                    <Slider x:Name="AttackSlider"
+                            Minimum="1"
+                            Maximum="50"
+                            Value="5"
+                            TickFrequency="1"
+                            IsSnapToTickEnabled="True"
+                            ValueChanged="AttackSlider_ValueChanged"/>
+                </StackPanel>
+
+                <!-- Release -->
+                <StackPanel Grid.Column="2">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="Release"
+                                   Style="{StaticResource ParameterLabelStyle}"/>
+                        <TextBlock Grid.Column="1"
+                                   x:Name="ReleaseValue"
+                                   Text="50 ms"
+                                   Style="{StaticResource ParameterValueStyle}"/>
+                    </Grid>
+                    <Slider x:Name="ReleaseSlider"
+                            Minimum="10"
+                            Maximum="500"
+                            Value="50"
+                            TickFrequency="10"
+                            IsSnapToTickEnabled="True"
+                            ValueChanged="ReleaseSlider_ValueChanged"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Before/After Toggle -->
+            <Border Grid.Row="7"
+                    Background="{DynamicResource BackgroundBrush}"
+                    CornerRadius="4"
+                    Padding="12"
+                    Margin="0,8,0,0"
+                    VerticalAlignment="Bottom">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <RadioButton Grid.Column="0"
+                                 x:Name="AfterRadio"
+                                 Content="After (Processed)"
+                                 IsChecked="True"
+                                 GroupName="BeforeAfter"
+                                 Checked="AfterRadio_Checked"/>
+
+                    <RadioButton Grid.Column="1"
+                                 x:Name="BeforeRadio"
+                                 Content="Before (Original)"
+                                 GroupName="BeforeAfter"
+                                 Checked="BeforeRadio_Checked"/>
+                </Grid>
+            </Border>
+
+            <!-- Status -->
+            <TextBlock Grid.Row="8"
+                       x:Name="StatusText"
+                       Text="Ready"
+                       FontSize="11"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                       Margin="0,12,0,0"/>
+        </Grid>
+    </Border>
+</UserControl>

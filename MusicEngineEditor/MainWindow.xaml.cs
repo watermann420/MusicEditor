@@ -2189,6 +2189,34 @@ public partial class MainWindow : Window
 
     #endregion
 
+    #region Cloud, Collaboration, and Network MIDI
+
+    /// <summary>
+    /// Opens the Cloud Storage dialog.
+    /// </summary>
+    private void CloudStorage_Click(object sender, RoutedEventArgs e)
+    {
+        CloudStorageDialog.ShowDialog(this);
+    }
+
+    /// <summary>
+    /// Opens the Collaboration dialog.
+    /// </summary>
+    private void Collaboration_Click(object sender, RoutedEventArgs e)
+    {
+        CollaborationDialog.ShowDialog(this);
+    }
+
+    /// <summary>
+    /// Opens the Network MIDI dialog.
+    /// </summary>
+    private void NetworkMidi_Click(object sender, RoutedEventArgs e)
+    {
+        NetworkMidiDialog.ShowDialog(this);
+    }
+
+    #endregion
+
     #region Command Palette
 
     /// <summary>
@@ -2311,6 +2339,22 @@ public partial class MainWindow : Window
             var dialog = new StemExportDialog { Owner = this };
             dialog.ShowDialog();
         }, null, "Export individual stems");
+
+        // Cloud & Collaboration commands
+        service.RegisterCommand("Cloud Storage", "Cloud", () =>
+        {
+            CloudStorageDialog.ShowDialog(this);
+        }, null, "Open cloud storage manager", ["sync", "upload", "download"]);
+
+        service.RegisterCommand("Collaboration", "Cloud", () =>
+        {
+            CollaborationDialog.ShowDialog(this);
+        }, null, "Start or join collaboration session", ["collab", "share", "realtime"]);
+
+        service.RegisterCommand("Network MIDI", "Cloud", () =>
+        {
+            NetworkMidiDialog.ShowDialog(this);
+        }, null, "Configure network MIDI (RTP-MIDI)", ["rtpmidi", "network", "remote"]);
     }
 
     #endregion
