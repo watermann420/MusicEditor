@@ -191,6 +191,12 @@ public partial class MainWindow : Window
                 // Find next is handled inside the control
             }
         }
+        // Handle Ctrl+P for command palette
+        else if (e.Key == Key.P && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            e.Handled = true;
+            ShowCommandPalette();
+        }
     }
 
     #region Context Menu
@@ -2179,6 +2185,132 @@ public partial class MainWindow : Window
 
         // Focus the editor
         CodeEditor.Focus();
+    }
+
+    #endregion
+
+    #region Command Palette
+
+    /// <summary>
+    /// Shows the command palette dialog.
+    /// </summary>
+    private void ShowCommandPalette()
+    {
+        // Register commands if not already done
+        RegisterCommandPaletteCommands();
+
+        // Show the palette
+        var selectedCommand = CommandPaletteDialog.ShowPalette(this);
+
+        if (selectedCommand != null)
+        {
+            OutputLine($"Executed: {selectedCommand.Category}: {selectedCommand.Name}");
+        }
+    }
+
+    /// <summary>
+    /// Registers commands with the command palette service.
+    /// </summary>
+    private void RegisterCommandPaletteCommands()
+    {
+        var service = CommandPaletteService.Instance;
+
+        // Only register once
+        if (service.Commands.Count > 0)
+            return;
+
+        // File commands
+        service.RegisterCommand("New Project", "File", () => NewProject_Click(this, new RoutedEventArgs()), "Ctrl+Shift+N", "Create a new project");
+        service.RegisterCommand("Open Project", "File", () => OpenProject_Click(this, new RoutedEventArgs()), "Ctrl+Shift+O", "Open an existing project");
+        service.RegisterCommand("New File", "File", () => NewFile_Click(this, new RoutedEventArgs()), "Ctrl+N", "Create a new script file");
+        service.RegisterCommand("Save", "File", () => SaveScript_Click(this, new RoutedEventArgs()), "Ctrl+S", "Save current file");
+        service.RegisterCommand("Save All", "File", () => SaveAll_Click(this, new RoutedEventArgs()), "Ctrl+Shift+S", "Save all open files");
+        service.RegisterCommand("Settings", "File", () => Settings_Click(this, new RoutedEventArgs()), "Ctrl+,", "Open settings");
+        service.RegisterCommand("Exit", "File", () => Exit_Click(this, new RoutedEventArgs()), null, "Exit the application");
+
+        // Edit commands
+        service.RegisterCommand("Undo", "Edit", () => CodeEditor.Undo(), "Ctrl+Z", "Undo last action");
+        service.RegisterCommand("Redo", "Edit", () => CodeEditor.Redo(), "Ctrl+Y", "Redo last undone action");
+        service.RegisterCommand("Cut", "Edit", () => CodeEditor.Cut(), "Ctrl+X", "Cut selection");
+        service.RegisterCommand("Copy", "Edit", () => CodeEditor.Copy(), "Ctrl+C", "Copy selection");
+        service.RegisterCommand("Paste", "Edit", () => CodeEditor.Paste(), "Ctrl+V", "Paste from clipboard");
+        service.RegisterCommand("Select All", "Edit", () => CodeEditor.SelectAll(), "Ctrl+A", "Select all text");
+        service.RegisterCommand("Find", "Edit", () => FindReplaceBar.ShowFind(), "Ctrl+F", "Find text");
+        service.RegisterCommand("Replace", "Edit", () => FindReplaceBar.ShowReplace(), "Ctrl+H", "Find and replace text");
+
+        // Transport commands
+        service.RegisterCommand("Run Script", "Transport", () => _ = ExecuteScript(), "Ctrl+Enter", "Run the current script", ["play", "execute", "start"]);
+        service.RegisterCommand("Stop", "Transport", () =>
+        {
+            _engineService.AllNotesOff();
+            _isRunning = false;
+            _visualization?.OnPlaybackStopped();
+            StatusText.Text = "Stopped";
+            OutputLine("Stopped");
+        }, "Escape", "Stop playback", ["pause", "halt"]);
+
+        // View commands
+        service.RegisterCommand("Toggle Output", "View", () =>
+        {
+            if (_outputVisible)
+            {
+                OutputPanel.Visibility = Visibility.Collapsed;
+                OutputSplitter.Visibility = Visibility.Collapsed;
+                _outputVisible = false;
+            }
+            else
+            {
+                OutputPanel.Visibility = Visibility.Visible;
+                OutputSplitter.Visibility = Visibility.Visible;
+                _outputVisible = true;
+            }
+        }, null, "Toggle output panel visibility");
+
+        service.RegisterCommand("Clear Output", "View", () => OutputBox.Clear(), null, "Clear the output panel");
+
+        // Help commands
+        service.RegisterCommand("About", "Help", () =>
+        {
+            var dialog = new AboutDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "About MusicEngine Editor");
+
+        service.RegisterCommand("Keyboard Shortcuts", "Help", () =>
+        {
+            var dialog = new ShortcutsDialog(App.Services.GetRequiredService<IShortcutService>()) { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Show keyboard shortcuts");
+
+        // Tools
+        service.RegisterCommand("Quantize", "Tools", () =>
+        {
+            var dialog = new QuantizeDialog { Owner = this };
+            dialog.ShowDialog();
+        }, "Q", "Quantize selected notes", ["snap", "grid"]);
+
+        service.RegisterCommand("Export Audio", "Tools", () =>
+        {
+            var dialog = new ExportDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Export project to audio file", ["render", "bounce"]);
+
+        service.RegisterCommand("Metronome Settings", "Tools", () =>
+        {
+            var dialog = new MetronomeSettingsDialog(App.Services.GetRequiredService<MetronomeService>()) { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Configure metronome");
+
+        service.RegisterCommand("Recording Setup", "Tools", () =>
+        {
+            var dialog = new RecordingSetupDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Configure recording settings");
+
+        service.RegisterCommand("Stem Export", "Tools", () =>
+        {
+            var dialog = new StemExportDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Export individual stems");
     }
 
     #endregion

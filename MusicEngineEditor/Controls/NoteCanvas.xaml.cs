@@ -57,6 +57,10 @@ public partial class NoteCanvas : UserControl
         DependencyProperty.Register(nameof(SelectedNotes), typeof(IEnumerable<PianoRollNote>), typeof(NoteCanvas),
             new PropertyMetadata(null, OnSelectedNotesChanged));
 
+    public static readonly DependencyProperty UseVelocityColorsProperty =
+        DependencyProperty.Register(nameof(UseVelocityColors), typeof(bool), typeof(NoteCanvas),
+            new PropertyMetadata(true, OnLayoutPropertyChanged));
+
     public static readonly DependencyProperty LowestNoteProperty =
         DependencyProperty.Register(nameof(LowestNote), typeof(int), typeof(NoteCanvas),
             new PropertyMetadata(21, OnLayoutPropertyChanged)); // A0
@@ -187,6 +191,12 @@ public partial class NoteCanvas : UserControl
     {
         get => (double)GetValue(BeatWidthProperty);
         set => SetValue(BeatWidthProperty, value);
+    }
+
+    public bool UseVelocityColors
+    {
+        get => (bool)GetValue(UseVelocityColorsProperty);
+        set => SetValue(UseVelocityColorsProperty, value);
     }
 
     #endregion
@@ -479,6 +489,39 @@ public partial class NoteCanvas : UserControl
         }
     }
 
+    /// <summary>
+    /// Gets the note color based on velocity when velocity colors are enabled.
+    /// Blue (low velocity) -> Green (mid) -> Red (high velocity)
+    /// </summary>
+    private Color GetVelocityColor(int velocity)
+    {
+        if (!UseVelocityColors)
+        {
+            return NoteDefaultColor;
+        }
+
+        double t = velocity / 127.0;
+
+        if (t < 0.5)
+        {
+            // Blue to Green (low to mid velocity)
+            double factor = t * 2; // 0 to 1 over first half
+            return Color.FromRgb(
+                (byte)(74 * (1 - factor)),           // R: 74 -> 0
+                (byte)(100 + 155 * factor),          // G: 100 -> 255
+                (byte)(255 * (1 - factor)));         // B: 255 -> 0
+        }
+        else
+        {
+            // Green to Red (mid to high velocity)
+            double factor = (t - 0.5) * 2; // 0 to 1 over second half
+            return Color.FromRgb(
+                (byte)(255 * factor),                // R: 0 -> 255
+                (byte)(255 * (1 - factor)),          // G: 255 -> 0
+                (byte)0);                            // B: 0
+        }
+    }
+
     private Shapes.Rectangle CreateNoteRectangle(PianoRollNote note)
     {
         var effectiveBeatWidth = BeatWidth * ZoomX;
@@ -494,13 +537,16 @@ public partial class NoteCanvas : UserControl
 
         var isSelected = _selectedNotesInternal.Contains(note);
 
+        // Get note color (velocity-based if enabled, otherwise default blue)
+        var noteColor = GetVelocityColor(note.Velocity);
+
         var rect = new Shapes.Rectangle
         {
             Width = width,
             Height = height,
             RadiusX = NoteCornerRadius,
             RadiusY = NoteCornerRadius,
-            Fill = new SolidColorBrush(NoteDefaultColor) { Opacity = velocityOpacity },
+            Fill = new SolidColorBrush(noteColor) { Opacity = velocityOpacity },
             Stroke = isSelected ? new SolidColorBrush(NoteSelectedBorderColor) : null,
             StrokeThickness = isSelected ? 2.0 : 0,
             Cursor = GetNoteCursor(note),

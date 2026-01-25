@@ -303,20 +303,34 @@
                     BorderBrush="{StaticResource MixerBorderBrush}"
                     BorderThickness="1,0,0,0"
                     Padding="8"
-                    MinWidth="100">
+                    MinWidth="200">
                 <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <controls:MixerChannelControl Grid.Row="0"
+                    <controls:MixerChannelControl Grid.Column="0"
+                                                  Grid.Row="0"
                                                   DataContext="{Binding MasterChannel}"
                                                   MinWidth="90"
                                                   MaxWidth="110"/>
 
+                    <!-- LUFS Loudness Meter -->
+                    <controls:LoudnessMeterDisplay x:Name="LoudnessMeterDisplay"
+                                                   Grid.Column="1"
+                                                   Grid.Row="0"
+                                                   Width="90"
+                                                   Margin="8,0,0,0"/>
+
                     <!-- PDC Display in Master Section -->
                     <controls:PdcDisplayControl x:Name="PdcDisplay"
+                                                Grid.Column="0"
+                                                Grid.ColumnSpan="2"
                                                 Grid.Row="1"
                                                 Margin="0,8,0,0"/>
                 </Grid>

@@ -290,10 +290,19 @@
                               Style="{StaticResource PianoRollComboBoxStyle}"
                               SelectedIndex="0"
                               ToolTip="Grid Snap Value">
+                        <!-- Standard subdivisions -->
                         <ComboBoxItem Content="1/4" Tag="1.0"/>
                         <ComboBoxItem Content="1/8" Tag="0.5"/>
                         <ComboBoxItem Content="1/16" Tag="0.25"/>
                         <ComboBoxItem Content="1/32" Tag="0.125"/>
+                        <!-- Triplet subdivisions -->
+                        <ComboBoxItem Content="1/4T" Tag="0.667"/>
+                        <ComboBoxItem Content="1/8T" Tag="0.333"/>
+                        <ComboBoxItem Content="1/16T" Tag="0.167"/>
+                        <!-- Dotted subdivisions -->
+                        <ComboBoxItem Content="1/4." Tag="1.5"/>
+                        <ComboBoxItem Content="1/8." Tag="0.75"/>
+                        <ComboBoxItem Content="1/16." Tag="0.375"/>
                     </ComboBox>
 
                     <Rectangle Width="1"

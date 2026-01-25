@@ -32,6 +32,8 @@
         <KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding FindCommand}"/>
         <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding ReplaceCommand}"/>
         <KeyBinding Key="OemComma" Modifiers="Ctrl" Command="{Binding OpenSettingsCommand}"/>
+        <!-- Command Palette -->
+        <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding ShowCommandPaletteCommand}"/>
     </Window.InputBindings>
 
     <Grid>

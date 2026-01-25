@@ -1510,4 +1510,190 @@ public partial class ArrangementView : UserControl
     }
 
     #endregion
+
+    #region Drag and Drop Audio Files
+
+    // Preview rectangle for drop location
+    private System.Windows.Shapes.Rectangle? _dropPreviewRect;
+
+    /// <summary>
+    /// Checks if a file path is a supported audio format.
+    /// </summary>
+    private static bool IsAudioFile(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        return ext is ".wav" or ".mp3" or ".flac" or ".ogg" or ".aiff" or ".aif";
+    }
+
+    private void ClipsCanvas_DragEnter(object sender, System.Windows.DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+        {
+            var files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
+            if (files.Any(IsAudioFile))
+            {
+                e.Effects = System.Windows.DragDropEffects.Copy;
+                ShowDropPreview(e.GetPosition(ClipsCanvas));
+                ShowClipsArea();
+            }
+            else
+            {
+                e.Effects = System.Windows.DragDropEffects.None;
+            }
+        }
+        else
+        {
+            e.Effects = System.Windows.DragDropEffects.None;
+        }
+        e.Handled = true;
+    }
+
+    private void ClipsCanvas_DragOver(object sender, System.Windows.DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+        {
+            var files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
+            if (files.Any(IsAudioFile))
+            {
+                e.Effects = System.Windows.DragDropEffects.Copy;
+                UpdateDropPreview(e.GetPosition(ClipsCanvas));
+            }
+            else
+            {
+                e.Effects = System.Windows.DragDropEffects.None;
+            }
+        }
+        else
+        {
+            e.Effects = System.Windows.DragDropEffects.None;
+        }
+        e.Handled = true;
+    }
+
+    private void ClipsCanvas_DragLeave(object sender, System.Windows.DragEventArgs e)
+    {
+        HideDropPreview();
+        e.Handled = true;
+    }
+
+    private async void ClipsCanvas_Drop(object sender, System.Windows.DragEventArgs e)
+    {
+        HideDropPreview();
+
+        if (!e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+            return;
+
+        var files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
+        var audioFiles = files.Where(IsAudioFile).ToArray();
+
+        if (audioFiles.Length == 0)
+            return;
+
+        var dropPosition = e.GetPosition(ClipsCanvas);
+        var beatPosition = PositionToBeatsInClips(dropPosition.X);
+        beatPosition = Math.Round(beatPosition * 4) / 4; // Snap to quarter note
+
+        // Create clips from dropped files
+        foreach (var file in audioFiles)
+        {
+            await CreateClipFromDroppedFileAsync(file, beatPosition);
+            beatPosition += 4; // Stack subsequent files 4 beats apart
+        }
+
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// Creates an audio clip from a dropped file.
+    /// </summary>
+    private async Task CreateClipFromDroppedFileAsync(string filePath, double beatPosition)
+    {
+        try
+        {
+            var fileName = Path.GetFileNameWithoutExtension(filePath);
+
+            // Try to get duration from file
+            double lengthInBeats = 4.0; // Default
+            try
+            {
+                using var reader = new NAudio.Wave.AudioFileReader(filePath);
+                var duration = reader.TotalTime.TotalSeconds;
+                var bpm = _viewModel?.Arrangement?.Bpm ?? 120;
+                lengthInBeats = Math.Max(1.0, duration * (bpm / 60.0));
+                lengthInBeats = Math.Round(lengthInBeats * 4) / 4; // Snap to quarter note
+            }
+            catch
+            {
+                // If we can't read the file, use default length
+            }
+
+            // Create the clip
+            var clip = AddAudioClip(fileName, beatPosition, lengthInBeats, filePath);
+
+            // Load waveform data asynchronously
+            try
+            {
+                var waveformData = await WaveformService.LoadFromFileAsync(filePath);
+                clip.WaveformData = waveformData.Samples;
+                RefreshClips();
+            }
+            catch
+            {
+                // Waveform loading failed, clip is still usable
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to create clip from {filePath}: {ex.Message}");
+        }
+    }
+
+    private void ShowDropPreview(Point position)
+    {
+        if (_dropPreviewRect == null)
+        {
+            _dropPreviewRect = new System.Windows.Shapes.Rectangle
+            {
+                Fill = new SolidColorBrush(Color.FromArgb(64, 74, 158, 255)),
+                Stroke = new SolidColorBrush(Color.FromRgb(74, 158, 255)),
+                StrokeThickness = 2,
+                StrokeDashArray = new DoubleCollection { 4, 2 },
+                RadiusX = 4,
+                RadiusY = 4,
+                IsHitTestVisible = false,
+                Height = 56
+            };
+            ClipsCanvas.Children.Add(_dropPreviewRect);
+        }
+
+        UpdateDropPreview(position);
+        _dropPreviewRect.Visibility = Visibility.Visible;
+    }
+
+    private void UpdateDropPreview(Point position)
+    {
+        if (_dropPreviewRect == null || _viewModel == null)
+            return;
+
+        var beatPosition = PositionToBeatsInClips(position.X);
+        beatPosition = Math.Round(beatPosition * 4) / 4; // Snap to quarter
+
+        var pixelsPerBeat = ClipsCanvas.ActualWidth / _viewModel.VisibleBeats;
+        var x = (beatPosition - _viewModel.ScrollOffset) * pixelsPerBeat;
+        var width = 4 * pixelsPerBeat; // Default 4-beat preview
+
+        Canvas.SetLeft(_dropPreviewRect, x);
+        Canvas.SetTop(_dropPreviewRect, 2);
+        _dropPreviewRect.Width = Math.Max(20, width);
+    }
+
+    private void HideDropPreview()
+    {
+        if (_dropPreviewRect != null)
+        {
+            _dropPreviewRect.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    #endregion
 }

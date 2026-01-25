@@ -616,3 +616,7 @@ C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-wind
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\TrackLatencyIndicator.baml
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\AudioClipEditorView.baml
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\GrooveTemplateDialog.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\LoudnessMeterDisplay.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\CommandPaletteDialog.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\LoudnessMeterDisplay.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\CommandPaletteDialog.g.cs

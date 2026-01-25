@@ -1,0 +1,172 @@
+<UserControl x:Class="MusicEngineEditor.Controls.LoudnessMeterDisplay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="180" d:DesignWidth="100"
+             Background="#252629">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="MeterBackgroundBrush" Color="#1A1A1A"/>
+        <SolidColorBrush x:Key="MeterBorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#BCBEC4"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="LoudnessGoodBrush" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="LoudnessWarningBrush" Color="#FFC107"/>
+        <SolidColorBrush x:Key="LoudnessDangerBrush" Color="#F44336"/>
+        <SolidColorBrush x:Key="TruePeakBrush" Color="#2196F3"/>
+    </UserControl.Resources>
+
+    <Border BorderBrush="{StaticResource MeterBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <TextBlock Grid.Row="0"
+                       Text="LUFS"
+                       FontSize="10"
+                       FontWeight="SemiBold"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,4"/>
+
+            <!-- Integrated Loudness (Main Display) -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource MeterBackgroundBrush}"
+                    CornerRadius="3"
+                    Padding="4,2"
+                    Margin="0,0,0,8">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock x:Name="IntegratedLoudnessText"
+                               Text="-14.0"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource LoudnessGoodBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Integrated"
+                               FontSize="8"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Meters -->
+            <Grid Grid.Row="2" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Short-Term Meter -->
+                <Grid Grid.Column="0" Margin="0,0,2,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Background="{StaticResource MeterBackgroundBrush}"
+                            CornerRadius="2">
+                        <Grid>
+                            <!-- Meter Fill -->
+                            <Border x:Name="ShortTermMeterFill"
+                                    Background="{StaticResource LoudnessGoodBrush}"
+                                    CornerRadius="2"
+                                    VerticalAlignment="Bottom"
+                                    Height="0"/>
+                            <!-- Scale Lines -->
+                            <Canvas x:Name="ShortTermScaleCanvas" ClipToBounds="True"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Grid.Row="1"
+                               x:Name="ShortTermText"
+                               Text="--"
+                               FontSize="9"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,2,0,0"/>
+                    <TextBlock Grid.Row="1"
+                               Text="ST"
+                               FontSize="7"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom"
+                               Margin="0,0,0,-10"/>
+                </Grid>
+
+                <!-- Momentary Meter -->
+                <Grid Grid.Column="1" Margin="2,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Background="{StaticResource MeterBackgroundBrush}"
+                            CornerRadius="2">
+                        <Grid>
+                            <!-- Meter Fill -->
+                            <Border x:Name="MomentaryMeterFill"
+                                    Background="{StaticResource LoudnessGoodBrush}"
+                                    CornerRadius="2"
+                                    VerticalAlignment="Bottom"
+                                    Height="0"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Grid.Row="1"
+                               x:Name="MomentaryText"
+                               Text="--"
+                               FontSize="9"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,2,0,0"/>
+                    <TextBlock Grid.Row="1"
+                               Text="M"
+                               FontSize="7"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Bottom"
+                               Margin="0,0,0,-10"/>
+                </Grid>
+            </Grid>
+
+            <!-- True Peak -->
+            <Border Grid.Row="3"
+                    Background="{StaticResource MeterBackgroundBrush}"
+                    CornerRadius="3"
+                    Padding="4,2">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="TP"
+                               FontSize="9"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Column="1"
+                               x:Name="TruePeakText"
+                               Text="-0.0 dB"
+                               FontSize="10"
+                               Foreground="{StaticResource TruePeakBrush}"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>
