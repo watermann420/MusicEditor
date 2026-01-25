@@ -1251,6 +1251,7 @@ public partial class MainWindow : Window
         MidiPanelMenuItem.IsChecked = false;
         VstPanelMenuItem.IsChecked = false;
         AudioPanelMenuItem.IsChecked = false;
+        UndoHistoryMenuItem.IsChecked = false;
     }
 
     private void SwitchRightPanelTab(string tab)
@@ -1268,6 +1269,7 @@ public partial class MainWindow : Window
         VstPluginsPanel.Visibility = Visibility.Collapsed;
         AudioFilesPanel.Visibility = Visibility.Collapsed;
         TrackPropertiesPanel.Visibility = Visibility.Collapsed;
+        UndoHistoryPanel.Visibility = Visibility.Collapsed;
 
         // Show selected tab
         switch (tab)
@@ -1293,6 +1295,10 @@ public partial class MainWindow : Window
             case "trackproperties":
                 // Track properties panel is standalone (no tab header in the tabbed area)
                 TrackPropertiesPanel.Visibility = Visibility.Visible;
+                break;
+            case "undohistory":
+                // Undo history panel is standalone (no tab header in the tabbed area)
+                UndoHistoryPanel.Visibility = Visibility.Visible;
                 break;
         }
     }
@@ -1327,6 +1333,12 @@ public partial class MainWindow : Window
     private void ToggleTrackPropertiesPanel_Click(object sender, RoutedEventArgs e)
     {
         ShowRightPanel("trackproperties");
+    }
+
+    private void ToggleUndoHistory_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("undohistory");
+        UndoHistoryMenuItem.IsChecked = RightPanel.Visibility == Visibility.Visible && _currentRightPanelTab == "undohistory";
     }
 
     private void TrackPropertiesPanel_CloseRequested(object? sender, EventArgs e)

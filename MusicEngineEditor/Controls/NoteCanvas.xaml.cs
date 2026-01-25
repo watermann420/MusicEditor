@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Shapes = System.Windows.Shapes;
 using MusicEngineEditor.Models;
+using MusicEngineEditor.Services;
 
 namespace MusicEngineEditor.Controls;
 
@@ -109,6 +110,22 @@ public partial class NoteCanvas : UserControl
         DependencyProperty.Register(nameof(BeatWidth), typeof(double), typeof(NoteCanvas),
             new PropertyMetadata(DefaultBeatWidth, OnLayoutPropertyChanged));
 
+    public static readonly DependencyProperty HighlightedScaleProperty =
+        DependencyProperty.Register(nameof(HighlightedScale), typeof(ScaleDefinition), typeof(NoteCanvas),
+            new PropertyMetadata(null, OnScaleHighlightingChanged));
+
+    public static readonly DependencyProperty HighlightedRootProperty =
+        DependencyProperty.Register(nameof(HighlightedRoot), typeof(int), typeof(NoteCanvas),
+            new PropertyMetadata(0, OnScaleHighlightingChanged));
+
+    public static readonly DependencyProperty ScaleHighlightingEnabledProperty =
+        DependencyProperty.Register(nameof(ScaleHighlightingEnabled), typeof(bool), typeof(NoteCanvas),
+            new PropertyMetadata(false, OnScaleHighlightingChanged));
+
+    public static readonly DependencyProperty ShowScaleDegreesProperty =
+        DependencyProperty.Register(nameof(ShowScaleDegrees), typeof(bool), typeof(NoteCanvas),
+            new PropertyMetadata(true, OnLayoutPropertyChanged));
+
     public IEnumerable<PianoRollNote>? Notes
     {
         get => (IEnumerable<PianoRollNote>?)GetValue(NotesProperty);
@@ -199,6 +216,42 @@ public partial class NoteCanvas : UserControl
         set => SetValue(UseVelocityColorsProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the highlighted scale definition.
+    /// </summary>
+    public ScaleDefinition? HighlightedScale
+    {
+        get => (ScaleDefinition?)GetValue(HighlightedScaleProperty);
+        set => SetValue(HighlightedScaleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the root note for scale highlighting (0-11, where 0 = C).
+    /// </summary>
+    public int HighlightedRoot
+    {
+        get => (int)GetValue(HighlightedRootProperty);
+        set => SetValue(HighlightedRootProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether scale highlighting is enabled.
+    /// </summary>
+    public bool ScaleHighlightingEnabled
+    {
+        get => (bool)GetValue(ScaleHighlightingEnabledProperty);
+        set => SetValue(ScaleHighlightingEnabledProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to show scale degree labels on highlighted notes.
+    /// </summary>
+    public bool ShowScaleDegrees
+    {
+        get => (bool)GetValue(ShowScaleDegreesProperty);
+        set => SetValue(ShowScaleDegreesProperty, value);
+    }
+
     #endregion
 
     #region Events
@@ -240,6 +293,15 @@ public partial class NoteCanvas : UserControl
     private static readonly Color NoteSelectedBorderColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFFFF")!;
     private static readonly Color GridLineColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#2A2A2A")!;
     private static readonly Color BarLineColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#3A3A3A")!;
+
+    // Scale highlighting colors
+    private static readonly Color ScaleNoteHighlightColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#2A3A4A")!;
+    private static readonly Color RootNoteHighlightColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#2A4A3A")!;
+    private static readonly Color NonScaleNoteDimColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#121212")!;
+    private static readonly Color ScaleDegreeLabelColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#6A7A8A")!;
+
+    // Scale map cache (for efficient lookup)
+    private bool[]? _scaleMap;
     private static readonly Color WhiteKeyLaneColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#1A1A1A")!;
     private static readonly Color BlackKeyLaneColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#151515")!;
     private static readonly Color PlayheadColor = (Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF5555")!;
@@ -325,6 +387,15 @@ public partial class NoteCanvas : UserControl
         if (d is NoteCanvas canvas)
         {
             canvas.ApplyScrollTransform();
+        }
+    }
+
+    private static void OnScaleHighlightingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is NoteCanvas canvas)
+        {
+            canvas.UpdateScaleMap();
+            canvas.RenderLanes();
         }
     }
 
@@ -455,22 +526,96 @@ public partial class NoteCanvas : UserControl
         var totalWidth = GetTotalWidth();
         var effectiveNoteHeight = NoteHeight * ZoomY;
 
-        // Draw alternating lane backgrounds for white/black keys
+        // Draw alternating lane backgrounds for white/black keys with optional scale highlighting
         for (int midiNote = LowestNote; midiNote <= HighestNote; midiNote++)
         {
             var y = NoteToY(midiNote);
             var isBlackKey = PianoRollNote.IsBlackKey(midiNote);
 
+            // Determine lane color based on scale highlighting
+            Color laneColor = GetLaneColor(midiNote, isBlackKey);
+
             var rect = new Shapes.Rectangle
             {
                 Width = totalWidth,
                 Height = effectiveNoteHeight,
-                Fill = new SolidColorBrush(isBlackKey ? BlackKeyLaneColor : WhiteKeyLaneColor)
+                Fill = new SolidColorBrush(laneColor)
             };
 
             Canvas.SetLeft(rect, 0);
             Canvas.SetTop(rect, y);
             LaneCanvas.Children.Add(rect);
+
+            // Add scale degree label if enabled
+            if (ScaleHighlightingEnabled && ShowScaleDegrees && HighlightedScale != null)
+            {
+                string degreeLabel = HighlightedScale.GetScaleDegreeLabel(midiNote, HighlightedRoot);
+                if (!string.IsNullOrEmpty(degreeLabel))
+                {
+                    var label = new TextBlock
+                    {
+                        Text = degreeLabel,
+                        Foreground = new SolidColorBrush(ScaleDegreeLabelColor),
+                        FontSize = 10,
+                        FontWeight = FontWeights.SemiBold,
+                        Opacity = 0.7
+                    };
+
+                    Canvas.SetLeft(label, 4);
+                    Canvas.SetTop(label, y + (effectiveNoteHeight - 14) / 2);
+                    LaneCanvas.Children.Add(label);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the lane background color for a MIDI note based on scale highlighting.
+    /// </summary>
+    private Color GetLaneColor(int midiNote, bool isBlackKey)
+    {
+        // Base colors
+        Color baseColor = isBlackKey ? BlackKeyLaneColor : WhiteKeyLaneColor;
+
+        // If scale highlighting is not enabled, use base color
+        if (!ScaleHighlightingEnabled || HighlightedScale == null || _scaleMap == null)
+        {
+            return baseColor;
+        }
+
+        int pitchClass = midiNote % 12;
+        bool isInScale = _scaleMap[pitchClass];
+        bool isRoot = (pitchClass == HighlightedRoot);
+
+        if (isRoot)
+        {
+            // Root note - highlight with green tint
+            return RootNoteHighlightColor;
+        }
+        else if (isInScale)
+        {
+            // Scale note - highlight with blue tint
+            return ScaleNoteHighlightColor;
+        }
+        else
+        {
+            // Non-scale note - dim the color
+            return NonScaleNoteDimColor;
+        }
+    }
+
+    /// <summary>
+    /// Updates the cached scale map based on current scale and root settings.
+    /// </summary>
+    private void UpdateScaleMap()
+    {
+        if (HighlightedScale != null && ScaleHighlightingEnabled)
+        {
+            _scaleMap = HighlightedScale.CreateScaleMap(HighlightedRoot);
+        }
+        else
+        {
+            _scaleMap = null;
         }
     }
 

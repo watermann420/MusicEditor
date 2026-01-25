@@ -389,6 +389,77 @@
                                FontSize="11"
                                VerticalAlignment="Center"
                                Margin="4,0,0,0"/>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource SeparatorBrush}"
+                               Margin="12,4"/>
+
+                    <!-- Scale Highlighting -->
+                    <ToggleButton x:Name="ScaleHighlightToggle"
+                                  Style="{StaticResource PianoRollToolToggleButtonStyle}"
+                                  IsChecked="{Binding ScaleHighlightingEnabled}"
+                                  ToolTip="Enable Scale Highlighting"
+                                  Content="Scale"
+                                  Padding="8,4"/>
+
+                    <TextBlock Text="Root:"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Margin="8,0,4,0"/>
+                    <ComboBox x:Name="RootNoteComboBox"
+                              Style="{StaticResource PianoRollComboBoxStyle}"
+                              MinWidth="50"
+                              SelectedIndex="0"
+                              SelectionChanged="OnRootNoteChanged"
+                              ToolTip="Root Note">
+                        <ComboBoxItem Content="C" Tag="0"/>
+                        <ComboBoxItem Content="C#" Tag="1"/>
+                        <ComboBoxItem Content="D" Tag="2"/>
+                        <ComboBoxItem Content="D#" Tag="3"/>
+                        <ComboBoxItem Content="E" Tag="4"/>
+                        <ComboBoxItem Content="F" Tag="5"/>
+                        <ComboBoxItem Content="F#" Tag="6"/>
+                        <ComboBoxItem Content="G" Tag="7"/>
+                        <ComboBoxItem Content="G#" Tag="8"/>
+                        <ComboBoxItem Content="A" Tag="9"/>
+                        <ComboBoxItem Content="A#" Tag="10"/>
+                        <ComboBoxItem Content="B" Tag="11"/>
+                    </ComboBox>
+
+                    <ComboBox x:Name="ScaleTypeComboBox"
+                              Style="{StaticResource PianoRollComboBoxStyle}"
+                              MinWidth="90"
+                              SelectedIndex="0"
+                              SelectionChanged="OnScaleTypeChanged"
+                              ToolTip="Scale Type"
+                              Margin="4,0,0,0">
+                        <ComboBoxItem Content="Major"/>
+                        <ComboBoxItem Content="Minor"/>
+                        <ComboBoxItem Content="Dorian"/>
+                        <ComboBoxItem Content="Phrygian"/>
+                        <ComboBoxItem Content="Lydian"/>
+                        <ComboBoxItem Content="Mixolydian"/>
+                        <ComboBoxItem Content="Locrian"/>
+                        <ComboBoxItem Content="Harmonic Minor"/>
+                        <ComboBoxItem Content="Melodic Minor"/>
+                        <ComboBoxItem Content="Pentatonic Major"/>
+                        <ComboBoxItem Content="Pentatonic Minor"/>
+                        <ComboBoxItem Content="Blues"/>
+                        <ComboBoxItem Content="Whole Tone"/>
+                        <ComboBoxItem Content="Chromatic"/>
+                    </ComboBox>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource SeparatorBrush}"
+                               Margin="12,4"/>
+
+                    <!-- Chord Stamp Panel Toggle -->
+                    <ToggleButton x:Name="ChordPanelToggle"
+                                  Style="{StaticResource PianoRollToolToggleButtonStyle}"
+                                  ToolTip="Show/Hide Chord Stamp Panel"
+                                  Content="Chords"
+                                  Padding="8,4"/>
                 </StackPanel>
 
                 <!-- Right Section: Transport Controls -->
@@ -425,6 +496,8 @@
                 <ColumnDefinition Width="60"/>
                 <!-- Note Canvas -->
                 <ColumnDefinition Width="*"/>
+                <!-- Chord Stamp Panel (expandable) -->
+                <ColumnDefinition Width="Auto"/>
                 <!-- Vertical ScrollBar -->
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
@@ -465,7 +538,7 @@
             </Border>
 
             <!-- Top-Right Corner (empty, above vertical scrollbar) -->
-            <Border Grid.Row="0" Grid.Column="2"
+            <Border Grid.Row="0" Grid.Column="3"
                     Background="{StaticResource RulerBackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1,0,0,1"
@@ -483,9 +556,18 @@
                                  HorizontalAlignment="Stretch"
                                  VerticalAlignment="Stretch"/>
 
+            <!-- Chord Stamp Panel (expandable) -->
+            <controls:ChordStampPanel x:Name="ChordStampPanel"
+                                       Grid.Row="1" Grid.Column="2"
+                                       Grid.RowSpan="5"
+                                       Width="300"
+                                       VerticalAlignment="Top"
+                                       Margin="4"
+                                       Visibility="{Binding ElementName=ChordPanelToggle, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
             <!-- Vertical ScrollBar (for notes) -->
             <ScrollBar x:Name="VerticalNoteScrollBar"
-                       Grid.Row="1" Grid.Column="2"
+                       Grid.Row="1" Grid.Column="3"
                        Orientation="Vertical"
                        Minimum="0"
                        Maximum="127"
@@ -496,7 +578,7 @@
                        Style="{StaticResource DarkScrollBarStyle}"/>
 
             <!-- Velocity Lane Splitter -->
-            <GridSplitter Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+            <GridSplitter Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"
                           Height="5"
                           HorizontalAlignment="Stretch"
                           Background="{StaticResource BorderBrush}"
@@ -516,14 +598,14 @@
                                    VerticalAlignment="Stretch"/>
 
             <!-- Velocity Lane Right Corner -->
-            <Border Grid.Row="3" Grid.Column="2"
+            <Border Grid.Row="3" Grid.Column="3"
                     Background="{StaticResource BackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1,0,0,0"
                     Width="16"/>
 
             <!-- CC Lanes Splitter -->
-            <GridSplitter Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
+            <GridSplitter Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4"
                           Height="5"
                           HorizontalAlignment="Stretch"
                           Background="{StaticResource BorderBrush}"
@@ -531,7 +613,7 @@
                           ShowsPreview="True"/>
 
             <!-- CC Lanes Section -->
-            <Border Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3"
+            <Border Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4"
                     Background="{StaticResource BackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="0,1,0,0">
@@ -665,6 +747,8 @@
                 <ColumnDefinition Width="60"/>
                 <!-- ScrollBar -->
                 <ColumnDefinition Width="*"/>
+                <!-- Spacer for chord panel area (auto) -->
+                <ColumnDefinition Width="Auto"/>
                 <!-- Spacer for vertical scrollbar area -->
                 <ColumnDefinition Width="16"/>
             </Grid.ColumnDefinitions>
@@ -687,8 +771,16 @@
                        LargeChange="4"
                        Style="{StaticResource DarkScrollBarStyle}"/>
 
-            <!-- Bottom-Right Corner -->
+            <!-- Spacer for chord panel (matches chord panel width when visible) -->
             <Border Grid.Column="2"
+                    Width="{Binding ElementName=ChordStampPanel, Path=ActualWidth}"
+                    Background="{StaticResource BackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,1,0,0"
+                    Visibility="{Binding ElementName=ChordPanelToggle, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+            <!-- Bottom-Right Corner -->
+            <Border Grid.Column="3"
                     Background="{StaticResource BackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1,1,0,0"/>

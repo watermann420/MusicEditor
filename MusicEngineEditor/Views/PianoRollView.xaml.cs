@@ -44,6 +44,10 @@ public partial class PianoRollView : UserControl
     private bool _isRulerScrubbing;
     private Point _scrubStartPoint;
 
+    // Scale highlighting
+    private ScaleDefinition? _currentScale = ScaleDefinition.Major;
+    private int _currentScaleRoot = 0;
+
     #endregion
 
     #region Constructor
@@ -94,6 +98,12 @@ public partial class PianoRollView : UserControl
         // Wire up Note Preview
         WireUpNotePreview();
 
+        // Wire up Scale Highlighting
+        WireUpScaleHighlighting();
+
+        // Wire up Chord Stamp Panel
+        WireUpChordStampPanel();
+
         // Set up keyboard focus
         Focusable = true;
         Focus();
@@ -121,6 +131,7 @@ public partial class PianoRollView : UserControl
         UnwireNotePreview();
         UnwireRulerScrubbing();
         UnwireCCLanes();
+        UnwireChordStampPanel();
     }
 
     #endregion
@@ -1269,4 +1280,168 @@ public partial class PianoRollView : UserControl
     }
 
     #endregion
+
+    #region Scale Highlighting
+
+    /// <summary>
+    /// Wires up scale highlighting functionality.
+    /// </summary>
+    private void WireUpScaleHighlighting()
+    {
+        // Initialize scale type lookup
+        _scaleTypeLookup = new Dictionary<string, ScaleDefinition>
+        {
+            ["Major"] = ScaleDefinition.Major,
+            ["Minor"] = ScaleDefinition.Minor,
+            ["Dorian"] = ScaleDefinition.Dorian,
+            ["Phrygian"] = ScaleDefinition.Phrygian,
+            ["Lydian"] = ScaleDefinition.Lydian,
+            ["Mixolydian"] = ScaleDefinition.Mixolydian,
+            ["Locrian"] = ScaleDefinition.Locrian,
+            ["Harmonic Minor"] = ScaleDefinition.HarmonicMinor,
+            ["Melodic Minor"] = ScaleDefinition.MelodicMinor,
+            ["Pentatonic Major"] = ScaleDefinition.PentatonicMajor,
+            ["Pentatonic Minor"] = ScaleDefinition.PentatonicMinor,
+            ["Blues"] = ScaleDefinition.Blues,
+            ["Whole Tone"] = ScaleDefinition.WholeTone,
+            ["Chromatic"] = ScaleDefinition.Chromatic
+        };
+
+        // Wire up scale highlighting toggle
+        ScaleHighlightToggle.Checked += (s, e) => UpdateScaleHighlighting();
+        ScaleHighlightToggle.Unchecked += (s, e) => UpdateScaleHighlighting();
+
+        // Initial update
+        UpdateScaleHighlighting();
+    }
+
+    /// <summary>
+    /// Handles root note selection change.
+    /// </summary>
+    private void OnRootNoteChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (RootNoteComboBox.SelectedItem is ComboBoxItem item &&
+            item.Tag is string tagStr &&
+            int.TryParse(tagStr, out int root))
+        {
+            _currentScaleRoot = root;
+            UpdateScaleHighlighting();
+        }
+    }
+
+    /// <summary>
+    /// Handles scale type selection change.
+    /// </summary>
+    private void OnScaleTypeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ScaleTypeComboBox.SelectedItem is ComboBoxItem item &&
+            item.Content is string scaleName &&
+            _scaleTypeLookup != null &&
+            _scaleTypeLookup.TryGetValue(scaleName, out var scale))
+        {
+            _currentScale = scale;
+            UpdateScaleHighlighting();
+        }
+    }
+
+    /// <summary>
+    /// Updates the scale highlighting on the note canvas.
+    /// </summary>
+    private void UpdateScaleHighlighting()
+    {
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        if (noteCanvas == null) return;
+
+        bool isEnabled = ScaleHighlightToggle.IsChecked == true;
+
+        noteCanvas.ScaleHighlightingEnabled = isEnabled;
+        noteCanvas.HighlightedScale = _currentScale;
+        noteCanvas.HighlightedRoot = _currentScaleRoot;
+    }
+
+    private Dictionary<string, ScaleDefinition>? _scaleTypeLookup;
+
+    #endregion
+
+    #region Chord Stamp Panel
+
+    /// <summary>
+    /// Wires up the chord stamp panel.
+    /// </summary>
+    private void WireUpChordStampPanel()
+    {
+        if (ChordStampPanel == null) return;
+
+        // Set the notes collection
+        ChordStampPanel.NotesCollection = _viewModel.Notes;
+
+        // Wire up events
+        ChordStampPanel.ChordStamped += OnChordStamped;
+        ChordStampPanel.ChordPreviewRequested += OnChordPreviewRequested;
+
+        // Subscribe to playhead position changes
+        _viewModel.PropertyChanged += OnViewModelPropertyChangedForChordPanel;
+    }
+
+    /// <summary>
+    /// Unwires the chord stamp panel.
+    /// </summary>
+    private void UnwireChordStampPanel()
+    {
+        if (ChordStampPanel == null) return;
+
+        ChordStampPanel.ChordStamped -= OnChordStamped;
+        ChordStampPanel.ChordPreviewRequested -= OnChordPreviewRequested;
+        _viewModel.PropertyChanged -= OnViewModelPropertyChangedForChordPanel;
+    }
+
+    private void OnViewModelPropertyChangedForChordPanel(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PianoRollViewModel.PlayheadPosition))
+        {
+            if (ChordStampPanel != null)
+            {
+                ChordStampPanel.StampPosition = _viewModel.PlayheadPosition;
+            }
+        }
+        else if (e.PropertyName == nameof(PianoRollViewModel.GridSnapValue))
+        {
+            if (ChordStampPanel != null)
+            {
+                ChordStampPanel.StampDuration = _viewModel.GridSnapValue;
+            }
+        }
+    }
+
+    private void OnChordStamped(object? sender, ChordStampedEventArgs e)
+    {
+        // Refresh the note canvas
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        noteCanvas?.Refresh();
+
+        // Update velocity lane
+        var velocityLane = FindChild<VelocityLane>(this, "VelocityLane");
+        velocityLane?.Refresh();
+
+        _viewModel.StatusMessage = $"Stamped {e.Chord.GetSymbolWithRoot(e.RootNote)} chord ({e.Notes.Count} notes)";
+    }
+
+    private void OnChordPreviewRequested(object? sender, ChordPreviewEventArgs e)
+    {
+        // Play chord preview through audio service
+        foreach (var note in e.Notes)
+        {
+            if (e.IsNoteOff)
+            {
+                _viewModel.RequestNotePreviewStop(note);
+            }
+            else
+            {
+                _viewModel.RequestNotePreview(note, e.Velocity);
+            }
+        }
+    }
+
+    #endregion
 }
+

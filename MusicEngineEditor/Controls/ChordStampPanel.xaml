@@ -1,0 +1,299 @@
+<UserControl x:Class="MusicEngineEditor.Controls.ChordStampPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="200" d:DesignWidth="300"
+             Background="#2B2D30">
+
+    <UserControl.Resources>
+        <!-- Colors matching dark theme -->
+        <Color x:Key="BackgroundColor">#2B2D30</Color>
+        <Color x:Key="PanelBackgroundColor">#252629</Color>
+        <Color x:Key="BorderColor">#393B40</Color>
+        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
+        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="AccentColor">#4A9EFF</Color>
+        <Color x:Key="ButtonHoverColor">#3C3F41</Color>
+        <Color x:Key="ButtonActiveColor">#4B6EAF</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{StaticResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+
+        <!-- Chord Button Style -->
+        <Style x:Key="ChordButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PanelBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="MinWidth" Value="40"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource ButtonHoverColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="border" Property="BorderBrush">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource AccentColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource ButtonActiveColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Root Note Button Style -->
+        <Style x:Key="RootNoteButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{StaticResource PanelBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="MinWidth" Value="28"/>
+            <Setter Property="MinHeight" Value="24"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource AccentColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource AccentColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="PanelComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource PanelBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <!-- Section Label Style -->
+        <Style x:Key="SectionLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource BackgroundBrush}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <!-- Header -->
+                <RowDefinition Height="Auto"/>
+                <!-- Root Note Selector -->
+                <RowDefinition Height="Auto"/>
+                <!-- Chord Type Grid -->
+                <RowDefinition Height="Auto"/>
+                <!-- Inversion and Voicing -->
+                <RowDefinition Height="Auto"/>
+                <!-- Current Chord Display -->
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                <TextBlock Text="Chord Stamp"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           DockPanel.Dock="Left"/>
+                <ToggleButton x:Name="PreviewToggle"
+                              Content="Preview"
+                              IsChecked="{Binding PreviewOnSelect, Mode=TwoWay}"
+                              Style="{StaticResource RootNoteButtonStyle}"
+                              ToolTip="Play chord when selecting"
+                              DockPanel.Dock="Right"
+                              Margin="8,0,0,0"/>
+            </DockPanel>
+
+            <!-- Root Note Selector -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,8">
+                <TextBlock Text="ROOT NOTE" Style="{StaticResource SectionLabelStyle}"/>
+                <UniformGrid Rows="1" Columns="12">
+                    <ToggleButton x:Name="RootC" Content="C" Tag="0" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootCs" Content="C#" Tag="1" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootD" Content="D" Tag="2" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootDs" Content="D#" Tag="3" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootE" Content="E" Tag="4" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootF" Content="F" Tag="5" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootFs" Content="F#" Tag="6" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootG" Content="G" Tag="7" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootGs" Content="G#" Tag="8" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootA" Content="A" Tag="9" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootAs" Content="A#" Tag="10" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                    <ToggleButton x:Name="RootB" Content="B" Tag="11" Style="{StaticResource RootNoteButtonStyle}" Click="OnRootNoteClick"/>
+                </UniformGrid>
+            </StackPanel>
+
+            <!-- Chord Type Grid -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,8">
+                <TextBlock Text="CHORD TYPE" Style="{StaticResource SectionLabelStyle}"/>
+
+                <!-- Triads -->
+                <WrapPanel Margin="0,0,0,4">
+                    <Button Content="Maj" Tag="Maj" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Major"/>
+                    <Button Content="Min" Tag="Min" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Minor" Margin="2,0,0,0"/>
+                    <Button Content="Dim" Tag="Dim" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Diminished" Margin="2,0,0,0"/>
+                    <Button Content="Aug" Tag="Aug" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Augmented" Margin="2,0,0,0"/>
+                    <Button Content="Sus2" Tag="Sus2" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Suspended 2nd" Margin="2,0,0,0"/>
+                    <Button Content="Sus4" Tag="Sus4" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Suspended 4th" Margin="2,0,0,0"/>
+                </WrapPanel>
+
+                <!-- Seventh Chords -->
+                <WrapPanel Margin="0,0,0,4">
+                    <Button Content="7" Tag="7" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Dominant 7th"/>
+                    <Button Content="Maj7" Tag="Maj7" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Major 7th" Margin="2,0,0,0"/>
+                    <Button Content="Min7" Tag="Min7" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Minor 7th" Margin="2,0,0,0"/>
+                    <Button Content="Dim7" Tag="Dim7" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Diminished 7th" Margin="2,0,0,0"/>
+                    <Button Content="m7b5" Tag="m7b5" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Half-Diminished" Margin="2,0,0,0"/>
+                </WrapPanel>
+
+                <!-- Extended Chords -->
+                <WrapPanel>
+                    <Button Content="6" Tag="6" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Major 6th"/>
+                    <Button Content="m6" Tag="m6" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Minor 6th" Margin="2,0,0,0"/>
+                    <Button Content="9" Tag="9" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Dominant 9th" Margin="2,0,0,0"/>
+                    <Button Content="Maj9" Tag="Maj9" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Major 9th" Margin="2,0,0,0"/>
+                    <Button Content="Min9" Tag="Min9" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Minor 9th" Margin="2,0,0,0"/>
+                    <Button Content="add9" Tag="add9" Style="{StaticResource ChordButtonStyle}" Click="OnChordTypeClick" ToolTip="Add 9" Margin="2,0,0,0"/>
+                </WrapPanel>
+            </StackPanel>
+
+            <!-- Inversion and Voicing -->
+            <Grid Grid.Row="3" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Inversion -->
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="INVERSION" Style="{StaticResource SectionLabelStyle}"/>
+                    <ComboBox x:Name="InversionComboBox"
+                              Style="{StaticResource PanelComboBoxStyle}"
+                              SelectionChanged="OnInversionChanged">
+                        <ComboBoxItem Content="Root" Tag="0"/>
+                        <ComboBoxItem Content="1st" Tag="1"/>
+                        <ComboBoxItem Content="2nd" Tag="2"/>
+                        <ComboBoxItem Content="3rd" Tag="3"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Voicing -->
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="VOICING" Style="{StaticResource SectionLabelStyle}"/>
+                    <ComboBox x:Name="VoicingComboBox"
+                              Style="{StaticResource PanelComboBoxStyle}"
+                              SelectionChanged="OnVoicingChanged">
+                        <ComboBoxItem Content="Close" Tag="Close"/>
+                        <ComboBoxItem Content="Open" Tag="Open"/>
+                        <ComboBoxItem Content="Drop 2" Tag="Drop2"/>
+                        <ComboBoxItem Content="Drop 3" Tag="Drop3"/>
+                    </ComboBox>
+                </StackPanel>
+            </Grid>
+
+            <!-- Current Chord Display -->
+            <Border Grid.Row="4"
+                    Background="{StaticResource PanelBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="3"
+                    Padding="8,6">
+                <DockPanel>
+                    <Button Content="Stamp"
+                            Style="{StaticResource ChordButtonStyle}"
+                            DockPanel.Dock="Right"
+                            Click="OnStampClick"
+                            ToolTip="Stamp chord at cursor position"
+                            Background="{StaticResource AccentBrush}"
+                            Foreground="White"
+                            MinWidth="60"/>
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                        <TextBlock x:Name="CurrentChordText"
+                                   Text="C Major"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   FontSize="14"
+                                   FontWeight="Bold"/>
+                        <TextBlock x:Name="CurrentNotesText"
+                                   Text="C4, E4, G4"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="10"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

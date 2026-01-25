@@ -110,6 +110,7 @@
                             <MenuItem Header="Project Explorer" IsCheckable="True" IsChecked="True" x:Name="ProjectExplorerMenuItem" Click="ToggleProjectExplorer_Click"/>
                             <MenuItem Header="Workshop" IsCheckable="True" IsChecked="False" x:Name="WorkshopMenuItem" Click="ToggleWorkshop_Click"/>
                             <MenuItem Header="Output" IsCheckable="True" IsChecked="True" x:Name="OutputMenuItem" Click="ToggleOutput_Click"/>
+                            <MenuItem Header="Undo History" IsCheckable="True" IsChecked="False" x:Name="UndoHistoryMenuItem" Click="ToggleUndoHistory_Click"/>
                             <Separator/>
                             <MenuItem Header="MIDI Devices" IsCheckable="True" IsChecked="False" x:Name="MidiPanelMenuItem" Click="ToggleMidiPanel_Click"/>
                             <MenuItem Header="VST Plugins" IsCheckable="True" IsChecked="False" x:Name="VstPanelMenuItem" Click="ToggleVstPanel_Click"/>
@@ -683,6 +684,9 @@
                                                        TrackDuplicateRequested="TrackPropertiesPanel_TrackDuplicateRequested"
                                                        TrackDeleteRequested="TrackPropertiesPanel_TrackDeleteRequested"
                                                        TrackFreezeRequested="TrackPropertiesPanel_TrackFreezeRequested"/>
+
+                        <!-- Undo History Panel -->
+                        <controls:UndoHistoryPanel x:Name="UndoHistoryPanel" Visibility="Collapsed"/>
                     </Grid>
                 </DockPanel>
             </Border>
@@ -716,6 +720,13 @@
                     <Button Style="{StaticResource IconButtonStyle}" Click="ToggleOutput_Click"
                             ToolTip="Toggle Output" Margin="4" x:Name="OutputToolButton">
                         <TextBlock Text="O" FontWeight="Bold" FontSize="14"/>
+                    </Button>
+
+                    <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>
+
+                    <Button Style="{StaticResource IconButtonStyle}" Click="ToggleUndoHistory_Click"
+                            ToolTip="Undo History" Margin="4" x:Name="UndoHistoryToolButton">
+                        <TextBlock Text="H" FontWeight="Bold" FontSize="14"/>
                     </Button>
 
                     <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>

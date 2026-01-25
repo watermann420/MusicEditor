@@ -628,3 +628,9 @@ C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-wind
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\CloudStorageDialog.g.cs
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\CollaborationDialog.g.cs
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\NetworkMidiDialog.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\ChordStampPanel.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\ChordStampPanel.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\UndoHistoryPanel.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\NewProjectDialogEnhanced.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\UndoHistoryPanel.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\NewProjectDialogEnhanced.baml

@@ -220,6 +220,28 @@ public partial class PianoRollViewModel : ViewModelBase, IDisposable
 
     #endregion
 
+    #region Scale Highlighting Properties
+
+    /// <summary>
+    /// Gets or sets whether scale highlighting is enabled.
+    /// </summary>
+    [ObservableProperty]
+    private bool _scaleHighlightingEnabled;
+
+    /// <summary>
+    /// Gets or sets the root note for scale highlighting (0-11).
+    /// </summary>
+    [ObservableProperty]
+    private int _scaleRoot;
+
+    /// <summary>
+    /// Gets or sets the scale type name.
+    /// </summary>
+    [ObservableProperty]
+    private string _scaleType = "Major";
+
+    #endregion
+
     #region Clipboard and Preview Properties
 
     /// <summary>
