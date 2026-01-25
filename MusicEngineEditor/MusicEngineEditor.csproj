@@ -54,12 +54,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Editor\CSharpScript.xshd" />
+    <EmbeddedResource Include="Editor\CSharpScript.xshd">
+      <LogicalName>MusicEngineEditor.Editor.CSharpScript.xshd</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <!-- Sound Pack Resources -->
   <ItemGroup>
     <EmbeddedResource Include="Resources\SoundPacks\**\*" />
+  </ItemGroup>
+
+  <!-- Logo/Icon Resources -->
+  <ItemGroup>
+    <Resource Include="Resources\Icons\CodeEditorLogo.png" />
   </ItemGroup>
 
 </Project>

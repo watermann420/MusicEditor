@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(dotnet build:*)",
+      "Bash(where:*)",
+      "Bash(\"C:\\\\Program Files\\\\dotnet\\\\dotnet.exe\" build \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\MusicEngineEditor\\\\MusicEngineEditor.csproj\" --configuration Debug)",
+      "Bash(dir \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\MusicEngineEditor\\\\Resources\\\\Icons\")"
     ]
   }
 }

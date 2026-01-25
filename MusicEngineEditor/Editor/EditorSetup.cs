@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Media;
@@ -192,24 +193,112 @@ public static class EditorSetup
 
     public static void LoadSyntaxHighlighting(TextEditor editor)
     {
-        try
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            using var stream = assembly.GetManifestResourceStream("MusicEngineEditor.Editor.CSharpScript.xshd");
+        // Always use programmatic Rider-like highlighting
+        editor.SyntaxHighlighting = CreateRiderHighlighting();
+    }
 
-            if (stream != null)
-            {
-                using var reader = new XmlTextReader(stream);
-                editor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
-                return;
-            }
-        }
-        catch
-        {
-            // Fall through to default
-        }
+    private static IHighlightingDefinition CreateRiderHighlighting()
+    {
+        // Rider/IntelliJ Darcula Theme Colors
+        const string xshd = """
+            <?xml version="1.0"?>
+            <SyntaxDefinition name="CSharpScript" extensions=".csx;.cs"
+                xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
 
-        // Fallback to built-in C# highlighting
-        editor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
+                <!-- Bright Rider-like Colors -->
+                <Color name="Comment" foreground="#808080" fontStyle="italic" />
+                <Color name="String" foreground="#E891B8" />
+                <Color name="Char" foreground="#E891B8" />
+                <Color name="Number" foreground="#79C0FF" />
+                <Color name="Preprocessor" foreground="#D4D46B" />
+                <Color name="Keyword" foreground="#FF9E4F" fontWeight="bold" />
+                <Color name="Type" foreground="#6CDCF7" />
+                <Color name="Method" foreground="#FFD980" />
+
+                <RuleSet ignoreCase="false">
+                    <!-- Comments (green, italic) -->
+                    <Span color="Comment" begin="///" />
+                    <Span color="Comment" begin="//" />
+                    <Span color="Comment" multiline="true" begin="/\*" end="\*/" />
+
+                    <!-- Preprocessor (yellow) -->
+                    <Span color="Preprocessor" begin="#" />
+
+                    <!-- Strings (green) -->
+                    <Span color="String" multiline="true" begin="@&quot;" end="&quot;" />
+                    <Span color="String" begin="\$&quot;" end="&quot;" />
+                    <Span color="String" begin="&quot;" end="&quot;" />
+                    <Span color="Char" begin="'" end="'" />
+
+                    <!-- Keywords (orange, bold) -->
+                    <Keywords color="Keyword">
+                        <Word>if</Word><Word>else</Word><Word>switch</Word><Word>case</Word><Word>default</Word>
+                        <Word>for</Word><Word>foreach</Word><Word>while</Word><Word>do</Word>
+                        <Word>break</Word><Word>continue</Word><Word>return</Word><Word>throw</Word>
+                        <Word>try</Word><Word>catch</Word><Word>finally</Word><Word>goto</Word>
+                        <Word>yield</Word><Word>await</Word><Word>when</Word><Word>and</Word><Word>or</Word><Word>not</Word>
+                        <Word>class</Word><Word>struct</Word><Word>record</Word><Word>interface</Word>
+                        <Word>enum</Word><Word>delegate</Word><Word>event</Word><Word>namespace</Word>
+                        <Word>public</Word><Word>private</Word><Word>protected</Word><Word>internal</Word>
+                        <Word>static</Word><Word>readonly</Word><Word>const</Word><Word>volatile</Word>
+                        <Word>async</Word><Word>virtual</Word><Word>override</Word><Word>abstract</Word>
+                        <Word>sealed</Word><Word>extern</Word><Word>unsafe</Word><Word>partial</Word>
+                        <Word>new</Word><Word>ref</Word><Word>out</Word><Word>in</Word><Word>params</Word>
+                        <Word>this</Word><Word>base</Word><Word>using</Word><Word>lock</Word><Word>fixed</Word>
+                        <Word>checked</Word><Word>unchecked</Word><Word>stackalloc</Word>
+                        <Word>implicit</Word><Word>explicit</Word><Word>operator</Word>
+                        <Word>init</Word><Word>required</Word><Word>file</Word><Word>scoped</Word><Word>global</Word>
+                        <Word>var</Word><Word>nameof</Word><Word>typeof</Word><Word>sizeof</Word>
+                        <Word>is</Word><Word>as</Word><Word>where</Word><Word>select</Word><Word>from</Word>
+                        <Word>orderby</Word><Word>ascending</Word><Word>descending</Word>
+                        <Word>group</Word><Word>by</Word><Word>into</Word><Word>join</Word><Word>on</Word>
+                        <Word>equals</Word><Word>let</Word><Word>with</Word>
+                        <Word>true</Word><Word>false</Word><Word>null</Word>
+                        <Word>int</Word><Word>uint</Word><Word>long</Word><Word>ulong</Word>
+                        <Word>short</Word><Word>ushort</Word><Word>byte</Word><Word>sbyte</Word>
+                        <Word>float</Word><Word>double</Word><Word>decimal</Word><Word>bool</Word>
+                        <Word>char</Word><Word>string</Word><Word>object</Word><Word>void</Word>
+                        <Word>dynamic</Word><Word>nint</Word><Word>nuint</Word>
+                    </Keywords>
+
+                    <!-- Types (teal/cyan) -->
+                    <Keywords color="Type">
+                        <Word>String</Word><Word>Int32</Word><Word>Int64</Word><Word>Double</Word>
+                        <Word>Single</Word><Word>Boolean</Word><Word>Object</Word><Word>List</Word>
+                        <Word>Dictionary</Word><Word>HashSet</Word><Word>Array</Word><Word>Task</Word>
+                        <Word>Action</Word><Word>Func</Word><Word>Exception</Word><Word>Console</Word>
+                        <Word>Math</Word><Word>Random</Word><Word>DateTime</Word><Word>TimeSpan</Word>
+                        <Word>IEnumerable</Word><Word>IList</Word><Word>IDictionary</Word><Word>IDisposable</Word>
+                        <Word>AudioEngine</Word><Word>Sequencer</Word><Word>Engine</Word>
+                        <Word>SimpleSynth</Word><Word>PolySynth</Word><Word>FMSynth</Word>
+                        <Word>WavetableSynth</Word><Word>GranularSynth</Word><Word>Pattern</Word>
+                        <Word>NoteEvent</Word><Word>Track</Word><Word>VstPlugin</Word><Word>VstHost</Word>
+                        <Word>EffectChain</Word><Word>ReverbEffect</Word><Word>DelayEffect</Word>
+                        <Word>ChorusEffect</Word><Word>CompressorEffect</Word><Word>FilterEffect</Word>
+                        <Word>Envelope</Word><Word>LFO</Word><Word>Oscillator</Word><Word>WaveType</Word>
+                    </Keywords>
+
+                    <!-- Methods (yellow) -->
+                    <Keywords color="Method">
+                        <Word>CreateSynth</Word><Word>CreatePattern</Word><Word>NoteOn</Word><Word>NoteOff</Word>
+                        <Word>Start</Word><Word>Stop</Word><Word>SetBpm</Word><Word>StartPattern</Word>
+                        <Word>StopPattern</Word><Word>LoadVst</Word><Word>Print</Word><Word>PlayNote</Word>
+                        <Word>AddEffect</Word><Word>SetVolume</Word><Word>SetPan</Word>
+                        <Word>WriteLine</Word><Word>ReadLine</Word><Word>ToString</Word><Word>Parse</Word>
+                        <Word>TryParse</Word><Word>GetType</Word><Word>Equals</Word><Word>GetHashCode</Word>
+                    </Keywords>
+
+                    <!-- Numbers (blue) -->
+                    <Rule color="Number">
+                        \b0[xX][0-9a-fA-F_]+[uUlL]*\b |
+                        \b0[bB][01_]+[uUlL]*\b |
+                        \b[0-9][0-9_]*\.?[0-9_]*([eE][+-]?[0-9_]+)?[fFdDmMlLuU]*\b
+                    </Rule>
+                </RuleSet>
+            </SyntaxDefinition>
+            """;
+
+        using var reader = new XmlTextReader(new StringReader(xshd));
+        return HighlightingLoader.Load(reader, HighlightingManager.Instance);
     }
 }

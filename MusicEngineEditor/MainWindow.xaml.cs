@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Threading;
 using System.Xml;
 using ICSharpCode.AvalonEdit.Document;
@@ -400,9 +402,8 @@ public partial class MainWindow : Window
                 _visualization?.ConnectToSequencer(_engineService.Sequencer);
             }
 
-            // Initialize Transport Toolbar with ViewModel
+            // Initialize Transport ViewModel
             _transportViewModel = new TransportViewModel();
-            TransportToolbar.BindToViewModel(_transportViewModel);
 
             // Start Performance Monitoring
             _performanceMonitorService.Start();
@@ -446,7 +447,6 @@ public partial class MainWindow : Window
         _sliderHotReloadTimer?.Stop();
         _inlineSliderService?.Dispose();
         _visualization?.Dispose();
-        TransportToolbar.Unbind();
         _transportViewModel?.Dispose();
         _performanceMonitorService.Dispose();
         CloseAllVstWindows();
@@ -945,6 +945,18 @@ public partial class MainWindow : Window
         await ExecuteScript();
     }
 
+    private async void RunStopButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isRunning)
+        {
+            StopExecution();
+        }
+        else
+        {
+            await ExecuteScript();
+        }
+    }
+
     private async Task ExecuteScript()
     {
         SaveCurrentEditorContent();
@@ -958,7 +970,7 @@ public partial class MainWindow : Window
 
         _isRunning = true;
         StatusText.Text = "Executing...";
-        RunButton.IsEnabled = false;
+        UpdateRunStopButton();
 
         // Clear previous problems
         Problems.Clear();
@@ -995,14 +1007,11 @@ public partial class MainWindow : Window
                 // Parse code to extract instruments and start animation
                 ExtractInstrumentsFromCode(code);
                 _animationTimer.Start();
-
-                // Switch to running style with animation
-                RunButton.Style = (Style)FindResource("RunningButtonStyle");
-                RunButton.Content = "Running";
             }
             else
             {
                 _isRunning = false;
+                UpdateRunStopButton();
                 StatusText.Text = "Script error";
                 OutputLine($"ERROR: {result.ErrorMessage}");
 
@@ -1051,7 +1060,7 @@ public partial class MainWindow : Window
             UpdateErrorBadge();
         }
 
-        RunButton.IsEnabled = true;
+        UpdateRunStopButton();
     }
 
     private string GetCurrentFileName()
@@ -1114,6 +1123,11 @@ public partial class MainWindow : Window
 
     private void Stop_Click(object sender, RoutedEventArgs e)
     {
+        StopExecution();
+    }
+
+    private void StopExecution()
+    {
         _engineService.AllNotesOff();
         _isRunning = false;
         _animationTimer.Stop();
@@ -1121,13 +1135,42 @@ public partial class MainWindow : Window
         // Notify visualization system that playback stopped
         _visualization?.OnPlaybackStopped();
 
-        // Switch back to normal style
-        RunButton.Style = (Style)FindResource("RunButtonStyle");
-        RunButton.Content = "Run";
+        // Update button to show Run state
+        UpdateRunStopButton();
 
         ClearActiveInstruments();
         StatusText.Text = "Stopped";
         OutputLine("Stopped");
+    }
+
+    private void UpdateRunStopButton()
+    {
+        if (_isRunning)
+        {
+            // Show Stop state (red)
+            RunStopButton.Background = new SolidColorBrush(Color.FromRgb(0x8B, 0x2D, 0x2D));
+            RunStopIcon.Text = "\u25A0"; // Square (stop icon)
+            RunStopText.Text = "Stop";
+
+            // Update glow color for hover effect
+            if (RunStopButton.Template.FindName("glowEffect", RunStopButton) is DropShadowEffect glow)
+            {
+                glow.Color = Color.FromRgb(0xD3, 0x2F, 0x2F);
+            }
+        }
+        else
+        {
+            // Show Run state (green)
+            RunStopButton.Background = new SolidColorBrush(Color.FromRgb(0x2D, 0x5A, 0x2D));
+            RunStopIcon.Text = "\u25B6"; // Triangle (play icon)
+            RunStopText.Text = "Run";
+
+            // Update glow color for hover effect
+            if (RunStopButton.Template.FindName("glowEffect", RunStopButton) is DropShadowEffect glow)
+            {
+                glow.Color = Color.FromRgb(0x4C, 0xAF, 0x50);
+            }
+        }
     }
 
     private void BpmBox_KeyDown(object sender, KeyEventArgs e)
@@ -2051,7 +2094,7 @@ public partial class MainWindow : Window
 
         _isRunning = true;
         StatusText.Text = "Executing workshop example...";
-        RunButton.IsEnabled = false;
+        UpdateRunStopButton();
 
         // Clear previous problems
         Problems.Clear();
@@ -2080,14 +2123,11 @@ public partial class MainWindow : Window
                 // Parse code to extract instruments and start animation
                 ExtractInstrumentsFromCode(e.Code);
                 _animationTimer.Start();
-
-                // Switch to running style with animation
-                RunButton.Style = (Style)FindResource("RunningButtonStyle");
-                RunButton.Content = "Running";
             }
             else
             {
                 _isRunning = false;
+                UpdateRunStopButton();
                 StatusText.Text = "Workshop example error";
                 OutputLine($"ERROR: {result.ErrorMessage}");
 
@@ -2136,7 +2176,7 @@ public partial class MainWindow : Window
             UpdateErrorBadge();
         }
 
-        RunButton.IsEnabled = true;
+        UpdateRunStopButton();
     }
 
     private void WorkshopPanel_OnCopyCode(object? sender, WorkshopCodeEventArgs e)

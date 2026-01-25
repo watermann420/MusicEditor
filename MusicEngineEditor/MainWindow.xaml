@@ -6,6 +6,7 @@
         xmlns:views="clr-namespace:MusicEngineEditor.Views"
         xmlns:controls="clr-namespace:MusicEngineEditor.Controls"
         Title="MusicEngine Editor"
+        Icon="/Resources/Icons/CodeEditorLogo.png"
         Height="800" Width="1200"
         MinHeight="500" MinWidth="800"
         Style="{StaticResource DarkWindowStyle}"
@@ -40,7 +41,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -59,10 +59,8 @@
 
                 <!-- Left: App Icon + Menu -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- App Icon -->
-                    <Border Margin="8,0,4,0" VerticalAlignment="Center">
-                        <TextBlock Text="&#x266B;" FontSize="16" Foreground="#4B6EAF" FontWeight="Bold" VerticalAlignment="Center"/>
-                    </Border>
+                    <!-- App Logo -->
+                    <Image Source="/Resources/Icons/CodeEditorLogo.png" Width="100" Height="28" Margin="8,0,8,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Stretch="Uniform"/>
 
                     <!-- Menu Bar (integrated into title bar) -->
                     <Menu Background="Transparent" VerticalAlignment="Center">
@@ -258,9 +256,58 @@
 
                     <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="14,4"/>
 
-                    <!-- Run Controls -->
-                    <Button x:Name="RunButton" Content="Run" Style="{StaticResource RunButtonStyle}" Click="RunScript_Click" ToolTip="Execute Script (Ctrl+Enter)"/>
-                    <Button Content="Stop" Style="{StaticResource StopButtonStyle}" Click="Stop_Click" ToolTip="Stop (Esc)" Margin="8,0,0,0"/>
+                    <!-- Run/Stop Toggle Button -->
+                    <Button x:Name="RunStopButton" Click="RunStopButton_Click" ToolTip="Run/Stop (Ctrl+Enter / Esc)"
+                            Cursor="Hand" MinWidth="70">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#2D5A2D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="FontSize" Value="12"/>
+                                <Setter Property="Padding" Value="14,6"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    Padding="{TemplateBinding Padding}"
+                                                    CornerRadius="4">
+                                                <Border.Effect>
+                                                    <DropShadowEffect x:Name="glowEffect" Color="#4CAF50" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                                                </Border.Effect>
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="BlurRadius" To="8" Duration="0:0:0.15"/>
+                                                                <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="Opacity" To="0.5" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.15"/>
+                                                                <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.ExitActions>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="RunStopIcon" Text="&#x25B6;" FontSize="10" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="RunStopText" Text="Run" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <!-- Right: Sequencer Status -->
@@ -302,11 +349,8 @@
             </DockPanel>
         </Border>
 
-        <!-- Transport Toolbar -->
-        <controls:TransportToolbar x:Name="TransportToolbar" Grid.Row="2"/>
-
         <!-- Main Content Area -->
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="240" MinWidth="180" x:Name="LeftPanelColumn"/>
                 <ColumnDefinition Width="1"/>
@@ -756,7 +800,7 @@
         </Grid>
 
         <!-- Status Bar -->
-        <StatusBar Grid.Row="4">
+        <StatusBar Grid.Row="3">
             <StatusBar.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                     <GradientStop Color="#2B2D30" Offset="0"/>
