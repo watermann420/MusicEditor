@@ -76,7 +76,7 @@ public partial class NoteCanvas : UserControl
 
     public static readonly DependencyProperty GridSnapValueProperty =
         DependencyProperty.Register(nameof(GridSnapValue), typeof(double), typeof(NoteCanvas),
-            new PropertyMetadata(0.25));
+            new PropertyMetadata(0.25, OnLayoutPropertyChanged));
 
     public static readonly DependencyProperty ZoomXProperty =
         DependencyProperty.Register(nameof(ZoomX), typeof(double), typeof(NoteCanvas),
@@ -451,6 +451,32 @@ public partial class NoteCanvas : UserControl
         PlayheadCanvas.Height = totalHeight;
     }
 
+    // Triplet grid snap values (approximate, due to floating point representation)
+    private static readonly double[] TripletGridValues = { 0.667, 0.333, 0.167 };
+
+    // Dotted grid snap values
+    private static readonly double[] DottedGridValues = { 1.5, 0.75, 0.375 };
+
+    // Grid line colors for triplet and dotted subdivisions
+    private static readonly Color TripletGridLineColor = Color.FromRgb(0x5A, 0x4A, 0x2A); // Orange-tinted for triplets
+    private static readonly Color DottedGridLineColor = Color.FromRgb(0x2A, 0x5A, 0x4A); // Green-tinted for dotted
+
+    /// <summary>
+    /// Determines if the current grid snap value is a triplet subdivision.
+    /// </summary>
+    private bool IsTripletGrid()
+    {
+        return TripletGridValues.Any(v => Math.Abs(GridSnapValue - v) < 0.01);
+    }
+
+    /// <summary>
+    /// Determines if the current grid snap value is a dotted subdivision.
+    /// </summary>
+    private bool IsDottedGrid()
+    {
+        return DottedGridValues.Any(v => Math.Abs(GridSnapValue - v) < 0.01);
+    }
+
     private void RenderGrid()
     {
         GridCanvas.Children.Clear();
@@ -458,6 +484,9 @@ public partial class NoteCanvas : UserControl
         var totalWidth = GetTotalWidth();
         var totalHeight = GetTotalHeight();
         var effectiveBeatWidth = BeatWidth * ZoomX;
+
+        bool isTriplet = IsTripletGrid();
+        bool isDotted = IsDottedGrid();
 
         // Draw vertical grid lines (beats and bars)
         int totalBeatsInt = (int)Math.Ceiling(TotalBeats);
@@ -478,23 +507,67 @@ public partial class NoteCanvas : UserControl
             };
             GridCanvas.Children.Add(line);
 
-            // Sub-beat lines (quarters)
+            // Sub-beat lines based on grid type
             if (beat < totalBeatsInt && effectiveBeatWidth > 30)
             {
-                for (int sub = 1; sub < 4; sub++)
+                if (isTriplet)
                 {
-                    var subX = x + (sub * effectiveBeatWidth / 4);
-                    var subLine = new Shapes.Line
+                    // Draw triplet subdivisions (3 per beat) with dashed lines
+                    for (int sub = 1; sub < 3; sub++)
                     {
-                        X1 = subX,
-                        Y1 = 0,
-                        X2 = subX,
-                        Y2 = totalHeight,
-                        Stroke = new SolidColorBrush(GridLineColor),
-                        StrokeThickness = 0.5,
-                        Opacity = 0.3
-                    };
-                    GridCanvas.Children.Add(subLine);
+                        var subX = x + (sub * effectiveBeatWidth / 3);
+                        var subLine = new Shapes.Line
+                        {
+                            X1 = subX,
+                            Y1 = 0,
+                            X2 = subX,
+                            Y2 = totalHeight,
+                            Stroke = new SolidColorBrush(TripletGridLineColor),
+                            StrokeThickness = 0.75,
+                            Opacity = 0.5,
+                            StrokeDashArray = new DoubleCollection { 4, 4 } // Dashed style for triplets
+                        };
+                        GridCanvas.Children.Add(subLine);
+                    }
+                }
+                else if (isDotted)
+                {
+                    // For dotted notes, draw standard subdivisions with dotted style
+                    for (int sub = 1; sub < 4; sub++)
+                    {
+                        var subX = x + (sub * effectiveBeatWidth / 4);
+                        var subLine = new Shapes.Line
+                        {
+                            X1 = subX,
+                            Y1 = 0,
+                            X2 = subX,
+                            Y2 = totalHeight,
+                            Stroke = new SolidColorBrush(DottedGridLineColor),
+                            StrokeThickness = 0.75,
+                            Opacity = 0.5,
+                            StrokeDashArray = new DoubleCollection { 2, 4 } // Dotted style
+                        };
+                        GridCanvas.Children.Add(subLine);
+                    }
+                }
+                else
+                {
+                    // Standard quarter subdivisions (solid lines)
+                    for (int sub = 1; sub < 4; sub++)
+                    {
+                        var subX = x + (sub * effectiveBeatWidth / 4);
+                        var subLine = new Shapes.Line
+                        {
+                            X1 = subX,
+                            Y1 = 0,
+                            X2 = subX,
+                            Y2 = totalHeight,
+                            Stroke = new SolidColorBrush(GridLineColor),
+                            StrokeThickness = 0.5,
+                            Opacity = 0.3
+                        };
+                        GridCanvas.Children.Add(subLine);
+                    }
                 }
             }
         }
@@ -638,13 +711,8 @@ public partial class NoteCanvas : UserControl
     /// Gets the note color based on velocity when velocity colors are enabled.
     /// Blue (low velocity) -> Green (mid) -> Red (high velocity)
     /// </summary>
-    private Color GetVelocityColor(int velocity)
+    private static Color GetVelocityColor(int velocity)
     {
-        if (!UseVelocityColors)
-        {
-            return NoteDefaultColor;
-        }
-
         double t = velocity / 127.0;
 
         if (t < 0.5)
@@ -653,7 +721,7 @@ public partial class NoteCanvas : UserControl
             double factor = t * 2; // 0 to 1 over first half
             return Color.FromRgb(
                 (byte)(74 * (1 - factor)),           // R: 74 -> 0
-                (byte)(100 + 155 * factor),          // G: 100 -> 255
+                (byte)(158 * factor + 100 * (1 - factor)), // G: 100 -> 158
                 (byte)(255 * (1 - factor)));         // B: 255 -> 0
         }
         else
@@ -683,7 +751,7 @@ public partial class NoteCanvas : UserControl
         var isSelected = _selectedNotesInternal.Contains(note);
 
         // Get note color (velocity-based if enabled, otherwise default blue)
-        var noteColor = GetVelocityColor(note.Velocity);
+        var noteColor = UseVelocityColors ? GetVelocityColor(note.Velocity) : NoteDefaultColor;
 
         var rect = new Shapes.Rectangle
         {

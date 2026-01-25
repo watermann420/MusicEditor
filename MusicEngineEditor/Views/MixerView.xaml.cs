@@ -15,6 +15,12 @@ public partial class MixerView : UserControl
     private readonly DispatcherTimer? _meterTimer;
     private readonly Random _random = new();
 
+    // Simulated LUFS values for demo
+    private double _simulatedIntegratedLufs = -14.0;
+    private double _simulatedShortTermLufs = -14.0;
+    private double _simulatedMomentaryLufs = -14.0;
+    private double _simulatedTruePeak = -1.0;
+
     /// <summary>
     /// Creates a new MixerView and initializes the MixerViewModel.
     /// </summary>
@@ -87,6 +93,67 @@ public partial class MixerView : UserControl
         masterRight = Math.Min(1.2f, masterRight * _viewModel.MasterChannel.Volume);
 
         _viewModel.UpdateMasterMeters(masterLeft, masterRight);
+
+        // Update loudness meter display with simulated values
+        UpdateLoudnessMeterSimulation(masterLeft, masterRight);
+    }
+
+    /// <summary>
+    /// Updates the loudness meter display with simulated LUFS values based on master levels.
+    /// In a real implementation, this would be connected to MusicEngine.Core.LoudnessMeter.
+    /// </summary>
+    private void UpdateLoudnessMeterSimulation(float masterLeft, float masterRight)
+    {
+        // Calculate simulated momentary loudness from master levels
+        // Convert linear level to approximate LUFS (simplified simulation)
+        float combinedLevel = (masterLeft + masterRight) / 2f;
+        double targetMomentary = combinedLevel > 0.001f
+            ? 20.0 * Math.Log10(combinedLevel) - 14.0 // Offset to center around -14 LUFS
+            : double.NegativeInfinity;
+
+        // Clamp to reasonable LUFS range
+        if (!double.IsNegativeInfinity(targetMomentary))
+        {
+            targetMomentary = Math.Clamp(targetMomentary, -60.0, 0.0);
+        }
+
+        // Smooth momentary loudness (400ms window simulation)
+        if (double.IsNegativeInfinity(targetMomentary))
+        {
+            _simulatedMomentaryLufs = Math.Max(_simulatedMomentaryLufs - 2.0, -60.0);
+        }
+        else
+        {
+            _simulatedMomentaryLufs = _simulatedMomentaryLufs * 0.7 + targetMomentary * 0.3;
+        }
+
+        // Short-term loudness (3 second window - slower response)
+        _simulatedShortTermLufs = _simulatedShortTermLufs * 0.95 + _simulatedMomentaryLufs * 0.05;
+
+        // Integrated loudness (running average - very slow response)
+        if (_simulatedMomentaryLufs > -60.0)
+        {
+            _simulatedIntegratedLufs = _simulatedIntegratedLufs * 0.99 + _simulatedMomentaryLufs * 0.01;
+        }
+
+        // True peak (track maximum with slow decay)
+        double instantPeak = combinedLevel > 0.001f
+            ? 20.0 * Math.Log10(Math.Max(masterLeft, masterRight))
+            : -60.0;
+        if (instantPeak > _simulatedTruePeak)
+        {
+            _simulatedTruePeak = instantPeak;
+        }
+        else
+        {
+            _simulatedTruePeak = Math.Max(_simulatedTruePeak - 0.1, instantPeak);
+        }
+
+        // Update the display control
+        LoudnessMeterDisplay.IntegratedLoudness = _simulatedIntegratedLufs;
+        LoudnessMeterDisplay.ShortTermLoudness = _simulatedShortTermLufs;
+        LoudnessMeterDisplay.MomentaryLoudness = _simulatedMomentaryLufs;
+        LoudnessMeterDisplay.TruePeak = _simulatedTruePeak;
     }
 
     /// <summary>
