@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using MusicEngineEditor.ViewModels;
-using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace MusicEngineEditor.Views.Dialogs;
 

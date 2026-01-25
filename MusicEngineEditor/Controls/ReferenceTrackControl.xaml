@@ -1,0 +1,418 @@
+<UserControl x:Class="MusicEngineEditor.Controls.ReferenceTrackControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="180" d:DesignWidth="400"
+             Background="Transparent"
+             KeyDown="UserControl_KeyDown"
+             Focusable="True">
+
+    <UserControl.Resources>
+        <!-- A/B Toggle Button Style -->
+        <Style x:Key="ABToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Width" Value="64"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- A indicator -->
+                                <Border x:Name="AIndicator" Grid.Column="0"
+                                        Background="#27AE60" CornerRadius="4,0,0,4" Margin="2">
+                                    <TextBlock Text="A" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               FontWeight="Bold"/>
+                                </Border>
+                                <!-- B indicator -->
+                                <Border x:Name="BIndicator" Grid.Column="1"
+                                        Background="#3A3A3A" CornerRadius="0,4,4,0" Margin="2">
+                                    <TextBlock Text="B" Foreground="#888888"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               FontWeight="Bold"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="AIndicator" Property="Background" Value="#3A3A3A"/>
+                                <Setter TargetName="BIndicator" Property="Background" Value="#3498DB"/>
+                                <Setter TargetName="AIndicator" Property="Child">
+                                    <Setter.Value>
+                                        <TextBlock Text="A" Foreground="#888888"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontWeight="Bold"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="BIndicator" Property="Child">
+                                    <Setter.Value>
+                                        <TextBlock Text="B" Foreground="White"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontWeight="Bold"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Background" Value="#2A2A2A"/>
+            <Setter Property="BorderBrush" Value="#4A4A4A"/>
+        </Style>
+
+        <!-- Standard Button Style -->
+        <Style x:Key="ReferenceButtonStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#3A3A3A"/>
+            <Setter Property="BorderBrush" Value="#5A5A5A"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#4A4A4A"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2A2A2A"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toggle Switch Style -->
+        <Style x:Key="ToggleSwitchStyle" TargetType="ToggleButton">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="track" Background="#3A3A3A" CornerRadius="9" BorderThickness="1" BorderBrush="#5A5A5A">
+                            <Ellipse x:Name="thumb" Width="14" Height="14" Fill="#888888" Margin="1,0,0,0" HorizontalAlignment="Left"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="track" Property="Background" Value="#3498DB"/>
+                                <Setter TargetName="thumb" Property="Fill" Value="White"/>
+                                <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right"/>
+                                <Setter TargetName="thumb" Property="Margin" Value="0,0,1,0"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="track" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Slider Style -->
+        <Style x:Key="VolumeSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="-60"/>
+            <Setter Property="Maximum" Value="6"/>
+            <Setter Property="Value" Value="0"/>
+            <Setter Property="Width" Value="80"/>
+            <Setter Property="Height" Value="18"/>
+        </Style>
+
+        <!-- Color Brushes -->
+        <SolidColorBrush x:Key="ReferenceActiveBrush" Color="#3498DB"/>
+        <SolidColorBrush x:Key="ReferenceMixBrush" Color="#27AE60"/>
+        <SolidColorBrush x:Key="ReferenceWaveformBrush" Color="#3498DB"/>
+        <SolidColorBrush x:Key="LoopRegionBrush" Color="#403498DB"/>
+        <SolidColorBrush x:Key="LoopRegionBorderBrush" Color="#803498DB"/>
+    </UserControl.Resources>
+
+    <Border Background="{DynamicResource PanelBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header Row: File info and Load/Unload buttons -->
+            <Grid Grid.Row="0" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Vertical">
+                    <TextBlock x:Name="FileNameText"
+                               Text="No reference loaded"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ForegroundBrush}"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="DurationText"
+                               Text=""
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               Visibility="Collapsed"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button x:Name="LoadButton"
+                            Style="{StaticResource ReferenceButtonStyle}"
+                            Content="Load"
+                            Click="LoadButton_Click"
+                            ToolTip="Load reference audio file"
+                            Margin="0,0,4,0"/>
+                    <Button x:Name="UnloadButton"
+                            Style="{StaticResource ReferenceButtonStyle}"
+                            Content="Unload"
+                            Click="UnloadButton_Click"
+                            IsEnabled="False"
+                            ToolTip="Unload reference audio"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Controls Row: A/B Toggle, Volume, Level Match, Sync -->
+            <Grid Grid.Row="1" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- A/B Toggle -->
+                <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,12,0">
+                    <ToggleButton x:Name="ABToggle"
+                                  Style="{StaticResource ABToggleButtonStyle}"
+                                  IsEnabled="False"
+                                  Checked="ABToggle_Checked"
+                                  Unchecked="ABToggle_Unchecked"
+                                  ToolTip="Toggle between mix (A) and reference (B) - Press R"/>
+                    <TextBlock Text="A/B (R)"
+                               FontSize="9"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Volume Control -->
+                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                        <TextBlock Text="Volume"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock x:Name="VolumeDbText"
+                                   Text="0.0 dB"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ForegroundBrush}"
+                                   Margin="6,0,0,0"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Slider x:Name="VolumeSlider"
+                            Style="{StaticResource VolumeSliderStyle}"
+                            ValueChanged="VolumeSlider_ValueChanged"
+                            ToolTip="Adjust reference volume"
+                            IsEnabled="False"/>
+                </StackPanel>
+
+                <!-- Spacer -->
+                <Grid Grid.Column="2"/>
+
+                <!-- Auto Level Match -->
+                <StackPanel Grid.Column="3" Orientation="Vertical" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ToggleButton x:Name="AutoLevelToggle"
+                                      Style="{StaticResource ToggleSwitchStyle}"
+                                      IsChecked="True"
+                                      IsEnabled="False"
+                                      Checked="AutoLevelToggle_Changed"
+                                      Unchecked="AutoLevelToggle_Changed"
+                                      ToolTip="Auto-match reference level to target LUFS"/>
+                        <TextBlock Text="Auto Level"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="6,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock x:Name="MeasuredLufsText"
+                                   Text="-- LUFS"
+                                   FontSize="9"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock Text=" / "
+                                   FontSize="9"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock x:Name="TargetLufsText"
+                                   Text="-14 LUFS"
+                                   FontSize="9"
+                                   Foreground="{StaticResource ReferenceActiveBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Sync and Loop Controls -->
+                <StackPanel Grid.Column="4" Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ToggleButton x:Name="SyncToggle"
+                                      Style="{StaticResource ToggleSwitchStyle}"
+                                      IsChecked="True"
+                                      IsEnabled="False"
+                                      Checked="SyncToggle_Changed"
+                                      Unchecked="SyncToggle_Changed"
+                                      ToolTip="Sync position with project transport"/>
+                        <TextBlock Text="Sync"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="6,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <ToggleButton x:Name="LoopToggle"
+                                      Style="{StaticResource ToggleSwitchStyle}"
+                                      IsChecked="False"
+                                      IsEnabled="False"
+                                      Checked="LoopToggle_Changed"
+                                      Unchecked="LoopToggle_Changed"
+                                      ToolTip="Enable loop region"/>
+                        <TextBlock Text="Loop"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="6,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!-- Waveform Display -->
+            <Border Grid.Row="2"
+                    Background="#1A1A1A"
+                    CornerRadius="4"
+                    BorderBrush="#3A3A3A"
+                    BorderThickness="1"
+                    MinHeight="60"
+                    Margin="0,0,0,8">
+                <Grid x:Name="WaveformGrid" ClipToBounds="True">
+                    <!-- Waveform Canvas -->
+                    <Canvas x:Name="WaveformCanvas"
+                            Background="Transparent"
+                            ClipToBounds="True"
+                            MouseLeftButtonDown="WaveformCanvas_MouseLeftButtonDown"
+                            MouseLeftButtonUp="WaveformCanvas_MouseLeftButtonUp"
+                            MouseMove="WaveformCanvas_MouseMove"
+                            SizeChanged="WaveformCanvas_SizeChanged">
+
+                        <!-- Center Line -->
+                        <Line x:Name="CenterLine"
+                              Stroke="#303030"
+                              StrokeThickness="1"
+                              IsHitTestVisible="False"/>
+
+                        <!-- Loop Region -->
+                        <Rectangle x:Name="LoopRegionRect"
+                                   Fill="{StaticResource LoopRegionBrush}"
+                                   Stroke="{StaticResource LoopRegionBorderBrush}"
+                                   StrokeThickness="1"
+                                   Visibility="Collapsed"
+                                   IsHitTestVisible="False"/>
+
+                        <!-- Waveform Path -->
+                        <Path x:Name="WaveformPath"
+                              Fill="{StaticResource ReferenceWaveformBrush}"
+                              Opacity="0.8"
+                              IsHitTestVisible="False"/>
+
+                        <!-- Playhead -->
+                        <Rectangle x:Name="PlayheadRect"
+                                   Fill="White"
+                                   Width="2"
+                                   Visibility="Collapsed"
+                                   IsHitTestVisible="False"/>
+                    </Canvas>
+
+                    <!-- No File Overlay -->
+                    <TextBlock x:Name="NoFileText"
+                               Text="Load a reference track to compare"
+                               FontSize="11"
+                               Foreground="#505050"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- Position/Time Info Row -->
+            <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock x:Name="PositionText"
+                           Grid.Column="0"
+                           Text="0:00.00"
+                           FontSize="10"
+                           FontFamily="Consolas"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+
+                <!-- Loop markers info -->
+                <TextBlock x:Name="LoopInfoText"
+                           Grid.Column="1"
+                           Text=""
+                           FontSize="10"
+                           FontFamily="Consolas"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           HorizontalAlignment="Center"
+                           Visibility="Collapsed"/>
+
+                <TextBlock x:Name="TotalTimeText"
+                           Grid.Column="2"
+                           Text="0:00.00"
+                           FontSize="10"
+                           FontFamily="Consolas"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

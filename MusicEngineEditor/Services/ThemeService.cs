@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 using MusicEngineEditor.Models;
-using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace MusicEngineEditor.Services;
 

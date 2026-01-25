@@ -6,8 +6,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using MusicEngine.Core;
-using ColorConverter = System.Windows.Media.ColorConverter;
-using Rectangle = System.Windows.Shapes.Rectangle;
 using CoreMarkerTrack = MusicEngine.Core.MarkerTrack;
 using CoreMarkerType = MusicEngine.Core.MarkerType;
 

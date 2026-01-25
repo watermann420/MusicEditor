@@ -10,10 +10,7 @@ using MusicEngine.Core;
 using MusicEngineEditor.Models;
 using MusicEngineEditor.Services;
 using MusicEngineEditor.ViewModels;
-using Rectangle = System.Windows.Shapes.Rectangle;
 using Line = System.Windows.Shapes.Line;
-using MenuItem = System.Windows.Controls.MenuItem;
-using ColorConverter = System.Windows.Media.ColorConverter;
 using SectionType = MusicEngine.Core.SectionType;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 

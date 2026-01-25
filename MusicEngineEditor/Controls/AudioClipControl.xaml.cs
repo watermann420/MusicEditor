@@ -5,8 +5,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using MusicEngineEditor.ViewModels;
-using ColorConverter = System.Windows.Media.ColorConverter;
-using MenuItem = System.Windows.Controls.MenuItem;
 
 namespace MusicEngineEditor.Controls;
 

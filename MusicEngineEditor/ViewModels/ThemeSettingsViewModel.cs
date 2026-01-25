@@ -9,7 +9,6 @@ using Microsoft.Win32;
 using MusicEngineEditor.Models;
 using MusicEngineEditor.Services;
 using MusicEngineEditor.Views.Dialogs;
-using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace MusicEngineEditor.ViewModels;
 

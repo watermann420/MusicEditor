@@ -23,3 +23,13 @@ global using Orientation = System.Windows.Controls.Orientation;
 global using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 global using Timer = System.Threading.Timer;
 global using Cursors = System.Windows.Input.Cursors;
+
+// Drag and drop types - use WPF
+global using Clipboard = System.Windows.Clipboard;
+global using DataFormats = System.Windows.DataFormats;
+global using DataObject = System.Windows.DataObject;
+global using DragDropEffects = System.Windows.DragDropEffects;
+global using DragEventArgs = System.Windows.DragEventArgs;
+global using MenuItem = System.Windows.Controls.MenuItem;
+global using ColorConverter = System.Windows.Media.ColorConverter;
+global using Rectangle = System.Windows.Shapes.Rectangle;

@@ -12,7 +12,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Shapes = System.Windows.Shapes;
 using MusicEngineEditor.Models;
-using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace MusicEngineEditor.Controls;
 

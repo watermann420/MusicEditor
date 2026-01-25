@@ -4,9 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using MusicEngineEditor.ViewModels;
-using Rectangle = System.Windows.Shapes.Rectangle;
 using Line = System.Windows.Shapes.Line;
-using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace MusicEngineEditor.Controls;
 

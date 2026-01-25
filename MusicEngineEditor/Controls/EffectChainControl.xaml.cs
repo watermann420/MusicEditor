@@ -12,7 +12,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using MusicEngineEditor.Models;
-using DragDropEffects = System.Windows.DragDropEffects;
 
 namespace MusicEngineEditor.Controls;
 
