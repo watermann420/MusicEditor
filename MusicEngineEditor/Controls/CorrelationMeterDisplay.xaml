@@ -28,6 +28,9 @@
         <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
         <SolidColorBrush x:Key="ValueTextBrush" Color="{StaticResource ValueTextColor}"/>
         <SolidColorBrush x:Key="PeakBrush" Color="{StaticResource PeakColor}"/>
+        <SolidColorBrush x:Key="CenterBrush" Color="{StaticResource CenterColor}"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
 
         <!-- Correlation gradient (red at -1, green at 0, cyan at +1) -->
         <LinearGradientBrush x:Key="CorrelationGradientBrush" StartPoint="0,0" EndPoint="1,0">
@@ -81,7 +84,7 @@
                 <Canvas x:Name="IndicatorCanvas" ClipToBounds="True" Margin="2">
                     <Rectangle x:Name="IndicatorBar"
                                Width="4" Height="12"
-                               Fill="{StaticResource CenterColor}"
+                               Fill="{StaticResource CenterBrush}"
                                RadiusX="2" RadiusY="2"
                                Canvas.Top="0"/>
 
@@ -118,7 +121,7 @@
             <TextBlock x:Name="PhaseIndicatorText"
                        Grid.Column="1"
                        Text="IN PHASE"
-                       Foreground="{StaticResource CenterColor}"
+                       Foreground="{StaticResource CenterBrush}"
                        FontSize="9"
                        FontWeight="Bold"
                        HorizontalAlignment="Center"/>
