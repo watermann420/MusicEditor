@@ -1,0 +1,324 @@
+<Window x:Class="MusicEngineEditor.Views.Dialogs.BatchFadeDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Batch Fade"
+        Width="500" Height="480"
+        MinWidth="450" MinHeight="420"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
+
+    <Window.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#1E1F22</Color>
+        <Color x:Key="PanelBackgroundColor">#2B2D30</Color>
+        <Color x:Key="BorderColor">#393B40</Color>
+        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
+        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="AccentColor">#55AAFF</Color>
+        <Color x:Key="FadeInColor">#4CAF50</Color>
+        <Color x:Key="FadeOutColor">#FF6B6B</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{StaticResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="FadeInBrush" Color="{StaticResource FadeInColor}"/>
+        <SolidColorBrush x:Key="FadeOutBrush" Color="{StaticResource FadeOutColor}"/>
+
+        <!-- Curve Button Style -->
+        <Style x:Key="CurveButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Width" Value="70"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Batch Fade" FontSize="20" FontWeight="SemiBold"/>
+            <TextBlock x:Name="SelectionInfoText" Text="Apply fades to 0 selected clips" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Fade In Settings -->
+        <Border Grid.Row="1" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="16" Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <CheckBox x:Name="FadeInEnabledCheck" Content="Fade In" IsChecked="True" VerticalAlignment="Center"
+                              Checked="FadeEnabled_Changed" Unchecked="FadeEnabled_Changed"/>
+                    <Border Width="12" Height="12" Background="{StaticResource FadeInBrush}" CornerRadius="2" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Fade In Length -->
+                <Grid Grid.Row="1" Margin="24,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="80"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Length:" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" x:Name="FadeInLengthSlider" Minimum="1" Maximum="5000" Value="100"
+                            VerticalAlignment="Center" ValueChanged="FadeLength_Changed"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBox x:Name="FadeInLengthBox" Width="50" Text="100" TextAlignment="Center"
+                                 Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                 BorderBrush="{StaticResource BorderBrush}" Padding="4,2" TextChanged="FadeInLengthBox_TextChanged"/>
+                        <TextBlock Text="ms" VerticalAlignment="Center" Margin="4,0,0,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Fade In Curve -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="24,0,0,0">
+                    <TextBlock Text="Curve:" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <RadioButton x:Name="FadeInLinear" Style="{StaticResource CurveButtonStyle}" IsChecked="True" GroupName="FadeInCurve" Checked="FadeCurve_Changed">
+                        <StackPanel>
+                            <Canvas Width="40" Height="20">
+                                <Line X1="5" Y1="15" X2="35" Y2="5" Stroke="{StaticResource FadeInBrush}" StrokeThickness="2"/>
+                            </Canvas>
+                            <TextBlock Text="Linear" FontSize="9" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="FadeInLog" Style="{StaticResource CurveButtonStyle}" GroupName="FadeInCurve" Checked="FadeCurve_Changed">
+                        <StackPanel>
+                            <Canvas Width="40" Height="20">
+                                <Path Stroke="{StaticResource FadeInBrush}" StrokeThickness="2">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="5,15">
+                                                <QuadraticBezierSegment Point1="30,15" Point2="35,5"/>
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </Canvas>
+                            <TextBlock Text="Log" FontSize="9" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="FadeInExp" Style="{StaticResource CurveButtonStyle}" GroupName="FadeInCurve" Checked="FadeCurve_Changed">
+                        <StackPanel>
+                            <Canvas Width="40" Height="20">
+                                <Path Stroke="{StaticResource FadeInBrush}" StrokeThickness="2">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="5,15">
+                                                <QuadraticBezierSegment Point1="10,5" Point2="35,5"/>
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </Canvas>
+                            <TextBlock Text="Exp" FontSize="9" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="FadeInSCurve" Style="{StaticResource CurveButtonStyle}" GroupName="FadeInCurve" Checked="FadeCurve_Changed">
+                        <StackPanel>
+                            <Canvas Width="40" Height="20">
+                                <Path Stroke="{StaticResource FadeInBrush}" StrokeThickness="2">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="5,15">
+                                                <BezierSegment Point1="10,15" Point2="30,5" Point3="35,5"/>
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </Canvas>
+                            <TextBlock Text="S-Curve" FontSize="9" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Fade Out Settings -->
+        <Border Grid.Row="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="16" Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <CheckBox x:Name="FadeOutEnabledCheck" Content="Fade Out" IsChecked="True" VerticalAlignment="Center"
+                              Checked="FadeEnabled_Changed" Unchecked="FadeEnabled_Changed"/>
+                    <Border Width="12" Height="12" Background="{StaticResource FadeOutBrush}" CornerRadius="2" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Fade Out Length -->
+                <Grid Grid.Row="1" Margin="24,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="80"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Length:" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" x:Name="FadeOutLengthSlider" Minimum="1" Maximum="5000" Value="100"
+                            VerticalAlignment="Center" ValueChanged="FadeLength_Changed"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBox x:Name="FadeOutLengthBox" Width="50" Text="100" TextAlignment="Center"
+                                 Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                 BorderBrush="{StaticResource BorderBrush}" Padding="4,2" TextChanged="FadeOutLengthBox_TextChanged"/>
+                        <TextBlock Text="ms" VerticalAlignment="Center" Margin="4,0,0,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Fade Out Curve -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="24,0,0,0">
+                    <TextBlock Text="Curve:" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <RadioButton x:Name="FadeOutLinear" Style="{StaticResource CurveButtonStyle}" IsChecked="True" GroupName="FadeOutCurve" Checked="FadeCurve_Changed">
+                        <StackPanel>
+                            <Canvas Width="40" Height="20">
+                                <Line X1="5" Y1="5" X2="35" Y2="15" Stroke="{StaticResource FadeOutBrush}" StrokeThickness="2"/>
+                            </Canvas>
+                            <TextBlock Text="Linear" FontSize="9" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="FadeOutLog" Style="{StaticResource CurveButtonStyle}" GroupName="FadeOutCurve" Checked="FadeCurve_Changed">
+                        <StackPanel>
+                            <Canvas Width="40" Height="20">
+                                <Path Stroke="{StaticResource FadeOutBrush}" StrokeThickness="2">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="5,5">
+                                                <QuadraticBezierSegment Point1="10,15" Point2="35,15"/>
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </Canvas>
+                            <TextBlock Text="Log" FontSize="9" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="FadeOutExp" Style="{StaticResource CurveButtonStyle}" GroupName="FadeOutCurve" Checked="FadeCurve_Changed">
+                        <StackPanel>
+                            <Canvas Width="40" Height="20">
+                                <Path Stroke="{StaticResource FadeOutBrush}" StrokeThickness="2">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="5,5">
+                                                <QuadraticBezierSegment Point1="30,5" Point2="35,15"/>
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </Canvas>
+                            <TextBlock Text="Exp" FontSize="9" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="FadeOutSCurve" Style="{StaticResource CurveButtonStyle}" GroupName="FadeOutCurve" Checked="FadeCurve_Changed">
+                        <StackPanel>
+                            <Canvas Width="40" Height="20">
+                                <Path Stroke="{StaticResource FadeOutBrush}" StrokeThickness="2">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="5,5">
+                                                <BezierSegment Point1="10,5" Point2="30,15" Point3="35,15"/>
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </Canvas>
+                            <TextBlock Text="S-Curve" FontSize="9" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Crossfade Option -->
+        <Border Grid.Row="3" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="16" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <CheckBox x:Name="CreateCrossfadesCheck" Content="Create crossfades between adjacent clips" VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Visibility="{Binding IsChecked, ElementName=CreateCrossfadesCheck, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
+                    <TextBlock Text="Overlap:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBox x:Name="CrossfadeOverlapBox" Width="50" Text="50" TextAlignment="Center"
+                             Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                             BorderBrush="{StaticResource BorderBrush}" Padding="4,2"/>
+                    <TextBlock Text="ms" VerticalAlignment="Center" Margin="4,0,0,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Options -->
+        <Border Grid.Row="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="16">
+            <StackPanel>
+                <CheckBox x:Name="ReplaceExistingCheck" Content="Replace existing fades" IsChecked="True" Margin="0,0,0,8"/>
+                <CheckBox x:Name="LinkFadesCheck" Content="Link fade in/out lengths" Unchecked="LinkFades_Changed" Checked="LinkFades_Changed"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="Preview" Click="Preview_Click" Padding="16,8" Margin="0,0,8,0"
+                    Background="{StaticResource PanelBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"/>
+            <Button Content="Apply" Click="Apply_Click" Padding="20,8" Margin="0,0,8,0" IsDefault="True"
+                    Background="{StaticResource AccentBrush}" Foreground="White" BorderBrush="{StaticResource AccentBrush}"/>
+            <Button Content="Cancel" Click="Cancel_Click" Padding="20,8" IsCancel="True"
+                    Background="{StaticResource PanelBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,397 @@
+<Window x:Class="MusicEngineEditor.Views.Dialogs.LogicalEditorDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Logical Editor"
+        Width="700" Height="650"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        MinWidth="600" MinHeight="500"
+        Background="#1E1F22"
+        Foreground="#BCBEC4">
+
+    <Window.Resources>
+        <!-- Colors -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1F22"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="#C75450"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#499C54"/>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="EditorComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="MinWidth" Value="100"/>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style x:Key="EditorTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="MinWidth" Value="60"/>
+        </Style>
+
+        <!-- ListBox Item Style -->
+        <Style x:Key="ConditionListItem" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button Style -->
+        <Style x:Key="EditorButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource EditorButton}">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource EditorButton}">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="16,8"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with Preset Selection -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Logical Editor"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="#DFE1E5"/>
+                <TextBlock Text="Create complex MIDI filters and transformations"
+                           FontSize="12"
+                           Foreground="{StaticResource SecondaryBrush}"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <ComboBox x:Name="PresetComboBox"
+                          Style="{StaticResource EditorComboBox}"
+                          Width="180"
+                          SelectionChanged="Preset_SelectionChanged"/>
+                <Button Content="Save"
+                        Style="{StaticResource SmallButton}"
+                        Click="SavePreset_Click"
+                        Margin="8,0,0,0"/>
+                <Button Content="Delete"
+                        Style="{StaticResource SmallButton}"
+                        Click="DeletePreset_Click"
+                        Margin="4,0,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Conditions Section -->
+        <GroupBox Grid.Row="1"
+                  Header="Filter Conditions (AND)"
+                  BorderBrush="{StaticResource BorderBrush}"
+                  Foreground="{StaticResource ForegroundBrush}"
+                  Padding="12"
+                  Margin="0,0,0,12">
+            <StackPanel>
+                <!-- Add Condition Row -->
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox x:Name="ConditionPropertyCombo"
+                              Grid.Column="0"
+                              Style="{StaticResource EditorComboBox}">
+                        <ComboBoxItem Content="Note Number" IsSelected="True"/>
+                        <ComboBoxItem Content="Velocity"/>
+                        <ComboBoxItem Content="Channel"/>
+                        <ComboBoxItem Content="Position"/>
+                        <ComboBoxItem Content="Length"/>
+                    </ComboBox>
+
+                    <ComboBox x:Name="ConditionOperatorCombo"
+                              Grid.Column="1"
+                              Style="{StaticResource EditorComboBox}"
+                              Margin="8,0,0,0">
+                        <ComboBoxItem Content="=" IsSelected="True"/>
+                        <ComboBoxItem Content="!="/>
+                        <ComboBoxItem Content="&lt;"/>
+                        <ComboBoxItem Content="&lt;="/>
+                        <ComboBoxItem Content="&gt;"/>
+                        <ComboBoxItem Content="&gt;="/>
+                        <ComboBoxItem Content="Inside"/>
+                        <ComboBoxItem Content="Outside"/>
+                    </ComboBox>
+
+                    <Grid Grid.Column="2" Margin="8,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="ConditionValue1"
+                                 Grid.Column="0"
+                                 Style="{StaticResource EditorTextBox}"
+                                 Text="60"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="to"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0"
+                                   Visibility="Collapsed"
+                                   x:Name="RangeToLabel"/>
+                        <TextBox x:Name="ConditionValue2"
+                                 Grid.Column="2"
+                                 Style="{StaticResource EditorTextBox}"
+                                 Visibility="Collapsed"/>
+                    </Grid>
+
+                    <Button Grid.Column="3"
+                            Content="Add"
+                            Style="{StaticResource SmallButton}"
+                            Click="AddCondition_Click"
+                            Margin="8,0,0,0"/>
+                </Grid>
+
+                <!-- Conditions List -->
+                <ListBox x:Name="ConditionsListBox"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         MaxHeight="120"
+                         ItemContainerStyle="{StaticResource ConditionListItem}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding DisplayText}" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1"
+                                        Content="X"
+                                        Style="{StaticResource SmallButton}"
+                                        Tag="{Binding}"
+                                        Click="RemoveCondition_Click"
+                                        Padding="4,2"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Actions Section -->
+        <GroupBox Grid.Row="2"
+                  Header="Actions"
+                  BorderBrush="{StaticResource BorderBrush}"
+                  Foreground="{StaticResource ForegroundBrush}"
+                  Padding="12"
+                  Margin="0,0,0,12">
+            <StackPanel>
+                <!-- Add Action Row -->
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox x:Name="ActionTypeCombo"
+                              Grid.Column="0"
+                              Style="{StaticResource EditorComboBox}">
+                        <ComboBoxItem Content="Select" IsSelected="True"/>
+                        <ComboBoxItem Content="Delete"/>
+                        <ComboBoxItem Content="Set Value"/>
+                        <ComboBoxItem Content="Add"/>
+                        <ComboBoxItem Content="Multiply"/>
+                        <ComboBoxItem Content="Random"/>
+                        <ComboBoxItem Content="Quantize"/>
+                    </ComboBox>
+
+                    <ComboBox x:Name="ActionTargetCombo"
+                              Grid.Column="1"
+                              Style="{StaticResource EditorComboBox}"
+                              Margin="8,0,0,0">
+                        <ComboBoxItem Content="Note Number"/>
+                        <ComboBoxItem Content="Velocity" IsSelected="True"/>
+                        <ComboBoxItem Content="Channel"/>
+                        <ComboBoxItem Content="Position"/>
+                        <ComboBoxItem Content="Length"/>
+                    </ComboBox>
+
+                    <TextBox x:Name="ActionValue"
+                             Grid.Column="2"
+                             Style="{StaticResource EditorTextBox}"
+                             Margin="8,0,0,0"
+                             Text="0"/>
+
+                    <Button Grid.Column="3"
+                            Content="Add"
+                            Style="{StaticResource SmallButton}"
+                            Click="AddAction_Click"
+                            Margin="8,0,0,0"/>
+                </Grid>
+
+                <!-- Actions List -->
+                <ListBox x:Name="ActionsListBox"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         MaxHeight="120"
+                         ItemContainerStyle="{StaticResource ConditionListItem}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding DisplayText}" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1"
+                                        Content="X"
+                                        Style="{StaticResource SmallButton}"
+                                        Tag="{Binding}"
+                                        Click="RemoveAction_Click"
+                                        Padding="4,2"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Preview Section -->
+        <GroupBox Grid.Row="3"
+                  Header="Preview"
+                  BorderBrush="{StaticResource BorderBrush}"
+                  Foreground="{StaticResource ForegroundBrush}"
+                  Padding="12"
+                  Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock x:Name="MatchCountText"
+                               Text="0 notes match the filter conditions"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource SecondaryBrush}"/>
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        Content="Refresh Preview"
+                        Style="{StaticResource SmallButton}"
+                        Click="RefreshPreview_Click"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- Options -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,16">
+            <CheckBox x:Name="SelectMatchingCheck"
+                      Content="Select matching notes"
+                      IsChecked="True"
+                      Foreground="{StaticResource ForegroundBrush}"
+                      Margin="0,0,16,0"/>
+            <CheckBox x:Name="InvertSelectionCheck"
+                      Content="Invert selection"
+                      Foreground="{StaticResource ForegroundBrush}"/>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="5"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="Select Only"
+                    Style="{StaticResource EditorButton}"
+                    Click="SelectOnly_Click"
+                    Margin="0,0,8,0"/>
+            <Button Content="Apply"
+                    Style="{StaticResource PrimaryButton}"
+                    IsDefault="True"
+                    Click="Apply_Click"
+                    Margin="0,0,8,0"/>
+            <Button Content="Close"
+                    Style="{StaticResource EditorButton}"
+                    IsCancel="True"
+                    Click="Close_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

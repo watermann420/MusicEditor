@@ -1,0 +1,313 @@
+<UserControl x:Class="MusicEngineEditor.Controls.SidechainMonitorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="180" d:DesignWidth="250"
+             Background="#1E1F22"
+             MinWidth="180"
+             MinHeight="120">
+
+    <UserControl.Resources>
+        <!-- Dark theme colors -->
+        <Color x:Key="BackgroundColor">#1E1F22</Color>
+        <Color x:Key="PanelColor">#2B2D30</Color>
+        <Color x:Key="BorderColor">#393B40</Color>
+        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
+        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="AccentColor">#FF9500</Color>
+        <Color x:Key="MeterTrackColor">#0D0D0D</Color>
+        <Color x:Key="SoloActiveColor">#FFCC00</Color>
+        <Color x:Key="SoloInactiveColor">#4D4D00</Color>
+        <Color x:Key="FilterLineColor">#8B5CF6</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="MeterTrackBrush" Color="{StaticResource MeterTrackColor}"/>
+        <SolidColorBrush x:Key="SoloActiveBrush" Color="{StaticResource SoloActiveColor}"/>
+        <SolidColorBrush x:Key="SoloInactiveBrush" Color="{StaticResource SoloInactiveColor}"/>
+        <SolidColorBrush x:Key="FilterLineBrush" Color="{StaticResource FilterLineColor}"/>
+
+        <!-- Level gradient -->
+        <LinearGradientBrush x:Key="LevelGradientBrush" StartPoint="0,1" EndPoint="0,0">
+            <GradientStop Color="#00AA00" Offset="0.0"/>
+            <GradientStop Color="#00CC00" Offset="0.5"/>
+            <GradientStop Color="#CCCC00" Offset="0.75"/>
+            <GradientStop Color="#FF8800" Offset="0.9"/>
+            <GradientStop Color="#FF0000" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <!-- Solo button style -->
+        <Style x:Key="SoloButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Border"
+                                Background="{StaticResource SoloInactiveBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="3"
+                                Padding="8,4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource SoloActiveBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource BackgroundBrush}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,8">
+                <TextBlock Text="Sidechain Monitor"
+                           FontSize="11"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}"/>
+
+                <!-- Active indicator -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Ellipse x:Name="ActiveIndicator"
+                             Width="8"
+                             Height="8"
+                             Fill="{StaticResource AccentBrush}"
+                             Opacity="0.3"
+                             VerticalAlignment="Center"
+                             Margin="0,0,4,0"/>
+                    <TextBlock x:Name="ActiveText"
+                               Text="Inactive"
+                               FontSize="9"
+                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Source Selector -->
+            <Grid Grid.Row="1" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Source:"
+                           FontSize="10"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+
+                <ComboBox x:Name="SourceSelector"
+                          Grid.Column="1"
+                          FontSize="10"
+                          Background="{StaticResource PanelBrush}"
+                          Foreground="{StaticResource TextPrimaryBrush}"
+                          BorderBrush="{StaticResource BorderBrush}"
+                          SelectionChanged="OnSourceChanged">
+                    <ComboBoxItem Content="None" IsSelected="True"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Level Meter and Filter Preview -->
+            <Grid Grid.Row="2" Margin="0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="30"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Filter Preview (Mini Spectrum) -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource MeterTrackBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Margin="0,0,8,0"
+                        ClipToBounds="True">
+                    <Grid>
+                        <!-- Spectrum display canvas -->
+                        <Canvas x:Name="SpectrumCanvas"/>
+
+                        <!-- Filter curve overlay -->
+                        <Path x:Name="FilterCurve"
+                              Stroke="{StaticResource FilterLineBrush}"
+                              StrokeThickness="2"
+                              Opacity="0.8"/>
+
+                        <!-- Frequency labels -->
+                        <Canvas>
+                            <TextBlock Text="20Hz"
+                                       FontSize="8"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Canvas.Left="2"
+                                       Canvas.Bottom="2"/>
+                            <TextBlock Text="20kHz"
+                                       FontSize="8"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Canvas.Right="2"
+                                       Canvas.Bottom="2"/>
+                        </Canvas>
+                    </Grid>
+                </Border>
+
+                <!-- Level Meter -->
+                <Border Grid.Column="1"
+                        Background="{StaticResource MeterTrackBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="2"
+                        ClipToBounds="True">
+                    <Grid>
+                        <!-- Level bar -->
+                        <Border x:Name="LevelBar"
+                                Background="{StaticResource LevelGradientBrush}"
+                                VerticalAlignment="Bottom"
+                                Margin="2"
+                                CornerRadius="1"/>
+
+                        <!-- Peak hold line -->
+                        <Rectangle x:Name="PeakHoldLine"
+                                   Height="2"
+                                   Fill="White"
+                                   VerticalAlignment="Bottom"
+                                   Margin="3,0"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Filter Controls -->
+            <Border Grid.Row="3"
+                    Background="{StaticResource PanelBrush}"
+                    CornerRadius="4"
+                    Padding="8,6"
+                    Margin="0,4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- HPF -->
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,4,4">
+                        <TextBlock Text="HPF"
+                                   FontSize="9"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                        <Slider x:Name="HpfSlider"
+                                Minimum="20"
+                                Maximum="2000"
+                                Value="20"
+                                ValueChanged="OnFilterChanged"
+                                Margin="0,2"/>
+                        <TextBlock x:Name="HpfValueText"
+                                   Text="20 Hz"
+                                   FontSize="9"
+                                   FontFamily="Consolas"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- LPF -->
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="4,0,0,4">
+                        <TextBlock Text="LPF"
+                                   FontSize="9"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                        <Slider x:Name="LpfSlider"
+                                Minimum="500"
+                                Maximum="20000"
+                                Value="20000"
+                                ValueChanged="OnFilterChanged"
+                                Margin="0,2"/>
+                        <TextBlock x:Name="LpfValueText"
+                                   Text="20 kHz"
+                                   FontSize="9"
+                                   FontFamily="Consolas"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Listen/Gain -->
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,4,4,0">
+                        <TextBlock Text="Listen"
+                                   FontSize="9"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                        <Slider x:Name="ListenGainSlider"
+                                Minimum="-24"
+                                Maximum="12"
+                                Value="0"
+                                ValueChanged="OnListenGainChanged"
+                                Margin="0,2"/>
+                        <TextBlock x:Name="ListenGainText"
+                                   Text="0 dB"
+                                   FontSize="9"
+                                   FontFamily="Consolas"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Level Display -->
+                    <StackPanel Grid.Row="1" Grid.Column="1"
+                                Margin="4,4,0,0"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="Level"
+                                   FontSize="9"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="LevelValueText"
+                                   Text="-inf dB"
+                                   FontSize="12"
+                                   FontFamily="Consolas"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Solo Sidechain Button -->
+            <ToggleButton x:Name="SoloSidechainButton"
+                          Grid.Row="4"
+                          Content="SOLO SIDECHAIN"
+                          Style="{StaticResource SoloButtonStyle}"
+                          Margin="0,4,0,0"
+                          Checked="OnSoloChanged"
+                          Unchecked="OnSoloChanged"
+                          ToolTip="Listen to the filtered sidechain signal"/>
+        </Grid>
+    </Border>
+</UserControl>

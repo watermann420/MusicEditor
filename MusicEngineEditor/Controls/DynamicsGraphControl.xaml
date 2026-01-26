@@ -1,0 +1,221 @@
+<UserControl x:Class="MusicEngineEditor.Controls.DynamicsGraphControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="250" d:DesignWidth="300"
+             Background="#1E1F22"
+             MinHeight="150"
+             MinWidth="150">
+
+    <UserControl.Resources>
+        <!-- Dark theme colors -->
+        <Color x:Key="BackgroundColor">#1E1F22</Color>
+        <Color x:Key="GridColor">#2B2D30</Color>
+        <Color x:Key="BorderColor">#393B40</Color>
+        <Color x:Key="TextColor">#6F737A</Color>
+        <Color x:Key="UnityLineColor">#4A4D52</Color>
+        <Color x:Key="TransferCurveColor">#00CED1</Color>
+        <Color x:Key="ThresholdColor">#E89C4B</Color>
+        <Color x:Key="KneeColor">#4CAF50</Color>
+        <Color x:Key="OperatingPointColor">#FF5555</Color>
+        <Color x:Key="GainReductionColor">#F44336</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="GridBrush" Color="{StaticResource GridColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+        <SolidColorBrush x:Key="UnityLineBrush" Color="{StaticResource UnityLineColor}"/>
+        <SolidColorBrush x:Key="TransferCurveBrush" Color="{StaticResource TransferCurveColor}"/>
+        <SolidColorBrush x:Key="ThresholdBrush" Color="{StaticResource ThresholdColor}"/>
+        <SolidColorBrush x:Key="KneeBrush" Color="{StaticResource KneeColor}"/>
+        <SolidColorBrush x:Key="OperatingPointBrush" Color="{StaticResource OperatingPointColor}"/>
+        <SolidColorBrush x:Key="GainReductionBrush" Color="{StaticResource GainReductionColor}"/>
+    </UserControl.Resources>
+
+    <Border BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Background="{StaticResource BackgroundBrush}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Background="#2B2D30"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="10,6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Dynamics"
+                               FontWeight="SemiBold"
+                               FontSize="12"
+                               Foreground="{DynamicResource BrightForegroundBrush}"
+                               VerticalAlignment="Center"/>
+
+                    <!-- GR Meter -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <TextBlock Text="GR:"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="11"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0"/>
+                        <TextBlock x:Name="GainReductionText"
+                                   Text="0.0 dB"
+                                   Foreground="{StaticResource GainReductionBrush}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   MinWidth="50"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Graph Display -->
+            <Grid Grid.Row="1" Margin="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Output dB scale (Y axis) -->
+                <Canvas x:Name="OutputScaleCanvas"
+                        Grid.Column="0" Grid.Row="0"
+                        Width="30"
+                        Background="Transparent"/>
+
+                <!-- Main graph area -->
+                <Border Grid.Column="1" Grid.Row="0"
+                        Background="#1A1A1A"
+                        CornerRadius="3"
+                        BorderBrush="#3A3A3A"
+                        BorderThickness="1">
+                    <Grid ClipToBounds="True">
+                        <!-- Grid lines -->
+                        <Canvas x:Name="GridCanvas"
+                                ClipToBounds="True"
+                                IsHitTestVisible="False"/>
+
+                        <!-- Unity line (1:1) -->
+                        <Canvas x:Name="UnityLineCanvas"
+                                ClipToBounds="True"
+                                IsHitTestVisible="False"/>
+
+                        <!-- Knee region -->
+                        <Canvas x:Name="KneeCanvas"
+                                ClipToBounds="True"
+                                IsHitTestVisible="False"/>
+
+                        <!-- Threshold line -->
+                        <Canvas x:Name="ThresholdCanvas"
+                                ClipToBounds="True"
+                                IsHitTestVisible="False"/>
+
+                        <!-- Transfer function curve -->
+                        <Canvas x:Name="TransferCurveCanvas"
+                                ClipToBounds="True"
+                                IsHitTestVisible="False"/>
+
+                        <!-- Operating point -->
+                        <Canvas x:Name="OperatingPointCanvas"
+                                ClipToBounds="True"
+                                IsHitTestVisible="False"/>
+
+                        <!-- Attack/Release visualization -->
+                        <Canvas x:Name="EnvelopeCanvas"
+                                ClipToBounds="True"
+                                IsHitTestVisible="False"/>
+                    </Grid>
+                </Border>
+
+                <!-- Input dB scale (X axis) -->
+                <Canvas x:Name="InputScaleCanvas"
+                        Grid.Column="1" Grid.Row="1"
+                        Height="20"
+                        Background="Transparent"/>
+            </Grid>
+
+            <!-- Footer with parameters -->
+            <Border Grid.Row="2"
+                    Background="#2B2D30"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,1,0,0"
+                    Padding="10,6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Threshold -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
+                        <Border Background="{StaticResource ThresholdBrush}"
+                                Width="8"
+                                Height="8"
+                                CornerRadius="4"
+                                VerticalAlignment="Center"
+                                Margin="0,0,4,0"/>
+                        <TextBlock x:Name="ThresholdText"
+                                   Text="Thr: -20 dB"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="10"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Ratio -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,12,0">
+                        <TextBlock x:Name="RatioText"
+                                   Text="Ratio: 4:1"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="10"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Knee -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,12,0">
+                        <Border Background="{StaticResource KneeBrush}"
+                                Width="8"
+                                Height="8"
+                                CornerRadius="4"
+                                VerticalAlignment="Center"
+                                Margin="0,0,4,0"/>
+                        <TextBlock x:Name="KneeText"
+                                   Text="Knee: 6 dB"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="10"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Attack/Release -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal">
+                        <TextBlock x:Name="AttackReleaseText"
+                                   Text="A: 10ms R: 100ms"
+                                   Foreground="{StaticResource TextBrush}"
+                                   FontSize="10"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

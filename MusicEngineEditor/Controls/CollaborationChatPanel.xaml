@@ -1,0 +1,301 @@
+<UserControl x:Class="MusicEngineEditor.Controls.CollaborationChatPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="500" d:DesignWidth="350"
+             Background="#1E1F22">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Message Bubble Style - Own Messages -->
+        <Style x:Key="OwnMessageStyle" TargetType="Border">
+            <Setter Property="Background" Value="#4B6EAF"/>
+            <Setter Property="CornerRadius" Value="12,12,4,12"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="40,4,8,4"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+
+        <!-- Message Bubble Style - Other Messages -->
+        <Style x:Key="OtherMessageStyle" TargetType="Border">
+            <Setter Property="Background" Value="#333337"/>
+            <Setter Property="CornerRadius" Value="12,12,12,4"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="8,4,40,4"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+
+        <!-- System Message Style -->
+        <Style x:Key="SystemMessageStyle" TargetType="Border">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="8,8"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- User Presence Indicator -->
+        <Style x:Key="PresenceIndicator" TargetType="Ellipse">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Margin" Value="4,0,0,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border BorderBrush="#3C3F41"
+            BorderThickness="1"
+            CornerRadius="6">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Background="#2B2D30"
+                    BorderBrush="#3C3F41"
+                    BorderThickness="0,0,0,1"
+                    Padding="12,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Team Chat"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="White"
+                                   VerticalAlignment="Center"/>
+                        <Border Background="#6AAB73"
+                                CornerRadius="8"
+                                Padding="6,2"
+                                Margin="8,0,0,0"
+                                Visibility="{Binding IsConnected, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock x:Name="OnlineCountText"
+                                       Text="3 online"
+                                       FontSize="10"
+                                       Foreground="White"/>
+                        </Border>
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Content="..."
+                            Background="Transparent"
+                            Foreground="#808080"
+                            BorderThickness="0"
+                            Padding="8,4"
+                            Cursor="Hand"
+                            Click="OptionsButton_Click"/>
+                </Grid>
+            </Border>
+
+            <!-- Online Users -->
+            <Border Grid.Row="1"
+                    Background="#252628"
+                    BorderBrush="#3C3F41"
+                    BorderThickness="0,0,0,1"
+                    Padding="8,6">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                    <ItemsControl x:Name="OnlineUsersPanel">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#333337"
+                                        CornerRadius="12"
+                                        Padding="8,4"
+                                        Margin="2"
+                                        ToolTip="{Binding DisplayName}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="6" Height="6"
+                                                 Fill="{Binding StatusColor}"
+                                                 VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Initials}"
+                                                   FontSize="10"
+                                                   FontWeight="Medium"
+                                                   Foreground="{Binding UserColor}"
+                                                   Margin="6,0,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Message List -->
+            <ScrollViewer x:Name="MessageScrollViewer"
+                          Grid.Row="2"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl x:Name="MessagesPanel">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <!-- System Message -->
+                                <Border Style="{StaticResource SystemMessageStyle}"
+                                        Visibility="{Binding IsSystemMessage, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding Content}"
+                                               FontSize="11"
+                                               Foreground="#606060"
+                                               FontStyle="Italic"/>
+                                </Border>
+
+                                <!-- Regular Message -->
+                                <StackPanel Visibility="{Binding IsRegularMessage, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <!-- Sender Name (for others' messages) -->
+                                    <TextBlock Text="{Binding SenderName}"
+                                               FontSize="10"
+                                               FontWeight="Medium"
+                                               Foreground="{Binding SenderColor}"
+                                               Margin="12,4,12,2"
+                                               Visibility="{Binding ShowSenderName, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                    <!-- Message Bubble -->
+                                    <Border Background="{Binding BubbleBackground}"
+                                            CornerRadius="{Binding BubbleCornerRadius}"
+                                            Padding="12,8"
+                                            Margin="{Binding BubbleMargin}"
+                                            HorizontalAlignment="{Binding BubbleAlignment}">
+                                        <StackPanel>
+                                            <!-- Text Content -->
+                                            <TextBlock Text="{Binding Content}"
+                                                       FontSize="12"
+                                                       Foreground="{Binding TextColor}"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="220"/>
+
+                                            <!-- File Attachment -->
+                                            <Border Background="#2A2A2E"
+                                                    CornerRadius="4"
+                                                    Padding="8,6"
+                                                    Margin="0,6,0,0"
+                                                    Visibility="{Binding HasAttachment, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                    Cursor="Hand">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="[File]"
+                                                               FontSize="10"
+                                                               Foreground="#808080"
+                                                               Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{Binding AttachmentName}"
+                                                               FontSize="11"
+                                                               Foreground="#4A9EFF"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Timestamp -->
+                                            <TextBlock Text="{Binding TimestampDisplay}"
+                                                       FontSize="9"
+                                                       Foreground="{Binding TimestampColor}"
+                                                       HorizontalAlignment="Right"
+                                                       Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Input Area -->
+            <Border Grid.Row="3"
+                    Background="#2B2D30"
+                    BorderBrush="#3C3F41"
+                    BorderThickness="0,1,0,0"
+                    Padding="8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Attach File Button -->
+                    <Button Grid.Column="0"
+                            Content="+"
+                            Width="32" Height="32"
+                            Background="#333337"
+                            Foreground="#808080"
+                            BorderThickness="0"
+                            FontSize="16"
+                            Cursor="Hand"
+                            ToolTip="Attach file"
+                            Click="AttachButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="16">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#454549"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Message Input -->
+                    <Border Grid.Column="1"
+                            Background="#252628"
+                            BorderBrush="#3C3F41"
+                            BorderThickness="1"
+                            CornerRadius="16"
+                            Margin="8,0">
+                        <TextBox x:Name="MessageTextBox"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Foreground="#BCBEC4"
+                                 CaretBrush="#BCBEC4"
+                                 FontSize="12"
+                                 Padding="12,8"
+                                 AcceptsReturn="False"
+                                 TextWrapping="Wrap"
+                                 MaxHeight="80"
+                                 VerticalScrollBarVisibility="Auto"
+                                 KeyDown="MessageTextBox_KeyDown"/>
+                    </Border>
+
+                    <!-- Send Button -->
+                    <Button Grid.Column="2"
+                            Content="Send"
+                            Width="60" Height="32"
+                            Background="#4B6EAF"
+                            Foreground="White"
+                            BorderThickness="0"
+                            FontSize="11"
+                            Cursor="Hand"
+                            Click="SendButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="16">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#5A7FBF"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,140 @@
+<UserControl x:Class="MusicEngineEditor.Controls.ClipGainLineControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="100" d:DesignWidth="400"
+             ClipToBounds="True">
+
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#1E1F22</Color>
+        <Color x:Key="LineColor">#4B6EAF</Color>
+        <Color x:Key="LineHoverColor">#6B8ECF</Color>
+        <Color x:Key="PointColor">#FFFFFF</Color>
+        <Color x:Key="PointHoverColor">#FFD700</Color>
+        <Color x:Key="GridColor">#2B2D30</Color>
+        <Color x:Key="TextColor">#BCBEC4</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="LineBrush" Color="{StaticResource LineColor}"/>
+        <SolidColorBrush x:Key="GridBrush" Color="{StaticResource GridColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+
+        <!-- Gain Point Style -->
+        <Style x:Key="GainPointStyle" TargetType="Ellipse">
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Fill" Value="{StaticResource LineBrush}"/>
+            <Setter Property="Stroke" Value="White"/>
+            <Setter Property="StrokeThickness" Value="1.5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Fill" Value="#FFD700"/>
+                    <Setter Property="Width" Value="12"/>
+                    <Setter Property="Height" Value="12"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Context Menu -->
+        <ContextMenu x:Key="PointContextMenu">
+            <MenuItem Header="Delete Point" Click="DeletePoint_Click">
+                <MenuItem.Icon>
+                    <TextBlock Text="X" FontSize="10" FontWeight="Bold" Foreground="#F75464"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Curve Type">
+                <MenuItem Header="Linear" Click="SetLinearCurve_Click" IsCheckable="True" x:Name="LinearMenuItem"/>
+                <MenuItem Header="Bezier" Click="SetBezierCurve_Click" IsCheckable="True" x:Name="BezierMenuItem"/>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Reset to 0 dB" Click="ResetToZero_Click"/>
+        </ContextMenu>
+    </UserControl.Resources>
+
+    <Grid x:Name="RootGrid" Background="{StaticResource BackgroundBrush}">
+        <!-- Grid Lines -->
+        <Canvas x:Name="GridCanvas" ClipToBounds="True" IsHitTestVisible="False"/>
+
+        <!-- Gain Fill Area -->
+        <Canvas x:Name="FillCanvas" ClipToBounds="True" IsHitTestVisible="False"/>
+
+        <!-- Gain Line Path -->
+        <Canvas x:Name="LineCanvas" ClipToBounds="True" IsHitTestVisible="False">
+            <Path x:Name="GainPath"
+                  Stroke="{StaticResource LineBrush}"
+                  StrokeThickness="2"
+                  StrokeLineJoin="Round"/>
+        </Canvas>
+
+        <!-- Gain Points Canvas -->
+        <Canvas x:Name="PointsCanvas"
+                ClipToBounds="True"
+                MouseLeftButtonDown="PointsCanvas_MouseLeftButtonDown"
+                MouseLeftButtonUp="PointsCanvas_MouseLeftButtonUp"
+                MouseMove="PointsCanvas_MouseMove"
+                MouseRightButtonDown="PointsCanvas_MouseRightButtonDown"/>
+
+        <!-- dB Scale Labels -->
+        <StackPanel Orientation="Vertical"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Stretch"
+                    Width="30"
+                    Background="#80000000"
+                    IsHitTestVisible="False">
+            <TextBlock Text="+12" Foreground="{StaticResource TextBrush}" FontSize="8" Margin="2,2,0,0"/>
+            <TextBlock Text="0" Foreground="{StaticResource TextBrush}" FontSize="8" Margin="2,0,0,0"
+                       VerticalAlignment="Center" HorizontalAlignment="Left"
+                       Visibility="Collapsed"/>
+            <TextBlock Text="-12" Foreground="{StaticResource TextBrush}" FontSize="8" Margin="2,0,0,2"
+                       VerticalAlignment="Bottom"/>
+        </StackPanel>
+
+        <!-- Toolbar -->
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="4">
+            <ToggleButton x:Name="SnapToGridToggle"
+                          Content="Snap"
+                          IsChecked="True"
+                          ToolTip="Snap to Grid"
+                          Padding="6,2"
+                          FontSize="9"
+                          Background="#2B2D30"
+                          Foreground="{StaticResource TextBrush}"
+                          BorderBrush="#393B40"
+                          Margin="0,0,4,0"/>
+            <ToggleButton x:Name="BezierModeToggle"
+                          Content="Bezier"
+                          IsChecked="False"
+                          ToolTip="Use Bezier Curves"
+                          Padding="6,2"
+                          FontSize="9"
+                          Background="#2B2D30"
+                          Foreground="{StaticResource TextBrush}"
+                          BorderBrush="#393B40"
+                          Checked="BezierModeToggle_Checked"
+                          Unchecked="BezierModeToggle_Unchecked"/>
+        </StackPanel>
+
+        <!-- Current Value Display -->
+        <Border x:Name="ValueTooltip"
+                Background="#E0000000"
+                CornerRadius="3"
+                Padding="4,2"
+                Visibility="Collapsed"
+                IsHitTestVisible="False">
+            <TextBlock x:Name="ValueText"
+                       Foreground="White"
+                       FontSize="10"
+                       FontWeight="SemiBold"/>
+        </Border>
+    </Grid>
+</UserControl>

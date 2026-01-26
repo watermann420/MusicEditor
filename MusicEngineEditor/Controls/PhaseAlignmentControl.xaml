@@ -1,0 +1,266 @@
+<UserControl x:Class="MusicEngineEditor.Controls.PhaseAlignmentControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="500"
+             Background="#1E1F22"
+             MinHeight="350"
+             MinWidth="400">
+
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#1E1F22</Color>
+        <Color x:Key="PanelBackgroundColor">#2B2D30</Color>
+        <Color x:Key="BorderColor">#393B40</Color>
+        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
+        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="AccentColor">#55AAFF</Color>
+        <Color x:Key="ReferenceColor">#4CAF50</Color>
+        <Color x:Key="TargetColor">#FF9800</Color>
+        <Color x:Key="InPhaseColor">#00E676</Color>
+        <Color x:Key="OutOfPhaseColor">#FF5252</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{StaticResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="ReferenceBrush" Color="{StaticResource ReferenceColor}"/>
+        <SolidColorBrush x:Key="TargetBrush" Color="{StaticResource TargetColor}"/>
+        <SolidColorBrush x:Key="InPhaseBrush" Color="{StaticResource InPhaseColor}"/>
+        <SolidColorBrush x:Key="OutOfPhaseBrush" Color="{StaticResource OutOfPhaseColor}"/>
+    </UserControl.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="Phase Alignment" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="Fix phase coherence between multi-mic recordings" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Track Selection -->
+        <Border Grid.Row="1" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Reference Mic -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Border Width="12" Height="12" Background="{StaticResource ReferenceBrush}" CornerRadius="2" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Reference Mic:" VerticalAlignment="Center" Width="100"/>
+                </StackPanel>
+                <ComboBox Grid.Column="1" x:Name="ReferenceMicCombo" Margin="0,0,0,8"
+                          Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                          BorderBrush="{StaticResource BorderBrush}" SelectionChanged="ReferenceMic_Changed">
+                    <ComboBoxItem Content="(Select reference mic)" IsSelected="True"/>
+                </ComboBox>
+
+                <!-- Target Mics -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <Border Width="12" Height="12" Background="{StaticResource TargetBrush}" CornerRadius="2" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Target Mics:" VerticalAlignment="Center" Width="100"/>
+                </StackPanel>
+                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TargetMicsText" Text="0 mics selected"
+                           VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Grid>
+        </Border>
+
+        <!-- Phase Correlation Display -->
+        <Border Grid.Row="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Phase Correlation" FontWeight="SemiBold" Margin="0,0,0,8"/>
+
+                <!-- Correlation Meter -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="60"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="-1" Foreground="{StaticResource OutOfPhaseBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    <Border Grid.Column="1" Background="{StaticResource BackgroundBrush}" CornerRadius="4" Height="30">
+                        <Grid>
+                            <!-- Gradient background -->
+                            <Border CornerRadius="4">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                        <GradientStop Color="#FF5252" Offset="0"/>
+                                        <GradientStop Color="#FFEB3B" Offset="0.3"/>
+                                        <GradientStop Color="#00E676" Offset="0.5"/>
+                                        <GradientStop Color="#FFEB3B" Offset="0.7"/>
+                                        <GradientStop Color="#FF5252" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+
+                            <!-- Correlation indicator -->
+                            <Canvas x:Name="CorrelationMeterCanvas" ClipToBounds="True"/>
+
+                            <!-- Center marker -->
+                            <Border Width="2" Height="30" Background="White" HorizontalAlignment="Center" Opacity="0.5"/>
+
+                            <!-- Value text -->
+                            <TextBlock x:Name="CorrelationValueText" Text="0.00" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontWeight="Bold" Foreground="White" FontSize="14">
+                                <TextBlock.Effect>
+                                    <DropShadowEffect ShadowDepth="0" BlurRadius="3" Color="Black"/>
+                                </TextBlock.Effect>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Grid.Column="2" Text="+1" Foreground="{StaticResource InPhaseBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Waveform Comparison -->
+        <Border Grid.Row="3" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Reference Waveform -->
+                <Border Background="{StaticResource BackgroundBrush}" CornerRadius="4" Margin="0,0,0,4">
+                    <Grid>
+                        <Canvas x:Name="ReferenceWaveformCanvas" ClipToBounds="True"/>
+                        <TextBlock Text="Reference" FontSize="10" Foreground="{StaticResource ReferenceBrush}"
+                                   HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4"/>
+                    </Grid>
+                </Border>
+
+                <!-- Target Waveform -->
+                <Border Grid.Row="1" Background="{StaticResource BackgroundBrush}" CornerRadius="4" Margin="0,4,0,0">
+                    <Grid>
+                        <Canvas x:Name="TargetWaveformCanvas" ClipToBounds="True"/>
+                        <TextBlock x:Name="TargetWaveformLabel" Text="Target" FontSize="10" Foreground="{StaticResource TargetBrush}"
+                                   HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Settings and Controls -->
+        <Border Grid.Row="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="12" Margin="0,12,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Max Sample Offset -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,8,8">
+                    <TextBlock Text="Max offset:" VerticalAlignment="Center" Width="80"/>
+                    <TextBox x:Name="MaxOffsetBox" Width="60" Text="1000" TextAlignment="Center"
+                             Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                             BorderBrush="{StaticResource BorderBrush}" Padding="4,2"/>
+                    <TextBlock Text="samples" VerticalAlignment="Center" Margin="4,0,0,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                </StackPanel>
+
+                <!-- Manual Offset -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,8">
+                    <TextBlock Text="Manual:" VerticalAlignment="Center" Width="60"/>
+                    <TextBox x:Name="ManualOffsetBox" Width="60" Text="0" TextAlignment="Center"
+                             Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                             BorderBrush="{StaticResource BorderBrush}" Padding="4,2" TextChanged="ManualOffset_Changed"/>
+                    <TextBlock Text="samples" VerticalAlignment="Center" Margin="4,0,0,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                </StackPanel>
+
+                <!-- Polarity Flip -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+                    <CheckBox x:Name="PolarityFlipCheck" Content="Flip polarity (invert phase)" Checked="PolarityFlip_Changed" Unchecked="PolarityFlip_Changed"/>
+                </StackPanel>
+
+                <!-- Sample Accuracy -->
+                <CheckBox Grid.Row="1" Grid.Column="1" x:Name="SampleAccuracyCheck" Content="Sample-accurate" IsChecked="True" Margin="8,0,0,8"/>
+
+                <!-- Results -->
+                <Border Grid.Row="2" Grid.ColumnSpan="2" Background="{StaticResource BackgroundBrush}" CornerRadius="4" Padding="8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="Offset" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock x:Name="OffsetResultText" Text="-- samples" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                            <TextBlock Text="Time" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock x:Name="TimeResultText" Text="-- ms" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                            <TextBlock Text="Correlation" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock x:Name="CorrelationResultText" Text="--" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3" HorizontalAlignment="Right">
+                            <TextBlock Text="Status" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock x:Name="StatusResultText" Text="--" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource InPhaseBrush}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Action Buttons -->
+        <Grid Grid.Row="5" Margin="0,12,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button x:Name="AutoAlignButton" Content="Auto-Align" Click="AutoAlign_Click" Padding="16,8" Margin="0,0,8,0"
+                        Background="{StaticResource AccentBrush}" Foreground="White" BorderBrush="{StaticResource AccentBrush}"/>
+                <Button Content="Preview" Click="Preview_Click" Padding="16,8" Margin="0,0,8,0"
+                        Background="{StaticResource PanelBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"/>
+                <ToggleButton x:Name="LiveMonitorButton" Content="Live Monitor" Click="LiveMonitor_Click" Padding="16,8"
+                              Background="{StaticResource PanelBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                              BorderBrush="{StaticResource BorderBrush}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Apply" Click="Apply_Click" Padding="20,8" Margin="0,0,8,0"
+                        Background="{StaticResource AccentBrush}" Foreground="White" BorderBrush="{StaticResource AccentBrush}"/>
+                <Button Content="Reset" Click="Reset_Click" Padding="16,8"
+                        Background="{StaticResource PanelBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

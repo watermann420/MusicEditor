@@ -1,0 +1,253 @@
+<UserControl x:Class="MusicEngineEditor.Controls.KSystemMeterControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="250" d:DesignWidth="120"
+             Background="#1E1F22"
+             MinWidth="80"
+             MinHeight="150">
+
+    <UserControl.Resources>
+        <!-- Dark theme colors -->
+        <Color x:Key="MeterBackgroundColor">#1E1F22</Color>
+        <Color x:Key="MeterTrackColor">#0D0D0D</Color>
+        <Color x:Key="MeterBorderColor">#393B40</Color>
+        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
+        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="PeakHoldColor">#FFFFFF</Color>
+
+        <!-- K-System color zones -->
+        <Color x:Key="KGreenColor">#00AA00</Color>
+        <Color x:Key="KYellowColor">#CCAA00</Color>
+        <Color x:Key="KRedColor">#CC0000</Color>
+        <Color x:Key="KGreenDimColor">#003300</Color>
+        <Color x:Key="KYellowDimColor">#333300</Color>
+        <Color x:Key="KRedDimColor">#330000</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="MeterBackgroundBrush" Color="{StaticResource MeterBackgroundColor}"/>
+        <SolidColorBrush x:Key="MeterTrackBrush" Color="{StaticResource MeterTrackColor}"/>
+        <SolidColorBrush x:Key="MeterBorderBrush" Color="{StaticResource MeterBorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="PeakHoldBrush" Color="{StaticResource PeakHoldColor}"/>
+        <SolidColorBrush x:Key="KGreenBrush" Color="{StaticResource KGreenColor}"/>
+        <SolidColorBrush x:Key="KYellowBrush" Color="{StaticResource KYellowColor}"/>
+        <SolidColorBrush x:Key="KRedBrush" Color="{StaticResource KRedColor}"/>
+
+        <!-- Dim zone brushes for track background -->
+        <SolidColorBrush x:Key="KGreenDimBrush" Color="{StaticResource KGreenDimColor}"/>
+        <SolidColorBrush x:Key="KYellowDimBrush" Color="{StaticResource KYellowDimColor}"/>
+        <SolidColorBrush x:Key="KRedDimBrush" Color="{StaticResource KRedDimColor}"/>
+
+        <!-- Mode button style -->
+        <Style x:Key="KModeButtonStyle" TargetType="RadioButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Border"
+                                Background="Transparent"
+                                BorderBrush="{StaticResource MeterBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="2"
+                                Padding="6,2">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#3A5FA0"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#4A7FC0"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#3A3C40"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource MeterBackgroundBrush}"
+            BorderBrush="{StaticResource MeterBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <TextBlock Grid.Row="0"
+                       Text="K-System"
+                       FontSize="11"
+                       FontWeight="Bold"
+                       Foreground="{StaticResource TextPrimaryBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,6"/>
+
+            <!-- Mode Selector -->
+            <StackPanel Grid.Row="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,8">
+                <RadioButton x:Name="K12Button"
+                             Content="K-12"
+                             GroupName="KMode"
+                             Style="{StaticResource KModeButtonStyle}"
+                             Margin="0,0,2,0"
+                             Checked="OnKModeChanged"/>
+                <RadioButton x:Name="K14Button"
+                             Content="K-14"
+                             GroupName="KMode"
+                             Style="{StaticResource KModeButtonStyle}"
+                             IsChecked="True"
+                             Margin="2,0"
+                             Checked="OnKModeChanged"/>
+                <RadioButton x:Name="K20Button"
+                             Content="K-20"
+                             GroupName="KMode"
+                             Style="{StaticResource KModeButtonStyle}"
+                             Margin="2,0,0,0"
+                             Checked="OnKModeChanged"/>
+            </StackPanel>
+
+            <!-- Meter Area -->
+            <Grid Grid.Row="2" Margin="0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="4"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Scale -->
+                <Canvas x:Name="ScaleCanvas" Grid.Column="0"/>
+
+                <!-- Left Meter -->
+                <Border Grid.Column="1"
+                        Background="{StaticResource MeterTrackBrush}"
+                        BorderBrush="{StaticResource MeterBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="2"
+                        ClipToBounds="True">
+                    <Grid>
+                        <!-- Color zone background -->
+                        <Canvas x:Name="LeftZoneCanvas"/>
+
+                        <!-- Average level bar -->
+                        <Border x:Name="LeftAverageBar"
+                                VerticalAlignment="Bottom"
+                                Margin="2"
+                                CornerRadius="1"
+                                Opacity="0.7"/>
+
+                        <!-- Peak level bar -->
+                        <Border x:Name="LeftPeakBar"
+                                VerticalAlignment="Bottom"
+                                Margin="2"
+                                CornerRadius="1"/>
+
+                        <!-- Peak hold indicator -->
+                        <Rectangle x:Name="LeftPeakHold"
+                                   Height="2"
+                                   Fill="{StaticResource PeakHoldBrush}"
+                                   VerticalAlignment="Bottom"
+                                   Margin="3,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- Right Meter -->
+                <Border Grid.Column="3"
+                        Background="{StaticResource MeterTrackBrush}"
+                        BorderBrush="{StaticResource MeterBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="2"
+                        ClipToBounds="True">
+                    <Grid>
+                        <!-- Color zone background -->
+                        <Canvas x:Name="RightZoneCanvas"/>
+
+                        <!-- Average level bar -->
+                        <Border x:Name="RightAverageBar"
+                                VerticalAlignment="Bottom"
+                                Margin="2"
+                                CornerRadius="1"
+                                Opacity="0.7"/>
+
+                        <!-- Peak level bar -->
+                        <Border x:Name="RightPeakBar"
+                                VerticalAlignment="Bottom"
+                                Margin="2"
+                                CornerRadius="1"/>
+
+                        <!-- Peak hold indicator -->
+                        <Rectangle x:Name="RightPeakHold"
+                                   Height="2"
+                                   Fill="{StaticResource PeakHoldBrush}"
+                                   VerticalAlignment="Bottom"
+                                   Margin="3,0"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Level Displays -->
+            <Grid Grid.Row="3" Margin="0,4,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                    <TextBlock Text="Peak"
+                               FontSize="9"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="PeakText"
+                               Text="-inf"
+                               FontSize="11"
+                               FontFamily="Consolas"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                    <TextBlock Text="Avg"
+                               FontSize="9"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="AverageText"
+                               Text="-inf"
+                               FontSize="11"
+                               FontFamily="Consolas"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Reference Level Indicator -->
+            <Border Grid.Row="4"
+                    Background="#1A1B1E"
+                    CornerRadius="3"
+                    Padding="6,3"
+                    Margin="0,6,0,0">
+                <TextBlock x:Name="ReferenceLevelText"
+                           Text="0 VU = -14 dBFS"
+                           FontSize="9"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           HorizontalAlignment="Center"/>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

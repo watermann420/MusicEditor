@@ -1,0 +1,376 @@
+<UserControl x:Class="MusicEngineEditor.Controls.MIDILearnPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="500" d:DesignWidth="350"
+             Background="#1E1F22">
+
+    <UserControl.Resources>
+        <!-- Converters -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Colors -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1F22"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="LearnActiveBrush" Color="#EF4444"/>
+        <SolidColorBrush x:Key="MappedBrush" Color="#10B981"/>
+
+        <!-- Button Style -->
+        <Style x:Key="LearnButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Mapping Item Style -->
+        <Style x:Key="MappingListItem" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="0,0,0,1"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2E3033"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Slider Style -->
+        <Style x:Key="RangeSlider" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="127"/>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style x:Key="RangeTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="CaretBrush" Value="{StaticResource ForegroundBrush}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="{StaticResource PanelBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="12,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="MIDI Learn"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="#DFE1E5"/>
+                    <TextBlock Text="Map MIDI controllers to parameters"
+                               FontSize="11"
+                               Foreground="{StaticResource SecondaryBrush}"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Global Learn Toggle -->
+                <ToggleButton x:Name="GlobalLearnToggle"
+                              Grid.Column="1"
+                              Content="Learn"
+                              Padding="12,6"
+                              Cursor="Hand"
+                              Click="GlobalLearn_Click">
+                    <ToggleButton.Style>
+                        <Style TargetType="ToggleButton">
+                            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="{StaticResource LearnActiveBrush}"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ToggleButton.Style>
+                </ToggleButton>
+            </Grid>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="1"
+                Background="#252629"
+                Padding="12,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Status indicator -->
+                <Ellipse x:Name="StatusIndicator"
+                         Grid.Column="0"
+                         Width="8" Height="8"
+                         Fill="{StaticResource SecondaryBrush}"
+                         VerticalAlignment="Center"
+                         Margin="0,0,8,0"/>
+
+                <TextBlock x:Name="StatusText"
+                           Grid.Column="1"
+                           Text="Ready - Click a parameter or press Learn"
+                           FontSize="11"
+                           Foreground="{StaticResource SecondaryBrush}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Mappings List -->
+        <ListBox Grid.Row="2"
+                 x:Name="MappingsList"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 ItemContainerStyle="{StaticResource MappingListItem}"
+                 SelectionChanged="MappingsList_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Mapping indicator -->
+                        <Border Grid.Column="0"
+                                Width="4"
+                                CornerRadius="2"
+                                Margin="0,0,8,0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{StaticResource MappedBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLearning}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource LearnActiveBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+
+                        <!-- Parameter info -->
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="{Binding ParameterName}"
+                                       FontWeight="SemiBold"
+                                       FontSize="12"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                <TextBlock Text="{Binding MidiAssignmentDisplay}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource SecondaryBrush}"/>
+                                <TextBlock Text=" | "
+                                           FontSize="11"
+                                           Foreground="{StaticResource SecondaryBrush}"
+                                           Visibility="{Binding HasRange, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <TextBlock Text="{Binding RangeDisplay}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource SecondaryBrush}"
+                                           Visibility="{Binding HasRange, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Actions -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button Content="Learn"
+                                    Style="{StaticResource LearnButton}"
+                                    Tag="{Binding}"
+                                    Click="LearnMapping_Click"
+                                    Padding="6,4"
+                                    FontSize="10"/>
+                            <Button Content="X"
+                                    Style="{StaticResource LearnButton}"
+                                    Tag="{Binding}"
+                                    Click="ClearMapping_Click"
+                                    Padding="4"
+                                    FontSize="10"
+                                    Margin="4,0,0,0"
+                                    ToolTip="Clear mapping"/>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Selected Mapping Editor -->
+        <Border Grid.Row="3"
+                x:Name="MappingEditorPanel"
+                Background="{StaticResource PanelBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="12"
+                Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock Text="Mapping Settings"
+                           FontWeight="SemiBold"
+                           Foreground="#DFE1E5"
+                           Margin="0,0,0,12"/>
+
+                <!-- MIDI Source -->
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Source:"
+                               Foreground="{StaticResource SecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="SourceText"
+                               Grid.Column="1"
+                               Text="CC1 (Modulation)"
+                               VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Value Range -->
+                <TextBlock Text="Value Range"
+                           Foreground="{StaticResource SecondaryBrush}"
+                           FontSize="11"
+                           Margin="0,0,0,8"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="MinValueTextBox"
+                             Grid.Column="0"
+                             Style="{StaticResource RangeTextBox}"
+                             Text="0"
+                             TextChanged="MinValue_TextChanged"/>
+
+                    <Slider x:Name="RangeSlider"
+                            Grid.Column="1"
+                            Margin="8,0"
+                            IsSelectionRangeEnabled="True"
+                            SelectionStart="0"
+                            SelectionEnd="127"
+                            Minimum="0"
+                            Maximum="127"/>
+
+                    <TextBox x:Name="MaxValueTextBox"
+                             Grid.Column="2"
+                             Style="{StaticResource RangeTextBox}"
+                             Text="127"
+                             TextChanged="MaxValue_TextChanged"/>
+                </Grid>
+
+                <!-- Invert -->
+                <CheckBox x:Name="InvertCheck"
+                          Content="Invert"
+                          Foreground="{StaticResource ForegroundBrush}"
+                          Margin="0,12,0,0"
+                          Checked="Invert_Changed"
+                          Unchecked="Invert_Changed"/>
+
+                <!-- Pickup Mode -->
+                <CheckBox x:Name="PickupCheck"
+                          Content="Pickup mode (match current value before taking over)"
+                          Foreground="{StaticResource ForegroundBrush}"
+                          Margin="0,8,0,0"
+                          Checked="Pickup_Changed"
+                          Unchecked="Pickup_Changed"/>
+
+                <!-- Buttons -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Margin="0,16,0,0">
+                    <Button Content="Reset"
+                            Style="{StaticResource LearnButton}"
+                            Click="ResetMapping_Click"/>
+                    <Button Content="Apply"
+                            Style="{StaticResource LearnButton}"
+                            Click="ApplyMapping_Click"
+                            Margin="8,0,0,0"
+                            Background="{StaticResource AccentBrush}"
+                            Foreground="White"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
