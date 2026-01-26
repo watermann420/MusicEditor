@@ -62,6 +62,7 @@
         <Color x:Key="CriticalColor">#F75464</Color>
 
         <SolidColorBrush x:Key="CpuBrush" Color="{StaticResource CpuColor}"/>
+        <SolidColorBrush x:Key="CriticalBrush" Color="{StaticResource CriticalColor}"/>
         <SolidColorBrush x:Key="RamBrush" Color="{StaticResource RamColor}"/>
         <SolidColorBrush x:Key="BufferBrush" Color="{StaticResource BufferColor}"/>
         <SolidColorBrush x:Key="DiskBrush" Color="{StaticResource DiskColor}"/>
@@ -132,7 +133,7 @@
 
                             <!-- Peak line -->
                             <Line x:Name="PeakLine"
-                                  Stroke="{StaticResource CriticalColor}"
+                                  Stroke="{StaticResource CriticalBrush}"
                                   StrokeThickness="1"
                                   StrokeDashArray="4,2"
                                   Opacity="0.7"/>

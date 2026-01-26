@@ -1,6 +1,7 @@
-// MusicEngineEditor - Chord Stamp Panel Control
-// Copyright (c) 2026 MusicEngine Watermann420 and Contributors
-// Description: UI control for selecting and stamping chords in the Piano Roll.
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: UI control implementation.
 
 using System;
 using System.Collections.Generic;

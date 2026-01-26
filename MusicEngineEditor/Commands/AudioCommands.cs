@@ -1,5 +1,7 @@
-// MusicEngineEditor - Audio Commands for Clip Editing
-// Copyright (c) 2026 MusicEngine Watermann420 and Contributors
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Audio-related commands for the editor.
 
 using System;
 using MusicEngine.Core;

@@ -1,7 +1,7 @@
-// VisualizationIntegration.cs
-// Helper class to easily integrate all visualization components with MainWindow.
-// This provides a simple API to connect the MusicEngine to editor highlighting,
-// punchcard visualization, and live parameter updates.
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Integration for live code visualization.
 
 using System;
 using System.Windows.Threading;

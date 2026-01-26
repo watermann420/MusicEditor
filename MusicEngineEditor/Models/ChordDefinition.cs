@@ -1,6 +1,7 @@
-// MusicEngineEditor - Chord Definition Model
-// Copyright (c) 2026 MusicEngine Watermann420 and Contributors
-// Description: Chord definition for piano roll chord stamping with built-in chords, inversions, and voicings.
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Data model class.
 
 using System;
 using System.Collections.Generic;

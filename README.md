@@ -1,11 +1,6 @@
 
 ![BannerEditor](https://github.com/user-attachments/assets/d0751482-093f-4d9f-b980-4da5137bf8bf)
 
-
-
-
-
-
 # MusicEngineEditor
 
 ![License](https://img.shields.io/badge/license-MEL-blue)
@@ -13,51 +8,181 @@
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple)
 ![Status](https://img.shields.io/badge/status-Work_in_Progress-orange)
 
-MusicEngineEditor is a standalone extension for **MusicEngine**.  
-It provides a visual interface and tools to work with MusicEngine projects more efficiently.
+**MusicEngineEditor** is a professional code editor for the **MusicEngine** audio scripting system. Create music through code with real-time visualization, inline parameter controls, and VCV Rack-style modulation.
 
-This editor is designed to improve workflow, manage patterns, instruments, and other engine components in a user-friendly way.
-
-
+> **Note:** The core MusicEngine was written manually. The Editor and many features are AI-enhanced and may still have rough edges. Contributions welcome!
 
 ---
 
 ## Features
 
-* Visual interface for creating and editing music patterns
-* Manage instruments, sounds, and effects for MusicEngine
-* Play, preview, and test music sequences in real time
-* Modular design for future enhancements
+### Code Editor
+- Syntax highlighting optimized for MusicEngine scripts
+- Intelligent autocomplete for classes, methods, and parameters
+- Strudel-style inline sliders (drag numbers to change values)
+- Live code visualization (active patterns glow)
+- Dark/Light themes
 
----
+### Audio Engine
+- Real-time audio playback and preview
+- Multiple synthesizer types (Simple, Advanced, Modular)
+- Built-in effects (Reverb, Delay, Filter, etc.)
+- MIDI input/output support
+- VCV Rack-style modular parameter system
 
-## Requirements
-
-* MusicEngine must be installed
-* Install: https://github.com/watermann420/MusicEngine
-
+### Workflow
+- Project management
+- Pattern and arrangement editor
+- Waveform visualization
+- Performance monitoring
+- VST plugin support
 
 ---
 
 ## Quick Start
 
-**For beginners - no programming knowledge required:**
+**No programming knowledge required:**
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/watermann420/MusicEngineEditor.git
-   ```
-2. **Double-click `StartEditor.bat`** - done!
+```bash
+git clone https://github.com/watermann420/MusicEngineEditor.git
+```
 
-The editor is automatically built and started. Building only happens the first time.
-
-> **Note:** If .NET 10 is not installed, the script will show a link to install it.
+Then **double-click `StartEditor.bat`** - done!
 
 ---
 
-## Manual Installation
+## Code Example
 
-1. Install [.NET 10 SDK](https://dotnet.microsoft.com/download)
-2. Clone the repository:
-    ```bash
-    git clone https://github.com/watermann420/MusicEngineEditor.git
+```csharp
+// Create a sequencer
+var seq = new Sequencer { Bpm = 120 };
+
+// Create instruments
+var synth = new AdvancedSynth();
+synth.FilterType = SynthFilterType.MoogLadder;
+synth.FilterCutoff = 0.6f;
+
+// Create a pattern
+var melody = seq.CreatePattern("melody", synth);
+
+// Add notes (pitch, beat, duration, velocity)
+melody.Note(60, 0, 0.5, 100);    // C4
+melody.Note(64, 0.5, 0.5, 100);  // E4
+melody.Note(67, 1, 0.5, 100);    // G4
+
+// Play!
+seq.Play();
+```
+
+---
+
+## Inline Sliders (Strudel-style)
+
+Numbers in your code are interactive:
+
+```csharp
+seq.Bpm = 120;              // <- Drag to change BPM!
+synth.FilterCutoff = 0.5f;  // <- Drag to adjust filter!
+```
+
+- **Drag left/right** on any number to change its value
+- **Shift+Drag** for fine control
+- **Ctrl+Drag** for coarse control
+
+---
+
+## VCV Rack-style Modulation
+
+Every parameter can be modulated by any source:
+
+```csharp
+// Create modulation sources
+var lfo = new ModularLFO("lfo1", "Filter LFO", sampleRate);
+lfo.Rate.Value = 2.0;      // 2 Hz
+lfo.Depth.Value = 0.5;     // 50% depth
+
+// Connect to filter cutoff
+synth.Connect(lfo, synth.GetParameter("cutoff"), 0.5);
+
+// Create envelope modulation
+var env = new ModularEnvelope("env1", "Amp Env", sampleRate);
+synth.Connect(env, synth.GetParameter("volume"), 1.0);
+```
+
+---
+
+## Requirements
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [MusicEngine](https://github.com/watermann420/MusicEngine)
+
+---
+
+## Installation
+
+### Option 1: StartEditor.bat (Recommended)
+
+1. Clone the repository
+2. Double-click `StartEditor.bat`
+
+### Option 2: Manual
+
+```bash
+git clone https://github.com/watermann420/MusicEngineEditor.git
+cd MusicEngineEditor
+dotnet build
+dotnet run --project MusicEngineEditor
+```
+
+---
+
+## Project Structure
+
+```
+MusicEngineEditor/
+├── Controls/        # UI controls (meters, visualizations)
+├── Editor/          # Code editor components
+├── Models/          # Data models
+├── Services/        # Business logic
+├── ViewModels/      # MVVM ViewModels
+├── Views/           # XAML Views
+└── Themes/          # Dark/Light themes
+
+MusicEngine/         # Core audio engine (separate repo)
+└── Core/
+    ├── Sequencer.cs
+    ├── Pattern.cs
+    ├── Effects/
+    ├── Analysis/
+    └── Modulation/  # VCV Rack-style system
+```
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Project structure overview
+- Syntax guide with examples
+- Code style guidelines
+- Pull request process
+
+---
+
+## Documentation
+
+- [Modulation System](docs/MODULATION_SYSTEM.md) - VCV Rack-style parameter modulation
+- [CONTRIBUTING Guide](CONTRIBUTING.md) - How to contribute
+
+---
+
+## License
+
+[MusicEngine License (MEL)](LICENSE) - Honor-Based Commercial Support
+
+---
+
+## Links
+
+- [MusicEngine Core](https://github.com/watermann420/MusicEngine)
+- [Report Issues](https://github.com/watermann420/MusicEngineEditor/issues)
