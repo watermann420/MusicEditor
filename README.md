@@ -12,6 +12,7 @@
 
 > **Note:** The core MusicEngine was written manually. The Editor and many features are AI-enhanced and may still have rough edges. Contributions welcome!
 
+Discord: discord.gg/tWkqHMsB6a
 ---
 
 ## Features
