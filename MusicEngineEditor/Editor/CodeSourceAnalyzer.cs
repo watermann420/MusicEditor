@@ -1,6 +1,7 @@
-// CodeSourceAnalyzer.cs
-// Analyzes code to extract instrument definitions and note event source locations.
-// This enables mapping between code and musical events for visualization.
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Source code analysis for live features.
 
 using System;
 using System.Collections.Generic;

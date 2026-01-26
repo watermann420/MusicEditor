@@ -5,7 +5,10 @@
       "Bash(dotnet build:*)",
       "Bash(where:*)",
       "Bash(\"C:\\\\Program Files\\\\dotnet\\\\dotnet.exe\" build \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\MusicEngineEditor\\\\MusicEngineEditor.csproj\" --configuration Debug)",
-      "Bash(dir \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\MusicEngineEditor\\\\Resources\\\\Icons\")"
+      "Bash(dir \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\MusicEngineEditor\\\\Resources\\\\Icons\")",
+      "Bash(dir /s /b \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\")",
+      "Bash(findstr:*)",
+      "Bash(powershell:*)"
     ]
   }
 }
