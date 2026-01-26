@@ -1,0 +1,227 @@
+<UserControl x:Class="MusicEngineEditor.Controls.TempoCurveEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="200" d:DesignWidth="800"
+             Background="{DynamicResource PanelBackgroundBrush}"
+             ClipToBounds="True">
+
+    <UserControl.Resources>
+        <!-- Theme Colors -->
+        <SolidColorBrush x:Key="CanvasBackgroundBrush" Color="#252628"/>
+        <SolidColorBrush x:Key="GridLineBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="GridLineStrongBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="CurveBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="PointBrush" Color="#E8E8E8"/>
+        <SolidColorBrush x:Key="PointSelectedBrush" Color="#FF9B4B"/>
+        <SolidColorBrush x:Key="TempoLineBrush" Color="#4B6EAF"/>
+
+        <!-- Toolbar Button Style -->
+        <Style x:Key="TempoToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Curve Type ComboBox Style -->
+        <Style x:Key="CurveTypeComboStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="#2B2D30"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="MinWidth" Value="90"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="60"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Grid.ColumnSpan="2"
+                Background="{DynamicResource ToolbarBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Tempo Curve"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrightForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="CurrentTempoText"
+                               Text=" 120.0 BPM"
+                               FontSize="11"
+                               Foreground="{DynamicResource AccentBrush}"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0"/>
+                </StackPanel>
+
+                <!-- Curve Type Selector -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0">
+                    <TextBlock Text="Curve:"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0"/>
+                    <ComboBox x:Name="CurveTypeCombo"
+                              Style="{StaticResource CurveTypeComboStyle}"
+                              SelectedIndex="1"
+                              SelectionChanged="CurveTypeCombo_SelectionChanged"
+                              ToolTip="Default curve type for new points">
+                        <ComboBoxItem Content="Step" Tag="Step"/>
+                        <ComboBoxItem Content="Linear" Tag="Linear"/>
+                        <ComboBoxItem Content="S-Curve" Tag="SCurve"/>
+                        <ComboBoxItem Content="Exp In" Tag="ExponentialIn"/>
+                        <ComboBoxItem Content="Exp Out" Tag="ExponentialOut"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Action Buttons -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="+ Add Point"
+                            Style="{StaticResource TempoToolbarButtonStyle}"
+                            Click="AddPoint_Click"
+                            ToolTip="Add tempo point at cursor"/>
+                    <Button Content="Delete"
+                            Style="{StaticResource TempoToolbarButtonStyle}"
+                            Click="DeletePoint_Click"
+                            ToolTip="Delete selected point"/>
+                    <Button Content="Reset"
+                            Style="{StaticResource TempoToolbarButtonStyle}"
+                            Click="Reset_Click"
+                            ToolTip="Reset to constant 120 BPM"
+                            Margin="8,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Tempo Scale (Y-axis labels) -->
+        <Border Grid.Row="1" Grid.Column="0"
+                Background="#1E1F22"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,1,0">
+            <Canvas x:Name="ScaleCanvas" ClipToBounds="True">
+                <!-- Scale labels are drawn programmatically -->
+            </Canvas>
+        </Border>
+
+        <!-- Tempo Curve Canvas -->
+        <Border Grid.Row="1" Grid.Column="1"
+                Background="{StaticResource CanvasBackgroundBrush}"
+                ClipToBounds="True">
+            <Grid>
+                <!-- Grid Lines Canvas -->
+                <Canvas x:Name="GridCanvas" IsHitTestVisible="False"/>
+
+                <!-- Curve Canvas -->
+                <Canvas x:Name="CurveCanvas" IsHitTestVisible="False"/>
+
+                <!-- Points Canvas -->
+                <Canvas x:Name="PointsCanvas"
+                        Background="Transparent"
+                        MouseLeftButtonDown="PointsCanvas_MouseLeftButtonDown"
+                        MouseLeftButtonUp="PointsCanvas_MouseLeftButtonUp"
+                        MouseRightButtonDown="PointsCanvas_MouseRightButtonDown"
+                        MouseMove="PointsCanvas_MouseMove"
+                        MouseWheel="PointsCanvas_MouseWheel"/>
+
+                <!-- Playhead -->
+                <Line x:Name="Playhead"
+                      Y1="0" Y2="1000"
+                      Stroke="{DynamicResource AccentBrush}"
+                      StrokeThickness="2"
+                      IsHitTestVisible="False"
+                      Visibility="Collapsed"/>
+
+                <!-- Value Popup -->
+                <Border x:Name="ValuePopup"
+                        Background="#E0252628"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Padding="6,3"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Visibility="Collapsed"
+                        IsHitTestVisible="False">
+                    <StackPanel>
+                        <TextBlock x:Name="PopupPositionText"
+                                   Text="Beat: 0.00"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource ForegroundBrush}"/>
+                        <TextBlock x:Name="PopupTempoText"
+                                   Text="Tempo: 120.0 BPM"
+                                   FontSize="10"
+                                   Foreground="{StaticResource CurveBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Context Menu -->
+                <Grid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Add Point Here" Click="AddPointHere_Click"/>
+                        <MenuItem x:Name="DeletePointMenuItem" Header="Delete Point" Click="DeletePoint_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Set Curve Type">
+                            <MenuItem Header="Step" Tag="Step" Click="SetPointCurveType_Click"/>
+                            <MenuItem Header="Linear" Tag="Linear" Click="SetPointCurveType_Click"/>
+                            <MenuItem Header="S-Curve" Tag="SCurve" Click="SetPointCurveType_Click"/>
+                            <MenuItem Header="Exponential In" Tag="ExponentialIn" Click="SetPointCurveType_Click"/>
+                            <MenuItem Header="Exponential Out" Tag="ExponentialOut" Click="SetPointCurveType_Click"/>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Snap to Common Tempo" Click="SnapToCommon_Click"/>
+                        <MenuItem Header="Reset All" Click="Reset_Click"/>
+                    </ContextMenu>
+                </Grid.ContextMenu>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

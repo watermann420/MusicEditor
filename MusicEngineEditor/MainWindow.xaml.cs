@@ -319,7 +319,7 @@ public partial class MainWindow : Window
         if (_vstWindows.TryGetValue(name, out var existingWindow))
         {
             existingWindow.Show();
-            existingWindow.WindowState = WindowState.Normal;
+            existingWindow.WindowState = System.Windows.WindowState.Normal;
             existingWindow.Activate();
         }
         else
@@ -451,6 +451,17 @@ public partial class MainWindow : Window
         _performanceMonitorService.Dispose();
         CloseAllVstWindows();
         _engineService.Dispose();
+
+        // Mark session as cleanly closed (no crash recovery needed)
+        try
+        {
+            RecoveryService.Instance.MarkSessionClosed();
+            AutoSaveService.Instance.Dispose();
+        }
+        catch
+        {
+            // Ignore errors during shutdown
+        }
     }
 
     private void StatusTimer_Tick(object? sender, EventArgs e)
@@ -591,6 +602,12 @@ public partial class MainWindow : Window
                 StatusText.Text = $"Created project: {_currentProject.Name}";
                 OutputLine($"Created new project: {_currentProject.Name}");
 
+                // Mark session as active for crash recovery
+                RecoveryService.Instance.MarkSessionActive(_currentProject);
+
+                // Initialize auto-save for this project
+                AutoSaveService.Instance.Initialize(_projectService);
+
                 // Open entry point script (with null checks)
                 if (_currentProject.Scripts != null && _currentProject.Scripts.Count > 0)
                 {
@@ -649,6 +666,12 @@ public partial class MainWindow : Window
                 ProjectNameDisplay.Text = _currentProject.Name;
                 StatusText.Text = $"Loaded: {_currentProject.Name}";
                 OutputLine($"Loaded project: {_currentProject.Name}");
+
+                // Mark session as active for crash recovery
+                RecoveryService.Instance.MarkSessionActive(_currentProject);
+
+                // Initialize auto-save for this project
+                AutoSaveService.Instance.Initialize(_projectService);
 
                 // Open entry point script (with null checks)
                 if (_currentProject.Scripts != null && _currentProject.Scripts.Count > 0)
@@ -1757,7 +1780,7 @@ public partial class MainWindow : Window
                 var screenPos = PointToScreen(mousePos);
 
                 _isMaximized = false;
-                WindowState = WindowState.Normal;
+                WindowState = System.Windows.WindowState.Normal;
 
                 // Position window so the mouse is still over it proportionally
                 Left = screenPos.X - (Width / 2);
@@ -1778,7 +1801,7 @@ public partial class MainWindow : Window
 
     private void MinimizeButton_Click(object sender, RoutedEventArgs e)
     {
-        WindowState = WindowState.Minimized;
+        WindowState = System.Windows.WindowState.Minimized;
     }
 
     private void MaximizeButton_Click(object sender, RoutedEventArgs e)
@@ -1795,12 +1818,12 @@ public partial class MainWindow : Window
     {
         if (_isMaximized)
         {
-            WindowState = WindowState.Normal;
+            WindowState = System.Windows.WindowState.Normal;
             _isMaximized = false;
         }
         else
         {
-            WindowState = WindowState.Maximized;
+            WindowState = System.Windows.WindowState.Maximized;
             _isMaximized = true;
         }
     }
@@ -1809,7 +1832,7 @@ public partial class MainWindow : Window
     protected override void OnStateChanged(EventArgs e)
     {
         base.OnStateChanged(e);
-        _isMaximized = WindowState == WindowState.Maximized;
+        _isMaximized = WindowState == System.Windows.WindowState.Maximized;
     }
 
     #endregion

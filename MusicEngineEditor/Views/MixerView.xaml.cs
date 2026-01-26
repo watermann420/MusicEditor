@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using MusicEngineEditor.Models;
 using MusicEngineEditor.ViewModels;
 
 namespace MusicEngineEditor.Views;
@@ -176,4 +177,42 @@ public partial class MixerView : UserControl
     /// Gets the MixerViewModel associated with this view.
     /// </summary>
     public MixerViewModel ViewModel => _viewModel;
+
+    /// <summary>
+    /// Handles layout selector selection changes.
+    /// </summary>
+    private void LayoutSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (LayoutSelector.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+        {
+            var layout = tag switch
+            {
+                "LargeFaders" => MixerLayoutType.LargeFaders,
+                "SmallFaders" => MixerLayoutType.SmallFaders,
+                "MetersOnly" => MixerLayoutType.MetersOnly,
+                _ => MixerLayoutType.LargeFaders
+            };
+
+            _viewModel.CurrentLayout = layout;
+        }
+    }
+
+    /// <summary>
+    /// Syncs the layout selector with the viewmodel state.
+    /// </summary>
+    private void SyncLayoutSelector()
+    {
+        int index = _viewModel.CurrentLayout switch
+        {
+            MixerLayoutType.LargeFaders => 0,
+            MixerLayoutType.SmallFaders => 1,
+            MixerLayoutType.MetersOnly => 2,
+            _ => 0
+        };
+
+        if (LayoutSelector.SelectedIndex != index)
+        {
+            LayoutSelector.SelectedIndex = index;
+        }
+    }
 }

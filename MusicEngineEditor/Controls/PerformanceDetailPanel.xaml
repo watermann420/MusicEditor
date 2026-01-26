@@ -1,0 +1,347 @@
+<UserControl x:Class="MusicEngineEditor.Controls.PerformanceDetailPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="350"
+             Background="{DynamicResource PanelBackgroundBrush}">
+
+    <UserControl.Resources>
+        <!-- Meter Bar Style -->
+        <Style x:Key="MeterBarContainerStyle" TargetType="Border">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Background" Value="#0D0D0D"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="2"/>
+        </Style>
+
+        <!-- Track/Plugin List Item Style -->
+        <Style x:Key="UsageListItemStyle" TargetType="Border">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource HoverBackgroundBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Section Header Style -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="Margin" Value="0,12,0,6"/>
+        </Style>
+
+        <!-- Value Text Style -->
+        <Style x:Key="ValueTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontFamily" Value="JetBrains Mono, Consolas"/>
+            <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Label Text Style -->
+        <Style x:Key="LabelTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Colors for meters -->
+        <Color x:Key="CpuColor">#6AAB73</Color>
+        <Color x:Key="RamColor">#4B6EAF</Color>
+        <Color x:Key="BufferColor">#589DF6</Color>
+        <Color x:Key="DiskColor">#E8B339</Color>
+        <Color x:Key="WarningColor">#E8B339</Color>
+        <Color x:Key="CriticalColor">#F75464</Color>
+
+        <SolidColorBrush x:Key="CpuBrush" Color="{StaticResource CpuColor}"/>
+        <SolidColorBrush x:Key="RamBrush" Color="{StaticResource RamColor}"/>
+        <SolidColorBrush x:Key="BufferBrush" Color="{StaticResource BufferColor}"/>
+        <SolidColorBrush x:Key="DiskBrush" Color="{StaticResource DiskColor}"/>
+    </UserControl.Resources>
+
+    <Border BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6">
+        <Expander x:Name="MainExpander"
+                  IsExpanded="True"
+                  Background="Transparent"
+                  BorderThickness="0">
+            <Expander.Header>
+                <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Expander}, Converter={x:Static local:WidthMinusMarginConverter.Instance}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Performance Details"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrightForegroundBrush}"
+                               VerticalAlignment="Center"/>
+
+                    <Button x:Name="ResetButton"
+                            Grid.Column="1"
+                            Content="Reset"
+                            Click="ResetButton_Click"
+                            Style="{DynamicResource SecondaryButtonStyle}"
+                            Padding="8,2"
+                            FontSize="10"
+                            VerticalAlignment="Center"
+                            Margin="0,0,20,0"/>
+                </Grid>
+            </Expander.Header>
+
+            <Grid Margin="12,8,12,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- CPU History Graph Section -->
+                <StackPanel Grid.Row="0">
+                    <TextBlock Text="CPU HISTORY (60s)" Style="{StaticResource SectionHeaderStyle}"/>
+                    <Border Background="#0D0D0D"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Height="80"
+                            Padding="2">
+                        <Canvas x:Name="CpuHistoryCanvas" ClipToBounds="True">
+                            <!-- Grid lines -->
+                            <Line x:Name="GridLine75" Stroke="#1A1A1A" StrokeThickness="1" StrokeDashArray="2,2"/>
+                            <Line x:Name="GridLine50" Stroke="#1A1A1A" StrokeThickness="1" StrokeDashArray="2,2"/>
+                            <Line x:Name="GridLine25" Stroke="#1A1A1A" StrokeThickness="1" StrokeDashArray="2,2"/>
+
+                            <!-- CPU usage polyline -->
+                            <Polyline x:Name="CpuHistoryLine"
+                                      Stroke="{StaticResource CpuBrush}"
+                                      StrokeThickness="1.5"
+                                      StrokeLineJoin="Round"/>
+
+                            <!-- Peak line -->
+                            <Line x:Name="PeakLine"
+                                  Stroke="{StaticResource CriticalColor}"
+                                  StrokeThickness="1"
+                                  StrokeDashArray="4,2"
+                                  Opacity="0.7"/>
+                        </Canvas>
+                    </Border>
+
+                    <!-- Graph legend -->
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="1" Text="Current:" Style="{StaticResource LabelTextStyle}" Margin="0,0,4,0"/>
+                        <TextBlock x:Name="CurrentCpuText" Grid.Column="2" Text="0%" Style="{StaticResource ValueTextStyle}" MinWidth="35"/>
+
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="12,0,0,0">
+                            <TextBlock Text="Peak:" Style="{StaticResource LabelTextStyle}" Margin="0,0,4,0"/>
+                            <TextBlock x:Name="PeakCpuText" Text="0%" Style="{StaticResource ValueTextStyle}" Foreground="#F75464" MinWidth="35"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Memory Allocation Section -->
+                <StackPanel Grid.Row="1">
+                    <TextBlock Text="MEMORY ALLOCATION" Style="{StaticResource SectionHeaderStyle}"/>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="60"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Process Memory -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Process" Style="{StaticResource LabelTextStyle}"/>
+                        <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource MeterBarContainerStyle}" Margin="8,2">
+                            <Border x:Name="ProcessMemBar" HorizontalAlignment="Left" CornerRadius="1" Margin="1" Background="{StaticResource RamBrush}"/>
+                        </Border>
+                        <TextBlock x:Name="ProcessMemText" Grid.Row="0" Grid.Column="2" Text="0 MB" Style="{StaticResource ValueTextStyle}" TextAlignment="Right"/>
+
+                        <!-- Audio Buffers -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Audio Buffers" Style="{StaticResource LabelTextStyle}"/>
+                        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource MeterBarContainerStyle}" Margin="8,2">
+                            <Border x:Name="AudioBufferMemBar" HorizontalAlignment="Left" CornerRadius="1" Margin="1" Background="{StaticResource BufferBrush}"/>
+                        </Border>
+                        <TextBlock x:Name="AudioBufferMemText" Grid.Row="1" Grid.Column="2" Text="0 MB" Style="{StaticResource ValueTextStyle}" TextAlignment="Right"/>
+
+                        <!-- Plugin Memory -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Plugins" Style="{StaticResource LabelTextStyle}"/>
+                        <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource MeterBarContainerStyle}" Margin="8,2">
+                            <Border x:Name="PluginMemBar" HorizontalAlignment="Left" CornerRadius="1" Margin="1" Background="{StaticResource DiskBrush}"/>
+                        </Border>
+                        <TextBlock x:Name="PluginMemText" Grid.Row="2" Grid.Column="2" Text="0 MB" Style="{StaticResource ValueTextStyle}" TextAlignment="Right"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Per-Track CPU Breakdown -->
+                <StackPanel Grid.Row="2">
+                    <TextBlock Text="PER-TRACK CPU USAGE" Style="{StaticResource SectionHeaderStyle}"/>
+                    <Border Background="#0D0D0D"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            MaxHeight="100">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4">
+                            <ItemsControl x:Name="TrackCpuList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource UsageListItemStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="45"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding TrackName}"
+                                                           Style="{StaticResource LabelTextStyle}"
+                                                           TextTrimming="CharacterEllipsis"/>
+
+                                                <Border Grid.Column="1" Style="{StaticResource MeterBarContainerStyle}" Margin="8,0">
+                                                    <Border HorizontalAlignment="Left"
+                                                            CornerRadius="1"
+                                                            Margin="1"
+                                                            Background="{StaticResource CpuBrush}"
+                                                            Width="{Binding BarWidth}"/>
+                                                </Border>
+
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding CpuPercent, StringFormat={}{0:F1}%}"
+                                                           Style="{StaticResource ValueTextStyle}"
+                                                           TextAlignment="Right"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+
+                <!-- Plugin CPU Usage DataGrid -->
+                <StackPanel Grid.Row="3">
+                    <TextBlock Text="PLUGIN CPU USAGE" Style="{StaticResource SectionHeaderStyle}"/>
+                    <Border Background="#0D0D0D"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            MaxHeight="120">
+                        <DataGrid x:Name="PluginCpuGrid"
+                                  AutoGenerateColumns="False"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="None"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  RowBackground="Transparent"
+                                  AlternatingRowBackground="#0A0A0A"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  CanUserResizeRows="False"
+                                  IsReadOnly="True"
+                                  SelectionMode="Single"
+                                  FontSize="11">
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="#1A1A1A"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+                                    <Setter Property="Padding" Value="8,4"/>
+                                    <Setter Property="FontSize" Value="10"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Padding" Value="8,4"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridCell">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource SelectedBackgroundBrush}"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.CellStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Plugin" Binding="{Binding Name}" Width="*"/>
+                                <DataGridTextColumn Header="CPU %" Binding="{Binding CpuPercent, StringFormat=F1}" Width="50"/>
+                                <DataGridTextColumn Header="Memory" Binding="{Binding MemoryMB, StringFormat={}{0:F0} MB}" Width="60"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </StackPanel>
+
+                <!-- Status Bar -->
+                <Border Grid.Row="4"
+                        Background="#1A1A1A"
+                        CornerRadius="4"
+                        Padding="8,6"
+                        Margin="0,12,0,0"
+                        VerticalAlignment="Bottom">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock x:Name="StatusText"
+                                   Grid.Column="0"
+                                   Text="Monitoring active"
+                                   Style="{StaticResource LabelTextStyle}"
+                                   Opacity="0.7"/>
+
+                        <TextBlock x:Name="UpdateRateText"
+                                   Grid.Column="1"
+                                   Text="10 Hz"
+                                   Style="{StaticResource ValueTextStyle}"
+                                   Opacity="0.5"
+                                   Margin="0,0,12,0"/>
+
+                        <TextBlock x:Name="UptimeText"
+                                   Grid.Column="2"
+                                   Text="00:00:00"
+                                   Style="{StaticResource ValueTextStyle}"
+                                   Opacity="0.5"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Expander>
+    </Border>
+</UserControl>

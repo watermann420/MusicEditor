@@ -11,12 +11,43 @@ using MusicEngineEditor.Models;
 namespace MusicEngineEditor.ViewModels;
 
 /// <summary>
+/// Event args for favorite toggled event.
+/// </summary>
+public class FavoriteToggledEventArgs : EventArgs
+{
+    /// <summary>
+    /// Gets the preset that was toggled.
+    /// </summary>
+    public PresetInfo Preset { get; }
+
+    /// <summary>
+    /// Gets whether the preset is now a favorite.
+    /// </summary>
+    public bool IsFavorite { get; }
+
+    /// <summary>
+    /// Creates new event args.
+    /// </summary>
+    public FavoriteToggledEventArgs(PresetInfo preset, bool isFavorite)
+    {
+        Preset = preset;
+        IsFavorite = isFavorite;
+    }
+}
+
+/// <summary>
 /// ViewModel for the Preset Browser control.
 /// </summary>
 public partial class PresetBrowserViewModel : ViewModelBase
 {
     private readonly PresetManager _presetManager;
+    private readonly BrowserFavorites _browserFavorites;
     private List<PresetInfo> _allPresets = [];
+
+    /// <summary>
+    /// Event raised when a preset's favorite status is toggled.
+    /// </summary>
+    public event EventHandler<FavoriteToggledEventArgs>? FavoriteToggled;
 
     #region Observable Properties
 
@@ -89,6 +120,7 @@ public partial class PresetBrowserViewModel : ViewModelBase
     public PresetBrowserViewModel(PresetManager presetManager)
     {
         _presetManager = presetManager;
+        _browserFavorites = BrowserFavorites.Load();
         _presetManager.BanksChanged += OnBanksChanged;
         LoadPresets();
     }
@@ -102,10 +134,15 @@ public partial class PresetBrowserViewModel : ViewModelBase
         if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
         {
             FilteredPresets.Add(new PresetInfo { Name = "Epic Bass", Category = "Bass", Author = "Demo" });
-            FilteredPresets.Add(new PresetInfo { Name = "Warm Pad", Category = "Pads", Author = "Demo" });
+            FilteredPresets.Add(new PresetInfo { Name = "Warm Pad", Category = "Pads", Author = "Demo", IsFavorite = true });
             FilteredPresets.Add(new PresetInfo { Name = "Bright Lead", Category = "Leads", Author = "Demo" });
         }
     }
+
+    /// <summary>
+    /// Gets the number of favorites.
+    /// </summary>
+    public int FavoriteCount => _browserFavorites.FavoritePresetIds.Count;
 
     #region Property Changed Handlers
 
@@ -180,6 +217,8 @@ public partial class PresetBrowserViewModel : ViewModelBase
                 foreach (var preset in group)
                 {
                     var presetInfo = PresetInfo.FromPreset(preset, bank.Name, bank.Id);
+                    // Sync favorite status from local storage
+                    presetInfo.IsFavorite = _browserFavorites.IsPresetFavorite(presetInfo.Id);
                     categoryNode.Presets.Add(presetInfo);
                     _allPresets.Add(presetInfo);
                 }
@@ -298,24 +337,56 @@ public partial class PresetBrowserViewModel : ViewModelBase
     {
         if (SelectedPreset != null)
         {
-            SelectedPreset.IsFavorite = !SelectedPreset.IsFavorite;
-            SelectedPreset.UpdateFavoriteStatus();
+            ToggleFavoriteForPresetInternal(SelectedPreset);
+        }
+    }
 
-            // Update the source preset in the manager
-            if (SelectedPreset.SourcePreset != null)
-            {
-                var bank = _presetManager.GetBankById(SelectedPreset.BankId);
-                if (bank != null)
-                {
-                    _presetManager.SavePreset(SelectedPreset.SourcePreset, bank);
-                }
-            }
+    /// <summary>
+    /// Toggles the favorite status of a specific preset.
+    /// </summary>
+    /// <param name="preset">The preset to toggle.</param>
+    [RelayCommand]
+    private void ToggleFavoriteForPreset(PresetInfo? preset)
+    {
+        if (preset != null)
+        {
+            ToggleFavoriteForPresetInternal(preset);
+        }
+    }
 
-            // Re-apply filters if showing favorites only
-            if (ShowOnlyFavorites)
+    private void ToggleFavoriteForPresetInternal(PresetInfo preset)
+    {
+        preset.IsFavorite = !preset.IsFavorite;
+        preset.UpdateFavoriteStatus();
+
+        // Update local favorites storage
+        if (preset.IsFavorite)
+        {
+            _browserFavorites.AddPresetFavorite(preset.Id);
+        }
+        else
+        {
+            _browserFavorites.RemovePresetFavorite(preset.Id);
+        }
+
+        // Update the source preset in the manager
+        if (preset.SourcePreset != null)
+        {
+            var bank = _presetManager.GetBankById(preset.BankId);
+            if (bank != null)
             {
-                ApplyFilters();
+                _presetManager.SavePreset(preset.SourcePreset, bank);
             }
+        }
+
+        // Raise the event
+        FavoriteToggled?.Invoke(this, new FavoriteToggledEventArgs(preset, preset.IsFavorite));
+        OnPropertyChanged(nameof(FavoriteCount));
+
+        // Re-apply filters if showing favorites only
+        if (ShowOnlyFavorites)
+        {
+            ApplyFilters();
         }
     }
 

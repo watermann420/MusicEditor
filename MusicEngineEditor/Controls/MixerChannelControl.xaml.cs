@@ -1,8 +1,11 @@
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using MusicEngineEditor.Models;
 
 namespace MusicEngineEditor.Controls;
 
@@ -70,6 +73,18 @@ public partial class MixerChannelControl : UserControl
     public static readonly DependencyProperty MeterRightProperty =
         DependencyProperty.Register(nameof(MeterRight), typeof(float), typeof(MixerChannelControl),
             new PropertyMetadata(0f));
+
+    public static readonly DependencyProperty IsPhaseInvertedProperty =
+        DependencyProperty.Register(nameof(IsPhaseInverted), typeof(bool), typeof(MixerChannelControl),
+            new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    public static readonly DependencyProperty IconProperty =
+        DependencyProperty.Register(nameof(Icon), typeof(TrackIconType), typeof(MixerChannelControl),
+            new PropertyMetadata(TrackIconType.None, OnIconChanged));
+
+    public static readonly DependencyProperty IconPathProperty =
+        DependencyProperty.Register(nameof(IconPath), typeof(string), typeof(MixerChannelControl),
+            new PropertyMetadata(null));
 
     /// <summary>
     /// Gets or sets the channel name displayed at the top of the strip.
@@ -161,6 +176,33 @@ public partial class MixerChannelControl : UserControl
         set => SetValue(MeterRightProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the channel phase is inverted.
+    /// </summary>
+    public bool IsPhaseInverted
+    {
+        get => (bool)GetValue(IsPhaseInvertedProperty);
+        set => SetValue(IsPhaseInvertedProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the track icon type.
+    /// </summary>
+    public TrackIconType Icon
+    {
+        get => (TrackIconType)GetValue(IconProperty);
+        set => SetValue(IconProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the custom icon path.
+    /// </summary>
+    public string? IconPath
+    {
+        get => (string?)GetValue(IconPathProperty);
+        set => SetValue(IconPathProperty, value);
+    }
+
     #endregion
 
     #region Constructor
@@ -196,6 +238,14 @@ public partial class MixerChannelControl : UserControl
     {
         float value = (float)baseValue;
         return Math.Clamp(value, -1f, 1f);
+    }
+
+    private static void OnIconChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is MixerChannelControl control)
+        {
+            control.UpdateIconDisplay();
+        }
     }
 
     #endregion
@@ -280,4 +330,65 @@ public partial class MixerChannelControl : UserControl
     }
 
     #endregion
+
+    #region Icon Support
+
+    /// <summary>
+    /// Updates the track icon display based on the current Icon property.
+    /// </summary>
+    private void UpdateIconDisplay()
+    {
+        var iconDisplay = FindName("TrackIconDisplay") as TextBlock;
+        if (iconDisplay == null) return;
+
+        iconDisplay.Text = GetIconText(Icon);
+        iconDisplay.Visibility = Icon == TrackIconType.None ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    /// <summary>
+    /// Gets the Unicode character for the specified track icon type.
+    /// </summary>
+    private static string GetIconText(TrackIconType iconType)
+    {
+        return iconType switch
+        {
+            TrackIconType.Audio => "\u266B",      // Musical note
+            TrackIconType.Midi => "\u2669",       // Quarter note
+            TrackIconType.Drums => "\u25C9",      // Fisheye (drum-like)
+            TrackIconType.Bass => "\u266C",       // Beamed notes
+            TrackIconType.Synth => "\u223F",      // Sine wave
+            TrackIconType.Vocals => "\u2669",     // Quarter note (mic-like)
+            TrackIconType.Guitar => "\u266A",     // Eighth note
+            TrackIconType.Piano => "\u2399",      // Print screen symbol (keys-like)
+            TrackIconType.Strings => "\u2248",    // Almost equal (vibrato)
+            TrackIconType.Brass => "\u25D4",      // Circle with upper right black
+            TrackIconType.Woodwinds => "\u25D5",  // Circle with all but upper left black
+            TrackIconType.FX => "\u2731",         // Heavy asterisk
+            TrackIconType.Bus => "\u25A0",        // Black square
+            TrackIconType.Master => "\u2302",     // House (master)
+            _ => ""
+        };
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// Converter to determine icon visibility based on TrackIconType.
+/// </summary>
+public class TrackIconVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is TrackIconType iconType)
+        {
+            return iconType == TrackIconType.None ? Visibility.Collapsed : Visibility.Visible;
+        }
+        return Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
 }

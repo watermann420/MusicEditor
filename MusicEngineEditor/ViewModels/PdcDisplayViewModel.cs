@@ -17,6 +17,11 @@ namespace MusicEngineEditor.ViewModels;
 /// </summary>
 public partial class TrackLatencyInfo : ObservableObject
 {
+    /// <summary>
+    /// Latency threshold in ms for warning indicator.
+    /// </summary>
+    public const double LatencyWarningThresholdMs = 20.0;
+
     [ObservableProperty]
     private string _trackId = string.Empty;
 
@@ -44,6 +49,24 @@ public partial class TrackLatencyInfo : ObservableObject
     [ObservableProperty]
     private string _pluginNames = string.Empty;
 
+    [ObservableProperty]
+    private double _inputLatencyMs;
+
+    [ObservableProperty]
+    private double _outputLatencyMs;
+
+    [ObservableProperty]
+    private double _pluginLatencyMs;
+
+    [ObservableProperty]
+    private double _roundTripLatencyMs;
+
+    [ObservableProperty]
+    private string _pluginChainDetails = string.Empty;
+
+    [ObservableProperty]
+    private bool _isLatencyWarning;
+
     /// <summary>
     /// Gets the latency as a normalized value (0-1) for display.
     /// Based on max typical latency of ~10000 samples.
@@ -62,6 +85,28 @@ public partial class TrackLatencyInfo : ObservableObject
             < 4096 => "High",
             _ => "VeryHigh"
         };
+
+        // Calculate round-trip latency
+        RoundTripLatencyMs = InputLatencyMs + PluginLatencyMs + OutputLatencyMs;
+
+        // Set warning if exceeds threshold
+        IsLatencyWarning = RoundTripLatencyMs > LatencyWarningThresholdMs;
+    }
+
+    /// <summary>
+    /// Sets the full latency breakdown.
+    /// </summary>
+    /// <param name="inputMs">Input buffer latency in ms.</param>
+    /// <param name="pluginMs">Plugin processing latency in ms.</param>
+    /// <param name="outputMs">Output buffer latency in ms.</param>
+    /// <param name="pluginDetails">Details of each plugin's latency contribution.</param>
+    public void SetLatencyBreakdown(double inputMs, double pluginMs, double outputMs, string pluginDetails = "")
+    {
+        InputLatencyMs = inputMs;
+        PluginLatencyMs = pluginMs;
+        OutputLatencyMs = outputMs;
+        PluginChainDetails = pluginDetails;
+        UpdateLatencyLevel();
     }
 }
 

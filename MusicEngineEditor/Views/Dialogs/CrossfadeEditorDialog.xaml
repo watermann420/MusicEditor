@@ -1,0 +1,284 @@
+<Window x:Class="MusicEngineEditor.Views.Dialogs.CrossfadeEditorDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Crossfade Editor"
+        Width="700" Height="550"
+        MinWidth="550" MinHeight="450"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
+
+    <Window.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#1E1F22</Color>
+        <Color x:Key="PanelBackgroundColor">#2B2D30</Color>
+        <Color x:Key="BorderColor">#393B40</Color>
+        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
+        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="AccentColor">#55AAFF</Color>
+        <Color x:Key="FadeOutColor">#FF6B6B</Color>
+        <Color x:Key="FadeInColor">#4CAF50</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{StaticResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="FadeOutBrush" Color="{StaticResource FadeOutColor}"/>
+        <SolidColorBrush x:Key="FadeInBrush" Color="{StaticResource FadeInColor}"/>
+
+        <!-- Curve Type Button Style -->
+        <Style x:Key="CurveButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Width" Value="80"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title and Clip Info -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel>
+                <TextBlock Text="Crossfade Editor" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <Border Background="{StaticResource FadeOutBrush}" CornerRadius="2" Padding="6,2" Margin="0,0,8,0">
+                        <TextBlock x:Name="FadeOutClipName" Text="Clip A (Fade Out)" FontSize="11" Foreground="White"/>
+                    </Border>
+                    <TextBlock Text="to" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"/>
+                    <Border Background="{StaticResource FadeInBrush}" CornerRadius="2" Padding="6,2">
+                        <TextBlock x:Name="FadeInClipName" Text="Clip B (Fade In)" FontSize="11" Foreground="White"/>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Duration Control -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Length:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox x:Name="LengthTextBox" Width="60" Text="500" TextAlignment="Center"
+                         Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                         BorderBrush="{StaticResource BorderBrush}" Padding="4" TextChanged="LengthTextBox_TextChanged"/>
+                <TextBlock Text="ms" VerticalAlignment="Center" Margin="4,0,16,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                <Slider x:Name="LengthSlider" Width="120" Minimum="10" Maximum="2000" Value="500"
+                        VerticalAlignment="Center" ValueChanged="LengthSlider_ValueChanged"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Crossfade Visualization -->
+        <Border Grid.Row="1" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Curve Display -->
+                <Border Background="{StaticResource BackgroundBrush}" CornerRadius="4">
+                    <Canvas x:Name="CrossfadeCanvas" ClipToBounds="True"/>
+                </Border>
+
+                <!-- Legend -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                    <Border Width="20" Height="3" Background="{StaticResource FadeOutBrush}" CornerRadius="1" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Fade Out" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,16,0"/>
+                    <Border Width="20" Height="3" Background="{StaticResource FadeInBrush}" CornerRadius="1" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Fade In" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,16,0"/>
+                    <Border Width="20" Height="3" Background="{StaticResource AccentBrush}" CornerRadius="1" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Combined" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Curve Type Selection -->
+        <Border Grid.Row="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Margin="0,16,0,0" Padding="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Curve Type:" VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <RadioButton x:Name="LinearCurve" Style="{StaticResource CurveButtonStyle}" IsChecked="True" Checked="CurveType_Changed">
+                        <StackPanel>
+                            <Canvas Width="50" Height="30">
+                                <Line X1="5" Y1="25" X2="45" Y2="5" Stroke="{StaticResource TextPrimaryBrush}" StrokeThickness="2"/>
+                            </Canvas>
+                            <TextBlock Text="Linear" FontSize="10" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton x:Name="EqualPowerCurve" Style="{StaticResource CurveButtonStyle}" Checked="CurveType_Changed">
+                        <StackPanel>
+                            <Canvas Width="50" Height="30">
+                                <Path Stroke="{StaticResource TextPrimaryBrush}" StrokeThickness="2">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="5,25">
+                                                <QuadraticBezierSegment Point1="25,25" Point2="45,5"/>
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </Canvas>
+                            <TextBlock Text="Equal Power" FontSize="10" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton x:Name="SCurveCurve" Style="{StaticResource CurveButtonStyle}" Checked="CurveType_Changed">
+                        <StackPanel>
+                            <Canvas Width="50" Height="30">
+                                <Path Stroke="{StaticResource TextPrimaryBrush}" StrokeThickness="2">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="5,25">
+                                                <BezierSegment Point1="15,25" Point2="35,5" Point3="45,5"/>
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </Canvas>
+                            <TextBlock Text="S-Curve" FontSize="10" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton x:Name="LogarithmicCurve" Style="{StaticResource CurveButtonStyle}" Checked="CurveType_Changed">
+                        <StackPanel>
+                            <Canvas Width="50" Height="30">
+                                <Path Stroke="{StaticResource TextPrimaryBrush}" StrokeThickness="2">
+                                    <Path.Data>
+                                        <PathGeometry>
+                                            <PathFigure StartPoint="5,25">
+                                                <QuadraticBezierSegment Point1="30,5" Point2="45,5"/>
+                                            </PathFigure>
+                                        </PathGeometry>
+                                    </Path.Data>
+                                </Path>
+                            </Canvas>
+                            <TextBlock Text="Logarithmic" FontSize="10" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton x:Name="CustomCurve" Style="{StaticResource CurveButtonStyle}" Checked="CurveType_Changed">
+                        <StackPanel>
+                            <Canvas Width="50" Height="30">
+                                <Ellipse Canvas.Left="20" Canvas.Top="10" Width="10" Height="10" Fill="{StaticResource TextPrimaryBrush}"/>
+                            </Canvas>
+                            <TextBlock Text="Custom" FontSize="10" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Custom Bezier Controls (shown when Custom is selected) -->
+        <Border x:Name="CustomControlsPanel" Grid.Row="3" Background="{StaticResource PanelBackgroundBrush}"
+                CornerRadius="6" Margin="0,16,0,0" Padding="12" Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                    <TextBlock Text="Fade Out Curve" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="40"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Tension:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <Slider x:Name="FadeOutTensionSlider" Grid.Column="1" Minimum="-1" Maximum="1" Value="0"
+                                ValueChanged="CustomSlider_ValueChanged"/>
+                        <TextBlock Grid.Column="2" Text="{Binding ElementName=FadeOutTensionSlider, Path=Value, StringFormat='{}{0:F2}'}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                    <TextBlock Text="Fade In Curve" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="40"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Tension:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <Slider x:Name="FadeInTensionSlider" Grid.Column="1" Minimum="-1" Maximum="1" Value="0"
+                                ValueChanged="CustomSlider_ValueChanged"/>
+                        <TextBlock Grid.Column="2" Text="{Binding ElementName=FadeInTensionSlider, Path=Value, StringFormat='{}{0:F2}'}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Action Buttons -->
+        <Grid Grid.Row="4" Margin="0,16,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button Content="Preview" Click="Preview_Click" Padding="16,8" Margin="0,0,8,0"
+                        Background="{StaticResource PanelBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"/>
+                <Button Content="Reset" Click="Reset_Click" Padding="16,8"
+                        Background="{StaticResource PanelBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Apply" Click="Apply_Click" Padding="20,8" Margin="0,0,8,0" IsDefault="True"
+                        Background="{StaticResource AccentBrush}" Foreground="White" BorderBrush="{StaticResource AccentBrush}"/>
+                <Button Content="Cancel" Click="Cancel_Click" Padding="20,8" IsCancel="True"
+                        Background="{StaticResource PanelBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

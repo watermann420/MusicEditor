@@ -9,29 +9,58 @@ using MusicEngine.Core.Automation;
 namespace MusicEngineEditor.Controls;
 
 /// <summary>
-/// Recording mode for automation.
+/// Automation mode for playback and recording behavior.
+/// </summary>
+public enum AutomationMode
+{
+    /// <summary>
+    /// Read mode: Only read and playback existing automation. No recording.
+    /// </summary>
+    Read,
+
+    /// <summary>
+    /// Touch mode: Record while touching a control, return to existing curve on release.
+    /// Automation is only recorded while actively manipulating a parameter.
+    /// </summary>
+    Touch,
+
+    /// <summary>
+    /// Latch mode: Start recording on first touch, continue at last value until playback stops.
+    /// Once you touch a control, it keeps recording at that value until you stop playback.
+    /// </summary>
+    Latch,
+
+    /// <summary>
+    /// Write mode: Always overwrite existing automation during playback.
+    /// Destructive mode that replaces all automation with current parameter values.
+    /// </summary>
+    Write
+}
+
+/// <summary>
+/// Recording mode for automation (legacy alias for AutomationMode).
 /// </summary>
 public enum AutomationRecordingMode
 {
     /// <summary>
     /// No recording, playback only.
     /// </summary>
-    Off,
+    Off = AutomationMode.Read,
 
     /// <summary>
     /// Record only while touching a control, return to existing curve on release.
     /// </summary>
-    Touch,
+    Touch = AutomationMode.Touch,
 
     /// <summary>
     /// Start recording on first touch, continue until playback stops.
     /// </summary>
-    Latch,
+    Latch = AutomationMode.Latch,
 
     /// <summary>
     /// Always overwrite existing automation while playing.
     /// </summary>
-    Write
+    Write = AutomationMode.Write
 }
 
 /// <summary>
@@ -44,6 +73,10 @@ public partial class AutomationToolbar : UserControl
     public static readonly DependencyProperty RecordingModeProperty =
         DependencyProperty.Register(nameof(RecordingMode), typeof(AutomationRecordingMode), typeof(AutomationToolbar),
             new PropertyMetadata(AutomationRecordingMode.Off, OnRecordingModeChanged));
+
+    public static readonly DependencyProperty AutomationModeProperty =
+        DependencyProperty.Register(nameof(AutomationMode), typeof(AutomationMode), typeof(AutomationToolbar),
+            new PropertyMetadata(AutomationMode.Read, OnAutomationModeChanged));
 
     public static readonly DependencyProperty IsArmedProperty =
         DependencyProperty.Register(nameof(IsArmed), typeof(bool), typeof(AutomationToolbar),
@@ -70,12 +103,21 @@ public partial class AutomationToolbar : UserControl
             new PropertyMetadata(AutomationCurveType.Linear));
 
     /// <summary>
-    /// Gets or sets the current recording mode.
+    /// Gets or sets the current recording mode (legacy property, use AutomationMode instead).
     /// </summary>
     public AutomationRecordingMode RecordingMode
     {
         get => (AutomationRecordingMode)GetValue(RecordingModeProperty);
         set => SetValue(RecordingModeProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the automation mode (Read, Touch, Latch, Write).
+    /// </summary>
+    public AutomationMode AutomationMode
+    {
+        get => (AutomationMode)GetValue(AutomationModeProperty);
+        set => SetValue(AutomationModeProperty, value);
     }
 
     /// <summary>
@@ -137,9 +179,14 @@ public partial class AutomationToolbar : UserControl
     #region Events
 
     /// <summary>
-    /// Fired when the recording mode changes.
+    /// Fired when the recording mode changes (legacy event).
     /// </summary>
     public event EventHandler<AutomationRecordingMode>? RecordingModeChanged;
+
+    /// <summary>
+    /// Fired when the automation mode changes.
+    /// </summary>
+    public event EventHandler<AutomationMode>? AutomationModeChanged;
 
     /// <summary>
     /// Fired when armed state changes.
@@ -215,10 +262,25 @@ public partial class AutomationToolbar : UserControl
 
     #region Property Changed Handlers
 
+    private static void OnAutomationModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is AutomationToolbar toolbar)
+        {
+            // Sync with legacy RecordingMode property
+            var newMode = (AutomationMode)e.NewValue;
+            toolbar.RecordingMode = (AutomationRecordingMode)newMode;
+            toolbar.UpdateRecordingModeUI();
+            toolbar.AutomationModeChanged?.Invoke(toolbar, newMode);
+        }
+    }
+
     private static void OnRecordingModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is AutomationToolbar toolbar)
         {
+            // Sync with new AutomationMode property
+            var newMode = (AutomationRecordingMode)e.NewValue;
+            toolbar.AutomationMode = (AutomationMode)newMode;
             toolbar.UpdateRecordingModeUI();
             toolbar.RecordingModeChanged?.Invoke(toolbar, (AutomationRecordingMode)e.NewValue);
         }

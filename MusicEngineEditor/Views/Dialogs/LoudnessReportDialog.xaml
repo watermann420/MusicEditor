@@ -1,0 +1,251 @@
+<Window x:Class="MusicEngineEditor.Views.Dialogs.LoudnessReportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Loudness Report"
+        Width="800" Height="650"
+        MinWidth="650" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
+
+    <Window.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#1E1F22</Color>
+        <Color x:Key="PanelBackgroundColor">#2B2D30</Color>
+        <Color x:Key="BorderColor">#393B40</Color>
+        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
+        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="AccentColor">#55AAFF</Color>
+        <Color x:Key="SuccessColor">#4CAF50</Color>
+        <Color x:Key="WarningColor">#FF9800</Color>
+        <Color x:Key="ErrorColor">#F44336</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{StaticResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
+
+        <!-- Stat Value Style -->
+        <Style x:Key="StatValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="StatLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+
+        <Style x:Key="StatUnitStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Target Preset Button Style -->
+        <Style x:Key="PresetButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Loudness Report"
+                   FontSize="20"
+                   FontWeight="SemiBold"
+                   Foreground="{StaticResource TextPrimaryBrush}"
+                   Margin="0,0,0,16"/>
+
+        <!-- Main Stats Grid -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Integrated Loudness -->
+            <Border Grid.Column="0" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="12" Margin="0,0,8,0">
+                <StackPanel>
+                    <TextBlock x:Name="IntegratedValue" Text="-14.0" Style="{StaticResource StatValueStyle}"/>
+                    <TextBlock Text="LUFS" Style="{StaticResource StatUnitStyle}"/>
+                    <TextBlock Text="Integrated" Style="{StaticResource StatLabelStyle}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Short-Term Loudness -->
+            <Border Grid.Column="1" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="12" Margin="4,0">
+                <StackPanel>
+                    <TextBlock x:Name="ShortTermValue" Text="-12.5" Style="{StaticResource StatValueStyle}"/>
+                    <TextBlock Text="LUFS" Style="{StaticResource StatUnitStyle}"/>
+                    <TextBlock Text="Short-Term" Style="{StaticResource StatLabelStyle}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Momentary Loudness -->
+            <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="12" Margin="4,0">
+                <StackPanel>
+                    <TextBlock x:Name="MomentaryValue" Text="-10.2" Style="{StaticResource StatValueStyle}"/>
+                    <TextBlock Text="LUFS" Style="{StaticResource StatUnitStyle}"/>
+                    <TextBlock Text="Momentary" Style="{StaticResource StatLabelStyle}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Loudness Range (LRA) -->
+            <Border Grid.Column="3" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="12" Margin="4,0">
+                <StackPanel>
+                    <TextBlock x:Name="LRAValue" Text="8.5" Style="{StaticResource StatValueStyle}"/>
+                    <TextBlock Text="LU" Style="{StaticResource StatUnitStyle}"/>
+                    <TextBlock Text="Loudness Range" Style="{StaticResource StatLabelStyle}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- True Peak -->
+            <Border Grid.Column="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="12" Margin="8,0,0,0">
+                <StackPanel>
+                    <TextBlock x:Name="TruePeakValue" Text="-1.0" Style="{StaticResource StatValueStyle}"/>
+                    <TextBlock Text="dBTP" Style="{StaticResource StatUnitStyle}"/>
+                    <TextBlock Text="True Peak" Style="{StaticResource StatLabelStyle}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Loudness Graph -->
+        <Border Grid.Row="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Margin="0,16,0,0" Padding="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Loudness Over Time" FontWeight="SemiBold" Margin="0,0,0,8"/>
+
+                <Border Grid.Row="1" Background="{StaticResource BackgroundBrush}" CornerRadius="4">
+                    <Canvas x:Name="LoudnessGraph" ClipToBounds="True"/>
+                </Border>
+
+                <!-- Target Line Legend -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8">
+                    <Border Width="20" Height="2" Background="{StaticResource AccentBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TargetLegend" Text="Target (-14 LUFS)" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Target Loudness Presets -->
+        <Border Grid.Row="3" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Margin="0,16,0,0" Padding="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Target Loudness:" VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <RadioButton x:Name="StreamingPreset" Content="Streaming (-14 LUFS)" Style="{StaticResource PresetButtonStyle}"
+                                 IsChecked="True" Checked="PresetChanged"/>
+                    <RadioButton x:Name="BroadcastPreset" Content="Broadcast (-24 LUFS)" Style="{StaticResource PresetButtonStyle}"
+                                 Checked="PresetChanged"/>
+                    <RadioButton x:Name="CDPreset" Content="CD (-9 LUFS)" Style="{StaticResource PresetButtonStyle}"
+                                 Checked="PresetChanged"/>
+                    <RadioButton x:Name="CustomPreset" Content="Custom" Style="{StaticResource PresetButtonStyle}"
+                                 Checked="PresetChanged"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="16,0,0,0">
+                    <TextBox x:Name="CustomTargetTextBox" Width="50" Text="-14" VerticalContentAlignment="Center"
+                             TextChanged="CustomTarget_TextChanged" IsEnabled="False"
+                             Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                             BorderBrush="{StaticResource BorderBrush}"/>
+                    <TextBlock Text="LUFS" VerticalAlignment="Center" Margin="4,0,0,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Compliance Status and Actions -->
+        <Grid Grid.Row="4" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Compliance Status -->
+            <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="6" Padding="12" Margin="0,0,16,0">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse x:Name="ComplianceIndicator" Width="12" Height="12" Fill="{StaticResource SuccessBrush}" Margin="0,0,8,0"/>
+                    <TextBlock x:Name="ComplianceText" Text="Compliant with Streaming target (-14 LUFS)" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="DeviationText" Text=" | Deviation: +0.5 LU" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Action Buttons -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="Export Report" Click="ExportReport_Click" Padding="16,8" Margin="0,0,8,0"
+                        Background="{StaticResource PanelBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"/>
+                <Button Content="Analyze" Click="Analyze_Click" Padding="16,8" Margin="0,0,8,0"
+                        Background="{StaticResource AccentBrush}" Foreground="White" BorderBrush="{StaticResource AccentBrush}"/>
+                <Button Content="Close" Click="Close_Click" Padding="16,8" IsCancel="True"
+                        Background="{StaticResource PanelBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

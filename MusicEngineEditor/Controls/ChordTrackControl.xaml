@@ -1,0 +1,194 @@
+<UserControl x:Class="MusicEngineEditor.Controls.ChordTrackControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="60" d:DesignWidth="800"
+             Background="{DynamicResource PanelBackgroundBrush}"
+             ClipToBounds="True">
+
+    <UserControl.Resources>
+        <!-- Chord Block Colors -->
+        <SolidColorBrush x:Key="ChordMajorBrush" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="ChordMinorBrush" Color="#2196F3"/>
+        <SolidColorBrush x:Key="ChordDominantBrush" Color="#FF9800"/>
+        <SolidColorBrush x:Key="ChordDiminishedBrush" Color="#9C27B0"/>
+        <SolidColorBrush x:Key="ChordAugmentedBrush" Color="#E91E63"/>
+        <SolidColorBrush x:Key="ChordSuspendedBrush" Color="#00BCD4"/>
+        <SolidColorBrush x:Key="ChordDefaultBrush" Color="#607D8B"/>
+
+        <!-- Chord Block Style -->
+        <Style x:Key="ChordBlockStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Margin" Value="1,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="3" ShadowDepth="1" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toolbar Button Style -->
+        <Style x:Key="ChordTrackButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <!-- Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Chord Track Canvas -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Toolbar -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource ToolbarBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Chord Track"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrightForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="ChordCountText"
+                               Text=" (0)"
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button x:Name="AddChordButton"
+                            Style="{StaticResource ChordTrackButtonStyle}"
+                            Content="+ Add Chord"
+                            Click="AddChordButton_Click"
+                            ToolTip="Add chord at current position"/>
+                    <Button x:Name="DetectChordsButton"
+                            Style="{StaticResource ChordTrackButtonStyle}"
+                            Content="Detect"
+                            Click="DetectChordsButton_Click"
+                            ToolTip="Detect chords from MIDI"/>
+                    <Button x:Name="ClearChordsButton"
+                            Style="{StaticResource ChordTrackButtonStyle}"
+                            Content="Clear"
+                            Click="ClearChordsButton_Click"
+                            ToolTip="Clear all chords"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Chord Track Canvas Area -->
+        <Grid Grid.Row="1" ClipToBounds="True">
+            <!-- Grid Lines Canvas -->
+            <Canvas x:Name="GridCanvas"
+                    Background="#1E1F22"
+                    ClipToBounds="True"/>
+
+            <!-- Chords Canvas -->
+            <Canvas x:Name="ChordsCanvas"
+                    Background="Transparent"
+                    ClipToBounds="True"
+                    MouseLeftButtonDown="ChordsCanvas_MouseLeftButtonDown"
+                    MouseLeftButtonUp="ChordsCanvas_MouseLeftButtonUp"
+                    MouseRightButtonDown="ChordsCanvas_MouseRightButtonDown"
+                    MouseMove="ChordsCanvas_MouseMove"
+                    MouseLeave="ChordsCanvas_MouseLeave">
+
+                <!-- Context Menu -->
+                <Canvas.ContextMenu>
+                    <ContextMenu x:Name="ChordContextMenu">
+                        <MenuItem x:Name="EditChordMenuItem" Header="Edit Chord..." Click="EditChord_Click"/>
+                        <MenuItem x:Name="DeleteChordMenuItem" Header="Delete Chord" Click="DeleteChord_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Add Chord Here" Click="AddChordHere_Click"/>
+                        <Separator/>
+                        <MenuItem x:Name="TransposeUpMenuItem" Header="Transpose Up" Click="TransposeUp_Click"/>
+                        <MenuItem x:Name="TransposeDownMenuItem" Header="Transpose Down" Click="TransposeDown_Click"/>
+                    </ContextMenu>
+                </Canvas.ContextMenu>
+            </Canvas>
+
+            <!-- Playhead -->
+            <Canvas x:Name="PlayheadCanvas"
+                    Background="Transparent"
+                    IsHitTestVisible="False"
+                    ClipToBounds="True">
+                <Rectangle x:Name="Playhead"
+                           Width="2"
+                           Fill="{DynamicResource AccentBrush}"
+                           Canvas.Top="0"
+                           Visibility="Collapsed"/>
+            </Canvas>
+
+            <!-- Hover Tooltip -->
+            <Border x:Name="HoverTooltip"
+                    Background="#E0252629"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="3"
+                    Padding="6,4"
+                    Visibility="Collapsed"
+                    IsHitTestVisible="False"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="HoverChordName"
+                               Foreground="{DynamicResource BrightForegroundBrush}"
+                               FontSize="11"
+                               FontWeight="SemiBold"/>
+                    <TextBlock x:Name="HoverChordNotes"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               FontSize="10"
+                               Margin="8,0,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

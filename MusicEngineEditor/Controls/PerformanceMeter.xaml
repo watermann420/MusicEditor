@@ -4,13 +4,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             d:DesignHeight="24" d:DesignWidth="200"
+             d:DesignHeight="24" d:DesignWidth="450"
              Background="Transparent"
              Cursor="Hand"
              MouseLeftButtonDown="OnMouseLeftButtonDown">
 
     <UserControl.Resources>
-        <!-- CPU Meter Colors -->
+        <!-- Meter Colors -->
         <Color x:Key="CpuLowColor">#6AAB73</Color>
         <Color x:Key="CpuMediumColor">#E8B339</Color>
         <Color x:Key="CpuHighColor">#F75464</Color>
@@ -19,6 +19,19 @@
         <Color x:Key="TextDimColor">#6F737A</Color>
         <Color x:Key="TextBrightColor">#BCBEC4</Color>
 
+        <!-- RAM Colors -->
+        <Color x:Key="RamLowColor">#4B6EAF</Color>
+        <Color x:Key="RamMediumColor">#E8B339</Color>
+        <Color x:Key="RamHighColor">#F75464</Color>
+
+        <!-- Buffer Colors -->
+        <Color x:Key="BufferOkColor">#6AAB73</Color>
+        <Color x:Key="BufferWarningColor">#E8B339</Color>
+        <Color x:Key="BufferCriticalColor">#F75464</Color>
+
+        <!-- Disk Activity Color -->
+        <Color x:Key="DiskActiveColor">#589DF6</Color>
+
         <SolidColorBrush x:Key="CpuLowBrush" Color="{StaticResource CpuLowColor}"/>
         <SolidColorBrush x:Key="CpuMediumBrush" Color="{StaticResource CpuMediumColor}"/>
         <SolidColorBrush x:Key="CpuHighBrush" Color="{StaticResource CpuHighColor}"/>
@@ -26,6 +39,9 @@
         <SolidColorBrush x:Key="MeterBorderBrush" Color="{StaticResource MeterBorderColor}"/>
         <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}"/>
         <SolidColorBrush x:Key="TextBrightBrush" Color="{StaticResource TextBrightColor}"/>
+        <SolidColorBrush x:Key="RamLowBrush" Color="{StaticResource RamLowColor}"/>
+        <SolidColorBrush x:Key="BufferOkBrush" Color="{StaticResource BufferOkColor}"/>
+        <SolidColorBrush x:Key="DiskActiveBrush" Color="{StaticResource DiskActiveColor}"/>
 
         <!-- CPU bar gradient (green to yellow to red) -->
         <LinearGradientBrush x:Key="CpuGradientBrush" StartPoint="0,0" EndPoint="1,0">
@@ -37,12 +53,20 @@
             <GradientStop Color="{StaticResource CpuHighColor}" Offset="1.0"/>
         </LinearGradientBrush>
 
-        <!-- Glow effect for high CPU -->
+        <!-- Glow effect for high usage -->
         <DropShadowEffect x:Key="HighCpuGlow"
                           Color="{StaticResource CpuHighColor}"
                           BlurRadius="6"
                           ShadowDepth="0"
                           Opacity="0.6"/>
+
+        <!-- ASIO Status indicator style -->
+        <Style x:Key="AsioStatusStyle" TargetType="Border">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
     </UserControl.Resources>
 
     <UserControl.ToolTip>
@@ -60,6 +84,14 @@
             Padding="6,3">
         <Grid>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -112,52 +144,181 @@
                        MinWidth="28"
                        TextAlignment="Right"/>
 
-            <!-- Separator -->
+            <!-- Separator 1 -->
             <Rectangle Grid.Column="3"
                        Width="1"
                        Height="12"
                        Fill="{StaticResource MeterBorderBrush}"
                        Margin="8,0"/>
 
-            <!-- Memory Display -->
-            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="MEM"
-                           Foreground="{StaticResource TextDimBrush}"
-                           FontSize="10"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"
-                           Margin="0,0,4,0"/>
-                <TextBlock x:Name="MemoryText"
-                           Text="0 MB"
-                           Foreground="{StaticResource TextBrightBrush}"
-                           FontSize="10"
-                           FontWeight="SemiBold"
-                           FontFamily="JetBrains Mono, Consolas"
-                           VerticalAlignment="Center"
-                           MinWidth="45"
-                           TextAlignment="Right"/>
+            <!-- RAM Label -->
+            <TextBlock Grid.Column="4"
+                       Text="RAM"
+                       Foreground="{StaticResource TextDimBrush}"
+                       FontSize="10"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Margin="0,0,4,0"/>
 
-                <!-- Dropout Counter (only visible when dropouts occur) -->
-                <Border x:Name="DropoutBadge"
-                        Background="{StaticResource CpuHighBrush}"
-                        CornerRadius="6"
-                        Padding="4,1"
-                        Margin="6,0,0,0"
-                        Visibility="Collapsed"
-                        VerticalAlignment="Center">
-                    <Border.Effect>
-                        <DropShadowEffect Color="{StaticResource CpuHighColor}"
-                                          BlurRadius="4"
-                                          ShadowDepth="0"
-                                          Opacity="0.5"/>
-                    </Border.Effect>
-                    <TextBlock x:Name="DropoutCountText"
+            <!-- RAM Bar Container -->
+            <Border Grid.Column="5"
+                    Width="50"
+                    Height="10"
+                    Background="#0D0D0D"
+                    BorderBrush="{StaticResource MeterBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="2"
+                    VerticalAlignment="Center">
+                <Grid ClipToBounds="True">
+                    <!-- RAM Level Bar -->
+                    <Border x:Name="RamBar"
+                            HorizontalAlignment="Left"
+                            Width="0"
+                            CornerRadius="1"
+                            Margin="1">
+                        <Border.Background>
+                            <SolidColorBrush x:Name="RamBarBrush" Color="{StaticResource RamLowColor}"/>
+                        </Border.Background>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- RAM Percentage -->
+            <TextBlock x:Name="RamPercentText"
+                       Grid.Column="6"
+                       Text="0%"
+                       Foreground="{StaticResource TextBrightBrush}"
+                       FontSize="10"
+                       FontWeight="SemiBold"
+                       FontFamily="JetBrains Mono, Consolas"
+                       VerticalAlignment="Center"
+                       Margin="4,0,0,0"
+                       MinWidth="28"
+                       TextAlignment="Right"/>
+
+            <!-- Separator 2 -->
+            <Rectangle Grid.Column="7"
+                       Width="1"
+                       Height="12"
+                       Fill="{StaticResource MeterBorderBrush}"
+                       Margin="8,0"/>
+
+            <!-- Buffer Fill Section -->
+            <TextBlock Grid.Column="8"
+                       Text="BUF"
+                       Foreground="{StaticResource TextDimBrush}"
+                       FontSize="10"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Margin="0,0,4,0"/>
+
+            <!-- Buffer Bar Container -->
+            <Border Grid.Column="9"
+                    Width="30"
+                    Height="10"
+                    Background="#0D0D0D"
+                    BorderBrush="{StaticResource MeterBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="2"
+                    VerticalAlignment="Center">
+                <Grid ClipToBounds="True">
+                    <!-- Buffer Level Bar -->
+                    <Border x:Name="BufferBar"
+                            HorizontalAlignment="Left"
+                            Width="0"
+                            CornerRadius="1"
+                            Margin="1">
+                        <Border.Background>
+                            <SolidColorBrush x:Name="BufferBarBrush" Color="{StaticResource BufferOkColor}"/>
+                        </Border.Background>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Separator 3 -->
+            <Rectangle Grid.Column="10"
+                       Width="1"
+                       Height="12"
+                       Fill="{StaticResource MeterBorderBrush}"
+                       Margin="8,0"/>
+
+            <!-- Disk/ASIO Status Section -->
+            <StackPanel Grid.Column="11" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Disk Activity Indicator -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,6,0"
+                            ToolTip="Disk Read Activity">
+                    <TextBlock Text="DSK"
+                               Foreground="{StaticResource TextDimBrush}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0"/>
+                    <Border x:Name="DiskIndicator"
+                            Style="{StaticResource AsioStatusStyle}"
+                            Background="#333333">
+                        <Border.Effect>
+                            <DropShadowEffect x:Name="DiskGlow"
+                                              Color="{StaticResource DiskActiveColor}"
+                                              BlurRadius="0"
+                                              ShadowDepth="0"
+                                              Opacity="0"/>
+                        </Border.Effect>
+                    </Border>
+                    <TextBlock x:Name="DiskReadText"
                                Text="0"
-                               Foreground="White"
+                               Foreground="{StaticResource TextBrightBrush}"
                                FontSize="9"
-                               FontWeight="Bold"/>
-                </Border>
+                               FontFamily="JetBrains Mono, Consolas"
+                               VerticalAlignment="Center"
+                               Margin="3,0,0,0"
+                               MinWidth="22"
+                               TextAlignment="Right"/>
+                </StackPanel>
+
+                <!-- ASIO Buffer Status Indicator -->
+                <StackPanel Orientation="Horizontal"
+                            ToolTip="ASIO Buffer Status">
+                    <TextBlock Text="ASIO"
+                               Foreground="{StaticResource TextDimBrush}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0"/>
+                    <Border x:Name="AsioStatusIndicator"
+                            Style="{StaticResource AsioStatusStyle}"
+                            Background="{StaticResource BufferOkBrush}">
+                        <Border.Effect>
+                            <DropShadowEffect x:Name="AsioGlow"
+                                              Color="{StaticResource BufferOkColor}"
+                                              BlurRadius="4"
+                                              ShadowDepth="0"
+                                              Opacity="0.5"/>
+                        </Border.Effect>
+                    </Border>
+                </StackPanel>
             </StackPanel>
+
+            <!-- Dropout Counter (only visible when dropouts occur) -->
+            <Border x:Name="DropoutBadge"
+                    Grid.Column="12"
+                    Background="{StaticResource CpuHighBrush}"
+                    CornerRadius="6"
+                    Padding="4,1"
+                    Margin="6,0,0,0"
+                    Visibility="Collapsed"
+                    VerticalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect Color="{StaticResource CpuHighColor}"
+                                      BlurRadius="4"
+                                      ShadowDepth="0"
+                                      Opacity="0.5"/>
+                </Border.Effect>
+                <TextBlock x:Name="DropoutCountText"
+                           Text="0"
+                           Foreground="White"
+                           FontSize="9"
+                           FontWeight="Bold"/>
+            </Border>
         </Grid>
     </Border>
 </UserControl>

@@ -3,6 +3,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using MusicEngineEditor.Services;
 using MusicEngineEditor.ViewModels;
+using MusicEngineEditor.Views.Dialogs;
 
 namespace MusicEngineEditor;
 
@@ -25,6 +26,56 @@ public partial class App : Application
         // Create and show main window
         var mainWindow = new MainWindow();
         mainWindow.Show();
+
+        // Check for crash recovery after main window is shown
+        CheckForCrashRecovery(mainWindow);
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        // Mark session as cleanly closed
+        try
+        {
+            RecoveryService.Instance.MarkSessionClosed();
+        }
+        catch
+        {
+            // Ignore errors during exit
+        }
+
+        base.OnExit(e);
+    }
+
+    /// <summary>
+    /// Checks for crash recovery and shows the recovery dialog if needed.
+    /// </summary>
+    private static void CheckForCrashRecovery(Window owner)
+    {
+        try
+        {
+            var recoveryService = RecoveryService.Instance;
+            var autoSaveService = AutoSaveService.Instance;
+
+            // Check if there's a recoverable session from a crash
+            if (recoveryService.HasRecoverableSession() || autoSaveService.HasAutoSaves())
+            {
+                // Show recovery dialog
+                var result = RecoveryDialog.ShowRecoveryDialogWithInfo(owner);
+
+                if (result.WasRecovered && result.RecoveryFilePath != null)
+                {
+                    // Recovery was requested - the MainWindow will handle loading the recovered project
+                    System.Diagnostics.Debug.WriteLine($"Recovery requested for: {result.RecoveryFilePath}");
+                }
+            }
+
+            // Clean up old recovery data (older than 7 days)
+            recoveryService.CleanupOldRecoveries(7);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Crash recovery check failed: {ex.Message}");
+        }
     }
 
     private static void ConfigureServices(IServiceCollection services)
@@ -40,6 +91,10 @@ public partial class App : Application
         // Playback services (singletons accessed via Instance property)
         services.AddSingleton(_ => PlaybackService.Instance);
         services.AddSingleton(_ => AudioEngineService.Instance);
+
+        // Auto-save and recovery services
+        services.AddSingleton(_ => AutoSaveService.Instance);
+        services.AddSingleton(_ => RecoveryService.Instance);
 
         // ViewModels
         services.AddTransient<MainViewModel>();

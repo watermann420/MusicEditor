@@ -180,6 +180,8 @@
                     <Separator/>
                     <MenuItem x:Name="JumpToMarkerMenuItem" Header="Jump to Marker" Click="JumpToMarker_Click"/>
                     <MenuItem x:Name="LockMarkerMenuItem" Header="Lock Marker" Click="LockMarker_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="ExportRegionMenuItem" Header="Export Region..." Click="ExportRegion_Click" Visibility="Collapsed"/>
                 </ContextMenu>
             </Canvas.ContextMenu>
         </Canvas>

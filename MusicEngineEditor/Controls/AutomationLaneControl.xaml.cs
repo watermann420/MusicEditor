@@ -52,6 +52,10 @@ public partial class AutomationLaneControl : UserControl
         DependencyProperty.Register(nameof(AvailableParameters), typeof(ObservableCollection<AutomationParameterInfo>), typeof(AutomationLaneControl),
             new PropertyMetadata(null, OnAvailableParametersChanged));
 
+    public static readonly DependencyProperty ShowBezierHandlesProperty =
+        DependencyProperty.Register(nameof(ShowBezierHandles), typeof(bool), typeof(AutomationLaneControl),
+            new PropertyMetadata(true, OnShowBezierHandlesChanged));
+
     /// <summary>
     /// Gets or sets the automation lane being edited.
     /// </summary>
@@ -133,6 +137,15 @@ public partial class AutomationLaneControl : UserControl
         set => SetValue(AvailableParametersProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether to show bezier curve handles for selected points.
+    /// </summary>
+    public bool ShowBezierHandles
+    {
+        get => (bool)GetValue(ShowBezierHandlesProperty);
+        set => SetValue(ShowBezierHandlesProperty, value);
+    }
+
     #endregion
 
     #region Events
@@ -167,26 +180,39 @@ public partial class AutomationLaneControl : UserControl
     /// </summary>
     public event EventHandler<bool>? VisibilityToggled;
 
+    /// <summary>
+    /// Fired when bezier handles are modified.
+    /// </summary>
+    public event EventHandler<AutomationPoint>? BezierHandlesModified;
+
     #endregion
 
     #region Private Fields
 
     private const double PointRadius = 5.0;
     private const double PointHitRadius = 8.0;
+    private const double HandleRadius = 4.0;
+    private const double HandleHitRadius = 6.0;
 
     private readonly List<AutomationPoint> _selectedPoints = [];
     private readonly Dictionary<AutomationPoint, Ellipse> _pointVisuals = [];
+    private readonly Dictionary<AutomationPoint, (Ellipse Handle1, Ellipse Handle2, Line Line1, Line Line2)> _bezierHandles = [];
 
     private bool _isDragging;
     private bool _isSelecting;
+    private bool _isDraggingHandle;
+    private int _draggedHandleIndex; // 1 for first control point, 2 for second
     private Point _dragStart;
     private Point _lastMousePos;
     private AutomationPoint? _draggedPoint;
     private AutomationCurveType _defaultCurveType = AutomationCurveType.Linear;
+    private bool _showBezierHandles = true;
 
     private readonly SolidColorBrush _curveColor = new(Color.FromRgb(0x6A, 0xAB, 0x73));
     private readonly SolidColorBrush _pointColor = new(Color.FromRgb(0xE8, 0xE8, 0xE8));
     private readonly SolidColorBrush _pointSelectedColor = new(Color.FromRgb(0xFF, 0x9B, 0x4B));
+    private readonly SolidColorBrush _handleColor = new(Color.FromRgb(0x7E, 0xA8, 0xDB));
+    private readonly SolidColorBrush _handleLineColor = new(Color.FromRgb(0x5A, 0x5D, 0x60));
     private readonly SolidColorBrush _gridLineColor = new(Color.FromRgb(0x2B, 0x2D, 0x30));
     private readonly SolidColorBrush _gridLineStrongColor = new(Color.FromRgb(0x39, 0x3B, 0x40));
 
@@ -292,6 +318,15 @@ public partial class AutomationLaneControl : UserControl
         }
     }
 
+    private static void OnShowBezierHandlesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is AutomationLaneControl control)
+        {
+            control._showBezierHandles = (bool)e.NewValue;
+            control.DrawPoints();
+        }
+    }
+
     #endregion
 
     #region UI Event Handlers
@@ -391,6 +426,19 @@ public partial class AutomationLaneControl : UserControl
         var pos = e.GetPosition(PointsCanvas);
         PointsCanvas.CaptureMouse();
 
+        // First check if clicking on a bezier handle
+        var (handlePoint, handleIndex) = HitTestBezierHandle(pos);
+        if (handlePoint != null && handleIndex > 0)
+        {
+            _isDraggingHandle = true;
+            _draggedPoint = handlePoint;
+            _draggedHandleIndex = handleIndex;
+            _dragStart = pos;
+            _lastMousePos = pos;
+            e.Handled = true;
+            return;
+        }
+
         // Check if clicking on a point
         var hitPoint = HitTestPoint(pos);
 
@@ -404,6 +452,8 @@ public partial class AutomationLaneControl : UserControl
                     ClearSelection();
                 }
                 SelectPoint(hitPoint);
+                // Redraw to show bezier handles for newly selected point
+                DrawPoints();
             }
 
             _isDragging = true;
@@ -456,9 +506,17 @@ public partial class AutomationLaneControl : UserControl
             PointsModified?.Invoke(this, EventArgs.Empty);
         }
 
+        if (_isDraggingHandle && _draggedPoint != null)
+        {
+            BezierHandlesModified?.Invoke(this, _draggedPoint);
+            PointsModified?.Invoke(this, EventArgs.Empty);
+        }
+
         _isDragging = false;
         _isSelecting = false;
+        _isDraggingHandle = false;
         _draggedPoint = null;
+        _draggedHandleIndex = 0;
         PointsCanvas.ReleaseMouseCapture();
     }
 
@@ -478,7 +536,13 @@ public partial class AutomationLaneControl : UserControl
     {
         var pos = e.GetPosition(PointsCanvas);
 
-        if (_isDragging && _draggedPoint != null)
+        if (_isDraggingHandle && _draggedPoint != null)
+        {
+            // Dragging a bezier control point handle
+            MoveBezierHandle(pos);
+            _lastMousePos = pos;
+        }
+        else if (_isDragging && _draggedPoint != null)
         {
             var delta = new Point(pos.X - _lastMousePos.X, pos.Y - _lastMousePos.Y);
             MoveSelectedPoints(delta);
@@ -498,6 +562,55 @@ public partial class AutomationLaneControl : UserControl
         }
 
         UpdateCursorInfo(pos);
+    }
+
+    /// <summary>
+    /// Moves a bezier control point handle to a new position.
+    /// </summary>
+    private void MoveBezierHandle(Point pos)
+    {
+        if (_draggedPoint == null || Lane == null) return;
+
+        // Find the next point to calculate relative positions
+        var points = Lane.Curve.Points;
+        var index = points.ToList().IndexOf(_draggedPoint);
+        if (index < 0 || index >= points.Count - 1) return;
+
+        var nextPoint = points[index + 1];
+        double height = PointsCanvas.ActualHeight;
+
+        double x1 = TimeToPosition(_draggedPoint.Time);
+        double y1 = ValueToPosition(_draggedPoint.Value, height);
+        double x2 = TimeToPosition(nextPoint.Time);
+        double y2 = ValueToPosition(nextPoint.Value, height);
+
+        double segmentWidth = x2 - x1;
+        double segmentHeight = y2 - y1;
+
+        if (Math.Abs(segmentWidth) < 0.001) return;
+
+        // Calculate new normalized position
+        double relX = (pos.X - x1) / segmentWidth;
+        double relY = Math.Abs(segmentHeight) > 0.001 ? (pos.Y - y1) / segmentHeight : 0;
+
+        // Clamp values to reasonable range
+        relX = Math.Clamp(relX, 0, 1);
+        relY = Math.Clamp(relY, -1, 2);
+
+        if (_draggedHandleIndex == 1)
+        {
+            _draggedPoint.BezierX1 = (float)relX;
+            _draggedPoint.BezierY1 = (float)relY;
+        }
+        else if (_draggedHandleIndex == 2)
+        {
+            _draggedPoint.BezierX2 = (float)relX;
+            _draggedPoint.BezierY2 = (float)relY;
+        }
+
+        // Redraw to update handle positions and curve
+        DrawCurve();
+        DrawPoints();
     }
 
     private void PointsCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -739,19 +852,24 @@ public partial class AutomationLaneControl : UserControl
     {
         PointsCanvas.Children.Clear();
         _pointVisuals.Clear();
+        _bezierHandles.Clear();
 
         if (Lane == null) return;
 
         double height = PointsCanvas.ActualHeight;
+        double width = PointsCanvas.ActualWidth;
         if (height <= 0) return;
 
-        foreach (var point in Lane.Curve.Points)
+        var points = Lane.Curve.Points;
+
+        for (int i = 0; i < points.Count; i++)
         {
+            var point = points[i];
             double x = TimeToPosition(point.Time);
             double y = ValueToPosition(point.Value, height);
 
             // Skip points outside visible area
-            if (x < -PointRadius || x > PointsCanvas.ActualWidth + PointRadius)
+            if (x < -PointRadius || x > width + PointRadius)
                 continue;
 
             var ellipse = new Ellipse
@@ -770,7 +888,90 @@ public partial class AutomationLaneControl : UserControl
 
             PointsCanvas.Children.Add(ellipse);
             _pointVisuals[point] = ellipse;
+
+            // Draw bezier handles for selected points with Bezier curve type
+            if (_showBezierHandles && _selectedPoints.Contains(point) &&
+                point.CurveType == AutomationCurveType.Bezier && i < points.Count - 1)
+            {
+                DrawBezierHandles(point, points[i + 1], height);
+            }
         }
+    }
+
+    /// <summary>
+    /// Draws bezier control point handles for a point.
+    /// </summary>
+    private void DrawBezierHandles(AutomationPoint point, AutomationPoint nextPoint, double height)
+    {
+        double x1 = TimeToPosition(point.Time);
+        double y1 = ValueToPosition(point.Value, height);
+        double x2 = TimeToPosition(nextPoint.Time);
+        double y2 = ValueToPosition(nextPoint.Value, height);
+
+        double segmentWidth = x2 - x1;
+        double segmentHeight = y2 - y1;
+
+        // Calculate control point positions based on bezier parameters
+        double cp1X = x1 + point.BezierX1 * segmentWidth;
+        double cp1Y = y1 + point.BezierY1 * segmentHeight;
+        double cp2X = x1 + point.BezierX2 * segmentWidth;
+        double cp2Y = y1 + point.BezierY2 * segmentHeight;
+
+        // Draw lines from point to control points
+        var line1 = new Line
+        {
+            X1 = x1,
+            Y1 = y1,
+            X2 = cp1X,
+            Y2 = cp1Y,
+            Stroke = _handleLineColor,
+            StrokeThickness = 1,
+            StrokeDashArray = new DoubleCollection { 2, 2 }
+        };
+        PointsCanvas.Children.Add(line1);
+
+        var line2 = new Line
+        {
+            X1 = x2,
+            Y1 = y2,
+            X2 = cp2X,
+            Y2 = cp2Y,
+            Stroke = _handleLineColor,
+            StrokeThickness = 1,
+            StrokeDashArray = new DoubleCollection { 2, 2 }
+        };
+        PointsCanvas.Children.Add(line2);
+
+        // Draw control point handles
+        var handle1 = new Ellipse
+        {
+            Width = HandleRadius * 2,
+            Height = HandleRadius * 2,
+            Fill = _handleColor,
+            Stroke = new SolidColorBrush(Colors.White),
+            StrokeThickness = 1,
+            Tag = (point, 1), // Tag with point and handle index
+            Cursor = Cursors.Hand
+        };
+        Canvas.SetLeft(handle1, cp1X - HandleRadius);
+        Canvas.SetTop(handle1, cp1Y - HandleRadius);
+        PointsCanvas.Children.Add(handle1);
+
+        var handle2 = new Ellipse
+        {
+            Width = HandleRadius * 2,
+            Height = HandleRadius * 2,
+            Fill = _handleColor,
+            Stroke = new SolidColorBrush(Colors.White),
+            StrokeThickness = 1,
+            Tag = (point, 2), // Tag with point and handle index
+            Cursor = Cursors.Hand
+        };
+        Canvas.SetLeft(handle2, cp2X - HandleRadius);
+        Canvas.SetTop(handle2, cp2Y - HandleRadius);
+        PointsCanvas.Children.Add(handle2);
+
+        _bezierHandles[point] = (handle1, handle2, line1, line2);
     }
 
     private void UpdatePlayhead()
@@ -879,6 +1080,37 @@ public partial class AutomationLaneControl : UserControl
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Hit test for bezier handles. Returns the point and handle index (1 or 2) if hit.
+    /// </summary>
+    private (AutomationPoint? Point, int HandleIndex) HitTestBezierHandle(Point pos)
+    {
+        foreach (var kvp in _bezierHandles)
+        {
+            var (handle1, handle2, _, _) = kvp.Value;
+
+            // Check handle 1
+            double h1X = Canvas.GetLeft(handle1) + HandleRadius;
+            double h1Y = Canvas.GetTop(handle1) + HandleRadius;
+            double dist1 = Math.Sqrt(Math.Pow(pos.X - h1X, 2) + Math.Pow(pos.Y - h1Y, 2));
+            if (dist1 <= HandleHitRadius)
+            {
+                return (kvp.Key, 1);
+            }
+
+            // Check handle 2
+            double h2X = Canvas.GetLeft(handle2) + HandleRadius;
+            double h2Y = Canvas.GetTop(handle2) + HandleRadius;
+            double dist2 = Math.Sqrt(Math.Pow(pos.X - h2X, 2) + Math.Pow(pos.Y - h2Y, 2));
+            if (dist2 <= HandleHitRadius)
+            {
+                return (kvp.Key, 2);
+            }
+        }
+
+        return (null, 0);
     }
 
     private void AddPointAtPosition(Point pos)

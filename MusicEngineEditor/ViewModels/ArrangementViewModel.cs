@@ -620,7 +620,7 @@ public partial class ArrangementViewModel : ViewModelBase, IDisposable
     /// Adds a new section at the specified position with undo support.
     /// </summary>
     [RelayCommand]
-    private void AddSectionWithUndo(SectionType type)
+    private void AddSectionWithUndo(MusicEngine.Core.SectionType type)
     {
         if (_arrangement == null) return;
 
@@ -766,7 +766,7 @@ public partial class ArrangementViewModel : ViewModelBase, IDisposable
     /// Adds a new section at the specified position.
     /// </summary>
     [RelayCommand]
-    private void AddSection(SectionType type)
+    private void AddSection(MusicEngine.Core.SectionType type)
     {
         if (_arrangement == null) return;
 

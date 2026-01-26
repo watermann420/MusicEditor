@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MusicEngineEditor.Models;
 
@@ -10,6 +11,11 @@ namespace MusicEngineEditor.Services;
 public interface IProjectService
 {
     MusicProject? CurrentProject { get; }
+
+    /// <summary>
+    /// Gets the list of recently opened projects.
+    /// </summary>
+    IReadOnlyList<RecentProjectEntry> RecentProjects { get; }
 
     event EventHandler<MusicProject>? ProjectLoaded;
     event EventHandler? ProjectClosed;
@@ -28,4 +34,15 @@ public interface IProjectService
 
     Task AddReferenceAsync(MusicProject project, ProjectReference reference);
     Task RemoveReferenceAsync(MusicProject project, ProjectReference reference);
+
+    /// <summary>
+    /// Adds a project to the recent projects list.
+    /// </summary>
+    /// <param name="path">Full path to the project file.</param>
+    void AddToRecentProjects(string path);
+
+    /// <summary>
+    /// Clears all recent projects.
+    /// </summary>
+    void ClearRecentProjects();
 }

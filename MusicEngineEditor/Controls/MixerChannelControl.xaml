@@ -10,6 +10,9 @@
              MaxWidth="100">
 
     <UserControl.Resources>
+        <!-- Converters -->
+        <controls:TrackIconVisibilityConverter x:Key="IconVisibilityConverter"/>
+
         <!-- Colors -->
         <Color x:Key="ChannelBackgroundColor">#252629</Color>
         <Color x:Key="ChannelBorderColor">#393B40</Color>
@@ -21,6 +24,7 @@
         <Color x:Key="MuteActiveColor">#FF5555</Color>
         <Color x:Key="SoloActiveColor">#FFDD55</Color>
         <Color x:Key="ArmActiveColor">#FF3333</Color>
+        <Color x:Key="PhaseActiveColor">#00BFFF</Color>
         <Color x:Key="ButtonInactiveColor">#3C3F44</Color>
 
         <!-- Brushes -->
@@ -33,6 +37,7 @@
         <SolidColorBrush x:Key="MuteActiveBrush" Color="{StaticResource MuteActiveColor}"/>
         <SolidColorBrush x:Key="SoloActiveBrush" Color="{StaticResource SoloActiveColor}"/>
         <SolidColorBrush x:Key="ArmActiveBrush" Color="{StaticResource ArmActiveColor}"/>
+        <SolidColorBrush x:Key="PhaseActiveBrush" Color="{StaticResource PhaseActiveColor}"/>
         <SolidColorBrush x:Key="ButtonInactiveBrush" Color="{StaticResource ButtonInactiveColor}"/>
 
         <!-- Vertical Fader Slider Style -->
@@ -179,19 +184,36 @@
                 <RowDefinition Height="Auto"/>      <!-- dB display -->
             </Grid.RowDefinitions>
 
-            <!-- Channel Name -->
+            <!-- Channel Name with Icon -->
             <Border Grid.Row="0"
                     Background="{Binding ChannelColor, FallbackValue=#4A9EFF}"
                     CornerRadius="3"
                     Padding="4,2"
                     Margin="0,0,0,4">
-                <TextBlock Text="{Binding ChannelName, FallbackValue=Channel}"
-                           Foreground="White"
-                           FontSize="10"
-                           FontWeight="SemiBold"
-                           TextTrimming="CharacterEllipsis"
-                           HorizontalAlignment="Center"
-                           ToolTip="{Binding ChannelName}"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- Track Icon -->
+                    <TextBlock x:Name="TrackIconDisplay"
+                               Grid.Column="0"
+                               FontFamily="Segoe UI Symbol"
+                               FontSize="10"
+                               Foreground="White"
+                               VerticalAlignment="Center"
+                               Margin="0,0,3,0"
+                               Visibility="{Binding Icon, Converter={StaticResource IconVisibilityConverter}, FallbackValue=Collapsed}"/>
+                    <!-- Channel Name -->
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding ChannelName, FallbackValue=Channel}"
+                               Foreground="White"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"
+                               HorizontalAlignment="Center"
+                               ToolTip="{Binding ChannelName}"/>
+                </Grid>
             </Border>
 
             <!-- Effect Slots Section -->
@@ -249,11 +271,42 @@
                 </StackPanel>
             </Border>
 
-            <!-- Mute / Solo / Record Arm Buttons -->
+            <!-- Mute / Solo / Record Arm / Phase Buttons -->
             <StackPanel Grid.Row="2"
                         Orientation="Horizontal"
                         HorizontalAlignment="Center"
                         Margin="0,0,0,4">
+                <!-- Phase Invert -->
+                <ToggleButton x:Name="PhaseButton"
+                              Style="{StaticResource ChannelToggleButtonStyle}"
+                              IsChecked="{Binding IsPhaseInverted, Mode=TwoWay}"
+                              ToolTip="Phase Invert"
+                              Margin="0,0,2,0"
+                              Width="18"
+                              Height="18"
+                              FontSize="11"
+                              FontFamily="Segoe UI Symbol">
+                    <TextBlock Text="&#x00D8;" FontSize="11" FontWeight="Bold"/>
+                    <ToggleButton.Triggers>
+                        <EventTrigger RoutedEvent="ToggleButton.Checked">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation Storyboard.TargetProperty="(ToggleButton.Background).(SolidColorBrush.Color)"
+                                                    To="{StaticResource PhaseActiveColor}" Duration="0:0:0.1"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="ToggleButton.Unchecked">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <ColorAnimation Storyboard.TargetProperty="(ToggleButton.Background).(SolidColorBrush.Color)"
+                                                    To="{StaticResource ButtonInactiveColor}" Duration="0:0:0.1"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </ToggleButton.Triggers>
+                </ToggleButton>
+
                 <!-- Mute -->
                 <ToggleButton x:Name="MuteButton"
                               Style="{StaticResource ChannelToggleButtonStyle}"

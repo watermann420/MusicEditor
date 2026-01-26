@@ -1,0 +1,193 @@
+<UserControl x:Class="MusicEngineEditor.Controls.ArrangerTrackControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="80" d:DesignWidth="800"
+             Background="{DynamicResource PanelBackgroundBrush}"
+             ClipToBounds="True">
+
+    <UserControl.Resources>
+        <!-- Section Block Style -->
+        <Style x:Key="SectionBlockStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toolbar Button Style -->
+        <Style x:Key="ArrangerToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Section Type ComboBox Style -->
+        <Style x:Key="SectionTypeComboStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="#2B2D30"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="MinWidth" Value="80"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource ToolbarBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Arranger Track"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource BrightForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="SectionCountText"
+                               Text=" (0)"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Section Type Selector -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0">
+                    <TextBlock Text="Type:"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0"/>
+                    <ComboBox x:Name="SectionTypeCombo"
+                              Style="{StaticResource SectionTypeComboStyle}"
+                              SelectedIndex="0"
+                              ToolTip="Section type for new sections">
+                        <ComboBoxItem Content="Intro" Tag="Intro"/>
+                        <ComboBoxItem Content="Verse" Tag="Verse"/>
+                        <ComboBoxItem Content="Pre-Chorus" Tag="PreChorus"/>
+                        <ComboBoxItem Content="Chorus" Tag="Chorus"/>
+                        <ComboBoxItem Content="Bridge" Tag="Bridge"/>
+                        <ComboBoxItem Content="Solo" Tag="Solo"/>
+                        <ComboBoxItem Content="Breakdown" Tag="Breakdown"/>
+                        <ComboBoxItem Content="Buildup" Tag="Buildup"/>
+                        <ComboBoxItem Content="Drop" Tag="Drop"/>
+                        <ComboBoxItem Content="Outro" Tag="Outro"/>
+                        <ComboBoxItem Content="Custom" Tag="Custom"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Action Buttons -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="+ Add Section"
+                            Style="{StaticResource ArrangerToolbarButtonStyle}"
+                            Click="AddSection_Click"
+                            ToolTip="Add new section at cursor"/>
+                    <Button Content="Delete"
+                            Style="{StaticResource ArrangerToolbarButtonStyle}"
+                            Click="DeleteSection_Click"
+                            ToolTip="Delete selected section"/>
+                    <Button Content="Duplicate"
+                            Style="{StaticResource ArrangerToolbarButtonStyle}"
+                            Click="DuplicateSection_Click"
+                            ToolTip="Duplicate selected section"
+                            Margin="8,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Arranger Canvas -->
+        <Canvas Grid.Row="1"
+                x:Name="ArrangerCanvas"
+                Background="#252628"
+                MouseLeftButtonDown="ArrangerCanvas_MouseLeftButtonDown"
+                MouseLeftButtonUp="ArrangerCanvas_MouseLeftButtonUp"
+                MouseRightButtonDown="ArrangerCanvas_MouseRightButtonDown"
+                MouseMove="ArrangerCanvas_MouseMove"
+                ClipToBounds="True">
+
+            <!-- Grid lines are drawn programmatically -->
+
+            <!-- Playhead -->
+            <Rectangle x:Name="Playhead"
+                       Width="2"
+                       Fill="{DynamicResource AccentBrush}"
+                       Canvas.Top="0"
+                       Visibility="Collapsed"/>
+
+            <!-- Context Menu -->
+            <Canvas.ContextMenu>
+                <ContextMenu x:Name="SectionContextMenu">
+                    <MenuItem Header="Add Section Here" Click="AddSectionHere_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="RenameMenuItem" Header="Rename..." Click="Rename_Click"/>
+                    <MenuItem x:Name="SetColorMenuItem" Header="Set Color...">
+                        <MenuItem Header="Red" Tag="#DC143C" Click="SetColor_Click"/>
+                        <MenuItem Header="Orange" Tag="#FF8C00" Click="SetColor_Click"/>
+                        <MenuItem Header="Yellow" Tag="#FFD700" Click="SetColor_Click"/>
+                        <MenuItem Header="Green" Tag="#6B8E23" Click="SetColor_Click"/>
+                        <MenuItem Header="Blue" Tag="#4682B4" Click="SetColor_Click"/>
+                        <MenuItem Header="Purple" Tag="#9370DB" Click="SetColor_Click"/>
+                        <MenuItem Header="Pink" Tag="#FF1493" Click="SetColor_Click"/>
+                        <MenuItem Header="Gray" Tag="#708090" Click="SetColor_Click"/>
+                    </MenuItem>
+                    <MenuItem x:Name="DuplicateMenuItem" Header="Duplicate" Click="DuplicateSection_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="LockMenuItem" Header="Lock Section" Click="LockSection_Click"/>
+                    <MenuItem x:Name="DeleteMenuItem" Header="Delete Section" Click="DeleteSection_Click"/>
+                </ContextMenu>
+            </Canvas.ContextMenu>
+        </Canvas>
+    </Grid>
+</UserControl>

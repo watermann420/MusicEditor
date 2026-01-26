@@ -1,0 +1,307 @@
+<UserControl x:Class="MusicEngineEditor.Views.DrumEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="500" d:DesignWidth="900"
+             Background="#1E1F22">
+
+    <UserControl.Resources>
+        <!-- Theme Colors -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1F22"/>
+        <SolidColorBrush x:Key="ToolbarBackgroundBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+
+        <!-- Toolbar Button Style -->
+        <Style x:Key="DrumToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toggle Button Style -->
+        <Style x:Key="DrumToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="DrumComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="#2B2D30"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="MinWidth" Value="70"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Toolbar -->
+        <Border Grid.Row="0"
+                Background="{StaticResource ToolbarBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,6">
+            <DockPanel>
+                <!-- Left: Pattern Controls -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <!-- Steps Selector -->
+                    <TextBlock Text="Steps:"
+                               FontSize="11"
+                               Foreground="{StaticResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0"/>
+                    <ComboBox x:Name="StepsCombo"
+                              Style="{StaticResource DrumComboBoxStyle}"
+                              SelectedIndex="1"
+                              SelectionChanged="StepsCombo_SelectionChanged"
+                              ToolTip="Number of steps in pattern">
+                        <ComboBoxItem Content="8" Tag="8"/>
+                        <ComboBoxItem Content="16" Tag="16"/>
+                        <ComboBoxItem Content="32" Tag="32"/>
+                        <ComboBoxItem Content="64" Tag="64"/>
+                    </ComboBox>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource BorderBrush}"
+                               Margin="12,4"/>
+
+                    <!-- Swing -->
+                    <TextBlock Text="Swing:"
+                               FontSize="11"
+                               Foreground="{StaticResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0"/>
+                    <Slider x:Name="SwingSlider"
+                            Width="80"
+                            Minimum="0"
+                            Maximum="100"
+                            Value="0"
+                            ValueChanged="SwingSlider_ValueChanged"
+                            VerticalAlignment="Center"
+                            ToolTip="Swing amount"/>
+                    <TextBlock x:Name="SwingValueText"
+                               Text="0%"
+                               FontSize="10"
+                               Foreground="{StaticResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0"
+                               MinWidth="30"/>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource BorderBrush}"
+                               Margin="12,4"/>
+
+                    <!-- Kit Selector -->
+                    <TextBlock Text="Kit:"
+                               FontSize="11"
+                               Foreground="{StaticResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0"/>
+                    <ComboBox x:Name="KitCombo"
+                              Style="{StaticResource DrumComboBoxStyle}"
+                              SelectedIndex="0"
+                              MinWidth="100"
+                              SelectionChanged="KitCombo_SelectionChanged"
+                              ToolTip="Select drum kit">
+                        <ComboBoxItem Content="Standard Kit"/>
+                        <ComboBoxItem Content="808 Kit"/>
+                        <ComboBoxItem Content="Minimal"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Right: Transport Controls -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Margin="8,0,0,0">
+                    <Rectangle Width="1"
+                               Fill="{StaticResource BorderBrush}"
+                               Margin="4,4,12,4"/>
+
+                    <Button x:Name="StopButton"
+                            Style="{StaticResource DrumToolbarButtonStyle}"
+                            Content="Stop"
+                            Click="StopButton_Click"
+                            ToolTip="Stop playback"/>
+                    <Button x:Name="PlayButton"
+                            Style="{StaticResource DrumToolbarButtonStyle}"
+                            Content="Play"
+                            Click="PlayButton_Click"
+                            ToolTip="Start playback"/>
+                    <ToggleButton x:Name="LoopButton"
+                                  Style="{StaticResource DrumToggleButtonStyle}"
+                                  Content="Loop"
+                                  IsChecked="True"
+                                  ToolTip="Loop pattern"/>
+                </StackPanel>
+
+                <!-- Center: Edit Actions -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Clear All"
+                            Style="{StaticResource DrumToolbarButtonStyle}"
+                            Click="ClearAll_Click"
+                            ToolTip="Clear all steps"/>
+                    <Button Content="Randomize"
+                            Style="{StaticResource DrumToolbarButtonStyle}"
+                            Click="Randomize_Click"
+                            ToolTip="Generate random pattern"/>
+                    <Button Content="Euclidean"
+                            Style="{StaticResource DrumToolbarButtonStyle}"
+                            Click="Euclidean_Click"
+                            ToolTip="Apply Euclidean rhythm"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Step Numbers Header -->
+        <Border Grid.Row="1"
+                Background="#252628"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Height="24">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Label -->
+                <TextBlock Grid.Column="0"
+                           Text="Drum"
+                           FontSize="10"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource SecondaryForegroundBrush}"
+                           VerticalAlignment="Center"
+                           Margin="8,0"/>
+
+                <!-- Step Numbers -->
+                <Canvas x:Name="StepNumbersCanvas" Grid.Column="1" ClipToBounds="True">
+                    <!-- Step numbers are drawn programmatically -->
+                </Canvas>
+            </Grid>
+        </Border>
+
+        <!-- Drum Lanes -->
+        <ScrollViewer Grid.Row="2"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl x:Name="LanesItemsControl">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="3"
+                Background="{StaticResource ToolbarBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Pattern Info -->
+                <TextBlock x:Name="PatternInfoText"
+                           Grid.Column="0"
+                           Text="Pattern: 16 steps | 8 lanes"
+                           FontSize="11"
+                           Foreground="{StaticResource SecondaryForegroundBrush}"
+                           VerticalAlignment="Center"/>
+
+                <!-- Current Step -->
+                <TextBlock x:Name="CurrentStepText"
+                           Grid.Column="1"
+                           Text="Step: 0"
+                           FontSize="11"
+                           Foreground="{StaticResource ForegroundBrush}"
+                           VerticalAlignment="Center"
+                           Margin="16,0"/>
+
+                <!-- BPM Display -->
+                <TextBlock x:Name="BpmText"
+                           Grid.Column="2"
+                           Text="120 BPM"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource AccentBrush}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

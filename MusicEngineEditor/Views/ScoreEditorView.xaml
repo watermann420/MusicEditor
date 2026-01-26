@@ -1,0 +1,563 @@
+<UserControl x:Class="MusicEngineEditor.Views.ScoreEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:MusicEngineEditor.ViewModels"
+             xmlns:models="clr-namespace:MusicEngineEditor.Models"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="1000"
+             d:DataContext="{d:DesignInstance Type=vm:ScoreEditorViewModel}"
+             Background="#1E1F22">
+
+    <UserControl.Resources>
+        <!-- Dark Theme Colors -->
+        <Color x:Key="BackgroundColor">#1E1F22</Color>
+        <Color x:Key="ToolbarBackgroundColor">#2B2D30</Color>
+        <Color x:Key="BorderColor">#393B40</Color>
+        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
+        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="ButtonHoverColor">#3C3F41</Color>
+        <Color x:Key="ButtonPressedColor">#4B6EAF</Color>
+        <Color x:Key="ButtonActiveColor">#4B6EAF</Color>
+        <Color x:Key="SeparatorColor">#43454A</Color>
+        <Color x:Key="ScoreBackgroundColor">#252629</Color>
+        <Color x:Key="AccentColor">#4A9EFF</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="ToolbarBackgroundBrush" Color="{StaticResource ToolbarBackgroundColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="SeparatorBrush" Color="{StaticResource SeparatorColor}"/>
+        <SolidColorBrush x:Key="ScoreBackgroundBrush" Color="{StaticResource ScoreBackgroundColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+
+        <!-- Converters -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <!-- Toolbar Button Style -->
+        <Style x:Key="ScoreToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinWidth" Value="28"/>
+            <Setter Property="MinHeight" Value="26"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource ButtonHoverColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource ButtonPressedColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toggle Button Style -->
+        <Style x:Key="ScoreToolToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="1,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinWidth" Value="32"/>
+            <Setter Property="MinHeight" Value="26"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource ButtonHoverColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource ButtonActiveColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="border" Property="BorderBrush">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource AccentColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="ScoreComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource ToolbarBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="MinWidth" Value="70"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Duration Button Style (Radio-like) -->
+        <Style x:Key="DurationButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="1,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="Segoe UI Symbol"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="MinWidth" Value="30"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource ButtonHoverColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource ButtonActiveColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="border" Property="BorderBrush">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{StaticResource AccentColor}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Toolbar -->
+            <RowDefinition Height="*"/>    <!-- Score canvas -->
+            <RowDefinition Height="Auto"/> <!-- Status bar -->
+        </Grid.RowDefinitions>
+
+        <!-- Top Toolbar -->
+        <Border Grid.Row="0"
+                Background="{StaticResource ToolbarBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,6">
+            <DockPanel>
+                <!-- Left Section: Tools -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <!-- Tool Selection Group -->
+                    <Border Background="#252629"
+                            CornerRadius="4"
+                            Padding="2"
+                            Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton x:Name="SelectToolButton"
+                                          Style="{StaticResource ScoreToolToggleButtonStyle}"
+                                          IsChecked="True"
+                                          ToolTip="Select Tool (V)"
+                                          Click="OnSelectToolClick">
+                                <TextBlock Text="&#x2B05;" FontFamily="Segoe UI Symbol" FontSize="14"/>
+                            </ToggleButton>
+                            <ToggleButton x:Name="DrawToolButton"
+                                          Style="{StaticResource ScoreToolToggleButtonStyle}"
+                                          ToolTip="Draw Tool (D)"
+                                          Click="OnDrawToolClick">
+                                <TextBlock Text="&#x270F;" FontFamily="Segoe UI Symbol" FontSize="14"/>
+                            </ToggleButton>
+                            <ToggleButton x:Name="EraseToolButton"
+                                          Style="{StaticResource ScoreToolToggleButtonStyle}"
+                                          ToolTip="Erase Tool (E)"
+                                          Click="OnEraseToolClick">
+                                <TextBlock Text="&#x2716;" FontFamily="Segoe UI Symbol" FontSize="14"/>
+                            </ToggleButton>
+                        </StackPanel>
+                    </Border>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource SeparatorBrush}"
+                               Margin="4,4"/>
+
+                    <!-- Note Duration Group -->
+                    <TextBlock Text="Duration:"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Margin="8,0,4,0"/>
+
+                    <Border Background="#252629"
+                            CornerRadius="4"
+                            Padding="2">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="WholeNoteButton"
+                                         Style="{StaticResource DurationButtonStyle}"
+                                         GroupName="Duration"
+                                         ToolTip="Whole Note"
+                                         Click="OnDurationChanged"
+                                         Tag="{x:Static models:NoteDuration.Whole}">
+                                <TextBlock Text="W" FontWeight="Bold"/>
+                            </RadioButton>
+                            <RadioButton x:Name="HalfNoteButton"
+                                         Style="{StaticResource DurationButtonStyle}"
+                                         GroupName="Duration"
+                                         ToolTip="Half Note"
+                                         Click="OnDurationChanged"
+                                         Tag="{x:Static models:NoteDuration.Half}">
+                                <TextBlock Text="H" FontWeight="Bold"/>
+                            </RadioButton>
+                            <RadioButton x:Name="QuarterNoteButton"
+                                         Style="{StaticResource DurationButtonStyle}"
+                                         GroupName="Duration"
+                                         IsChecked="True"
+                                         ToolTip="Quarter Note"
+                                         Click="OnDurationChanged"
+                                         Tag="{x:Static models:NoteDuration.Quarter}">
+                                <TextBlock Text="Q" FontWeight="Bold"/>
+                            </RadioButton>
+                            <RadioButton x:Name="EighthNoteButton"
+                                         Style="{StaticResource DurationButtonStyle}"
+                                         GroupName="Duration"
+                                         ToolTip="Eighth Note"
+                                         Click="OnDurationChanged"
+                                         Tag="{x:Static models:NoteDuration.Eighth}">
+                                <TextBlock Text="8" FontWeight="Bold"/>
+                            </RadioButton>
+                            <RadioButton x:Name="SixteenthNoteButton"
+                                         Style="{StaticResource DurationButtonStyle}"
+                                         GroupName="Duration"
+                                         ToolTip="Sixteenth Note"
+                                         Click="OnDurationChanged"
+                                         Tag="{x:Static models:NoteDuration.Sixteenth}">
+                                <TextBlock Text="16" FontWeight="Bold" FontSize="10"/>
+                            </RadioButton>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Dotted/Rest toggles -->
+                    <ToggleButton x:Name="DottedButton"
+                                  Style="{StaticResource ScoreToolToggleButtonStyle}"
+                                  IsChecked="{Binding IsDottedMode}"
+                                  ToolTip="Dotted Note (.)"
+                                  Margin="4,0,0,0">
+                        <TextBlock Text="." FontSize="20" FontWeight="Bold" Margin="0,-8,0,0"/>
+                    </ToggleButton>
+
+                    <ToggleButton x:Name="RestButton"
+                                  Style="{StaticResource ScoreToolToggleButtonStyle}"
+                                  IsChecked="{Binding IsRestMode}"
+                                  ToolTip="Rest Mode (R)"
+                                  Margin="2,0,0,0">
+                        <TextBlock Text="R" FontWeight="Bold"/>
+                    </ToggleButton>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource SeparatorBrush}"
+                               Margin="12,4"/>
+
+                    <!-- Clef Selection -->
+                    <TextBlock Text="Clef:"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Margin="4,0,4,0"/>
+                    <ComboBox x:Name="ClefComboBox"
+                              Style="{StaticResource ScoreComboBoxStyle}"
+                              MinWidth="80"
+                              SelectedIndex="0"
+                              SelectionChanged="OnClefChanged"
+                              ToolTip="Select Clef">
+                        <ComboBoxItem Content="Treble" Tag="{x:Static models:ClefType.Treble}"/>
+                        <ComboBoxItem Content="Bass" Tag="{x:Static models:ClefType.Bass}"/>
+                        <ComboBoxItem Content="Alto" Tag="{x:Static models:ClefType.Alto}"/>
+                        <ComboBoxItem Content="Tenor" Tag="{x:Static models:ClefType.Tenor}"/>
+                    </ComboBox>
+
+                    <!-- Key Signature -->
+                    <TextBlock Text="Key:"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Margin="12,0,4,0"/>
+                    <ComboBox x:Name="KeySignatureComboBox"
+                              Style="{StaticResource ScoreComboBoxStyle}"
+                              MinWidth="60"
+                              SelectedIndex="0"
+                              SelectionChanged="OnKeySignatureChanged"
+                              ToolTip="Select Key Signature">
+                        <ComboBoxItem Content="C"/>
+                        <ComboBoxItem Content="G"/>
+                        <ComboBoxItem Content="D"/>
+                        <ComboBoxItem Content="A"/>
+                        <ComboBoxItem Content="E"/>
+                        <ComboBoxItem Content="B"/>
+                        <ComboBoxItem Content="F#"/>
+                        <ComboBoxItem Content="F"/>
+                        <ComboBoxItem Content="Bb"/>
+                        <ComboBoxItem Content="Eb"/>
+                        <ComboBoxItem Content="Ab"/>
+                        <ComboBoxItem Content="Db"/>
+                        <ComboBoxItem Content="Am"/>
+                        <ComboBoxItem Content="Em"/>
+                        <ComboBoxItem Content="Dm"/>
+                        <ComboBoxItem Content="Gm"/>
+                    </ComboBox>
+
+                    <!-- Time Signature -->
+                    <TextBlock Text="Time:"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Margin="12,0,4,0"/>
+                    <ComboBox x:Name="TimeSignatureComboBox"
+                              Style="{StaticResource ScoreComboBoxStyle}"
+                              MinWidth="60"
+                              SelectedIndex="0"
+                              SelectionChanged="OnTimeSignatureChanged"
+                              ToolTip="Select Time Signature">
+                        <ComboBoxItem Content="4/4" Tag="4,4"/>
+                        <ComboBoxItem Content="3/4" Tag="3,4"/>
+                        <ComboBoxItem Content="2/4" Tag="2,4"/>
+                        <ComboBoxItem Content="6/8" Tag="6,8"/>
+                        <ComboBoxItem Content="2/2" Tag="2,2"/>
+                        <ComboBoxItem Content="5/4" Tag="5,4"/>
+                        <ComboBoxItem Content="7/8" Tag="7,8"/>
+                        <ComboBoxItem Content="12/8" Tag="12,8"/>
+                    </ComboBox>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource SeparatorBrush}"
+                               Margin="12,4"/>
+
+                    <!-- Zoom Controls -->
+                    <TextBlock Text="Zoom:"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Margin="4,0,4,0"/>
+                    <Button Style="{StaticResource ScoreToolbarButtonStyle}"
+                            Content="-"
+                            Command="{Binding ZoomOutCommand}"
+                            ToolTip="Zoom Out"/>
+                    <TextBlock Text="{Binding Zoom, StringFormat='{}{0:P0}'}"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               MinWidth="40"
+                               TextAlignment="Center"/>
+                    <Button Style="{StaticResource ScoreToolbarButtonStyle}"
+                            Content="+"
+                            Command="{Binding ZoomInCommand}"
+                            ToolTip="Zoom In"/>
+                    <Button Style="{StaticResource ScoreToolbarButtonStyle}"
+                            Content="Fit"
+                            Command="{Binding ZoomToFitCommand}"
+                            ToolTip="Zoom to Fit"
+                            Margin="4,0,0,0"/>
+                </StackPanel>
+
+                <!-- Right Section: View Options and Playback -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Margin="8,0,0,0">
+                    <Rectangle Width="1"
+                               Fill="{StaticResource SeparatorBrush}"
+                               Margin="4,4,12,4"/>
+
+                    <!-- View Options -->
+                    <ToggleButton x:Name="ShowMeasureNumbersButton"
+                                  Style="{StaticResource ScoreToolToggleButtonStyle}"
+                                  IsChecked="{Binding ShowMeasureNumbers}"
+                                  ToolTip="Show Measure Numbers"
+                                  Content="#"/>
+
+                    <ToggleButton x:Name="ShowNoteNamesButton"
+                                  Style="{StaticResource ScoreToolToggleButtonStyle}"
+                                  IsChecked="{Binding ShowNoteNames}"
+                                  ToolTip="Show Note Names"
+                                  Content="ABC"
+                                  FontSize="10"
+                                  Margin="4,0,0,0"/>
+
+                    <ToggleButton x:Name="GrandStaffButton"
+                                  Style="{StaticResource ScoreToolToggleButtonStyle}"
+                                  IsChecked="{Binding UseGrandStaff}"
+                                  ToolTip="Grand Staff (Piano)"
+                                  Margin="4,0,0,0">
+                        <TextBlock Text="&#x266A;&#x266A;" FontFamily="Segoe UI Symbol" FontSize="10"/>
+                    </ToggleButton>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource SeparatorBrush}"
+                               Margin="12,4"/>
+
+                    <!-- Playback Controls -->
+                    <Button Style="{StaticResource ScoreToolbarButtonStyle}"
+                            Command="{Binding StopCommand}"
+                            ToolTip="Stop">
+                        <TextBlock Text="&#x25A0;" FontSize="12"/>
+                    </Button>
+                    <Button Style="{StaticResource ScoreToolbarButtonStyle}"
+                            Command="{Binding TogglePlayPauseCommand}"
+                            ToolTip="Play/Pause">
+                        <TextBlock Text="&#x25B6;" FontSize="12"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Spacer -->
+                <Border/>
+            </DockPanel>
+        </Border>
+
+        <!-- Score Display Area -->
+        <ScrollViewer Grid.Row="1"
+                      x:Name="ScoreScrollViewer"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      Background="{StaticResource BackgroundBrush}"
+                      ScrollChanged="OnScrollChanged">
+            <Canvas x:Name="ScoreCanvas"
+                    Background="{StaticResource ScoreBackgroundBrush}"
+                    MouseLeftButtonDown="OnCanvasMouseLeftButtonDown"
+                    MouseLeftButtonUp="OnCanvasMouseLeftButtonUp"
+                    MouseMove="OnCanvasMouseMove"
+                    MouseRightButtonDown="OnCanvasMouseRightButtonDown"
+                    ClipToBounds="True">
+                <!-- Score content rendered programmatically -->
+            </Canvas>
+        </ScrollViewer>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2"
+                Background="{StaticResource ToolbarBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="8,4">
+            <DockPanel>
+                <!-- Left: Status Message -->
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           FontSize="11"
+                           VerticalAlignment="Center"
+                           DockPanel.Dock="Left"/>
+
+                <!-- Right: Position Info -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <TextBlock Text="Measure:"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="CurrentMeasureText"
+                               Text="1"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0"/>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource SeparatorBrush}"
+                               Margin="12,0"/>
+
+                    <TextBlock Text="Notes:"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Notes.Count}"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0"/>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource SeparatorBrush}"
+                               Margin="12,0"/>
+
+                    <TextBlock Text="Selected:"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SelectedNotes.Count}"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0"/>
+                </StackPanel>
+
+                <!-- Spacer -->
+                <Border/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -15,8 +16,16 @@ public class ProjectService : IProjectService
 {
     private const string ProjectExtension = ".meproj";
     private const string ScriptExtension = ".me";
+    private const int MaxRecentProjects = 10;
+    private const string RecentProjectsFileName = "recent.json";
+
+    private readonly List<RecentProjectEntry> _recentProjects = new();
+    private readonly string _recentProjectsPath;
 
     public MusicProject? CurrentProject { get; private set; }
+
+    /// <inheritdoc />
+    public IReadOnlyList<RecentProjectEntry> RecentProjects => _recentProjects.AsReadOnly();
 
     public event EventHandler<MusicProject>? ProjectLoaded;
     public event EventHandler? ProjectClosed;
@@ -27,6 +36,16 @@ public class ProjectService : IProjectService
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
+
+    public ProjectService()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var appFolder = Path.Combine(localAppData, "MusicEngineEditor");
+        Directory.CreateDirectory(appFolder);
+        _recentProjectsPath = Path.Combine(appFolder, RecentProjectsFileName);
+
+        LoadRecentProjects();
+    }
 
     public async Task<MusicProject> CreateProjectAsync(string name, string path)
     {
@@ -63,6 +82,9 @@ public class ProjectService : IProjectService
 
         CurrentProject = project;
         ProjectLoaded?.Invoke(this, project);
+
+        // Add to recent projects
+        AddToRecentProjects(project.FilePath);
 
         return project;
     }
@@ -136,6 +158,9 @@ public class ProjectService : IProjectService
 
         CurrentProject = project;
         ProjectLoaded?.Invoke(this, project);
+
+        // Add to recent projects
+        AddToRecentProjects(projectFilePath);
 
         return project;
     }
@@ -372,6 +397,87 @@ namespace {ns}
     {
         project.References.Remove(reference);
         await SaveProjectAsync(project);
+    }
+
+    /// <inheritdoc />
+    public void AddToRecentProjects(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+            return;
+
+        // Remove existing entry with same path (case-insensitive on Windows)
+        var existing = _recentProjects.FirstOrDefault(
+            r => string.Equals(r.Path, path, StringComparison.OrdinalIgnoreCase));
+
+        if (existing != null)
+        {
+            _recentProjects.Remove(existing);
+        }
+
+        // Add new entry at the beginning
+        var entry = new RecentProjectEntry
+        {
+            Path = path,
+            Name = Path.GetFileNameWithoutExtension(path),
+            LastOpened = DateTime.UtcNow
+        };
+
+        _recentProjects.Insert(0, entry);
+
+        // Trim to max count
+        while (_recentProjects.Count > MaxRecentProjects)
+        {
+            _recentProjects.RemoveAt(_recentProjects.Count - 1);
+        }
+
+        SaveRecentProjects();
+    }
+
+    /// <inheritdoc />
+    public void ClearRecentProjects()
+    {
+        _recentProjects.Clear();
+        SaveRecentProjects();
+    }
+
+    private void LoadRecentProjects()
+    {
+        _recentProjects.Clear();
+
+        if (!File.Exists(_recentProjectsPath))
+            return;
+
+        try
+        {
+            var json = File.ReadAllText(_recentProjectsPath);
+            var entries = JsonSerializer.Deserialize<List<RecentProjectEntry>>(json, JsonOptions);
+
+            if (entries != null)
+            {
+                // Only add entries where the file still exists
+                foreach (var entry in entries.Where(e => File.Exists(e.Path)).Take(MaxRecentProjects))
+                {
+                    _recentProjects.Add(entry);
+                }
+            }
+        }
+        catch
+        {
+            // Ignore errors loading recent projects
+        }
+    }
+
+    private void SaveRecentProjects()
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(_recentProjects, JsonOptions);
+            File.WriteAllText(_recentProjectsPath, json);
+        }
+        catch
+        {
+            // Ignore errors saving recent projects
+        }
     }
 
     private static string SanitizeNamespace(string name)

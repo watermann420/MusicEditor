@@ -2,6 +2,7 @@
 // Copyright (c) 2026 MusicEngine Watermann420 and Contributors
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -125,9 +126,18 @@ public partial class NewProjectDialogEnhanced : Window, INotifyPropertyChanged
                 _selectedTemplate = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasSelectedTemplate));
+                OnPropertyChanged(nameof(RequiredPlugins));
             }
         }
     }
+
+    /// <summary>
+    /// Gets the required plugins for the selected template.
+    /// </summary>
+    public IReadOnlyList<string> RequiredPlugins =>
+        SelectedTemplate != null
+            ? _templateService.GetRequiredPlugins(SelectedTemplate)
+            : Array.Empty<string>();
 
     /// <summary>
     /// Gets whether a template is selected.
@@ -221,6 +231,30 @@ public partial class NewProjectDialogEnhanced : Window, INotifyPropertyChanged
         set { if (value) { _selectedCategory = TemplateCategory.Custom; RefreshTemplates(); } }
     }
 
+    public bool IsHipHopCategorySelected
+    {
+        get => _selectedCategory == TemplateCategory.HipHop;
+        set { if (value) { _selectedCategory = TemplateCategory.HipHop; RefreshTemplates(); } }
+    }
+
+    public bool IsPodcastCategorySelected
+    {
+        get => _selectedCategory == TemplateCategory.Podcast;
+        set { if (value) { _selectedCategory = TemplateCategory.Podcast; RefreshTemplates(); } }
+    }
+
+    public bool IsFilmScoringCategorySelected
+    {
+        get => _selectedCategory == TemplateCategory.FilmScoring;
+        set { if (value) { _selectedCategory = TemplateCategory.FilmScoring; RefreshTemplates(); } }
+    }
+
+    public bool IsJazzCategorySelected
+    {
+        get => _selectedCategory == TemplateCategory.Jazz;
+        set { if (value) { _selectedCategory = TemplateCategory.Jazz; RefreshTemplates(); } }
+    }
+
     #endregion
 
     /// <summary>
@@ -268,6 +302,10 @@ public partial class NewProjectDialogEnhanced : Window, INotifyPropertyChanged
         OnPropertyChanged(nameof(IsElectronicCategorySelected));
         OnPropertyChanged(nameof(IsBandCategorySelected));
         OnPropertyChanged(nameof(IsOrchestralCategorySelected));
+        OnPropertyChanged(nameof(IsHipHopCategorySelected));
+        OnPropertyChanged(nameof(IsPodcastCategorySelected));
+        OnPropertyChanged(nameof(IsFilmScoringCategorySelected));
+        OnPropertyChanged(nameof(IsJazzCategorySelected));
         OnPropertyChanged(nameof(IsCustomCategorySelected));
     }
 

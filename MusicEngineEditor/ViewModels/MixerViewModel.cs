@@ -20,6 +20,7 @@ namespace MusicEngineEditor.ViewModels;
 public partial class MixerViewModel : ViewModelBase, IDisposable
 {
     private readonly RecordingService _recordingService;
+    private readonly MixerLayoutSettings _layoutSettings;
     private bool _disposed;
 
     /// <summary>
@@ -97,6 +98,42 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
     private bool _showPeakHold = true;
 
     /// <summary>
+    /// Gets or sets the current mixer layout type.
+    /// </summary>
+    [ObservableProperty]
+    private MixerLayoutType _currentLayout = MixerLayoutType.LargeFaders;
+
+    /// <summary>
+    /// Gets the available mixer layouts.
+    /// </summary>
+    public MixerLayoutType[] AvailableLayouts => MixerLayoutSettings.AvailableLayouts;
+
+    /// <summary>
+    /// Gets the current channel width based on layout.
+    /// </summary>
+    public double ChannelWidth => _layoutSettings.GetChannelWidth();
+
+    /// <summary>
+    /// Gets whether the current layout shows faders.
+    /// </summary>
+    public bool ShowFaders => CurrentLayout != MixerLayoutType.MetersOnly;
+
+    /// <summary>
+    /// Gets whether the current layout is large faders.
+    /// </summary>
+    public bool IsLargeFadersLayout => CurrentLayout == MixerLayoutType.LargeFaders;
+
+    /// <summary>
+    /// Gets whether the current layout is small faders.
+    /// </summary>
+    public bool IsSmallFadersLayout => CurrentLayout == MixerLayoutType.SmallFaders;
+
+    /// <summary>
+    /// Gets whether the current layout is meters only.
+    /// </summary>
+    public bool IsMetersOnlyLayout => CurrentLayout == MixerLayoutType.MetersOnly;
+
+    /// <summary>
     /// Gets or sets whether to show the bus section.
     /// </summary>
     [ObservableProperty]
@@ -134,6 +171,8 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
     public MixerViewModel()
     {
         _recordingService = RecordingService.Instance;
+        _layoutSettings = MixerLayoutSettings.Load();
+        _currentLayout = _layoutSettings.CurrentLayout;
 
         // Subscribe to recording service events
         _recordingService.TrackArmed += OnTrackArmed;
@@ -145,6 +184,29 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
 
         InitializeDefaultChannels();
         InitializeDefaultBuses();
+    }
+
+    partial void OnCurrentLayoutChanged(MixerLayoutType value)
+    {
+        _layoutSettings.CurrentLayout = value;
+        _layoutSettings.Save();
+
+        // Notify dependent properties
+        OnPropertyChanged(nameof(ChannelWidth));
+        OnPropertyChanged(nameof(ShowFaders));
+        OnPropertyChanged(nameof(IsLargeFadersLayout));
+        OnPropertyChanged(nameof(IsSmallFadersLayout));
+        OnPropertyChanged(nameof(IsMetersOnlyLayout));
+    }
+
+    /// <summary>
+    /// Sets the mixer layout.
+    /// </summary>
+    /// <param name="layout">The layout to set.</param>
+    [RelayCommand]
+    private void SetLayout(MixerLayoutType layout)
+    {
+        CurrentLayout = layout;
     }
 
     /// <summary>

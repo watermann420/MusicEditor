@@ -27,6 +27,12 @@ public enum TemplateCategory
     HipHop,
     /// <summary>Experimental/Sound design templates.</summary>
     Experimental,
+    /// <summary>Podcast/Voice recording templates.</summary>
+    Podcast,
+    /// <summary>Film scoring/Media composition templates.</summary>
+    FilmScoring,
+    /// <summary>Jazz templates.</summary>
+    Jazz,
     /// <summary>User-created custom templates.</summary>
     Custom
 }
@@ -242,6 +248,9 @@ public class ProjectTemplate
         TemplateCategory.Band => "Band/Rock",
         TemplateCategory.HipHop => "Hip-Hop/Urban",
         TemplateCategory.Experimental => "Experimental",
+        TemplateCategory.Podcast => "Podcast/Voice",
+        TemplateCategory.FilmScoring => "Film Scoring",
+        TemplateCategory.Jazz => "Jazz",
         TemplateCategory.Custom => "Custom",
         _ => "Other"
     };
@@ -258,6 +267,9 @@ public class ProjectTemplate
         TemplateCategory.Band => "\u266A",         // Note
         TemplateCategory.HipHop => "\u2667",       // Club
         TemplateCategory.Experimental => "\u269B", // Atom
+        TemplateCategory.Podcast => "\u2399",      // Microphone
+        TemplateCategory.FilmScoring => "\u2302",  // Film
+        TemplateCategory.Jazz => "\u266C",         // Double note
         TemplateCategory.Custom => "\u2605",       // Star
         _ => "\u2022"
     };

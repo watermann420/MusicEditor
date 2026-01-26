@@ -53,6 +53,26 @@ public class StringToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
+/// Converter that converts boolean to visibility.
+/// </summary>
+public class BoolToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is bool boolValue && boolValue)
+        {
+            return Visibility.Visible;
+        }
+        return Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
 /// A compact indicator showing per-track latency with a horizontal bar.
 /// Color-coded based on latency severity (green/yellow/red).
 /// </summary>

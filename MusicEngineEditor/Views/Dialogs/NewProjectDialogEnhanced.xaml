@@ -147,6 +147,22 @@
                                          Style="{StaticResource CategoryButtonStyle}"
                                          IsChecked="{Binding IsOrchestralCategorySelected, Mode=TwoWay}"
                                          GroupName="Category"/>
+                            <RadioButton Content="Hip-Hop"
+                                         Style="{StaticResource CategoryButtonStyle}"
+                                         IsChecked="{Binding IsHipHopCategorySelected, Mode=TwoWay}"
+                                         GroupName="Category"/>
+                            <RadioButton Content="Podcast"
+                                         Style="{StaticResource CategoryButtonStyle}"
+                                         IsChecked="{Binding IsPodcastCategorySelected, Mode=TwoWay}"
+                                         GroupName="Category"/>
+                            <RadioButton Content="Film Scoring"
+                                         Style="{StaticResource CategoryButtonStyle}"
+                                         IsChecked="{Binding IsFilmScoringCategorySelected, Mode=TwoWay}"
+                                         GroupName="Category"/>
+                            <RadioButton Content="Jazz"
+                                         Style="{StaticResource CategoryButtonStyle}"
+                                         IsChecked="{Binding IsJazzCategorySelected, Mode=TwoWay}"
+                                         GroupName="Category"/>
                             <RadioButton Content="Custom"
                                          Style="{StaticResource CategoryButtonStyle}"
                                          IsChecked="{Binding IsCustomCategorySelected, Mode=TwoWay}"
@@ -324,7 +340,7 @@
 
                         <Border Background="{DynamicResource BackgroundBrush}"
                                 CornerRadius="6"
-                                MaxHeight="120"
+                                MaxHeight="140"
                                 Margin="0,0,0,16"
                                 Visibility="{Binding HasSelectedTemplate, Converter={StaticResource BoolToVisConverter}}">
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -332,18 +348,64 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Border Padding="8,4">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Border Width="12" Height="12"
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0" Width="12" Height="12"
                                                             CornerRadius="2"
                                                             Margin="0,0,8,0">
                                                         <Border.Background>
                                                             <SolidColorBrush Color="{Binding Color, Converter={StaticResource StringToColorConverter}}"/>
                                                         </Border.Background>
                                                     </Border>
-                                                    <TextBlock Text="{Binding Name}"
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}"
                                                                FontSize="11"
                                                                VerticalAlignment="Center"/>
-                                                </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Type}"
+                                                               FontSize="9"
+                                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                                               VerticalAlignment="Center"
+                                                               Margin="8,0,0,0"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- Required Plugins -->
+                        <TextBlock Text="REQUIRED PLUGINS"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Margin="0,0,0,8"
+                                   Visibility="{Binding HasSelectedTemplate, Converter={StaticResource BoolToVisConverter}}"/>
+
+                        <Border Background="{DynamicResource BackgroundBrush}"
+                                CornerRadius="6"
+                                MaxHeight="80"
+                                Margin="0,0,0,16"
+                                Visibility="{Binding HasSelectedTemplate, Converter={StaticResource BoolToVisConverter}}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding RequiredPlugins}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Margin="4"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource PanelBackgroundBrush}"
+                                                    CornerRadius="4"
+                                                    Padding="6,3"
+                                                    Margin="2">
+                                                <TextBlock Text="{Binding}"
+                                                           FontSize="10"
+                                                           Foreground="{DynamicResource ForegroundBrush}"/>
                                             </Border>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>

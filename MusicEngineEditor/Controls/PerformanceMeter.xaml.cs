@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using MusicEngineEditor.Services;
 using MusicEngineEditor.ViewModels;
 using MusicEngineEditor.Views.Dialogs;
@@ -10,7 +11,7 @@ using MusicEngineEditor.Views.Dialogs;
 namespace MusicEngineEditor.Controls;
 
 /// <summary>
-/// A compact horizontal performance meter showing CPU and memory usage.
+/// A compact horizontal performance meter showing CPU, RAM, buffer, disk, and ASIO status.
 /// Click to open a detailed performance dialog.
 /// </summary>
 public partial class PerformanceMeter : UserControl
@@ -24,6 +25,19 @@ public partial class PerformanceMeter : UserControl
     private static readonly Color LowColor = Color.FromRgb(0x6A, 0xAB, 0x73);    // Green
     private static readonly Color MediumColor = Color.FromRgb(0xE8, 0xB3, 0x39); // Yellow
     private static readonly Color HighColor = Color.FromRgb(0xF7, 0x54, 0x64);   // Red
+
+    // RAM Colors
+    private static readonly Color RamLowColor = Color.FromRgb(0x4B, 0x6E, 0xAF);    // Blue
+    private static readonly Color RamMediumColor = Color.FromRgb(0xE8, 0xB3, 0x39); // Yellow
+    private static readonly Color RamHighColor = Color.FromRgb(0xF7, 0x54, 0x64);   // Red
+
+    // Buffer Colors
+    private static readonly Color BufferOkColor = Color.FromRgb(0x6A, 0xAB, 0x73);      // Green
+    private static readonly Color BufferWarningColor = Color.FromRgb(0xE8, 0xB3, 0x39); // Yellow
+    private static readonly Color BufferCriticalColor = Color.FromRgb(0xF7, 0x54, 0x64);// Red
+
+    // Disk Activity Color
+    private static readonly Color DiskActiveColor = Color.FromRgb(0x58, 0x9D, 0xF6);    // Blue
 
     #endregion
 
@@ -64,6 +78,22 @@ public partial class PerformanceMeter : UserControl
     public static readonly DependencyProperty SampleRateProperty =
         DependencyProperty.Register(nameof(SampleRate), typeof(int), typeof(PerformanceMeter),
             new PropertyMetadata(44100, OnTooltipPropertyChanged));
+
+    public static readonly DependencyProperty RamUsagePercentProperty =
+        DependencyProperty.Register(nameof(RamUsagePercent), typeof(double), typeof(PerformanceMeter),
+            new PropertyMetadata(0.0, OnRamUsageChanged));
+
+    public static readonly DependencyProperty BufferFillPercentProperty =
+        DependencyProperty.Register(nameof(BufferFillPercent), typeof(double), typeof(PerformanceMeter),
+            new PropertyMetadata(100.0, OnBufferFillChanged));
+
+    public static readonly DependencyProperty DiskReadMBsProperty =
+        DependencyProperty.Register(nameof(DiskReadMBs), typeof(double), typeof(PerformanceMeter),
+            new PropertyMetadata(0.0, OnDiskReadChanged));
+
+    public static readonly DependencyProperty AsioBufferStatusProperty =
+        DependencyProperty.Register(nameof(AsioBufferStatus), typeof(string), typeof(PerformanceMeter),
+            new PropertyMetadata("OK", OnAsioStatusChanged));
 
     /// <summary>
     /// Current CPU usage (0-100%).
@@ -144,6 +174,43 @@ public partial class PerformanceMeter : UserControl
     {
         get => (int)GetValue(SampleRateProperty);
         set => SetValue(SampleRateProperty, value);
+    }
+
+    /// <summary>
+    /// Current RAM usage percentage (0-100%).
+    /// </summary>
+    public double RamUsagePercent
+    {
+        get => (double)GetValue(RamUsagePercentProperty);
+        set => SetValue(RamUsagePercentProperty, value);
+    }
+
+    /// <summary>
+    /// Current audio buffer fill level percentage (0-100%).
+    /// Higher is better - low values indicate potential dropouts.
+    /// </summary>
+    public double BufferFillPercent
+    {
+        get => (double)GetValue(BufferFillPercentProperty);
+        set => SetValue(BufferFillPercentProperty, value);
+    }
+
+    /// <summary>
+    /// Current disk read speed in MB/s for streaming.
+    /// </summary>
+    public double DiskReadMBs
+    {
+        get => (double)GetValue(DiskReadMBsProperty);
+        set => SetValue(DiskReadMBsProperty, value);
+    }
+
+    /// <summary>
+    /// Current ASIO buffer status: "OK", "Warning", or "Dropout".
+    /// </summary>
+    public string AsioBufferStatus
+    {
+        get => (string)GetValue(AsioBufferStatusProperty);
+        set => SetValue(AsioBufferStatusProperty, value);
     }
 
     #endregion
@@ -239,6 +306,42 @@ public partial class PerformanceMeter : UserControl
     {
         if (d is PerformanceMeter meter)
         {
+            meter.UpdateTooltip();
+        }
+    }
+
+    private static void OnRamUsageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is PerformanceMeter meter)
+        {
+            meter.UpdateRamDisplay();
+            meter.UpdateTooltip();
+        }
+    }
+
+    private static void OnBufferFillChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is PerformanceMeter meter)
+        {
+            meter.UpdateBufferDisplay();
+            meter.UpdateTooltip();
+        }
+    }
+
+    private static void OnDiskReadChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is PerformanceMeter meter)
+        {
+            meter.UpdateDiskDisplay();
+            meter.UpdateTooltip();
+        }
+    }
+
+    private static void OnAsioStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is PerformanceMeter meter)
+        {
+            meter.UpdateAsioStatusDisplay();
             meter.UpdateTooltip();
         }
     }
@@ -342,7 +445,8 @@ public partial class PerformanceMeter : UserControl
 
     private void UpdateMemoryDisplay()
     {
-        MemoryText.Text = $"{MemoryUsageMB:F0} MB";
+        // Memory is now displayed as RAM percentage instead of MB
+        // The MemoryUsageMB property is still tracked for tooltip display
     }
 
     private void UpdateDropoutDisplay()
@@ -358,14 +462,160 @@ public partial class PerformanceMeter : UserControl
         }
     }
 
+    private void UpdateRamDisplay()
+    {
+        // Update percentage text
+        RamPercentText.Text = $"{RamUsagePercent:F0}%";
+
+        // Update bar width (max width is container width minus margins)
+        var maxWidth = 46.0; // 50 - 4 for margins
+        var barWidth = Math.Max(0, Math.Min(maxWidth, maxWidth * RamUsagePercent / 100.0));
+        RamBar.Width = barWidth;
+
+        // Update bar color based on RAM level
+        var color = GetRamColor(RamUsagePercent);
+        RamBarBrush.Color = color;
+
+        // Update text color for high RAM usage
+        if (RamUsagePercent >= MediumThreshold)
+        {
+            RamPercentText.Foreground = new SolidColorBrush(color);
+        }
+        else
+        {
+            RamPercentText.Foreground = FindResource("TextBrightBrush") as Brush;
+        }
+
+        // Add glow effect for very high RAM usage
+        if (RamUsagePercent >= MediumThreshold)
+        {
+            RamBar.Effect = new DropShadowEffect
+            {
+                Color = color,
+                BlurRadius = 6,
+                ShadowDepth = 0,
+                Opacity = 0.6
+            };
+        }
+        else
+        {
+            RamBar.Effect = null;
+        }
+    }
+
+    private void UpdateBufferDisplay()
+    {
+        // Update bar width (max width is container width minus margins)
+        var maxWidth = 26.0; // 30 - 4 for margins
+        var barWidth = Math.Max(0, Math.Min(maxWidth, maxWidth * BufferFillPercent / 100.0));
+        BufferBar.Width = barWidth;
+
+        // Update bar color based on buffer level (inverted - low is bad)
+        var color = GetBufferColor(BufferFillPercent);
+        BufferBarBrush.Color = color;
+
+        // Add glow effect for critical buffer levels
+        if (BufferFillPercent < 30)
+        {
+            BufferBar.Effect = new DropShadowEffect
+            {
+                Color = color,
+                BlurRadius = 6,
+                ShadowDepth = 0,
+                Opacity = 0.6
+            };
+        }
+        else
+        {
+            BufferBar.Effect = null;
+        }
+    }
+
+    private void UpdateDiskDisplay()
+    {
+        // Update disk read text
+        if (DiskReadMBs >= 1.0)
+        {
+            DiskReadText.Text = $"{DiskReadMBs:F1}";
+        }
+        else if (DiskReadMBs > 0)
+        {
+            DiskReadText.Text = $"{DiskReadMBs * 1024:F0}K";
+        }
+        else
+        {
+            DiskReadText.Text = "0";
+        }
+
+        // Update indicator color and glow based on activity
+        if (DiskReadMBs > 0)
+        {
+            DiskIndicator.Background = new SolidColorBrush(DiskActiveColor);
+            DiskGlow.BlurRadius = Math.Min(8, 2 + DiskReadMBs * 2);
+            DiskGlow.Opacity = Math.Min(0.8, 0.3 + DiskReadMBs * 0.1);
+        }
+        else
+        {
+            DiskIndicator.Background = new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x33));
+            DiskGlow.BlurRadius = 0;
+            DiskGlow.Opacity = 0;
+        }
+    }
+
+    private void UpdateAsioStatusDisplay()
+    {
+        Color statusColor;
+        double glowOpacity;
+
+        switch (AsioBufferStatus?.ToUpperInvariant())
+        {
+            case "WARNING":
+                statusColor = BufferWarningColor;
+                glowOpacity = 0.6;
+                break;
+            case "DROPOUT":
+                statusColor = BufferCriticalColor;
+                glowOpacity = 0.8;
+                break;
+            case "OK":
+            default:
+                statusColor = BufferOkColor;
+                glowOpacity = 0.5;
+                break;
+        }
+
+        AsioStatusIndicator.Background = new SolidColorBrush(statusColor);
+        AsioGlow.Color = statusColor;
+        AsioGlow.Opacity = glowOpacity;
+
+        // Add pulsing effect for dropout status
+        if (AsioBufferStatus?.ToUpperInvariant() == "DROPOUT")
+        {
+            AsioGlow.BlurRadius = 8;
+        }
+        else
+        {
+            AsioGlow.BlurRadius = 4;
+        }
+    }
+
     private void UpdateTooltip()
     {
+        var asioStatusDisplay = AsioBufferStatus ?? "OK";
+        var diskReadDisplay = DiskReadMBs >= 1.0 ? $"{DiskReadMBs:F1} MB/s" : $"{DiskReadMBs * 1024:F0} KB/s";
+
         var tooltipText = $"CPU Usage: {CpuUsage:F1}%\n" +
                           $"  Peak: {PeakCpuUsage:F1}%\n" +
                           $"  Average: {AverageCpuUsage:F1}%\n" +
                           $"\nMemory: {MemoryUsageMB:F1} MB\n" +
                           $"  Peak: {PeakMemoryUsageMB:F1} MB\n" +
-                          $"\nBuffer Underruns: {DropoutCount}\n" +
+                          $"\nRAM Usage: {RamUsagePercent:F1}%\n" +
+                          $"\nAudio Buffer:\n" +
+                          $"  Fill Level: {BufferFillPercent:F0}%\n" +
+                          $"  Buffer Underruns: {DropoutCount}\n" +
+                          $"  ASIO Status: {asioStatusDisplay}\n" +
+                          $"\nDisk Activity:\n" +
+                          $"  Read Speed: {diskReadDisplay}\n" +
                           $"\nAudio Settings:\n" +
                           $"  Latency: {LatencyMs:F1} ms\n" +
                           $"  Buffer: {BufferSize} samples\n" +
@@ -403,6 +653,47 @@ public partial class PerformanceMeter : UserControl
             (byte)(from.G + (to.G - from.G) * t),
             (byte)(from.B + (to.B - from.B) * t)
         );
+    }
+
+    private static Color GetRamColor(double ramUsage)
+    {
+        if (ramUsage < LowThreshold)
+        {
+            return RamLowColor;
+        }
+        else if (ramUsage < MediumThreshold)
+        {
+            // Interpolate between blue and yellow
+            var t = (ramUsage - LowThreshold) / (MediumThreshold - LowThreshold);
+            return InterpolateColor(RamLowColor, RamMediumColor, t);
+        }
+        else
+        {
+            // Interpolate between yellow and red
+            var t = (ramUsage - MediumThreshold) / (100.0 - MediumThreshold);
+            return InterpolateColor(RamMediumColor, RamHighColor, t);
+        }
+    }
+
+    private static Color GetBufferColor(double bufferFill)
+    {
+        // Buffer color is inverted - low fill is bad (red), high fill is good (green)
+        if (bufferFill >= 70)
+        {
+            return BufferOkColor;
+        }
+        else if (bufferFill >= 30)
+        {
+            // Interpolate between yellow and green
+            var t = (bufferFill - 30) / 40.0;
+            return InterpolateColor(BufferWarningColor, BufferOkColor, t);
+        }
+        else
+        {
+            // Interpolate between red and yellow
+            var t = bufferFill / 30.0;
+            return InterpolateColor(BufferCriticalColor, BufferWarningColor, t);
+        }
     }
 
     #endregion

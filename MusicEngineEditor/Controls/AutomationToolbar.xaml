@@ -16,6 +16,7 @@
         <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
         <SolidColorBrush x:Key="RecordArmBrush" Color="#CC4B4B"/>
         <SolidColorBrush x:Key="RecordArmActiveBrush" Color="#FF5555"/>
+        <SolidColorBrush x:Key="ReadModeBrush" Color="#5A7FC4"/>
         <SolidColorBrush x:Key="TouchModeBrush" Color="#6AAB73"/>
         <SolidColorBrush x:Key="LatchModeBrush" Color="#D9A343"/>
         <SolidColorBrush x:Key="WriteModeBrush" Color="#C75450"/>
@@ -167,12 +168,12 @@
 
                 <RadioButton x:Name="OffModeButton"
                              Style="{StaticResource RecordingModeStyle}"
-                             Content="Off"
-                             Tag="{StaticResource BorderBrush}"
+                             Content="Read"
+                             Tag="{StaticResource ReadModeBrush}"
                              GroupName="RecordingMode"
                              IsChecked="True"
                              Checked="RecordingMode_Checked"
-                             ToolTip="Automation playback only, no recording"/>
+                             ToolTip="Read mode: Only read existing automation, no recording"/>
 
                 <RadioButton x:Name="TouchModeButton"
                              Style="{StaticResource RecordingModeStyle}"
@@ -181,7 +182,7 @@
                              GroupName="RecordingMode"
                              Margin="4,0,0,0"
                              Checked="RecordingMode_Checked"
-                             ToolTip="Record while touching control, return to existing curve on release"/>
+                             ToolTip="Touch mode: Record while touching control, return to previous value on release"/>
 
                 <RadioButton x:Name="LatchModeButton"
                              Style="{StaticResource RecordingModeStyle}"
@@ -190,7 +191,7 @@
                              GroupName="RecordingMode"
                              Margin="4,0,0,0"
                              Checked="RecordingMode_Checked"
-                             ToolTip="Start recording on first touch, continue until stop"/>
+                             ToolTip="Latch mode: Record while touching, stay at last value after release"/>
 
                 <RadioButton x:Name="WriteModeButton"
                              Style="{StaticResource RecordingModeStyle}"
@@ -199,7 +200,7 @@
                              GroupName="RecordingMode"
                              Margin="4,0,0,0"
                              Checked="RecordingMode_Checked"
-                             ToolTip="Always overwrite existing automation"/>
+                             ToolTip="Write mode: Overwrite all automation during playback"/>
             </StackPanel>
 
             <Rectangle Style="{StaticResource ToolbarSeparatorStyle}"/>

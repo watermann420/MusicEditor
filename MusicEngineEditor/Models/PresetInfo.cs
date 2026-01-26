@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using MusicEngine.Core;
 
 namespace MusicEngineEditor.Models;
@@ -7,8 +9,23 @@ namespace MusicEngineEditor.Models;
 /// <summary>
 /// UI model representing a preset for display in the preset browser.
 /// </summary>
-public class PresetInfo
+public class PresetInfo : INotifyPropertyChanged
 {
+    private bool _isFavorite;
+    private int _rating;
+
+    /// <summary>
+    /// Event raised when a property changes.
+    /// </summary>
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>
+    /// Raises the PropertyChanged event.
+    /// </summary>
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
     /// <summary>
     /// Gets or sets the unique identifier of the preset.
     /// </summary>
@@ -52,12 +69,40 @@ public class PresetInfo
     /// <summary>
     /// Gets or sets whether this preset is marked as a favorite.
     /// </summary>
-    public bool IsFavorite { get; set; }
+    public bool IsFavorite
+    {
+        get => _isFavorite;
+        set
+        {
+            if (_isFavorite != value)
+            {
+                _isFavorite = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(FavoriteIconVisibility));
+            }
+        }
+    }
 
     /// <summary>
     /// Gets or sets the rating (0-5).
     /// </summary>
-    public int Rating { get; set; }
+    public int Rating
+    {
+        get => _rating;
+        set
+        {
+            if (_rating != value)
+            {
+                _rating = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets visibility for the favorite icon (for UI binding).
+    /// </summary>
+    public string FavoriteIconVisibility => IsFavorite ? "Visible" : "Collapsed";
 
     /// <summary>
     /// Gets or sets the creation date.

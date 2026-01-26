@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -279,6 +280,271 @@ public class ProjectTemplateService : IProjectTemplateService
     }
 
     /// <summary>
+    /// Imports a template from a file.
+    /// </summary>
+    /// <param name="filePath">Path to the template file (.metemplate or .json).</param>
+    /// <returns>The imported template.</returns>
+    public async Task<ProjectTemplate?> ImportTemplateAsync(string filePath)
+    {
+        if (!File.Exists(filePath))
+            return null;
+
+        try
+        {
+            ProjectTemplate? template = null;
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+            if (extension == ".metemplate")
+            {
+                // Import from zipped template package
+                template = await ImportZippedTemplateAsync(filePath);
+            }
+            else if (extension == ".json")
+            {
+                // Import from plain JSON
+                var json = await File.ReadAllTextAsync(filePath);
+                template = JsonSerializer.Deserialize<ProjectTemplate>(json, JsonOptions);
+            }
+
+            if (template != null)
+            {
+                // Generate new ID for imported template
+                template.Id = Guid.NewGuid();
+                template.IsBuiltIn = false;
+                template.ModifiedDate = DateTime.UtcNow;
+
+                // Check for duplicate names
+                var baseName = template.TemplateName;
+                var counter = 1;
+                while (_templates.Any(t => t.TemplateName.Equals(template.TemplateName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    template.TemplateName = $"{baseName} ({counter++})";
+                }
+
+                // Save to user templates folder
+                await SaveTemplateAsync(template);
+
+                _templates.Add(template);
+                TemplatesChanged?.Invoke(this, EventArgs.Empty);
+            }
+
+            return template;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to import template from {filePath}: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Exports a template to a file.
+    /// </summary>
+    /// <param name="template">The template to export.</param>
+    /// <param name="filePath">Destination file path.</param>
+    /// <param name="asPackage">If true, exports as .metemplate package; otherwise as .json.</param>
+    public async Task ExportTemplateAsync(ProjectTemplate template, string filePath, bool asPackage = true)
+    {
+        var extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+        if (asPackage || extension == ".metemplate")
+        {
+            await ExportAsPackageAsync(template, filePath);
+        }
+        else
+        {
+            // Export as plain JSON
+            var json = JsonSerializer.Serialize(template, JsonOptions);
+            await File.WriteAllTextAsync(filePath, json);
+        }
+    }
+
+    /// <summary>
+    /// Creates a template from an existing project.
+    /// </summary>
+    /// <param name="project">The project to create a template from.</param>
+    /// <param name="templateName">Name for the new template.</param>
+    /// <param name="category">Category for the template.</param>
+    /// <param name="description">Description of the template.</param>
+    /// <returns>The created template.</returns>
+    public async Task<ProjectTemplate> CreateTemplateFromProjectAsync(
+        MusicProject project,
+        string templateName,
+        TemplateCategory category,
+        string description = "")
+    {
+        var template = new ProjectTemplate
+        {
+            Id = Guid.NewGuid(),
+            TemplateName = templateName,
+            Description = string.IsNullOrWhiteSpace(description)
+                ? $"Template created from project '{project.Name}'"
+                : description,
+            Author = Environment.UserName,
+            Category = category,
+            DefaultBpm = project.Settings.DefaultBpm,
+            SampleRate = project.Settings.SampleRate,
+            BufferSize = project.Settings.BufferSize,
+            IsBuiltIn = false,
+            CreatedDate = DateTime.UtcNow,
+            ModifiedDate = DateTime.UtcNow,
+            Tags = new List<string> { "custom", "user-created" }
+        };
+
+        // Note: In a full implementation, we would extract track information from the project
+        // For now, we create a basic template structure
+
+        // Save the template
+        await SaveTemplateAsync(template);
+
+        _templates.Add(template);
+        TemplatesChanged?.Invoke(this, EventArgs.Empty);
+
+        return template;
+    }
+
+    /// <summary>
+    /// Duplicates an existing template.
+    /// </summary>
+    /// <param name="template">The template to duplicate.</param>
+    /// <returns>The duplicated template.</returns>
+    public async Task<ProjectTemplate> DuplicateTemplateAsync(ProjectTemplate template)
+    {
+        var duplicate = template.Clone();
+        duplicate.TemplateName = $"{template.TemplateName} (Copy)";
+        duplicate.IsBuiltIn = false;
+        duplicate.Author = Environment.UserName;
+
+        // Ensure unique name
+        var counter = 1;
+        var baseName = duplicate.TemplateName;
+        while (_templates.Any(t => t.TemplateName.Equals(duplicate.TemplateName, StringComparison.OrdinalIgnoreCase)))
+        {
+            duplicate.TemplateName = $"{baseName.Replace(" (Copy)", "")} (Copy {counter++})";
+        }
+
+        await SaveTemplateAsync(duplicate);
+
+        _templates.Add(duplicate);
+        TemplatesChanged?.Invoke(this, EventArgs.Empty);
+
+        return duplicate;
+    }
+
+    /// <summary>
+    /// Gets all distinct categories that have templates.
+    /// </summary>
+    public IEnumerable<TemplateCategory> GetUsedCategories()
+    {
+        return _templates.Select(t => t.Category).Distinct().OrderBy(c => c);
+    }
+
+    /// <summary>
+    /// Gets the required plugins for a template.
+    /// </summary>
+    /// <param name="template">The template to check.</param>
+    /// <returns>List of required plugin/instrument names.</returns>
+    public IReadOnlyList<string> GetRequiredPlugins(ProjectTemplate template)
+    {
+        var plugins = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var track in template.Tracks)
+        {
+            if (!string.IsNullOrEmpty(track.DefaultInstrument))
+            {
+                plugins.Add(track.DefaultInstrument);
+            }
+
+            foreach (var effect in track.DefaultEffects)
+            {
+                plugins.Add(effect);
+            }
+        }
+
+        foreach (var effect in template.MasterEffects)
+        {
+            plugins.Add(effect);
+        }
+
+        return plugins.OrderBy(p => p).ToList();
+    }
+
+    private async Task<ProjectTemplate?> ImportZippedTemplateAsync(string packagePath)
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"metemplate_{Guid.NewGuid()}");
+
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+            ZipFile.ExtractToDirectory(packagePath, tempDir);
+
+            var templateJsonPath = Path.Combine(tempDir, "template.json");
+            if (!File.Exists(templateJsonPath))
+                return null;
+
+            var json = await File.ReadAllTextAsync(templateJsonPath);
+            return JsonSerializer.Deserialize<ProjectTemplate>(json, JsonOptions);
+        }
+        finally
+        {
+            // Cleanup temp directory
+            if (Directory.Exists(tempDir))
+            {
+                try { Directory.Delete(tempDir, true); }
+                catch { /* Ignore cleanup errors */ }
+            }
+        }
+    }
+
+    private async Task ExportAsPackageAsync(ProjectTemplate template, string packagePath)
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"metemplate_{Guid.NewGuid()}");
+
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+
+            // Write template JSON
+            var templateJson = JsonSerializer.Serialize(template, JsonOptions);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "template.json"), templateJson);
+
+            // Write metadata
+            var metadata = new
+            {
+                Version = "1.0",
+                ExportDate = DateTime.UtcNow,
+                MusicEngineVersion = "1.0.0"
+            };
+            var metadataJson = JsonSerializer.Serialize(metadata, JsonOptions);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "metadata.json"), metadataJson);
+
+            // Ensure output path has correct extension
+            if (!packagePath.EndsWith(".metemplate", StringComparison.OrdinalIgnoreCase))
+            {
+                packagePath += ".metemplate";
+            }
+
+            // Delete existing file if present
+            if (File.Exists(packagePath))
+            {
+                File.Delete(packagePath);
+            }
+
+            // Create zip package
+            ZipFile.CreateFromDirectory(tempDir, packagePath);
+        }
+        finally
+        {
+            // Cleanup temp directory
+            if (Directory.Exists(tempDir))
+            {
+                try { Directory.Delete(tempDir, true); }
+                catch { /* Ignore cleanup errors */ }
+            }
+        }
+    }
+
+    /// <summary>
     /// Loads built-in templates.
     /// </summary>
     private void LoadBuiltInTemplates()
@@ -396,6 +662,157 @@ public class ProjectTemplateService : IProjectTemplateService
                 new() { Name = "Timpani", Type = TemplateTrackType.Midi, Color = "#8B4513", DefaultInstrument = "SimpleSynth", Group = "Percussion" },
                 new() { Name = "Percussion", Type = TemplateTrackType.Midi, Color = "#A52A2A", DefaultInstrument = "SimpleSynth", Group = "Percussion" },
                 new() { Name = "Reverb Hall", Type = TemplateTrackType.Return, Color = "#607D8B", DefaultEffects = new List<string> { "ConvolutionReverb" } },
+                new() { Name = "Master", Type = TemplateTrackType.Master, Color = "#6F737A" }
+            }
+        });
+
+        // Hip-Hop / Trap template
+        _templates.Add(new ProjectTemplate
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000006"),
+            TemplateName = "Hip-Hop / Trap",
+            Description = "Modern hip-hop and trap production template with 808s, hi-hats, melody, and vocal tracks.",
+            Author = "MusicEngine",
+            Category = TemplateCategory.HipHop,
+            IsBuiltIn = true,
+            DefaultBpm = 140,
+            TimeSignatureNumerator = 4,
+            TimeSignatureDenominator = 4,
+            Tags = new List<string> { "hip-hop", "trap", "rap", "urban", "808", "beats" },
+            Tracks = new List<TemplateTrack>
+            {
+                new() { Name = "808 Bass", Type = TemplateTrackType.Midi, Color = "#E91E63", DefaultInstrument = "SimpleSynth", DefaultEffects = new List<string> { "Distortion", "Compressor" } },
+                new() { Name = "Kick", Type = TemplateTrackType.Midi, Color = "#F44336", DefaultInstrument = "SimpleSynth", Group = "Drums" },
+                new() { Name = "Snare/Clap", Type = TemplateTrackType.Midi, Color = "#FF9800", DefaultInstrument = "SimpleSynth", Group = "Drums" },
+                new() { Name = "Hi-Hats", Type = TemplateTrackType.Midi, Color = "#FFEB3B", DefaultInstrument = "SimpleSynth", Group = "Drums" },
+                new() { Name = "Percs", Type = TemplateTrackType.Midi, Color = "#FFC107", DefaultInstrument = "SimpleSynth", Group = "Drums" },
+                new() { Name = "Melody", Type = TemplateTrackType.Midi, Color = "#9C27B0", DefaultInstrument = "PolySynth" },
+                new() { Name = "Chords", Type = TemplateTrackType.Midi, Color = "#673AB7", DefaultInstrument = "PolySynth" },
+                new() { Name = "Lead Vocal", Type = TemplateTrackType.Audio, Color = "#2196F3", DefaultEffects = new List<string> { "Compressor", "ParametricEQ", "Reverb" } },
+                new() { Name = "Ad-libs", Type = TemplateTrackType.Audio, Color = "#03A9F4", DefaultEffects = new List<string> { "Compressor", "Delay" } },
+                new() { Name = "FX/Risers", Type = TemplateTrackType.Midi, Color = "#00BCD4", DefaultInstrument = "GranularSynth" },
+                new() { Name = "Reverb Return", Type = TemplateTrackType.Return, Color = "#607D8B" },
+                new() { Name = "Delay Return", Type = TemplateTrackType.Return, Color = "#78909C" },
+                new() { Name = "Master", Type = TemplateTrackType.Master, Color = "#6F737A", DefaultEffects = new List<string> { "MultibandCompressor", "Limiter" } }
+            }
+        });
+
+        // Podcast template
+        _templates.Add(new ProjectTemplate
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000007"),
+            TemplateName = "Podcast",
+            Description = "Professional podcast recording template with multiple host tracks, guest track, and intro/outro beds.",
+            Author = "MusicEngine",
+            Category = TemplateCategory.Podcast,
+            IsBuiltIn = true,
+            DefaultBpm = 120,
+            SampleRate = 48000,
+            TimeSignatureNumerator = 4,
+            TimeSignatureDenominator = 4,
+            Tags = new List<string> { "podcast", "voice", "speech", "interview", "recording", "spoken" },
+            Tracks = new List<TemplateTrack>
+            {
+                new() { Name = "Host", Type = TemplateTrackType.Audio, Color = "#4CAF50", DefaultEffects = new List<string> { "ParametricEQ", "Compressor", "DeEsser", "Gate" } },
+                new() { Name = "Co-Host", Type = TemplateTrackType.Audio, Color = "#8BC34A", DefaultEffects = new List<string> { "ParametricEQ", "Compressor", "DeEsser", "Gate" } },
+                new() { Name = "Guest", Type = TemplateTrackType.Audio, Color = "#CDDC39", DefaultEffects = new List<string> { "ParametricEQ", "Compressor", "DeEsser", "NoiseReduction" } },
+                new() { Name = "Intro Music", Type = TemplateTrackType.Audio, Color = "#FF9800" },
+                new() { Name = "Outro Music", Type = TemplateTrackType.Audio, Color = "#FF5722" },
+                new() { Name = "Sound FX", Type = TemplateTrackType.Audio, Color = "#9C27B0" },
+                new() { Name = "Background Music", Type = TemplateTrackType.Audio, Color = "#673AB7", Volume = 0.3f },
+                new() { Name = "Voice Bus", Type = TemplateTrackType.Bus, Color = "#2196F3", DefaultEffects = new List<string> { "Compressor" } },
+                new() { Name = "Master", Type = TemplateTrackType.Master, Color = "#6F737A", DefaultEffects = new List<string> { "Limiter", "LoudnessNormalizer" } }
+            }
+        });
+
+        // Film Scoring template
+        _templates.Add(new ProjectTemplate
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000008"),
+            TemplateName = "Film Scoring",
+            Description = "Complete film scoring template with orchestra, synths, sound design, and stems for delivery.",
+            Author = "MusicEngine",
+            Category = TemplateCategory.FilmScoring,
+            IsBuiltIn = true,
+            DefaultBpm = 85,
+            SampleRate = 48000,
+            TimeSignatureNumerator = 4,
+            TimeSignatureDenominator = 4,
+            Tags = new List<string> { "film", "score", "cinematic", "soundtrack", "media", "video" },
+            Tracks = new List<TemplateTrack>
+            {
+                new() { Name = "Strings Ensemble", Type = TemplateTrackType.Midi, Color = "#8B4513", DefaultInstrument = "PolySynth", Group = "Orchestra" },
+                new() { Name = "Brass Section", Type = TemplateTrackType.Midi, Color = "#DAA520", DefaultInstrument = "PolySynth", Group = "Orchestra" },
+                new() { Name = "Woodwinds", Type = TemplateTrackType.Midi, Color = "#87CEEB", DefaultInstrument = "PolySynth", Group = "Orchestra" },
+                new() { Name = "Choir", Type = TemplateTrackType.Midi, Color = "#E91E63", DefaultInstrument = "PolySynth", Group = "Orchestra" },
+                new() { Name = "Synth Pad", Type = TemplateTrackType.Midi, Color = "#9C27B0", DefaultInstrument = "PolySynth", Group = "Synths" },
+                new() { Name = "Synth Texture", Type = TemplateTrackType.Midi, Color = "#673AB7", DefaultInstrument = "GranularSynth", Group = "Synths" },
+                new() { Name = "Synth Bass", Type = TemplateTrackType.Midi, Color = "#3F51B5", DefaultInstrument = "SimpleSynth", Group = "Synths" },
+                new() { Name = "Percussion", Type = TemplateTrackType.Midi, Color = "#FF5722", DefaultInstrument = "SimpleSynth", Group = "Rhythm" },
+                new() { Name = "Taikos/Epic Drums", Type = TemplateTrackType.Midi, Color = "#F44336", DefaultInstrument = "SimpleSynth", Group = "Rhythm" },
+                new() { Name = "Risers/Hits", Type = TemplateTrackType.Midi, Color = "#00BCD4", DefaultInstrument = "GranularSynth", Group = "FX" },
+                new() { Name = "Drones/Ambience", Type = TemplateTrackType.Midi, Color = "#009688", DefaultInstrument = "GranularSynth", Group = "FX" },
+                new() { Name = "Foley/SFX", Type = TemplateTrackType.Audio, Color = "#795548", Group = "FX" },
+                new() { Name = "Hall Reverb", Type = TemplateTrackType.Return, Color = "#607D8B", DefaultEffects = new List<string> { "ConvolutionReverb" } },
+                new() { Name = "Room Reverb", Type = TemplateTrackType.Return, Color = "#78909C", DefaultEffects = new List<string> { "Reverb" } },
+                new() { Name = "Delay", Type = TemplateTrackType.Return, Color = "#90A4AE", DefaultEffects = new List<string> { "Delay" } },
+                new() { Name = "Orchestra Bus", Type = TemplateTrackType.Bus, Color = "#5D4037" },
+                new() { Name = "Synth Bus", Type = TemplateTrackType.Bus, Color = "#311B92" },
+                new() { Name = "Master", Type = TemplateTrackType.Master, Color = "#6F737A", DefaultEffects = new List<string> { "ParametricEQ", "Limiter" } }
+            }
+        });
+
+        // Lo-Fi / Chill template
+        _templates.Add(new ProjectTemplate
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000009"),
+            TemplateName = "Lo-Fi Chill",
+            Description = "Relaxed lo-fi hip-hop and chill beats template with vinyl textures and warm sounds.",
+            Author = "MusicEngine",
+            Category = TemplateCategory.Electronic,
+            IsBuiltIn = true,
+            DefaultBpm = 85,
+            TimeSignatureNumerator = 4,
+            TimeSignatureDenominator = 4,
+            Tags = new List<string> { "lofi", "chill", "study", "beats", "relax", "ambient" },
+            Tracks = new List<TemplateTrack>
+            {
+                new() { Name = "Drums", Type = TemplateTrackType.Midi, Color = "#795548", DefaultInstrument = "SimpleSynth", DefaultEffects = new List<string> { "Bitcrusher", "Filter" } },
+                new() { Name = "Bass", Type = TemplateTrackType.Midi, Color = "#5D4037", DefaultInstrument = "SimpleSynth", DefaultEffects = new List<string> { "TapeSaturation" } },
+                new() { Name = "Keys/Piano", Type = TemplateTrackType.Midi, Color = "#FFAB91", DefaultInstrument = "PolySynth", DefaultEffects = new List<string> { "Chorus", "TapeSaturation" } },
+                new() { Name = "Guitar", Type = TemplateTrackType.Audio, Color = "#A1887F", DefaultEffects = new List<string> { "Chorus", "Reverb" } },
+                new() { Name = "Pad", Type = TemplateTrackType.Midi, Color = "#CE93D8", DefaultInstrument = "PolySynth" },
+                new() { Name = "Melody", Type = TemplateTrackType.Midi, Color = "#90CAF9", DefaultInstrument = "PolySynth" },
+                new() { Name = "Vinyl Noise", Type = TemplateTrackType.Midi, Color = "#607D8B", DefaultInstrument = "NoiseGenerator", Volume = 0.15f },
+                new() { Name = "Ambience", Type = TemplateTrackType.Audio, Color = "#80CBC4", Volume = 0.2f },
+                new() { Name = "Reverb Return", Type = TemplateTrackType.Return, Color = "#546E7A", DefaultEffects = new List<string> { "Reverb" } },
+                new() { Name = "Master", Type = TemplateTrackType.Master, Color = "#6F737A", DefaultEffects = new List<string> { "TapeSaturation", "Compressor" } }
+            }
+        });
+
+        // Jazz Combo template
+        _templates.Add(new ProjectTemplate
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-00000000000A"),
+            TemplateName = "Jazz Combo",
+            Description = "Classic jazz combo setup with piano, bass, drums, and horn section.",
+            Author = "MusicEngine",
+            Category = TemplateCategory.Jazz,
+            IsBuiltIn = true,
+            DefaultBpm = 120,
+            TimeSignatureNumerator = 4,
+            TimeSignatureDenominator = 4,
+            Tags = new List<string> { "jazz", "swing", "bebop", "combo", "acoustic", "live" },
+            Tracks = new List<TemplateTrack>
+            {
+                new() { Name = "Piano", Type = TemplateTrackType.Midi, Color = "#37474F", DefaultInstrument = "PolySynth", Group = "Rhythm Section" },
+                new() { Name = "Upright Bass", Type = TemplateTrackType.Midi, Color = "#5D4037", DefaultInstrument = "SimpleSynth", Group = "Rhythm Section" },
+                new() { Name = "Drums", Type = TemplateTrackType.Midi, Color = "#8D6E63", DefaultInstrument = "SimpleSynth", Group = "Rhythm Section" },
+                new() { Name = "Guitar", Type = TemplateTrackType.Audio, Color = "#A1887F", Group = "Rhythm Section" },
+                new() { Name = "Trumpet", Type = TemplateTrackType.Midi, Color = "#FFD54F", DefaultInstrument = "PolySynth", Group = "Horns" },
+                new() { Name = "Saxophone", Type = TemplateTrackType.Midi, Color = "#FFB74D", DefaultInstrument = "PolySynth", Group = "Horns" },
+                new() { Name = "Trombone", Type = TemplateTrackType.Midi, Color = "#FFA726", DefaultInstrument = "PolySynth", Group = "Horns" },
+                new() { Name = "Room Reverb", Type = TemplateTrackType.Return, Color = "#607D8B", DefaultEffects = new List<string> { "Reverb" } },
                 new() { Name = "Master", Type = TemplateTrackType.Master, Color = "#6F737A" }
             }
         });

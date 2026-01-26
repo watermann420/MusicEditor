@@ -247,6 +247,31 @@
                             Style="{StaticResource MixerToolbarButtonStyle}"
                             Command="{Binding ResetAllCommand}"
                             ToolTip="Reset all channels to default"/>
+
+                    <Rectangle Width="1"
+                               Fill="{StaticResource SeparatorBrush}"
+                               Margin="12,4"/>
+
+                    <!-- Layout Selector -->
+                    <TextBlock Text="Layout:"
+                               Foreground="{StaticResource MixerTextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0"/>
+
+                    <ComboBox x:Name="LayoutSelector"
+                              SelectedIndex="0"
+                              Background="#2B2D30"
+                              Foreground="{StaticResource MixerTextPrimaryBrush}"
+                              BorderBrush="{StaticResource MixerBorderBrush}"
+                              Padding="8,4"
+                              MinWidth="100"
+                              SelectionChanged="LayoutSelector_SelectionChanged"
+                              ToolTip="Select mixer layout">
+                        <ComboBoxItem Content="Large Faders" Tag="LargeFaders"/>
+                        <ComboBoxItem Content="Small Faders" Tag="SmallFaders"/>
+                        <ComboBoxItem Content="Meters Only" Tag="MetersOnly"/>
+                    </ComboBox>
                 </StackPanel>
 
                 <!-- Right-aligned info (optional) -->

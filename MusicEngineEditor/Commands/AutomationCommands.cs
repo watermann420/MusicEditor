@@ -285,3 +285,410 @@ public sealed class AutomationClearCommand : IUndoableCommand
 
     private readonly record struct PointSnapshot(double Time, float Value, AutomationCurveType CurveType);
 }
+
+/// <summary>
+/// Command for copying automation points to a clipboard.
+/// </summary>
+public sealed class CopyAutomationCommand : IUndoableCommand
+{
+    private readonly AutomationLane _lane;
+    private readonly double? _startTime;
+    private readonly double? _endTime;
+    private static List<PointSnapshot>? _clipboard;
+
+    /// <inheritdoc/>
+    public string Description => "Copy Automation";
+
+    /// <summary>
+    /// Gets the copied points from the clipboard.
+    /// </summary>
+    public static IReadOnlyList<PointSnapshot>? ClipboardPoints => _clipboard?.AsReadOnly();
+
+    /// <summary>
+    /// Creates a new CopyAutomationCommand to copy all points.
+    /// </summary>
+    /// <param name="lane">The automation lane to copy from.</param>
+    public CopyAutomationCommand(AutomationLane lane)
+        : this(lane, null, null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new CopyAutomationCommand to copy points in a time range.
+    /// </summary>
+    /// <param name="lane">The automation lane to copy from.</param>
+    /// <param name="startTime">The start time of the range (inclusive).</param>
+    /// <param name="endTime">The end time of the range (inclusive).</param>
+    public CopyAutomationCommand(AutomationLane lane, double? startTime, double? endTime)
+    {
+        _lane = lane ?? throw new ArgumentNullException(nameof(lane));
+        _startTime = startTime;
+        _endTime = endTime;
+    }
+
+    /// <inheritdoc/>
+    public void Execute()
+    {
+        var points = _lane.Curve.Points;
+
+        // Filter by time range if specified
+        IEnumerable<AutomationPoint> selectedPoints = points;
+        if (_startTime.HasValue)
+        {
+            selectedPoints = selectedPoints.Where(p => p.Time >= _startTime.Value);
+        }
+        if (_endTime.HasValue)
+        {
+            selectedPoints = selectedPoints.Where(p => p.Time <= _endTime.Value);
+        }
+
+        // Store in clipboard with full point data
+        _clipboard = selectedPoints.Select(p => new PointSnapshot(
+            p.Time, p.Value, p.CurveType, p.Tension,
+            p.BezierX1, p.BezierY1, p.BezierX2, p.BezierY2,
+            p.IsLocked, p.Label)).ToList();
+
+        // Normalize times relative to first point
+        if (_clipboard.Count > 0)
+        {
+            double baseTime = _clipboard[0].Time;
+            _clipboard = _clipboard.Select(p => p with { Time = p.Time - baseTime }).ToList();
+        }
+    }
+
+    /// <inheritdoc/>
+    public void Undo()
+    {
+        // Copy is a read-only operation on the lane, but we could clear clipboard
+        // For simplicity, we don't undo clipboard changes
+    }
+
+    /// <summary>
+    /// Extended snapshot for copy/paste operations.
+    /// </summary>
+    public readonly record struct PointSnapshot(
+        double Time,
+        float Value,
+        AutomationCurveType CurveType,
+        float Tension,
+        float BezierX1,
+        float BezierY1,
+        float BezierX2,
+        float BezierY2,
+        bool IsLocked,
+        string? Label);
+}
+
+/// <summary>
+/// Command for pasting automation points from clipboard.
+/// </summary>
+public sealed class PasteAutomationCommand : IUndoableCommand
+{
+    private readonly AutomationLane _lane;
+    private readonly double _pasteTime;
+    private readonly bool _replaceExisting;
+    private List<AutomationPoint>? _pastedPoints;
+    private List<PointSnapshot>? _replacedPoints;
+
+    /// <inheritdoc/>
+    public string Description => "Paste Automation";
+
+    /// <summary>
+    /// Creates a new PasteAutomationCommand.
+    /// </summary>
+    /// <param name="lane">The automation lane to paste into.</param>
+    /// <param name="pasteTime">The time position to paste at.</param>
+    /// <param name="replaceExisting">If true, removes existing points in the paste range.</param>
+    public PasteAutomationCommand(AutomationLane lane, double pasteTime, bool replaceExisting = false)
+    {
+        _lane = lane ?? throw new ArgumentNullException(nameof(lane));
+        _pasteTime = pasteTime;
+        _replaceExisting = replaceExisting;
+    }
+
+    /// <inheritdoc/>
+    public void Execute()
+    {
+        var clipboard = CopyAutomationCommand.ClipboardPoints;
+        if (clipboard == null || clipboard.Count == 0)
+            return;
+
+        _pastedPoints = new List<AutomationPoint>();
+
+        // Calculate paste range
+        double pasteEnd = _pasteTime + clipboard[^1].Time;
+
+        // Remove existing points in range if requested
+        if (_replaceExisting)
+        {
+            var existingInRange = _lane.Curve.Points
+                .Where(p => p.Time >= _pasteTime && p.Time <= pasteEnd)
+                .ToList();
+
+            _replacedPoints = existingInRange.Select(p => new PointSnapshot(
+                p.Time, p.Value, p.CurveType, p.Tension,
+                p.BezierX1, p.BezierY1, p.BezierX2, p.BezierY2,
+                p.IsLocked, p.Label)).ToList();
+
+            foreach (var point in existingInRange)
+            {
+                _lane.Curve.RemovePoint(point);
+            }
+        }
+
+        // Paste points at the specified time
+        foreach (var snapshot in clipboard)
+        {
+            var newPoint = _lane.Curve.AddPoint(_pasteTime + snapshot.Time, snapshot.Value, snapshot.CurveType);
+            newPoint.Tension = snapshot.Tension;
+            newPoint.BezierX1 = snapshot.BezierX1;
+            newPoint.BezierY1 = snapshot.BezierY1;
+            newPoint.BezierX2 = snapshot.BezierX2;
+            newPoint.BezierY2 = snapshot.BezierY2;
+            newPoint.IsLocked = snapshot.IsLocked;
+            newPoint.Label = snapshot.Label;
+            _pastedPoints.Add(newPoint);
+        }
+    }
+
+    /// <inheritdoc/>
+    public void Undo()
+    {
+        // Remove pasted points
+        if (_pastedPoints != null)
+        {
+            foreach (var point in _pastedPoints)
+            {
+                _lane.Curve.RemovePoint(point);
+            }
+            _pastedPoints = null;
+        }
+
+        // Restore replaced points
+        if (_replacedPoints != null)
+        {
+            foreach (var snapshot in _replacedPoints)
+            {
+                var point = _lane.Curve.AddPoint(snapshot.Time, snapshot.Value, snapshot.CurveType);
+                point.Tension = snapshot.Tension;
+                point.BezierX1 = snapshot.BezierX1;
+                point.BezierY1 = snapshot.BezierY1;
+                point.BezierX2 = snapshot.BezierX2;
+                point.BezierY2 = snapshot.BezierY2;
+                point.IsLocked = snapshot.IsLocked;
+                point.Label = snapshot.Label;
+            }
+            _replacedPoints = null;
+        }
+    }
+
+    private readonly record struct PointSnapshot(
+        double Time,
+        float Value,
+        AutomationCurveType CurveType,
+        float Tension,
+        float BezierX1,
+        float BezierY1,
+        float BezierX2,
+        float BezierY2,
+        bool IsLocked,
+        string? Label);
+}
+
+/// <summary>
+/// Command for scaling automation point values by a factor.
+/// </summary>
+public sealed class ScaleAutomationCommand : IUndoableCommand
+{
+    private readonly AutomationLane _lane;
+    private readonly float _scaleFactor;
+    private readonly float _pivotValue;
+    private readonly double? _startTime;
+    private readonly double? _endTime;
+    private List<PointValueSnapshot>? _originalValues;
+
+    /// <inheritdoc/>
+    public string Description => $"Scale Automation by {_scaleFactor:F2}x";
+
+    /// <summary>
+    /// Creates a new ScaleAutomationCommand to scale all points.
+    /// </summary>
+    /// <param name="lane">The automation lane to scale.</param>
+    /// <param name="scaleFactor">The scale factor (1.0 = no change, 2.0 = double values).</param>
+    /// <param name="pivotValue">The pivot value around which to scale (default 0).</param>
+    public ScaleAutomationCommand(AutomationLane lane, float scaleFactor, float pivotValue = 0f)
+        : this(lane, scaleFactor, pivotValue, null, null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new ScaleAutomationCommand to scale points in a time range.
+    /// </summary>
+    /// <param name="lane">The automation lane to scale.</param>
+    /// <param name="scaleFactor">The scale factor.</param>
+    /// <param name="pivotValue">The pivot value around which to scale.</param>
+    /// <param name="startTime">The start time of the range (inclusive).</param>
+    /// <param name="endTime">The end time of the range (inclusive).</param>
+    public ScaleAutomationCommand(AutomationLane lane, float scaleFactor, float pivotValue, double? startTime, double? endTime)
+    {
+        _lane = lane ?? throw new ArgumentNullException(nameof(lane));
+        _scaleFactor = scaleFactor;
+        _pivotValue = pivotValue;
+        _startTime = startTime;
+        _endTime = endTime;
+    }
+
+    /// <inheritdoc/>
+    public void Execute()
+    {
+        var points = GetAffectedPoints();
+        _originalValues = points.Select(p => new PointValueSnapshot(p.Time, p.Value)).ToList();
+
+        foreach (var point in points)
+        {
+            // Scale around pivot: newValue = pivot + (oldValue - pivot) * factor
+            float scaledValue = _pivotValue + (point.Value - _pivotValue) * _scaleFactor;
+            point.Value = Math.Clamp(scaledValue, _lane.MinValue, _lane.MaxValue);
+        }
+    }
+
+    /// <inheritdoc/>
+    public void Undo()
+    {
+        if (_originalValues == null)
+            return;
+
+        var points = _lane.Curve.Points;
+        foreach (var snapshot in _originalValues)
+        {
+            var point = points.FirstOrDefault(p => Math.Abs(p.Time - snapshot.Time) < 0.0001);
+            if (point != null)
+            {
+                point.Value = snapshot.Value;
+            }
+        }
+        _originalValues = null;
+    }
+
+    private List<AutomationPoint> GetAffectedPoints()
+    {
+        IEnumerable<AutomationPoint> points = _lane.Curve.Points;
+
+        if (_startTime.HasValue)
+            points = points.Where(p => p.Time >= _startTime.Value);
+        if (_endTime.HasValue)
+            points = points.Where(p => p.Time <= _endTime.Value);
+
+        return points.ToList();
+    }
+
+    private readonly record struct PointValueSnapshot(double Time, float Value);
+}
+
+/// <summary>
+/// Command for shifting all automation points in time.
+/// </summary>
+public sealed class ShiftAutomationCommand : IUndoableCommand
+{
+    private readonly AutomationLane _lane;
+    private readonly double _timeOffset;
+    private readonly double? _startTime;
+    private readonly double? _endTime;
+    private List<PointTimeSnapshot>? _originalTimes;
+
+    /// <inheritdoc/>
+    public string Description => _timeOffset >= 0
+        ? $"Shift Automation +{_timeOffset:F2}"
+        : $"Shift Automation {_timeOffset:F2}";
+
+    /// <summary>
+    /// Creates a new ShiftAutomationCommand to shift all points.
+    /// </summary>
+    /// <param name="lane">The automation lane to shift.</param>
+    /// <param name="timeOffset">The time offset in beats (positive = later, negative = earlier).</param>
+    public ShiftAutomationCommand(AutomationLane lane, double timeOffset)
+        : this(lane, timeOffset, null, null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new ShiftAutomationCommand to shift points in a time range.
+    /// </summary>
+    /// <param name="lane">The automation lane to shift.</param>
+    /// <param name="timeOffset">The time offset in beats.</param>
+    /// <param name="startTime">The start time of the range (inclusive).</param>
+    /// <param name="endTime">The end time of the range (inclusive).</param>
+    public ShiftAutomationCommand(AutomationLane lane, double timeOffset, double? startTime, double? endTime)
+    {
+        _lane = lane ?? throw new ArgumentNullException(nameof(lane));
+        _timeOffset = timeOffset;
+        _startTime = startTime;
+        _endTime = endTime;
+    }
+
+    /// <inheritdoc/>
+    public void Execute()
+    {
+        var points = GetAffectedPoints();
+        _originalTimes = points.Select(p => new PointTimeSnapshot(p.Id, p.Time)).ToList();
+
+        foreach (var point in points)
+        {
+            double newTime = point.Time + _timeOffset;
+            // Prevent negative times
+            point.Time = Math.Max(0, newTime);
+        }
+    }
+
+    /// <inheritdoc/>
+    public void Undo()
+    {
+        if (_originalTimes == null)
+            return;
+
+        foreach (var snapshot in _originalTimes)
+        {
+            var point = _lane.Curve.Points.FirstOrDefault(p => p.Id == snapshot.Id);
+            if (point != null)
+            {
+                point.Time = snapshot.Time;
+            }
+        }
+        _originalTimes = null;
+    }
+
+    /// <inheritdoc/>
+    public bool CanMergeWith(IUndoableCommand other)
+    {
+        // Allow merging consecutive shifts on the same lane and range
+        return other is ShiftAutomationCommand otherShift &&
+               otherShift._lane == _lane &&
+               otherShift._startTime == _startTime &&
+               otherShift._endTime == _endTime;
+    }
+
+    /// <inheritdoc/>
+    public IUndoableCommand MergeWith(IUndoableCommand other)
+    {
+        if (other is ShiftAutomationCommand otherShift)
+        {
+            // Combine the offsets
+            return new ShiftAutomationCommand(_lane, _timeOffset + otherShift._timeOffset, _startTime, _endTime);
+        }
+        return this;
+    }
+
+    private List<AutomationPoint> GetAffectedPoints()
+    {
+        IEnumerable<AutomationPoint> points = _lane.Curve.Points;
+
+        if (_startTime.HasValue)
+            points = points.Where(p => p.Time >= _startTime.Value);
+        if (_endTime.HasValue)
+            points = points.Where(p => p.Time <= _endTime.Value);
+
+        return points.ToList();
+    }
+
+    private readonly record struct PointTimeSnapshot(long Id, double Time);
+}

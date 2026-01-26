@@ -99,4 +99,52 @@ public interface IProjectTemplateService
     /// <param name="template">The template to delete.</param>
     /// <returns>True if deleted successfully.</returns>
     bool DeleteTemplate(ProjectTemplate template);
+
+    /// <summary>
+    /// Imports a template from a file.
+    /// </summary>
+    /// <param name="filePath">Path to the template file (.metemplate or .json).</param>
+    /// <returns>The imported template, or null if import failed.</returns>
+    Task<ProjectTemplate?> ImportTemplateAsync(string filePath);
+
+    /// <summary>
+    /// Exports a template to a file.
+    /// </summary>
+    /// <param name="template">The template to export.</param>
+    /// <param name="filePath">Destination file path.</param>
+    /// <param name="asPackage">If true, exports as .metemplate package; otherwise as .json.</param>
+    Task ExportTemplateAsync(ProjectTemplate template, string filePath, bool asPackage = true);
+
+    /// <summary>
+    /// Creates a template from an existing project.
+    /// </summary>
+    /// <param name="project">The project to create a template from.</param>
+    /// <param name="templateName">Name for the new template.</param>
+    /// <param name="category">Category for the template.</param>
+    /// <param name="description">Description of the template.</param>
+    /// <returns>The created template.</returns>
+    Task<ProjectTemplate> CreateTemplateFromProjectAsync(
+        MusicProject project,
+        string templateName,
+        TemplateCategory category,
+        string description = "");
+
+    /// <summary>
+    /// Duplicates an existing template.
+    /// </summary>
+    /// <param name="template">The template to duplicate.</param>
+    /// <returns>The duplicated template.</returns>
+    Task<ProjectTemplate> DuplicateTemplateAsync(ProjectTemplate template);
+
+    /// <summary>
+    /// Gets all distinct categories that have templates.
+    /// </summary>
+    IEnumerable<TemplateCategory> GetUsedCategories();
+
+    /// <summary>
+    /// Gets the required plugins for a template.
+    /// </summary>
+    /// <param name="template">The template to check.</param>
+    /// <returns>List of required plugin/instrument names.</returns>
+    IReadOnlyList<string> GetRequiredPlugins(ProjectTemplate template);
 }

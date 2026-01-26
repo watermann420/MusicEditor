@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using MusicEngine.Core;
+using MusicEngineEditor.Views.Dialogs;
 using CoreMarkerTrack = MusicEngine.Core.MarkerTrack;
 using CoreMarkerType = MusicEngine.Core.MarkerType;
 
@@ -97,6 +98,11 @@ public partial class MarkerTrackControl : UserControl
     /// Event raised when a marker is removed.
     /// </summary>
     public event EventHandler<Marker>? MarkerRemoved;
+
+    /// <summary>
+    /// Event raised when export of a region (loop marker) is requested.
+    /// </summary>
+    public event EventHandler<ExportRegionEventArgs>? ExportRegionRequested;
 
     public MarkerTrackControl()
     {
@@ -357,6 +363,10 @@ public partial class MarkerTrackControl : UserControl
         JumpToMarkerMenuItem.IsEnabled = hitMarker != null;
         LockMarkerMenuItem.IsEnabled = hitMarker != null;
         LockMarkerMenuItem.Header = hitMarker?.IsLocked == true ? "Unlock Marker" : "Lock Marker";
+
+        // Show Export Region for loop markers only
+        var isLoopMarker = hitMarker?.Type == CoreMarkerType.Loop && hitMarker.EndPosition.HasValue;
+        ExportRegionMenuItem.Visibility = isLoopMarker ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void MarkerCanvas_MouseMove(object sender, MouseEventArgs e)
@@ -485,16 +495,24 @@ public partial class MarkerTrackControl : UserControl
     {
         if (_selectedMarker == null) return;
 
-        // In a full implementation, this would open an edit dialog
-        // For now, we'll just show a message
-        MessageBox.Show(
-            $"Edit marker: {_selectedMarker.Name}\n" +
-            $"Position: {_selectedMarker.Position:F2} beats\n" +
-            $"Type: {_selectedMarker.Type}\n" +
-            $"Color: {_selectedMarker.Color}",
-            "Edit Marker",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        var dialog = new MarkerEditDialog(_selectedMarker)
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            // Apply changes to the marker
+            _selectedMarker.Name = dialog.MarkerName;
+            _selectedMarker.Type = dialog.MarkerType;
+            _selectedMarker.Color = dialog.MarkerColor;
+            _selectedMarker.Position = dialog.MarkerPosition;
+            _selectedMarker.EndPosition = dialog.MarkerEndPosition;
+            _selectedMarker.Touch();
+
+            // Refresh display
+            RefreshMarkers();
+        }
     }
 
     private void DeleteMarker_Click(object sender, RoutedEventArgs e)
@@ -540,5 +558,65 @@ public partial class MarkerTrackControl : UserControl
         }
     }
 
+    private void ExportRegion_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedMarker == null || _selectedMarker.Type != CoreMarkerType.Loop)
+            return;
+
+        if (!_selectedMarker.EndPosition.HasValue)
+        {
+            MessageBox.Show("This loop marker does not have an end position defined.",
+                "Cannot Export Region", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var args = new ExportRegionEventArgs(
+            _selectedMarker.Name,
+            _selectedMarker.Position,
+            _selectedMarker.EndPosition.Value
+        );
+
+        ExportRegionRequested?.Invoke(this, args);
+    }
+
     #endregion
+}
+
+/// <summary>
+/// Event arguments for export region requests.
+/// </summary>
+public class ExportRegionEventArgs : EventArgs
+{
+    /// <summary>
+    /// Gets the name of the region to export.
+    /// </summary>
+    public string RegionName { get; }
+
+    /// <summary>
+    /// Gets the start position of the region in beats.
+    /// </summary>
+    public double StartPosition { get; }
+
+    /// <summary>
+    /// Gets the end position of the region in beats.
+    /// </summary>
+    public double EndPosition { get; }
+
+    /// <summary>
+    /// Gets the length of the region in beats.
+    /// </summary>
+    public double Length => EndPosition - StartPosition;
+
+    /// <summary>
+    /// Creates a new ExportRegionEventArgs instance.
+    /// </summary>
+    /// <param name="regionName">The name of the region.</param>
+    /// <param name="startPosition">The start position in beats.</param>
+    /// <param name="endPosition">The end position in beats.</param>
+    public ExportRegionEventArgs(string regionName, double startPosition, double endPosition)
+    {
+        RegionName = regionName;
+        StartPosition = startPosition;
+        EndPosition = endPosition;
+    }
 }

@@ -1,0 +1,173 @@
+<Window x:Class="MusicEngineEditor.Views.Dialogs.PluginBlacklistDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Plugin Blacklist"
+        Width="700" Height="500"
+        MinWidth="500" MinHeight="350"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
+
+    <Window.Resources>
+        <!-- List Item Style -->
+        <Style x:Key="BlacklistListItemStyle" TargetType="ListViewItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3C3F41"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="20,16">
+            <StackPanel>
+                <TextBlock Text="Plugin Blacklist"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource BrightForegroundBrush}"/>
+                <TextBlock Text="Manage plugins that should be skipped during scanning. Blacklisted plugins will not be loaded."
+                           FontSize="12"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           Margin="0,4,0,0"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Blacklist ListView -->
+        <ListView Grid.Row="1"
+                  x:Name="BlacklistListView"
+                  ItemContainerStyle="{StaticResource BlacklistListItemStyle}"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  Margin="16"
+                  SelectionMode="Extended">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Plugin Name" Width="180">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding PluginName}"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip="{Binding PluginName}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Type" Width="60" DisplayMemberBinding="{Binding PluginType}"/>
+                    <GridViewColumn Header="Reason" Width="150">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Reason}"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip="{Binding Reason}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Path" Width="200">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding PluginPath}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                           ToolTip="{Binding PluginPath}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Date Added" Width="110" DisplayMemberBinding="{Binding DateAddedDisplay}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <!-- Action Buttons -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                Padding="16,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button x:Name="AddButton"
+                        Content="Add Plugin..."
+                        Padding="12,6"
+                        Margin="0,0,8,0"
+                        Click="AddButton_Click"
+                        ToolTip="Add a plugin to the blacklist"/>
+
+                <Button x:Name="RemoveButton"
+                        Content="Remove Selected"
+                        Padding="12,6"
+                        Margin="0,0,8,0"
+                        Click="RemoveButton_Click"
+                        IsEnabled="{Binding SelectedItems.Count, ElementName=BlacklistListView, Converter={StaticResource GreaterThanZeroConverter}, FallbackValue=False}"
+                        ToolTip="Remove selected plugins from the blacklist"/>
+
+                <Rectangle Width="1"
+                           Fill="{DynamicResource BorderBrush}"
+                           Margin="8,4"/>
+
+                <Button x:Name="ScanButton"
+                        Content="Scan for Problematic Plugins"
+                        Padding="12,6"
+                        Margin="8,0,0,0"
+                        Click="ScanButton_Click"
+                        ToolTip="Scan plugin directories for potentially problematic plugins">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Bottom Button Panel -->
+        <Border Grid.Row="3"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="20,15">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <TextBlock x:Name="StatusText"
+                               Text="0 plugins blacklisted"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Clear All"
+                            Padding="15,8"
+                            Margin="0,0,10,0"
+                            Click="ClearAllButton_Click"/>
+                    <Button Content="Close"
+                            IsCancel="True"
+                            Padding="20,8"
+                            Click="CloseButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

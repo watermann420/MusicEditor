@@ -8,6 +8,43 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace MusicEngineEditor.Models;
 
 /// <summary>
+/// Defines the type of track icon for visual identification.
+/// </summary>
+public enum TrackIconType
+{
+    /// <summary>No icon.</summary>
+    None,
+    /// <summary>Generic audio track.</summary>
+    Audio,
+    /// <summary>MIDI track.</summary>
+    Midi,
+    /// <summary>Drums/Percussion track.</summary>
+    Drums,
+    /// <summary>Bass track.</summary>
+    Bass,
+    /// <summary>Synthesizer track.</summary>
+    Synth,
+    /// <summary>Vocals track.</summary>
+    Vocals,
+    /// <summary>Guitar track.</summary>
+    Guitar,
+    /// <summary>Piano/Keys track.</summary>
+    Piano,
+    /// <summary>Strings track.</summary>
+    Strings,
+    /// <summary>Brass track.</summary>
+    Brass,
+    /// <summary>Woodwinds track.</summary>
+    Woodwinds,
+    /// <summary>FX/Sound design track.</summary>
+    FX,
+    /// <summary>Bus/Group track.</summary>
+    Bus,
+    /// <summary>Master output.</summary>
+    Master
+}
+
+/// <summary>
 /// Represents a single channel in the mixer with volume, pan, mute/solo, metering,
 /// effect slots, and send/return routing.
 /// </summary>
@@ -31,6 +68,25 @@ public partial class MixerChannel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private string _color = "#4A9EFF";
+
+    /// <summary>
+    /// Gets or sets the track icon type for visual identification.
+    /// </summary>
+    [ObservableProperty]
+    private TrackIconType _icon = TrackIconType.None;
+
+    /// <summary>
+    /// Gets or sets a custom icon path (overrides Icon if set).
+    /// </summary>
+    [ObservableProperty]
+    private string? _iconPath;
+
+    /// <summary>
+    /// Gets or sets whether the channel phase is inverted.
+    /// When true, all samples are multiplied by -1.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isPhaseInverted;
 
     /// <summary>
     /// Gets or sets the volume level (0.0 to 1.0, can exceed for gain).
@@ -177,11 +233,14 @@ public partial class MixerChannel : ObservableObject
         IsMuted = false;
         IsSoloed = false;
         IsArmed = false;
+        IsPhaseInverted = false;
         MeterLeft = 0f;
         MeterRight = 0f;
         OutputBusId = null;
         OutputBusName = "Master";
         IsEffectChainBypassed = false;
+        Icon = TrackIconType.None;
+        IconPath = null;
 
         // Clear effects
         foreach (var slot in EffectSlots)
