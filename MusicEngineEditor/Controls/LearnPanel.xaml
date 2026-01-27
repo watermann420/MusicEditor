@@ -5,24 +5,24 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="400"
-             Background="#1E1F22">
+             Background="#0D0D0D">
 
     <UserControl.Resources>
         <!-- Colors matching the dark theme -->
-        <SolidColorBrush x:Key="LearnPanelBackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="LearnPanelBackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
         <SolidColorBrush x:Key="SubtleBorderBrush" Color="#43454A"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
         <SolidColorBrush x:Key="BrightForegroundBrush" Color="#DFE1E5"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
         <SolidColorBrush x:Key="CodeBackgroundBrush" Color="#1A1B1E"/>
-        <SolidColorBrush x:Key="RunButtonBrush" Color="#499C54"/>
+        <SolidColorBrush x:Key="RunButtonBrush" Color="#00CC66"/>
         <SolidColorBrush x:Key="RunButtonHoverBrush" Color="#5AAF65"/>
         <SolidColorBrush x:Key="CategoryHeaderBrush" Color="#DFE1E5"/>
-        <SolidColorBrush x:Key="SearchBackgroundBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="SearchBackgroundBrush" Color="#181818"/>
 
         <!-- Search TextBox Style -->
         <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
@@ -90,7 +90,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
@@ -196,7 +196,7 @@
                                                     </Setter>
                                                 </Trigger>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="toggleBorder" Property="Background" Value="#3C3F41"/>
+                                                    <Setter TargetName="toggleBorder" Property="Background" Value="#252525"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>

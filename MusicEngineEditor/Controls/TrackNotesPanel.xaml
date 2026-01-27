@@ -64,7 +64,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
@@ -96,11 +96,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

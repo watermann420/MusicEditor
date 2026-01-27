@@ -435,7 +435,7 @@ public partial class MixRadarView : UserControl
         if (score >= 80)
         {
             balanceDescription = "Balanced";
-            balanceColor = Color.FromRgb(0x4C, 0xAF, 0x50); // Green
+            balanceColor = Color.FromRgb(0x00, 0xCC, 0x66); // Green
         }
         else if (score >= 60)
         {
@@ -455,7 +455,7 @@ public partial class MixRadarView : UserControl
         else
         {
             balanceDescription = "Imbalanced";
-            balanceColor = Color.FromRgb(0xF4, 0x43, 0x36); // Red
+            balanceColor = Color.FromRgb(0xFF, 0x47, 0x57); // Red
         }
 
         BalanceText.Text = balanceDescription;

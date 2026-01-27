@@ -142,7 +142,7 @@ public partial class DynamicsGraphControl : UserControl
 
     private readonly Color _transferCurveColor = Color.FromRgb(0x00, 0xCE, 0xD1);
     private readonly Color _thresholdColor = Color.FromRgb(0xE8, 0x9C, 0x4B);
-    private readonly Color _kneeColor = Color.FromRgb(0x4C, 0xAF, 0x50);
+    private readonly Color _kneeColor = Color.FromRgb(0x00, 0xCC, 0x66);
     private readonly Color _operatingPointColor = Color.FromRgb(0xFF, 0x55, 0x55);
 
     #endregion
@@ -512,7 +512,7 @@ public partial class DynamicsGraphControl : UserControl
                 Y1 = unityY,
                 X2 = x,
                 Y2 = y,
-                Stroke = new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36)),
+                Stroke = new SolidColorBrush(Color.FromRgb(0xFF, 0x47, 0x57)),
                 StrokeThickness = 2
             };
             OperatingPointCanvas.Children.Add(grLine);

@@ -30,7 +30,7 @@ public partial class ClipControl : UserControl
 
     public static readonly DependencyProperty ClipColorProperty =
         DependencyProperty.Register(nameof(ClipColor), typeof(Color), typeof(ClipControl),
-            new PropertyMetadata(Color.FromRgb(0x4C, 0xAF, 0x50), OnClipColorChanged));
+            new PropertyMetadata(Color.FromRgb(0x00, 0xCC, 0x66), OnClipColorChanged));
 
     public static readonly DependencyProperty PlayheadPositionProperty =
         DependencyProperty.Register(nameof(PlayheadPosition), typeof(double), typeof(ClipControl),
@@ -265,7 +265,7 @@ public partial class ClipControl : UserControl
         }
         catch
         {
-            return Color.FromRgb(0x4C, 0xAF, 0x50);
+            return Color.FromRgb(0x00, 0xCC, 0x66);
         }
     }
 

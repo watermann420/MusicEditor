@@ -19,12 +19,12 @@
         <SolidColorBrush x:Key="DropboxBadgeBrush" Color="#0061FF"/>
         <SolidColorBrush x:Key="GoogleDriveBadgeBrush" Color="#4285F4"/>
         <SolidColorBrush x:Key="OneDriveBadgeBrush" Color="#0078D4"/>
-        <SolidColorBrush x:Key="LocalBadgeBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="LocalBadgeBrush" Color="#00FF88"/>
 
         <!-- Sync Status Colors -->
-        <SolidColorBrush x:Key="SyncedBrush" Color="#6AAB73"/>
-        <SolidColorBrush x:Key="PendingBrush" Color="#E8B339"/>
-        <SolidColorBrush x:Key="ConflictBrush" Color="#F75464"/>
+        <SolidColorBrush x:Key="SyncedBrush" Color="#00FF88"/>
+        <SolidColorBrush x:Key="PendingBrush" Color="#FFB800"/>
+        <SolidColorBrush x:Key="ConflictBrush" Color="#FF4757"/>
 
         <!-- Project Card Style -->
         <Style x:Key="ProjectCardStyle" TargetType="ListBoxItem">
@@ -47,7 +47,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -129,7 +129,7 @@
 
                     <!-- Search Box -->
                     <Border Grid.Row="0"
-                            Background="#252628"
+                            Background="#141414"
                             BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1"
                             CornerRadius="4"
@@ -200,7 +200,7 @@
                                     <!-- Thumbnail -->
                                     <Border Grid.Column="0"
                                             Width="48" Height="48"
-                                            Background="#393B40"
+                                            Background="#2A2A2A"
                                             CornerRadius="4"
                                             Margin="0,0,12,0">
                                         <TextBlock Text="&#x266B;"

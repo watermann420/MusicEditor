@@ -139,8 +139,8 @@ public partial class AutomationPreviewControl : UserControl
 
     private readonly Color _currentColor = Color.FromRgb(0x00, 0xCE, 0xD1);
     private readonly Color _previewColor = Color.FromRgb(0xFF, 0x98, 0x00);
-    private readonly Color _addColor = Color.FromRgb(0x4C, 0xAF, 0x50);
-    private readonly Color _removeColor = Color.FromRgb(0xF4, 0x43, 0x36);
+    private readonly Color _addColor = Color.FromRgb(0x00, 0xCC, 0x66);
+    private readonly Color _removeColor = Color.FromRgb(0xFF, 0x47, 0x57);
 
     #endregion
 

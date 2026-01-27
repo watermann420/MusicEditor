@@ -12,9 +12,9 @@
 
     <UserControl.Resources>
         <!-- Colors -->
-        <Color x:Key="WaveformColor">#4CAF50</Color>
+        <Color x:Key="WaveformColor">#00CC66</Color>
         <Color x:Key="SelectionColor">#404B6EAF</Color>
-        <Color x:Key="SelectionBorderColor">#4B6EAF</Color>
+        <Color x:Key="SelectionBorderColor">#00D9FF</Color>
         <Color x:Key="PlayheadColor">#FFFFFF</Color>
         <Color x:Key="RulerBackgroundColor">#252629</Color>
         <Color x:Key="FadeOverlayColor">#60000000</Color>
@@ -48,7 +48,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
@@ -85,7 +85,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">

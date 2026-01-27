@@ -5,14 +5,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="350"
-             Background="#1E1F22">
+             Background="#0D0D0D">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
         <!-- Message Bubble Style - Own Messages -->
         <Style x:Key="OwnMessageStyle" TargetType="Border">
-            <Setter Property="Background" Value="#4B6EAF"/>
+            <Setter Property="Background" Value="#00D9FF"/>
             <Setter Property="CornerRadius" Value="12,12,4,12"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Margin" Value="40,4,8,4"/>
@@ -44,7 +44,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="#3C3F41"
+    <Border BorderBrush="#252525"
             BorderThickness="1"
             CornerRadius="6">
         <Grid>
@@ -57,8 +57,8 @@
 
             <!-- Header -->
             <Border Grid.Row="0"
-                    Background="#2B2D30"
-                    BorderBrush="#3C3F41"
+                    Background="#181818"
+                    BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,10">
                 <Grid>
@@ -73,7 +73,7 @@
                                    FontWeight="SemiBold"
                                    Foreground="White"
                                    VerticalAlignment="Center"/>
-                        <Border Background="#6AAB73"
+                        <Border Background="#00FF88"
                                 CornerRadius="8"
                                 Padding="6,2"
                                 Margin="8,0,0,0"
@@ -99,7 +99,7 @@
             <!-- Online Users -->
             <Border Grid.Row="1"
                     Background="#252628"
-                    BorderBrush="#3C3F41"
+                    BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="8,6">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
@@ -210,8 +210,8 @@
 
             <!-- Input Area -->
             <Border Grid.Row="3"
-                    Background="#2B2D30"
-                    BorderBrush="#3C3F41"
+                    Background="#181818"
+                    BorderBrush="#252525"
                     BorderThickness="0,1,0,0"
                     Padding="8">
                 <Grid>
@@ -251,15 +251,15 @@
                     <!-- Message Input -->
                     <Border Grid.Column="1"
                             Background="#252628"
-                            BorderBrush="#3C3F41"
+                            BorderBrush="#252525"
                             BorderThickness="1"
                             CornerRadius="16"
                             Margin="8,0">
                         <TextBox x:Name="MessageTextBox"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 Foreground="#BCBEC4"
-                                 CaretBrush="#BCBEC4"
+                                 Foreground="#E0E0E0"
+                                 CaretBrush="#E0E0E0"
                                  FontSize="12"
                                  Padding="12,8"
                                  AcceptsReturn="False"
@@ -273,7 +273,7 @@
                     <Button Grid.Column="2"
                             Content="Send"
                             Width="60" Height="32"
-                            Background="#4B6EAF"
+                            Background="#00D9FF"
                             Foreground="White"
                             BorderThickness="0"
                             FontSize="11"

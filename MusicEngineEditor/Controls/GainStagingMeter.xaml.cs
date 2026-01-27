@@ -315,7 +315,7 @@ public partial class GainStagingMeter : UserControl
             }
             else
             {
-                dbText.Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4));
+                dbText.Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
             }
         }
     }

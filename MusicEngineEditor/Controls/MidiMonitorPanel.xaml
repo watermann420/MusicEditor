@@ -11,10 +11,10 @@
 
     <UserControl.Resources>
         <!-- Colors for MIDI message types -->
-        <SolidColorBrush x:Key="NoteOnBrush" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="NoteOnBrush" Color="#00CC66"/>
         <SolidColorBrush x:Key="NoteOffBrush" Color="#8BC34A"/>
         <SolidColorBrush x:Key="CCBrush" Color="#FF9800"/>
-        <SolidColorBrush x:Key="PitchBendBrush" Color="#2196F3"/>
+        <SolidColorBrush x:Key="PitchBendBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="AftertouchBrush" Color="#9C27B0"/>
         <SolidColorBrush x:Key="ProgramChangeBrush" Color="#E91E63"/>
         <SolidColorBrush x:Key="SysExBrush" Color="#795548"/>
@@ -58,7 +58,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -95,7 +95,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -270,7 +270,7 @@
 
         <!-- Channel Activity Indicators -->
         <Border Grid.Row="1"
-                Background="#1E1F22"
+                Background="#0D0D0D"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,0,1"
                 Padding="8,4">

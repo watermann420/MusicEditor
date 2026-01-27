@@ -321,7 +321,7 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Before/After Toggle -->
+            <!-- A/B Comparison Section -->
             <Border Grid.Row="7"
                     Background="{DynamicResource BackgroundBrush}"
                     CornerRadius="4"
@@ -329,23 +329,111 @@
                     Margin="0,8,0,0"
                     VerticalAlignment="Bottom">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <RadioButton Grid.Column="0"
-                                 x:Name="AfterRadio"
-                                 Content="After (Processed)"
-                                 IsChecked="True"
-                                 GroupName="BeforeAfter"
-                                 Checked="AfterRadio_Checked"/>
+                    <!-- A/B Section Header with Toggle Button -->
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <RadioButton Grid.Column="1"
-                                 x:Name="BeforeRadio"
-                                 Content="Before (Original)"
-                                 GroupName="BeforeAfter"
-                                 Checked="BeforeRadio_Checked"/>
+                        <TextBlock Grid.Column="0"
+                                   Text="A/B Comparison"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ForegroundBrush}"
+                                   VerticalAlignment="Center"/>
+
+                        <!-- Quick Toggle Button -->
+                        <ToggleButton Grid.Column="1"
+                                      x:Name="ABToggleButton"
+                                      Content="Processed"
+                                      Padding="12,6"
+                                      Click="ABToggleButton_Click"
+                                      ToolTip="Click to toggle between Original and Processed audio (A/B comparison)">
+                            <ToggleButton.Style>
+                                <Style TargetType="ToggleButton">
+                                    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="MinWidth" Value="90"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border x:Name="border"
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="4"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsChecked" Value="True">
+                                                        <Setter TargetName="border" Property="Background" Value="#E67E22"/>
+                                                        <Setter Property="Foreground" Value="White"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ToggleButton.Style>
+                        </ToggleButton>
+                    </Grid>
+
+                    <!-- Mode Indicator Label -->
+                    <Border Grid.Row="1"
+                            Background="{DynamicResource PanelBackgroundBrush}"
+                            CornerRadius="3"
+                            Padding="8,4"
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Currently Playing: "
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock x:Name="PreviewModeIndicator"
+                                       Text="PROCESSED"
+                                       FontSize="11"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource AccentBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Radio Buttons for explicit selection -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <RadioButton Grid.Column="0"
+                                     x:Name="AfterRadio"
+                                     Content="Processed (After)"
+                                     IsChecked="True"
+                                     GroupName="BeforeAfter"
+                                     Checked="AfterRadio_Checked"
+                                     ToolTip="Preview audio with noise reduction applied"/>
+
+                        <RadioButton Grid.Column="1"
+                                     x:Name="BeforeRadio"
+                                     Content="Original (Before)"
+                                     GroupName="BeforeAfter"
+                                     Checked="BeforeRadio_Checked"
+                                     ToolTip="Preview original audio without noise reduction"/>
+                    </Grid>
                 </Grid>
             </Border>
 

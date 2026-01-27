@@ -10,13 +10,13 @@
 
     <UserControl.Resources>
         <!-- Colors -->
-        <Color x:Key="BackgroundColor">#1E1F22</Color>
-        <Color x:Key="LineColor">#4B6EAF</Color>
+        <Color x:Key="BackgroundColor">#0D0D0D</Color>
+        <Color x:Key="LineColor">#00D9FF</Color>
         <Color x:Key="LineHoverColor">#6B8ECF</Color>
         <Color x:Key="PointColor">#FFFFFF</Color>
         <Color x:Key="PointHoverColor">#FFD700</Color>
-        <Color x:Key="GridColor">#2B2D30</Color>
-        <Color x:Key="TextColor">#BCBEC4</Color>
+        <Color x:Key="GridColor">#181818</Color>
+        <Color x:Key="TextColor">#E0E0E0</Color>
 
         <!-- Brushes -->
         <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
@@ -107,9 +107,9 @@
                           ToolTip="Snap to Grid"
                           Padding="6,2"
                           FontSize="9"
-                          Background="#2B2D30"
+                          Background="#181818"
                           Foreground="{StaticResource TextBrush}"
-                          BorderBrush="#393B40"
+                          BorderBrush="#2A2A2A"
                           Margin="0,0,4,0"/>
             <ToggleButton x:Name="BezierModeToggle"
                           Content="Bezier"
@@ -117,9 +117,9 @@
                           ToolTip="Use Bezier Curves"
                           Padding="6,2"
                           FontSize="9"
-                          Background="#2B2D30"
+                          Background="#181818"
                           Foreground="{StaticResource TextBrush}"
-                          BorderBrush="#393B40"
+                          BorderBrush="#2A2A2A"
                           Checked="BezierModeToggle_Checked"
                           Unchecked="BezierModeToggle_Unchecked"/>
         </StackPanel>

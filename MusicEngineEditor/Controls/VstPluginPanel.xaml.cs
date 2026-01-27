@@ -635,21 +635,21 @@ public class VstPluginDisplayInfo : INotifyPropertyChanged
     /// Gets the status background brush
     /// </summary>
     public Brush StatusBackground => IsLoaded
-        ? new SolidColorBrush(Color.FromArgb(0x40, 0x6A, 0xAB, 0x73))
+        ? new SolidColorBrush(Color.FromArgb(0x40, 0x00, 0xFF, 0x88))
         : Brushes.Transparent;
 
     /// <summary>
     /// Gets the status foreground brush
     /// </summary>
     public Brush StatusForeground => IsLoaded
-        ? new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73))
+        ? new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88))
         : new SolidColorBrush(Color.FromRgb(0x6F, 0x73, 0x7A));
 
     /// <summary>
     /// Gets the status dot color
     /// </summary>
     public Brush StatusDotColor => IsLoaded
-        ? new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73))
+        ? new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88))
         : new SolidColorBrush(Color.FromRgb(0x6F, 0x73, 0x7A));
 
     /// <summary>
@@ -692,7 +692,7 @@ public class VstPluginDisplayInfo : INotifyPropertyChanged
     /// </summary>
     public Brush BypassButtonForeground => IsBypassed
         ? Brushes.White
-        : new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4));
+        : new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
 
     /// <summary>
     /// Gets the opacity when bypassed

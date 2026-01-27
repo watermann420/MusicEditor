@@ -26,11 +26,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
@@ -54,7 +54,7 @@
                                 CornerRadius="20"
                                 Padding="6">
                             <Border.Effect>
-                                <DropShadowEffect x:Name="glowEffect" Color="#4CAF50" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                                <DropShadowEffect x:Name="glowEffect" Color="#00CC66" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
                             </Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
@@ -87,7 +87,7 @@
                                 </Trigger.ExitActions>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4CAF50"/>
+                                <Setter TargetName="border" Property="Background" Value="#00CC66"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -98,7 +98,7 @@
         <!-- Record Button Style (Red when armed) -->
         <Style x:Key="RecordButtonStyle" TargetType="ToggleButton">
             <Setter Property="Background" Value="#3D2D2D"/>
-            <Setter Property="Foreground" Value="#BCBEC4"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="36"/>
             <Setter Property="Height" Value="36"/>
@@ -111,7 +111,7 @@
                                 CornerRadius="4"
                                 Padding="6">
                             <Border.Effect>
-                                <DropShadowEffect x:Name="recordGlow" Color="#F44336" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                                <DropShadowEffect x:Name="recordGlow" Color="#FF4757" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
                             </Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
@@ -159,7 +159,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#214283"/>
@@ -194,11 +194,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -208,7 +208,7 @@
 
         <!-- Time Display Style -->
         <Style x:Key="TimeDisplayStyle" TargetType="Border">
-            <Setter Property="Background" Value="#1E1F22"/>
+            <Setter Property="Background" Value="#0D0D0D"/>
             <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -216,7 +216,7 @@
 
         <!-- Position Slider Style -->
         <Style x:Key="PositionSliderStyle" TargetType="Slider">
-            <Setter Property="Background" Value="#1E1F22"/>
+            <Setter Property="Background" Value="#0D0D0D"/>
             <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
             <Setter Property="Height" Value="24"/>
             <Setter Property="Template">
@@ -225,7 +225,7 @@
                         <Grid>
                             <Border x:Name="TrackBackground"
                                     Height="4"
-                                    Background="#393B40"
+                                    Background="#2A2A2A"
                                     CornerRadius="2"
                                     VerticalAlignment="Center"/>
                             <Track x:Name="PART_Track">
@@ -245,7 +245,7 @@
                                                 <Ellipse x:Name="thumbEllipse"
                                                          Width="14" Height="14"
                                                          Fill="{DynamicResource AccentBrush}"
-                                                         Stroke="#1E1F22"
+                                                         Stroke="#0D0D0D"
                                                          StrokeThickness="2">
                                                     <Ellipse.Effect>
                                                         <DropShadowEffect Color="#000000" BlurRadius="3" ShadowDepth="1" Opacity="0.3"/>
@@ -283,7 +283,7 @@
     <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
         <Border.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                <GradientStop Color="#2B2D30" Offset="0"/>
+                <GradientStop Color="#181818" Offset="0"/>
                 <GradientStop Color="#27292C" Offset="1"/>
             </LinearGradientBrush>
         </Border.Background>
@@ -323,16 +323,16 @@
                     <Grid>
                         <Path x:Name="PlayIcon"
                               Data="M 0,0 L 16,10 L 0,20 Z"
-                              Fill="#6AAB73"
+                              Fill="#00FF88"
                               Stretch="Uniform" Width="14" Height="16"
                               Margin="2,0,0,0"/>
                         <!-- Pause Icon (hidden by default) -->
                         <Grid x:Name="PauseIcon" Visibility="Collapsed">
                             <Path Data="M 0,0 L 5,0 L 5,16 L 0,16 Z"
-                                  Fill="#6AAB73"
+                                  Fill="#00FF88"
                                   Stretch="Uniform" Width="5" Height="14" HorizontalAlignment="Left"/>
                             <Path Data="M 0,0 L 5,0 L 5,16 L 0,16 Z"
-                                  Fill="#6AAB73"
+                                  Fill="#00FF88"
                                   Stretch="Uniform" Width="5" Height="14" HorizontalAlignment="Right"/>
                         </Grid>
                     </Grid>
@@ -342,12 +342,12 @@
                 <ToggleButton x:Name="RecordButton" Style="{StaticResource RecordButtonStyle}"
                               ToolTip="Record (R)" Margin="6,0,0,0"
                               Checked="RecordButton_CheckedChanged" Unchecked="RecordButton_CheckedChanged">
-                    <Ellipse Width="14" Height="14" Fill="#F44336"/>
+                    <Ellipse Width="14" Height="14" Fill="#FF4757"/>
                 </ToggleButton>
             </StackPanel>
 
             <!-- BPM Control -->
-            <Border Grid.Column="1" Background="#1E1F22" CornerRadius="4" Padding="8,4" Margin="16,0,0,0"
+            <Border Grid.Column="1" Background="#0D0D0D" CornerRadius="4" Padding="8,4" Margin="16,0,0,0"
                     VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="BPM" Foreground="{DynamicResource SecondaryForegroundBrush}"

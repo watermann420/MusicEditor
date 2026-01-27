@@ -94,10 +94,10 @@ public partial class LoudnessGraphView : UserControl
     private DateTime _startTime;
 
     // Colors
-    private readonly Color _integratedColor = Color.FromRgb(0x4C, 0xAF, 0x50);
-    private readonly Color _shortTermColor = Color.FromRgb(0x21, 0x96, 0xF3);
+    private readonly Color _integratedColor = Color.FromRgb(0x00, 0xCC, 0x66);
+    private readonly Color _shortTermColor = Color.FromRgb(0x00, 0xD9, 0xFF);
     private readonly Color _momentaryColor = Color.FromRgb(0x9C, 0x27, 0xB0);
-    private readonly Color _truePeakColor = Color.FromRgb(0xF4, 0x43, 0x36);
+    private readonly Color _truePeakColor = Color.FromRgb(0xFF, 0x47, 0x57);
     private readonly Color _targetColor = Color.FromRgb(0xFF, 0x98, 0x00);
 
     #endregion

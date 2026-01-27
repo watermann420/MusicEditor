@@ -8,8 +8,8 @@
         Width="900" Height="650"
         MinWidth="700" MinHeight="500"
         WindowStartupLocation="CenterOwner"
-        Background="#1E1F22"
-        Foreground="#BCBEC4">
+        Background="#0D0D0D"
+        Foreground="#E0E0E0">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -17,7 +17,7 @@
         <!-- Plugin List Item Style -->
         <Style x:Key="PluginListItemStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#BCBEC4"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Margin" Value="0,1"/>
             <Setter Property="Template">
@@ -31,10 +31,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#00D9FF"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -46,7 +46,7 @@
         <!-- Preset List Item Style -->
         <Style x:Key="PresetListItemStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#BCBEC4"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="Margin" Value="0,1"/>
             <Setter Property="Template">
@@ -60,10 +60,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#00D9FF"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -73,8 +73,8 @@
         </Style>
 
         <!-- Category Badge Colors -->
-        <SolidColorBrush x:Key="FactoryBadge" Color="#6AAB73"/>
-        <SolidColorBrush x:Key="UserBadge" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="FactoryBadge" Color="#00FF88"/>
+        <SolidColorBrush x:Key="UserBadge" Color="#00D9FF"/>
         <SolidColorBrush x:Key="FavoriteBadge" Color="#E8A73C"/>
 
         <!-- Category Tag Style -->
@@ -100,8 +100,8 @@
 
         <!-- Header -->
         <Border Grid.Row="0" Grid.ColumnSpan="3"
-                Background="#2B2D30"
-                BorderBrush="#3C3F41"
+                Background="#181818"
+                BorderBrush="#252525"
                 BorderThickness="0,0,0,1"
                 Padding="16,12">
             <Grid>
@@ -126,8 +126,8 @@
 
                 <!-- Search Box -->
                 <Border Grid.Column="1"
-                        Background="#252628"
-                        BorderBrush="#3C3F41"
+                        Background="#141414"
+                        BorderBrush="#252525"
                         BorderThickness="1"
                         CornerRadius="4"
                         Padding="8,4"
@@ -147,8 +147,8 @@
                                  Grid.Column="1"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 Foreground="#BCBEC4"
-                                 CaretBrush="#BCBEC4"
+                                 Foreground="#E0E0E0"
+                                 CaretBrush="#E0E0E0"
                                  FontSize="12"
                                  VerticalAlignment="Center"
                                  TextChanged="SearchBox_TextChanged"/>
@@ -159,8 +159,8 @@
 
         <!-- Left Panel - Plugin List -->
         <Border Grid.Row="1" Grid.Column="0"
-                Background="#2B2D30"
-                BorderBrush="#3C3F41"
+                Background="#181818"
+                BorderBrush="#252525"
                 BorderThickness="0,0,1,0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -170,7 +170,7 @@
 
                 <!-- Plugin List Header -->
                 <Border Grid.Row="0"
-                        BorderBrush="#3C3F41"
+                        BorderBrush="#252525"
                         BorderThickness="0,0,0,1"
                         Padding="12,8">
                     <Grid>
@@ -226,7 +226,7 @@
 
         <GridSplitter Grid.Row="1" Grid.Column="1"
                       Width="4"
-                      Background="#2B2D30"
+                      Background="#181818"
                       HorizontalAlignment="Center"/>
 
         <!-- Right Panel - Presets -->
@@ -238,8 +238,8 @@
 
             <!-- Filter Bar -->
             <Border Grid.Row="0"
-                    Background="#2B2D30"
-                    BorderBrush="#3C3F41"
+                    Background="#181818"
+                    BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,8">
                 <Grid>
@@ -259,8 +259,8 @@
                         <ComboBox x:Name="CategoryFilter"
                                   Width="120"
                                   Background="#333337"
-                                  Foreground="#BCBEC4"
-                                  BorderBrush="#3C3F41"
+                                  Foreground="#E0E0E0"
+                                  BorderBrush="#252525"
                                   SelectionChanged="CategoryFilter_SelectionChanged">
                             <ComboBoxItem Content="All" IsSelected="True"/>
                             <ComboBoxItem Content="Favorites"/>
@@ -300,7 +300,7 @@
                                                         </Border>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsChecked" Value="True">
-                                                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                                                                 <Setter Property="Foreground" Value="White"/>
                                                             </Trigger>
                                                         </ControlTemplate.Triggers>
@@ -324,8 +324,8 @@
                         <ComboBox x:Name="SortCombo"
                                   Width="100"
                                   Background="#333337"
-                                  Foreground="#BCBEC4"
-                                  BorderBrush="#3C3F41"
+                                  Foreground="#E0E0E0"
+                                  BorderBrush="#252525"
                                   SelectionChanged="SortCombo_SelectionChanged">
                             <ComboBoxItem Content="Name" IsSelected="True"/>
                             <ComboBoxItem Content="Date"/>
@@ -420,8 +420,8 @@
 
         <!-- Footer -->
         <Border Grid.Row="2" Grid.ColumnSpan="3"
-                Background="#2B2D30"
-                BorderBrush="#3C3F41"
+                Background="#181818"
+                BorderBrush="#252525"
                 BorderThickness="0,1,0,0"
                 Padding="16,12">
             <Grid>
@@ -442,18 +442,18 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <CheckBox x:Name="PreviewCheckBox"
                               Content="Auto-Preview"
-                              Foreground="#BCBEC4"
+                              Foreground="#E0E0E0"
                               VerticalAlignment="Center"
                               Margin="0,0,16,0"/>
                     <Button Content="Preview"
                             Background="#333337"
-                            Foreground="#BCBEC4"
+                            Foreground="#E0E0E0"
                             BorderThickness="0"
                             Padding="16,8"
                             Margin="0,0,8,0"
                             Click="PreviewButton_Click"/>
                     <Button Content="Load Preset"
-                            Background="#4B6EAF"
+                            Background="#00D9FF"
                             Foreground="White"
                             BorderThickness="0"
                             Padding="20,8"
@@ -461,7 +461,7 @@
                             Click="LoadPresetButton_Click"/>
                     <Button Content="Cancel"
                             Background="#333337"
-                            Foreground="#BCBEC4"
+                            Foreground="#E0E0E0"
                             BorderThickness="0"
                             Padding="16,8"
                             IsCancel="True"

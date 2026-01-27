@@ -22,11 +22,12 @@ public partial class ReferenceTrackControl : UserControl
 {
     private ReferenceTrack? _referenceTrack;
     private readonly DispatcherTimer _positionTimer;
-#pragma warning disable CS0414 // Field is assigned but its value is never used
     private bool _isDraggingLoop;
     private bool _isDraggingLoopStart;
     private bool _isDraggingLoopEnd;
-#pragma warning restore CS0414
+    private double _loopDragStartOffset; // Offset from mouse to loop start when dragging entire region
+    private const double LoopHandleWidth = 6.0;
+    private const double MinLoopDurationSeconds = 0.1; // Minimum loop duration
     private float[]? _waveformPeaks;
     private bool _isAnalyzing;
 
@@ -410,6 +411,8 @@ public partial class ReferenceTrackControl : UserControl
         if (_referenceTrack == null || !_referenceTrack.IsLoaded || !_referenceTrack.LoopEnabled)
         {
             LoopRegionRect.Visibility = Visibility.Collapsed;
+            LoopStartHandle.Visibility = Visibility.Collapsed;
+            LoopEndHandle.Visibility = Visibility.Collapsed;
             LoopInfoText.Visibility = Visibility.Collapsed;
             return;
         }
@@ -424,11 +427,24 @@ public partial class ReferenceTrackControl : UserControl
         var startX = (_referenceTrack.LoopStart / duration) * width;
         var endX = (_referenceTrack.LoopEnd / duration) * width;
 
+        // Update loop region rectangle
         Canvas.SetLeft(LoopRegionRect, startX);
         Canvas.SetTop(LoopRegionRect, 0);
         LoopRegionRect.Width = Math.Max(2, endX - startX);
         LoopRegionRect.Height = height;
         LoopRegionRect.Visibility = Visibility.Visible;
+
+        // Update loop start handle
+        Canvas.SetLeft(LoopStartHandle, startX - LoopHandleWidth / 2);
+        Canvas.SetTop(LoopStartHandle, 0);
+        LoopStartHandle.Height = height;
+        LoopStartHandle.Visibility = Visibility.Visible;
+
+        // Update loop end handle
+        Canvas.SetLeft(LoopEndHandle, endX - LoopHandleWidth / 2);
+        Canvas.SetTop(LoopEndHandle, 0);
+        LoopEndHandle.Height = height;
+        LoopEndHandle.Visibility = Visibility.Visible;
 
         // Update loop info text
         LoopInfoText.Text = $"Loop: {FormatTime(TimeSpan.FromSeconds(_referenceTrack.LoopStart))} - {FormatTime(TimeSpan.FromSeconds(_referenceTrack.LoopEnd))}";
@@ -443,6 +459,20 @@ public partial class ReferenceTrackControl : UserControl
         var position = e.GetPosition(WaveformCanvas);
         var width = WaveformCanvas.ActualWidth;
 
+        // Check if clicking inside loop region (for dragging entire loop)
+        if (_referenceTrack.LoopEnabled && IsInsideLoopRegion(position.X))
+        {
+            var duration = _referenceTrack.Duration.TotalSeconds;
+            var startX = (_referenceTrack.LoopStart / duration) * width;
+
+            _isDraggingLoop = true;
+            _loopDragStartOffset = position.X - startX;
+            WaveformCanvas.CaptureMouse();
+            WaveformCanvas.Cursor = Cursors.Hand;
+            e.Handled = true;
+            return;
+        }
+
         // Calculate position in seconds
         var positionRatio = position.X / width;
         var positionSeconds = positionRatio * _referenceTrack.Duration.TotalSeconds;
@@ -454,15 +484,61 @@ public partial class ReferenceTrackControl : UserControl
         e.Handled = true;
     }
 
-    private void WaveformCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    private bool IsInsideLoopRegion(double x)
     {
-        _isDraggingLoop = false;
-        _isDraggingLoopStart = false;
-        _isDraggingLoopEnd = false;
-        WaveformCanvas.ReleaseMouseCapture();
+        if (_referenceTrack == null || !_referenceTrack.IsLoaded)
+            return false;
+
+        var width = WaveformCanvas.ActualWidth;
+        var duration = _referenceTrack.Duration.TotalSeconds;
+        var startX = (_referenceTrack.LoopStart / duration) * width;
+        var endX = (_referenceTrack.LoopEnd / duration) * width;
+
+        // Check if x is inside loop region but not on handles
+        var handleMargin = LoopHandleWidth;
+        return x > startX + handleMargin && x < endX - handleMargin;
     }
 
-    private void WaveformCanvas_MouseMove(object sender, MouseEventArgs e)
+    private void LoopStartHandle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_referenceTrack == null || !_referenceTrack.IsLoaded || !_referenceTrack.LoopEnabled)
+            return;
+
+        _isDraggingLoopStart = true;
+        LoopStartHandle.CaptureMouse();
+        LoopStartHandle.Fill = new SolidColorBrush(Color.FromArgb(0xCC, 0x34, 0x98, 0xDB)); // Highlight
+        e.Handled = true;
+    }
+
+    private void LoopEndHandle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_referenceTrack == null || !_referenceTrack.IsLoaded || !_referenceTrack.LoopEnabled)
+            return;
+
+        _isDraggingLoopEnd = true;
+        LoopEndHandle.CaptureMouse();
+        LoopEndHandle.Fill = new SolidColorBrush(Color.FromArgb(0xCC, 0x34, 0x98, 0xDB)); // Highlight
+        e.Handled = true;
+    }
+
+    private void LoopHandle_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isDraggingLoopStart)
+        {
+            _isDraggingLoopStart = false;
+            LoopStartHandle.ReleaseMouseCapture();
+            ResetLoopHandleColors();
+        }
+        else if (_isDraggingLoopEnd)
+        {
+            _isDraggingLoopEnd = false;
+            LoopEndHandle.ReleaseMouseCapture();
+            ResetLoopHandleColors();
+        }
+        e.Handled = true;
+    }
+
+    private void LoopHandle_MouseMove(object sender, MouseEventArgs e)
     {
         if (_referenceTrack == null || !_referenceTrack.IsLoaded)
             return;
@@ -470,15 +546,158 @@ public partial class ReferenceTrackControl : UserControl
         if (e.LeftButton != MouseButtonState.Pressed)
             return;
 
+        // Get position relative to canvas for accurate calculation
         var position = e.GetPosition(WaveformCanvas);
         var width = WaveformCanvas.ActualWidth;
+        var duration = _referenceTrack.Duration.TotalSeconds;
+
+        if (_isDraggingLoopStart)
+        {
+            HandleLoopStartDrag(position.X, width, duration);
+            e.Handled = true;
+        }
+        else if (_isDraggingLoopEnd)
+        {
+            HandleLoopEndDrag(position.X, width, duration);
+            e.Handled = true;
+        }
+    }
+
+    private void WaveformCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isDraggingLoop)
+        {
+            _isDraggingLoop = false;
+            WaveformCanvas.ReleaseMouseCapture();
+            WaveformCanvas.Cursor = Cursors.Arrow;
+        }
+        else if (_isDraggingLoopStart)
+        {
+            _isDraggingLoopStart = false;
+            LoopStartHandle.ReleaseMouseCapture();
+            ResetLoopHandleColors();
+        }
+        else if (_isDraggingLoopEnd)
+        {
+            _isDraggingLoopEnd = false;
+            LoopEndHandle.ReleaseMouseCapture();
+            ResetLoopHandleColors();
+        }
+        else
+        {
+            WaveformCanvas.ReleaseMouseCapture();
+        }
+    }
+
+    private void ResetLoopHandleColors()
+    {
+        var handleBrush = new SolidColorBrush(Color.FromArgb(0x80, 0x34, 0x98, 0xDB));
+        LoopStartHandle.Fill = handleBrush;
+        LoopEndHandle.Fill = handleBrush;
+    }
+
+    private void WaveformCanvas_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_referenceTrack == null || !_referenceTrack.IsLoaded)
+            return;
+
+        var position = e.GetPosition(WaveformCanvas);
+        var width = WaveformCanvas.ActualWidth;
+        var duration = _referenceTrack.Duration.TotalSeconds;
+
+        // Handle loop region dragging
+        if (_isDraggingLoop && e.LeftButton == MouseButtonState.Pressed)
+        {
+            HandleLoopRegionDrag(position.X, width, duration);
+            return;
+        }
+
+        // Handle loop start handle dragging
+        if (_isDraggingLoopStart && e.LeftButton == MouseButtonState.Pressed)
+        {
+            HandleLoopStartDrag(position.X, width, duration);
+            return;
+        }
+
+        // Handle loop end handle dragging
+        if (_isDraggingLoopEnd && e.LeftButton == MouseButtonState.Pressed)
+        {
+            HandleLoopEndDrag(position.X, width, duration);
+            return;
+        }
+
+        // Normal seeking behavior
+        if (e.LeftButton != MouseButtonState.Pressed)
+            return;
 
         // Calculate position in seconds
         var positionRatio = Math.Max(0, Math.Min(1, position.X / width));
-        var positionSeconds = positionRatio * _referenceTrack.Duration.TotalSeconds;
+        var positionSeconds = positionRatio * duration;
 
         // Seek to position
         _referenceTrack.Seek(positionSeconds);
+    }
+
+    private void HandleLoopRegionDrag(double mouseX, double width, double duration)
+    {
+        if (_referenceTrack == null)
+            return;
+
+        var loopDuration = _referenceTrack.LoopEnd - _referenceTrack.LoopStart;
+        var newStartX = mouseX - _loopDragStartOffset;
+
+        // Calculate new start position in seconds
+        var newStartSeconds = Math.Max(0, (newStartX / width) * duration);
+
+        // Ensure loop doesn't exceed track bounds
+        if (newStartSeconds + loopDuration > duration)
+        {
+            newStartSeconds = duration - loopDuration;
+        }
+
+        var newEndSeconds = newStartSeconds + loopDuration;
+
+        // Update the loop region
+        _referenceTrack.SetLoopRegion(newStartSeconds, newEndSeconds);
+        UpdateLoopRegion();
+    }
+
+    private void HandleLoopStartDrag(double mouseX, double width, double duration)
+    {
+        if (_referenceTrack == null)
+            return;
+
+        // Calculate new start position in seconds
+        var positionRatio = Math.Max(0, Math.Min(1, mouseX / width));
+        var newStartSeconds = positionRatio * duration;
+
+        // Ensure start is before end with minimum duration
+        var maxStart = _referenceTrack.LoopEnd - MinLoopDurationSeconds;
+        newStartSeconds = Math.Min(newStartSeconds, maxStart);
+        newStartSeconds = Math.Max(0, newStartSeconds);
+
+        // Update the loop region
+        _referenceTrack.SetLoopRegion(newStartSeconds, _referenceTrack.LoopEnd);
+        UpdateLoopRegion();
+    }
+
+    private void HandleLoopEndDrag(double mouseX, double width, double duration)
+    {
+        if (_referenceTrack == null)
+            return;
+
+        // Calculate new end position in seconds
+        var positionRatio = Math.Max(0, Math.Min(1, mouseX / width));
+        var newEndSeconds = positionRatio * duration;
+
+        // Ensure end is after start with minimum duration
+        var minEnd = _referenceTrack.LoopStart + MinLoopDurationSeconds;
+        newEndSeconds = Math.Max(newEndSeconds, minEnd);
+        newEndSeconds = Math.Min(duration, newEndSeconds);
+
+        // Update the loop region
+        _referenceTrack.SetLoopRegion(_referenceTrack.LoopStart, newEndSeconds);
+        UpdateLoopRegion();
     }
 
     private void WaveformCanvas_SizeChanged(object sender, SizeChangedEventArgs e)

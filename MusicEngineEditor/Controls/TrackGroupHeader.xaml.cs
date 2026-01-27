@@ -35,7 +35,7 @@ public partial class TrackGroupHeader : UserControl
 
     public static readonly DependencyProperty GroupColorProperty =
         DependencyProperty.Register(nameof(GroupColor), typeof(Brush), typeof(TrackGroupHeader),
-            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50))));
+            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66))));
 
     public static readonly DependencyProperty IsExpandedProperty =
         DependencyProperty.Register(nameof(IsExpanded), typeof(bool), typeof(TrackGroupHeader),

@@ -63,8 +63,8 @@ public partial class MultiTrackPianoRollView : UserControl
     // Track colors
     private static readonly Color[] TrackColors =
     [
-        Color.FromRgb(0x4C, 0xAF, 0x50), // Green
-        Color.FromRgb(0x21, 0x96, 0xF3), // Blue
+        Color.FromRgb(0x00, 0xCC, 0x66), // Green
+        Color.FromRgb(0x00, 0xD9, 0xFF), // Blue
         Color.FromRgb(0xFF, 0x98, 0x00), // Orange
         Color.FromRgb(0xE9, 0x1E, 0x63), // Pink
         Color.FromRgb(0x9C, 0x27, 0xB0), // Purple
@@ -480,7 +480,7 @@ public partial class MultiTrackPianoRollView : UserControl
                 var text = new TextBlock
                 {
                     Text = barNumber.ToString(),
-                    Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4)),
+                    Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
                     FontSize = 10,
                     FontWeight = FontWeights.SemiBold
                 };

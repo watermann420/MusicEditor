@@ -172,7 +172,7 @@ public class MusicEngineCompletionData : ICompletionData
                 {
                     Text = _documentation,
                     TextWrapping = TextWrapping.Wrap,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4))
+                    Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0))
                 };
                 panel.Children.Add(docBlock);
             }
@@ -232,7 +232,7 @@ public class MusicEngineCompletionData : ICompletionData
             CompletionItemType.Interface => new SolidColorBrush(Color.FromRgb(0xB8, 0xD7, 0xA3)),// Green
             CompletionItemType.Enum => new SolidColorBrush(Color.FromRgb(0xB8, 0xD7, 0xA3)),     // Green
             CompletionItemType.Constant => new SolidColorBrush(Color.FromRgb(0xB5, 0xCE, 0xA8)), // Light green
-            _ => new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4))
+            _ => new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0))
         };
     }
 
@@ -288,7 +288,7 @@ public class MusicEngineCompletionData : ICompletionData
             {
                 block.Inlines.Add(new Run(currentText.Substring(lastIndex, index - lastIndex))
                 {
-                    Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4))
+                    Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0))
                 });
             }
 
@@ -316,7 +316,7 @@ public class MusicEngineCompletionData : ICompletionData
         {
             block.Inlines.Add(new Run(currentText.Substring(lastIndex))
             {
-                Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4))
+                Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0))
             });
         }
     }

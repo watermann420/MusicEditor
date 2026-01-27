@@ -31,7 +31,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -159,7 +159,7 @@
 
                 <!-- Timing Deviation Graph -->
                 <Border Grid.Row="1"
-                        Background="#1E1F22"
+                        Background="#0D0D0D"
                         CornerRadius="4"
                         Margin="0,0,0,12">
                     <Canvas x:Name="DeviationCanvas"

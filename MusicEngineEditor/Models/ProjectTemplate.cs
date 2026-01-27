@@ -74,7 +74,7 @@ public class TemplateTrack
     /// <summary>
     /// Gets or sets the track color as a hex string (e.g., "#FF5722").
     /// </summary>
-    public string Color { get; set; } = "#4B6EAF";
+    public string Color { get; set; } = "#00D9FF";
 
     /// <summary>
     /// Gets or sets the default instrument/plugin for MIDI tracks.

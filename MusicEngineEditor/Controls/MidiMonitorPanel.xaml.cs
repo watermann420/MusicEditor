@@ -370,7 +370,7 @@ public partial class MidiMonitorPanel : UserControl, INotifyPropertyChanged
         if (channelIndex < 0 || channelIndex >= 16) return;
 
         var indicator = _channelIndicators[channelIndex];
-        indicator.Background = new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)); // Green
+        indicator.Background = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66)); // Green
         indicator.ToolTip = $"Channel {channelIndex + 1}: Active";
 
         _lastChannelActivity[channelIndex] = DateTime.Now;

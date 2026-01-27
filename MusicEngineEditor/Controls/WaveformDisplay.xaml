@@ -10,15 +10,15 @@
 
     <UserControl.Resources>
         <!-- Waveform Colors -->
-        <SolidColorBrush x:Key="WaveformFillBrush" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="WaveformFillBrush" Color="#00CC66"/>
         <SolidColorBrush x:Key="WaveformStrokeBrush" Color="#66BB6A"/>
-        <SolidColorBrush x:Key="WaveformRightChannelBrush" Color="#2196F3"/>
+        <SolidColorBrush x:Key="WaveformRightChannelBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="WaveformRightChannelStrokeBrush" Color="#64B5F6"/>
         <SolidColorBrush x:Key="PlayheadBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="SelectionBrush" Color="#404B6EAF"/>
-        <SolidColorBrush x:Key="SelectionBorderBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="SelectionBorderBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="CenterLineBrush" Color="#40FFFFFF"/>
-        <SolidColorBrush x:Key="LoadingTextBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="LoadingTextBrush" Color="#808080"/>
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid">
@@ -50,6 +50,25 @@
                 MouseMove="WaveformCanvas_MouseMove"
                 MouseWheel="WaveformCanvas_MouseWheel"
                 SizeChanged="WaveformCanvas_SizeChanged">
+            <Canvas.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Waveform Color">
+                        <MenuItem x:Name="ColorModeOffItem" Header="Off" Tag="Off" Click="SetColorMode_Click" IsCheckable="True" IsChecked="True"/>
+                        <MenuItem x:Name="ColorModeFrequencyItem" Header="Frequency (Bass/Mids/Highs)" Tag="Frequency" Click="SetColorMode_Click" IsCheckable="True"/>
+                        <MenuItem x:Name="ColorModeLoudnessItem" Header="Loudness (Quiet to Loud)" Tag="Loudness" Click="SetColorMode_Click" IsCheckable="True"/>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Display Mode">
+                        <MenuItem Header="Mixed" Tag="Mixed" Click="SetDisplayMode_Click"/>
+                        <MenuItem Header="Stereo Overlay" Tag="StereoOverlay" Click="SetDisplayMode_Click"/>
+                        <MenuItem Header="Stereo Stacked" Tag="StereoStacked" Click="SetDisplayMode_Click"/>
+                        <MenuItem Header="Left Only" Tag="LeftOnly" Click="SetDisplayMode_Click"/>
+                        <MenuItem Header="Right Only" Tag="RightOnly" Click="SetDisplayMode_Click"/>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Zoom to Fit" Click="ZoomToFit_Click"/>
+                </ContextMenu>
+            </Canvas.ContextMenu>
 
             <!-- Center Line -->
             <Line x:Name="CenterLine"

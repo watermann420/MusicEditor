@@ -34,7 +34,7 @@
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -59,7 +59,7 @@
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -76,7 +76,7 @@
 
         <!-- Lane Header -->
         <Border Grid.Column="0"
-                Background="#252628"
+                Background="#141414"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,1,1">
             <Grid>
@@ -89,7 +89,7 @@
                 <!-- Color Indicator -->
                 <Border x:Name="ColorIndicator"
                         Grid.Column="0"
-                        Background="#4B6EAF"
+                        Background="#00D9FF"
                         CornerRadius="2,0,0,2"/>
 
                 <!-- Drum Name -->
@@ -122,7 +122,7 @@
 
         <!-- Step Grid -->
         <Border Grid.Column="1"
-                Background="#1E1F22"
+                Background="#0D0D0D"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,0,1">
             <Canvas x:Name="StepsCanvas"

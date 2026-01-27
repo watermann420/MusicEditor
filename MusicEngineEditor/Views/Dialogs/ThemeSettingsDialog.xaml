@@ -78,8 +78,8 @@
                                             Margin="0,0,10,0">
                                         <Border.Background>
                                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                <GradientStop Color="{Binding Colors.Background, FallbackValue=#1E1F22}" Offset="0"/>
-                                                <GradientStop Color="{Binding Colors.Accent, FallbackValue=#4B6EAF}" Offset="1"/>
+                                                <GradientStop Color="{Binding Colors.Background, FallbackValue=#0D0D0D}" Offset="0"/>
+                                                <GradientStop Color="{Binding Colors.Accent, FallbackValue=#00D9FF}" Offset="1"/>
                                             </LinearGradientBrush>
                                         </Border.Background>
                                     </Border>

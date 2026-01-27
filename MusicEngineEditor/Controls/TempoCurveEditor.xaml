@@ -12,12 +12,12 @@
     <UserControl.Resources>
         <!-- Theme Colors -->
         <SolidColorBrush x:Key="CanvasBackgroundBrush" Color="#252628"/>
-        <SolidColorBrush x:Key="GridLineBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="GridLineStrongBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="CurveBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="GridLineBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="GridLineStrongBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="CurveBrush" Color="#00FF88"/>
         <SolidColorBrush x:Key="PointBrush" Color="#E8E8E8"/>
         <SolidColorBrush x:Key="PointSelectedBrush" Color="#FF9B4B"/>
-        <SolidColorBrush x:Key="TempoLineBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="TempoLineBrush" Color="#00D9FF"/>
 
         <!-- Toolbar Button Style -->
         <Style x:Key="TempoToolbarButtonStyle" TargetType="Button">
@@ -42,7 +42,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -53,7 +53,7 @@
 
         <!-- Curve Type ComboBox Style -->
         <Style x:Key="CurveTypeComboStyle" TargetType="ComboBox">
-            <Setter Property="Background" Value="#2B2D30"/>
+            <Setter Property="Background" Value="#181818"/>
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -144,7 +144,7 @@
 
         <!-- Tempo Scale (Y-axis labels) -->
         <Border Grid.Row="1" Grid.Column="0"
-                Background="#1E1F22"
+                Background="#0D0D0D"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,1,0">
             <Canvas x:Name="ScaleCanvas" ClipToBounds="True">

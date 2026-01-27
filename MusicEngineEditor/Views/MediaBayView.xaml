@@ -8,8 +8,8 @@
         Width="1000" Height="700"
         MinWidth="800" MinHeight="500"
         WindowStartupLocation="CenterOwner"
-        Background="#1E1F22"
-        Foreground="#BCBEC4">
+        Background="#0D0D0D"
+        Foreground="#E0E0E0">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -22,15 +22,15 @@
         <SolidColorBrush x:Key="LabelRed" Color="#E85C5C"/>
         <SolidColorBrush x:Key="LabelOrange" Color="#E8A73C"/>
         <SolidColorBrush x:Key="LabelYellow" Color="#E8E85C"/>
-        <SolidColorBrush x:Key="LabelGreen" Color="#6AAB73"/>
-        <SolidColorBrush x:Key="LabelBlue" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="LabelGreen" Color="#00FF88"/>
+        <SolidColorBrush x:Key="LabelBlue" Color="#00D9FF"/>
         <SolidColorBrush x:Key="LabelPurple" Color="#9C7CE8"/>
         <SolidColorBrush x:Key="LabelNone" Color="Transparent"/>
 
         <!-- Folder Tree Item Style -->
         <Style x:Key="FolderTreeItemStyle" TargetType="TreeViewItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#BCBEC4"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="Padding" Value="4,2"/>
             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
             <Setter Property="Template">
@@ -94,10 +94,10 @@
                                 <Setter TargetName="Expander" Property="Visibility" Value="Hidden"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#00D9FF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -108,7 +108,7 @@
         <!-- File List Item Style -->
         <Style x:Key="FileListItemStyle" TargetType="ListViewItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#BCBEC4"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="Margin" Value="0,1"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -123,10 +123,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#00D9FF"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -157,7 +157,7 @@
                                 <Setter TargetName="border" Property="Background" Value="#454549"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -184,8 +184,8 @@
 
         <!-- Header -->
         <Border Grid.Row="0" Grid.ColumnSpan="5"
-                Background="#2B2D30"
-                BorderBrush="#3C3F41"
+                Background="#181818"
+                BorderBrush="#252525"
                 BorderThickness="0,0,0,1"
                 Padding="16,12">
             <Grid>
@@ -211,8 +211,8 @@
 
                 <!-- Search Box -->
                 <Border Grid.Column="1"
-                        Background="#252628"
-                        BorderBrush="#3C3F41"
+                        Background="#141414"
+                        BorderBrush="#252525"
                         BorderThickness="1"
                         CornerRadius="4"
                         Padding="8,4"
@@ -233,8 +233,8 @@
                                  Grid.Column="1"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 Foreground="#BCBEC4"
-                                 CaretBrush="#BCBEC4"
+                                 Foreground="#E0E0E0"
+                                 CaretBrush="#E0E0E0"
                                  FontSize="12"
                                  VerticalAlignment="Center"
                                  TextChanged="SearchBox_TextChanged"/>
@@ -246,7 +246,7 @@
                     <Button x:Name="ListViewButton"
                             Content="List"
                             Padding="12,6"
-                            Background="#4B6EAF"
+                            Background="#00D9FF"
                             Foreground="White"
                             BorderThickness="0"
                             Click="ListViewButton_Click"/>
@@ -264,8 +264,8 @@
 
         <!-- Left Panel - Folder Tree -->
         <Border Grid.Row="1" Grid.RowSpan="3" Grid.Column="0"
-                Background="#2B2D30"
-                BorderBrush="#3C3F41"
+                Background="#181818"
+                BorderBrush="#252525"
                 BorderThickness="0,0,1,0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -276,7 +276,7 @@
 
                 <!-- Locations Header -->
                 <Border Grid.Row="0"
-                        BorderBrush="#3C3F41"
+                        BorderBrush="#252525"
                         BorderThickness="0,0,0,1"
                         Padding="12,8">
                     <TextBlock Text="Locations"
@@ -296,7 +296,7 @@
 
                 <!-- Quick Access -->
                 <Border Grid.Row="2"
-                        BorderBrush="#3C3F41"
+                        BorderBrush="#252525"
                         BorderThickness="0,1,0,0"
                         Padding="8">
                     <StackPanel>
@@ -319,7 +319,7 @@
 
         <GridSplitter Grid.Row="1" Grid.RowSpan="3" Grid.Column="1"
                       Width="4"
-                      Background="#2B2D30"
+                      Background="#181818"
                       HorizontalAlignment="Center"/>
 
         <!-- Center - File List -->
@@ -370,13 +370,13 @@
 
         <GridSplitter Grid.Row="1" Grid.Column="3"
                       Width="4"
-                      Background="#2B2D30"
+                      Background="#181818"
                       HorizontalAlignment="Center"/>
 
         <!-- Right Panel - Tags and Filters -->
         <Border Grid.Row="1" Grid.Column="4"
-                Background="#2B2D30"
-                BorderBrush="#3C3F41"
+                Background="#181818"
+                BorderBrush="#252525"
                 BorderThickness="1,0,0,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
                 <StackPanel>
@@ -471,8 +471,8 @@
 
         <!-- Bottom Bar - Selected File Info -->
         <Border Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"
-                Background="#2B2D30"
-                BorderBrush="#3C3F41"
+                Background="#181818"
+                BorderBrush="#252525"
                 BorderThickness="0,1,0,0"
                 Padding="12,8">
             <Grid>
@@ -505,7 +505,7 @@
                 <!-- Action Buttons -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <Button Content="Add to Timeline"
-                            Background="#4B6EAF"
+                            Background="#00D9FF"
                             Foreground="White"
                             BorderThickness="0"
                             Padding="16,6"
@@ -516,8 +516,8 @@
 
         <!-- Waveform Preview -->
         <Border Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3"
-                Background="#252628"
-                BorderBrush="#3C3F41"
+                Background="#141414"
+                BorderBrush="#252525"
                 BorderThickness="0,1,0,0">
             <Grid>
                 <Canvas x:Name="WaveformCanvas" ClipToBounds="True"/>
@@ -534,14 +534,14 @@
                     <Button x:Name="PlayPreviewButton"
                             Content="Play"
                             Background="#333337"
-                            Foreground="#BCBEC4"
+                            Foreground="#E0E0E0"
                             BorderThickness="0"
                             Padding="12,4"
                             Click="PlayPreviewButton_Click"/>
                     <Button x:Name="StopPreviewButton"
                             Content="Stop"
                             Background="#333337"
-                            Foreground="#BCBEC4"
+                            Foreground="#E0E0E0"
                             BorderThickness="0"
                             Padding="12,4"
                             Margin="8,0,0,0"

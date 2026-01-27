@@ -629,11 +629,26 @@ public class ArpeggiatorEffect : ObservableObject, IMIDIInsertEffect
     private ArpMode _mode = ArpMode.Up;
     private int _octaves = 1;
     private double _rate = 0.25; // Quarter notes
+    private double _gate = 0.8; // Gate percentage (0-1)
+    private int _velocity = -1; // -1 = use original velocity, 0-127 = fixed velocity
+    private bool _latch;
+    private bool _ascending = true; // For UpDown/DownUp patterns
 
     private readonly List<int> _heldNotes = [];
-#pragma warning disable CS0414 // Field is assigned but its value is never used
+    private readonly List<int> _orderNotes = []; // Notes in order of pressing
     private int _currentStep;
-#pragma warning restore CS0414
+    private int _lastPlayedNote = -1;
+    private int _lastPlayedVelocity = 100;
+
+    /// <summary>
+    /// Occurs when the current step changes.
+    /// </summary>
+    public event EventHandler<ArpStepChangedEventArgs>? StepChanged;
+
+    /// <summary>
+    /// Occurs when a note should be triggered by the arpeggiator.
+    /// </summary>
+    public event EventHandler<ArpNoteTriggeredEventArgs>? NoteTriggered;
 
     public bool IsEnabled
     {
@@ -649,7 +664,14 @@ public class ArpeggiatorEffect : ObservableObject, IMIDIInsertEffect
     public ArpMode Mode
     {
         get => _mode;
-        set => SetProperty(ref _mode, value);
+        set
+        {
+            if (SetProperty(ref _mode, value))
+            {
+                // Reset direction when mode changes
+                _ascending = value != ArpMode.DownUp;
+            }
+        }
     }
 
     /// <summary>
@@ -670,6 +692,72 @@ public class ArpeggiatorEffect : ObservableObject, IMIDIInsertEffect
         set => SetProperty(ref _rate, Math.Max(0.0625, value));
     }
 
+    /// <summary>
+    /// Gets or sets the gate percentage (0.0 to 1.0).
+    /// </summary>
+    public double Gate
+    {
+        get => _gate;
+        set => SetProperty(ref _gate, Math.Clamp(value, 0.1, 1.0));
+    }
+
+    /// <summary>
+    /// Gets or sets the velocity (-1 for original, 0-127 for fixed).
+    /// </summary>
+    public int Velocity
+    {
+        get => _velocity;
+        set => SetProperty(ref _velocity, Math.Clamp(value, -1, 127));
+    }
+
+    /// <summary>
+    /// Gets or sets whether latch mode is enabled (notes keep playing after release).
+    /// </summary>
+    public bool Latch
+    {
+        get => _latch;
+        set => SetProperty(ref _latch, value);
+    }
+
+    /// <summary>
+    /// Gets the current step index in the arpeggio sequence (0-based).
+    /// </summary>
+    public int CurrentStep
+    {
+        get => _currentStep;
+        private set
+        {
+            if (SetProperty(ref _currentStep, value))
+            {
+                var sequence = GetArpSequence();
+                StepChanged?.Invoke(this, new ArpStepChangedEventArgs(
+                    value,
+                    sequence.Count,
+                    value < sequence.Count ? sequence[value] : -1));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the total number of steps in the current arpeggio sequence.
+    /// </summary>
+    public int StepCount => GetArpSequence().Count;
+
+    /// <summary>
+    /// Gets whether there are notes being held.
+    /// </summary>
+    public bool HasNotes => _heldNotes.Count > 0;
+
+    /// <summary>
+    /// Gets the count of held notes.
+    /// </summary>
+    public int HeldNoteCount => _heldNotes.Count;
+
+    /// <summary>
+    /// Gets the last played note number (-1 if none).
+    /// </summary>
+    public int LastPlayedNote => _lastPlayedNote;
+
     public List<MIDINoteEvent> ProcessNote(MIDINoteEvent input)
     {
         if (input.IsNoteOn)
@@ -678,15 +766,183 @@ public class ArpeggiatorEffect : ObservableObject, IMIDIInsertEffect
             {
                 _heldNotes.Add(input.NoteNumber);
                 _heldNotes.Sort();
+                _orderNotes.Add(input.NoteNumber);
+                _lastPlayedVelocity = input.Velocity;
+
+                // Notify step count changed
+                OnPropertyChanged(nameof(StepCount));
+                OnPropertyChanged(nameof(HasNotes));
+                OnPropertyChanged(nameof(HeldNoteCount));
             }
         }
         else
         {
-            _heldNotes.Remove(input.NoteNumber);
+            if (!Latch)
+            {
+                _heldNotes.Remove(input.NoteNumber);
+                _orderNotes.Remove(input.NoteNumber);
+
+                if (_heldNotes.Count == 0)
+                {
+                    CurrentStep = 0;
+                    _ascending = Mode != ArpMode.DownUp;
+                    _lastPlayedNote = -1;
+                }
+
+                // Notify step count changed
+                OnPropertyChanged(nameof(StepCount));
+                OnPropertyChanged(nameof(HasNotes));
+                OnPropertyChanged(nameof(HeldNoteCount));
+            }
         }
 
-        // For now, just pass through - full arp would need timing integration
+        // Pass through the input - actual arpeggio notes come from AdvanceStep()
         return [input];
+    }
+
+    /// <summary>
+    /// Advances to the next step in the arpeggio and returns the note to play.
+    /// Call this method from a timer synchronized to the transport tempo.
+    /// </summary>
+    /// <returns>The MIDI note events to trigger, or empty if no notes held.</returns>
+    public List<MIDINoteEvent> AdvanceStep()
+    {
+        var sequence = GetArpSequence();
+        if (sequence.Count == 0)
+        {
+            return [];
+        }
+
+        // Get the current note from the sequence
+        int noteIndex = GetNextNoteIndex(sequence.Count);
+        int noteNumber = sequence[noteIndex];
+
+        // Update current step (triggers StepChanged event)
+        CurrentStep = noteIndex;
+
+        // Determine velocity
+        int velocity = Velocity >= 0 ? Velocity : _lastPlayedVelocity;
+
+        // Create note on event
+        var noteOnEvent = new MIDINoteEvent
+        {
+            NoteNumber = noteNumber,
+            Velocity = velocity,
+            Channel = 0,
+            IsNoteOn = true
+        };
+
+        // Track the played note
+        _lastPlayedNote = noteNumber;
+        OnPropertyChanged(nameof(LastPlayedNote));
+
+        // Fire the note triggered event
+        NoteTriggered?.Invoke(this, new ArpNoteTriggeredEventArgs(
+            noteNumber,
+            velocity,
+            CurrentStep,
+            sequence.Count,
+            Gate));
+
+        return [noteOnEvent];
+    }
+
+    /// <summary>
+    /// Gets the note-off event for the last played note.
+    /// Call this when the gate duration has elapsed.
+    /// </summary>
+    /// <returns>The note-off event, or null if no note was playing.</returns>
+    public MIDINoteEvent? GetNoteOffEvent()
+    {
+        if (_lastPlayedNote < 0)
+        {
+            return null;
+        }
+
+        return new MIDINoteEvent
+        {
+            NoteNumber = _lastPlayedNote,
+            Velocity = 0,
+            Channel = 0,
+            IsNoteOn = false
+        };
+    }
+
+    /// <summary>
+    /// Gets the next note index based on the current mode and direction.
+    /// </summary>
+    private int GetNextNoteIndex(int sequenceLength)
+    {
+        if (sequenceLength == 0) return 0;
+
+        int index;
+
+        switch (Mode)
+        {
+            case ArpMode.Up:
+            case ArpMode.Down:
+            case ArpMode.Order:
+                // Simple sequential progression
+                index = _currentStep % sequenceLength;
+                _currentStep = (_currentStep + 1) % sequenceLength;
+                break;
+
+            case ArpMode.UpDown:
+                index = _currentStep;
+                if (_ascending)
+                {
+                    _currentStep++;
+                    if (_currentStep >= sequenceLength)
+                    {
+                        _currentStep = Math.Max(0, sequenceLength - 2);
+                        _ascending = false;
+                    }
+                }
+                else
+                {
+                    _currentStep--;
+                    if (_currentStep < 0)
+                    {
+                        _currentStep = Math.Min(1, sequenceLength - 1);
+                        _ascending = true;
+                    }
+                }
+                break;
+
+            case ArpMode.DownUp:
+                index = _currentStep;
+                if (!_ascending)
+                {
+                    _currentStep++;
+                    if (_currentStep >= sequenceLength)
+                    {
+                        _currentStep = Math.Max(0, sequenceLength - 2);
+                        _ascending = true;
+                    }
+                }
+                else
+                {
+                    _currentStep--;
+                    if (_currentStep < 0)
+                    {
+                        _currentStep = Math.Min(1, sequenceLength - 1);
+                        _ascending = false;
+                    }
+                }
+                break;
+
+            case ArpMode.Random:
+                index = Random.Shared.Next(sequenceLength);
+                _currentStep = index;
+                break;
+
+            default:
+                index = _currentStep % sequenceLength;
+                _currentStep = (_currentStep + 1) % sequenceLength;
+                break;
+        }
+
+        return Math.Clamp(index, 0, sequenceLength - 1);
     }
 
     /// <summary>
@@ -698,10 +954,13 @@ public class ArpeggiatorEffect : ObservableObject, IMIDIInsertEffect
 
         var sequence = new List<int>();
 
+        // Build base note list based on mode
+        List<int> baseNotes = Mode == ArpMode.Order ? [.. _orderNotes] : [.. _heldNotes];
+
         // Add base notes for each octave
         for (int oct = 0; oct < Octaves; oct++)
         {
-            foreach (var note in _heldNotes)
+            foreach (var note in baseNotes)
             {
                 var octaveNote = note + (oct * 12);
                 if (octaveNote <= 127)
@@ -711,17 +970,49 @@ public class ArpeggiatorEffect : ObservableObject, IMIDIInsertEffect
             }
         }
 
-        // Apply mode
+        // Apply mode transformation
         return Mode switch
         {
             ArpMode.Up => sequence,
             ArpMode.Down => sequence.AsEnumerable().Reverse().ToList(),
-            ArpMode.UpDown => [.. sequence, .. sequence.Skip(1).Reverse().Skip(1)],
-            ArpMode.DownUp => [.. sequence.AsEnumerable().Reverse(), .. sequence.Skip(1).SkipLast(1)],
-            ArpMode.Random => sequence.OrderBy(_ => Random.Shared.Next()).ToList(),
-            ArpMode.Order => _heldNotes, // Order played
+            ArpMode.UpDown => sequence, // Direction handled in GetNextNoteIndex
+            ArpMode.DownUp => sequence, // Direction handled in GetNextNoteIndex
+            ArpMode.Random => sequence, // Randomization handled in GetNextNoteIndex
+            ArpMode.Order => sequence,
             _ => sequence
         };
+    }
+
+    /// <summary>
+    /// Gets the note at a specific step index.
+    /// </summary>
+    /// <param name="stepIndex">The step index (0-based).</param>
+    /// <returns>The MIDI note number, or -1 if invalid.</returns>
+    public int GetNoteAtStep(int stepIndex)
+    {
+        var sequence = GetArpSequence();
+        if (stepIndex < 0 || stepIndex >= sequence.Count)
+        {
+            return -1;
+        }
+        return sequence[stepIndex];
+    }
+
+    /// <summary>
+    /// Clears latch mode and releases all held notes.
+    /// </summary>
+    public void ClearLatch()
+    {
+        _heldNotes.Clear();
+        _orderNotes.Clear();
+        CurrentStep = 0;
+        _ascending = Mode != ArpMode.DownUp;
+        _lastPlayedNote = -1;
+
+        OnPropertyChanged(nameof(StepCount));
+        OnPropertyChanged(nameof(HasNotes));
+        OnPropertyChanged(nameof(HeldNoteCount));
+        OnPropertyChanged(nameof(LastPlayedNote));
     }
 
     public MIDICCEvent ProcessCC(MIDICCEvent input) => input;
@@ -729,7 +1020,83 @@ public class ArpeggiatorEffect : ObservableObject, IMIDIInsertEffect
     public void Reset()
     {
         _heldNotes.Clear();
-        _currentStep = 0;
+        _orderNotes.Clear();
+        CurrentStep = 0;
+        _ascending = Mode != ArpMode.DownUp;
+        _lastPlayedNote = -1;
+
+        OnPropertyChanged(nameof(StepCount));
+        OnPropertyChanged(nameof(HasNotes));
+        OnPropertyChanged(nameof(HeldNoteCount));
+        OnPropertyChanged(nameof(LastPlayedNote));
+    }
+}
+
+/// <summary>
+/// Event arguments for arpeggiator step changes.
+/// </summary>
+public sealed class ArpStepChangedEventArgs : EventArgs
+{
+    /// <summary>
+    /// Gets the current step index (0-based).
+    /// </summary>
+    public int CurrentStep { get; }
+
+    /// <summary>
+    /// Gets the total number of steps in the sequence.
+    /// </summary>
+    public int TotalSteps { get; }
+
+    /// <summary>
+    /// Gets the MIDI note number at the current step (-1 if none).
+    /// </summary>
+    public int NoteNumber { get; }
+
+    public ArpStepChangedEventArgs(int currentStep, int totalSteps, int noteNumber)
+    {
+        CurrentStep = currentStep;
+        TotalSteps = totalSteps;
+        NoteNumber = noteNumber;
+    }
+}
+
+/// <summary>
+/// Event arguments for arpeggiator note triggers.
+/// </summary>
+public sealed class ArpNoteTriggeredEventArgs : EventArgs
+{
+    /// <summary>
+    /// Gets the MIDI note number.
+    /// </summary>
+    public int NoteNumber { get; }
+
+    /// <summary>
+    /// Gets the velocity (0-127).
+    /// </summary>
+    public int Velocity { get; }
+
+    /// <summary>
+    /// Gets the current step index (0-based).
+    /// </summary>
+    public int Step { get; }
+
+    /// <summary>
+    /// Gets the total number of steps.
+    /// </summary>
+    public int TotalSteps { get; }
+
+    /// <summary>
+    /// Gets the gate percentage (0.0-1.0).
+    /// </summary>
+    public double Gate { get; }
+
+    public ArpNoteTriggeredEventArgs(int noteNumber, int velocity, int step, int totalSteps, double gate)
+    {
+        NoteNumber = noteNumber;
+        Velocity = velocity;
+        Step = step;
+        TotalSteps = totalSteps;
+        Gate = gate;
     }
 }
 

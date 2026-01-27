@@ -52,7 +52,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -410,8 +410,8 @@
                 <!-- Waveform Display -->
                 <local:WaveformDisplay Grid.Column="1"
                                        x:Name="AudioWaveformDisplay"
-                                       WaveformColor="#4CAF50"
-                                       WaveformColorRight="#2196F3"
+                                       WaveformColor="#00CC66"
+                                       WaveformColorRight="#00D9FF"
                                        ShowPlayhead="True"
                                        ShowCenterLine="True"
                                        DisplayMode="Mixed"

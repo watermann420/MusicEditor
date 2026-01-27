@@ -96,9 +96,9 @@ public partial class PhaseScopeView : UserControl
 
     // Colors
     private readonly Color _traceColor = Color.FromRgb(0x00, 0xCE, 0xD1);
-    private readonly Color _monoColor = Color.FromRgb(0x4C, 0xAF, 0x50);
-    private readonly Color _stereoColor = Color.FromRgb(0xFF, 0x98, 0x00);
-    private readonly Color _outOfPhaseColor = Color.FromRgb(0xF4, 0x43, 0x36);
+    private readonly Color _monoColor = Color.FromRgb(0x00, 0xCC, 0x66);
+    private readonly Color _stereoColor = Color.FromRgb(0xFF, 0xB8, 0x00);
+    private readonly Color _outOfPhaseColor = Color.FromRgb(0xFF, 0x47, 0x57);
 
     #endregion
 

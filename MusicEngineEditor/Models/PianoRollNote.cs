@@ -68,7 +68,7 @@ public partial class PianoRollNote : ObservableObject
     /// Hex color for display (e.g., "#FF5722").
     /// </summary>
     [ObservableProperty]
-    private string _color = "#4CAF50";
+    private string _color = "#00CC66";
 
     /// <summary>
     /// Gets the note name with octave (e.g., "C4", "F#3").

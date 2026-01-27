@@ -423,13 +423,13 @@ public class ProjectTask : INotifyPropertyChanged
     {
         TaskPriority.High => new SolidColorBrush(Color.FromRgb(0xE8, 0x5C, 0x5C)),
         TaskPriority.Medium => new SolidColorBrush(Color.FromRgb(0xE8, 0xA7, 0x3C)),
-        TaskPriority.Low => new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73)),
+        TaskPriority.Low => new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88)),
         _ => new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80))
     };
 
     public SolidColorBrush CategoryBrush => Category switch
     {
-        "Mix" => new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF)),
+        "Mix" => new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)),
         "Arrangement" => new SolidColorBrush(Color.FromRgb(0x9C, 0x7C, 0xE8)),
         "Recording" => new SolidColorBrush(Color.FromRgb(0xE8, 0x5C, 0xAF)),
         "Mastering" => new SolidColorBrush(Color.FromRgb(0x5C, 0xBF, 0xE8)),
@@ -438,7 +438,7 @@ public class ProjectTask : INotifyPropertyChanged
 
     public SolidColorBrush TitleForeground => IsCompleted
         ? new SolidColorBrush(Color.FromRgb(0x60, 0x60, 0x60))
-        : new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4));
+        : new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
 
     public TextDecorationCollection? TitleDecoration => IsCompleted
         ? TextDecorations.Strikethrough

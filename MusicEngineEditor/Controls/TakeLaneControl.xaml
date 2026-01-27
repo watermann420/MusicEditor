@@ -12,7 +12,7 @@
         <!-- Colors -->
         <Color x:Key="TakeLaneHeaderColor">#2D2D30</Color>
         <Color x:Key="TakeLaneBackgroundColor">#1E1E1E</Color>
-        <Color x:Key="TakeWaveformColor">#4CAF50</Color>
+        <Color x:Key="TakeWaveformColor">#00CC66</Color>
         <Color x:Key="CompRegionColor">#FFEB3B</Color>
         <Color x:Key="CompHighlightColor">#80FFEB3B</Color>
         <Color x:Key="ActiveTakeColor">#00BCD4</Color>

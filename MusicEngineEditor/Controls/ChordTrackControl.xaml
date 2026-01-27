@@ -11,8 +11,8 @@
 
     <UserControl.Resources>
         <!-- Chord Block Colors -->
-        <SolidColorBrush x:Key="ChordMajorBrush" Color="#4CAF50"/>
-        <SolidColorBrush x:Key="ChordMinorBrush" Color="#2196F3"/>
+        <SolidColorBrush x:Key="ChordMajorBrush" Color="#00CC66"/>
+        <SolidColorBrush x:Key="ChordMinorBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="ChordDominantBrush" Color="#FF9800"/>
         <SolidColorBrush x:Key="ChordDiminishedBrush" Color="#9C27B0"/>
         <SolidColorBrush x:Key="ChordAugmentedBrush" Color="#E91E63"/>
@@ -55,7 +55,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -128,7 +128,7 @@
         <Grid Grid.Row="1" ClipToBounds="True">
             <!-- Grid Lines Canvas -->
             <Canvas x:Name="GridCanvas"
-                    Background="#1E1F22"
+                    Background="#0D0D0D"
                     ClipToBounds="True"/>
 
             <!-- Chords Canvas -->

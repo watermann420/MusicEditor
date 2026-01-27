@@ -10,24 +10,24 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        Background="#1E1F22">
+        Background="#0D0D0D">
 
     <Window.Resources>
         <!-- Colors matching the dark theme -->
-        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#181818"/>
         <SolidColorBrush x:Key="CardHoverBrush" Color="#313335"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
         <SolidColorBrush x:Key="BrightForegroundBrush" Color="#DFE1E5"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
         <SolidColorBrush x:Key="RecordBrush" Color="#FF3333"/>
         <SolidColorBrush x:Key="RecordHoverBrush" Color="#FF5555"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="#6AAB73"/>
-        <SolidColorBrush x:Key="WarningBrush" Color="#E8B339"/>
-        <SolidColorBrush x:Key="ErrorBrush" Color="#F75464"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#00FF88"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="#FFB800"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#FF4757"/>
 
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
@@ -144,7 +144,7 @@
 
         <!-- ComboBox Style -->
         <Style x:Key="SettingsComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Background" Value="#252628"/>
+            <Setter Property="Background" Value="#141414"/>
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -156,7 +156,7 @@
         <!-- Level Meter Style -->
         <Style x:Key="LevelMeterStyle" TargetType="ProgressBar">
             <Setter Property="Height" Value="6"/>
-            <Setter Property="Background" Value="#252628"/>
+            <Setter Property="Background" Value="#141414"/>
             <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Maximum" Value="1"/>
@@ -164,7 +164,7 @@
 
         <!-- Armed Track Item Template -->
         <DataTemplate x:Key="ArmedTrackTemplate">
-            <Border Background="#252628" CornerRadius="4" Padding="10,8" Margin="0,2">
+            <Border Background="#141414" CornerRadius="4" Padding="10,8" Margin="0,2">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -229,8 +229,8 @@
         <Border Grid.Row="0" Padding="16,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#2B2D30" Offset="0"/>
-                    <GradientStop Color="#252628" Offset="1"/>
+                    <GradientStop Color="#181818" Offset="0"/>
+                    <GradientStop Color="#141414" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
             <StackPanel>
@@ -265,7 +265,7 @@
 
                         <!-- No tracks armed message -->
                         <Border Visibility="{Binding HasArmedTracks, Converter={StaticResource BoolToVis}, ConverterParameter=Inverse}"
-                                Background="#252628" CornerRadius="4" Padding="20">
+                                Background="#141414" CornerRadius="4" Padding="20">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="No tracks armed"
                                            FontWeight="SemiBold"
@@ -388,7 +388,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBox Grid.Column="0"
                                      Text="{Binding RecordingsPath}"
-                                     Background="#252628"
+                                     Background="#141414"
                                      Foreground="{StaticResource ForegroundBrush}"
                                      BorderBrush="{StaticResource BorderBrush}"
                                      Padding="8,6"

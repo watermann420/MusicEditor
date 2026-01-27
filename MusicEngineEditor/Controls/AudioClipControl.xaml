@@ -11,7 +11,7 @@
 
     <UserControl.Resources>
         <!-- Audio Clip Colors -->
-        <Color x:Key="AudioClipColor">#4CAF50</Color>
+        <Color x:Key="AudioClipColor">#00CC66</Color>
         <Color x:Key="AudioClipFillColor">#B04CAF50</Color>
         <SolidColorBrush x:Key="AudioClipBrush" Color="{StaticResource AudioClipColor}"/>
         <SolidColorBrush x:Key="AudioClipFillBrush" Color="{StaticResource AudioClipFillColor}"/>
@@ -236,6 +236,12 @@
                 <Separator/>
                 <MenuItem Header="Normalize" Click="NormalizeMenuItem_Click" ToolTip="Normalize to 0 dB"/>
                 <MenuItem Header="Reverse" Click="ReverseMenuItem_Click" ToolTip="Toggle reverse playback"/>
+                <Separator/>
+                <MenuItem Header="Waveform Color">
+                    <MenuItem x:Name="ColorModeOffItem" Header="Off" Tag="Off" Click="SetColorMode_Click" IsCheckable="True" IsChecked="True"/>
+                    <MenuItem x:Name="ColorModeFrequencyItem" Header="Frequency (Bass/Mids/Highs)" Tag="Frequency" Click="SetColorMode_Click" IsCheckable="True"/>
+                    <MenuItem x:Name="ColorModeLoudnessItem" Header="Loudness (Quiet to Loud)" Tag="Loudness" Click="SetColorMode_Click" IsCheckable="True"/>
+                </MenuItem>
                 <Separator/>
                 <MenuItem x:Name="MuteMenuItem" Header="Mute" Click="MuteMenuItem_Click"/>
                 <MenuItem x:Name="LockMenuItem" Header="Lock" Click="LockMenuItem_Click"/>

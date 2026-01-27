@@ -701,7 +701,7 @@ public class QuickControlKnob : System.Windows.Controls.Control
                 System.Windows.FlowDirection.LeftToRight,
                 new Typeface("Segoe UI"),
                 10,
-                new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4)),
+                new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
                 VisualTreeHelper.GetDpi(this).PixelsPerDip);
             dc.DrawText(nameText, new Point(cx - nameText.Width / 2, cy + radius + 6));
 

@@ -7,18 +7,18 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Views"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="800"
-             Background="#1E1F22">
+             Background="#0D0D0D">
 
     <UserControl.Resources>
         <!-- Theme Colors -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="ToolbarBackgroundBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
-        <SolidColorBrush x:Key="SelectedBrush" Color="#4B6EAF"/>
-        <SolidColorBrush x:Key="AlternatingRowBrush" Color="#252628"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="ToolbarBackgroundBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="SelectedBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="AlternatingRowBrush" Color="#141414"/>
 
         <!-- Toolbar Button Style -->
         <Style x:Key="EventListToolbarButtonStyle" TargetType="Button">
@@ -43,7 +43,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
@@ -76,7 +76,7 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#5C3535"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="#D32F2F"/>
-                                <Setter Property="Foreground" Value="#F75464"/>
+                                <Setter Property="Foreground" Value="#FF4757"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#D32F2F"/>
@@ -94,7 +94,7 @@
 
         <!-- ComboBox Style -->
         <Style x:Key="EventFilterComboStyle" TargetType="ComboBox">
-            <Setter Property="Background" Value="#2B2D30"/>
+            <Setter Property="Background" Value="#181818"/>
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -125,7 +125,7 @@
 
         <!-- DataGrid Column Header Style -->
         <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#2B2D30"/>
+            <Setter Property="Background" Value="#181818"/>
             <Setter Property="Foreground" Value="#DFE1E5"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="0,0,1,1"/>
@@ -146,7 +146,7 @@
                     <Setter Property="Foreground" Value="White"/>
                 </Trigger>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#3C3F41"/>
+                    <Setter Property="Background" Value="#252525"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -273,7 +273,7 @@
                     <TextBox x:Name="SearchTextBox"
                              Width="200"
                              Padding="6,4"
-                             Background="#1E1F22"
+                             Background="#0D0D0D"
                              Foreground="{StaticResource ForegroundBrush}"
                              BorderBrush="{StaticResource BorderBrush}"
                              BorderThickness="1"
@@ -319,7 +319,7 @@
                     </DataGridComboBoxColumn.ElementStyle>
                     <DataGridComboBoxColumn.EditingElementStyle>
                         <Style TargetType="ComboBox">
-                            <Setter Property="Background" Value="#2B2D30"/>
+                            <Setter Property="Background" Value="#181818"/>
                         </Style>
                     </DataGridComboBoxColumn.EditingElementStyle>
                 </DataGridComboBoxColumn>

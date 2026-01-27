@@ -252,7 +252,7 @@ public partial class ClipGainLineControl : UserControl
                 X2 = width,
                 Y1 = y,
                 Y2 = y,
-                Stroke = db == 0 ? new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF)) : new SolidColorBrush(Color.FromRgb(0x2B, 0x2D, 0x30)),
+                Stroke = db == 0 ? new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)) : new SolidColorBrush(Color.FromRgb(0x2B, 0x2D, 0x30)),
                 StrokeThickness = db == 0 ? 1 : 0.5,
                 Opacity = db == 0 ? 0.8 : 0.5
             };
@@ -292,7 +292,7 @@ public partial class ClipGainLineControl : UserControl
                 X2 = ActualWidth,
                 Y1 = defaultY,
                 Y2 = defaultY,
-                Stroke = new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF)),
+                Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)),
                 StrokeThickness = 2,
                 StrokeDashArray = new DoubleCollection(new[] { 4.0, 2.0 })
             };
@@ -349,7 +349,7 @@ public partial class ClipGainLineControl : UserControl
         var path = new Path
         {
             Data = geometry,
-            Stroke = new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF)),
+            Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)),
             StrokeThickness = 2,
             StrokeLineJoin = PenLineJoin.Round
         };
@@ -365,7 +365,7 @@ public partial class ClipGainLineControl : UserControl
         var fillPath = new Path
         {
             Data = fillGeometry,
-            Fill = new SolidColorBrush(Color.FromArgb(0x30, 0x4B, 0x6E, 0xAF)),
+            Fill = new SolidColorBrush(Color.FromArgb(0x30, 0x00, 0xD9, 0xFF)),
             Stroke = null
         };
         FillCanvas.Children.Add(fillPath);
@@ -388,7 +388,7 @@ public partial class ClipGainLineControl : UserControl
                 Height = point == _selectedPoint ? 12 : 10,
                 Fill = point == _selectedPoint
                     ? new SolidColorBrush(Color.FromRgb(0xFF, 0xD7, 0x00))
-                    : new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF)),
+                    : new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)),
                 Stroke = Brushes.White,
                 StrokeThickness = 1.5,
                 Cursor = Cursors.Hand,

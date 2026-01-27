@@ -6,7 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MusicEngineEditor.Commands;
@@ -24,6 +27,16 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
     private readonly RecordingService _recordingService;
     private readonly MixerLayoutSettings _layoutSettings;
     private bool _disposed;
+
+    /// <summary>
+    /// Flag to suppress undo recording during loading, undo/redo, or programmatic changes.
+    /// </summary>
+    private bool _suppressUndoRecording;
+
+    /// <summary>
+    /// Tracks the previous values of channel properties for undo recording.
+    /// </summary>
+    private readonly Dictionary<MixerChannel, ChannelPropertySnapshot> _channelSnapshots = new();
 
     /// <summary>
     /// Gets the collection of mixer channels.
@@ -190,8 +203,14 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
         _recordingService.RecordingStateChanged += OnRecordingStateChanged;
         _recordingService.InputLevelsUpdated += OnInputLevelsUpdated;
 
+        // Subscribe to channel collection changes for undo tracking
+        Channels.CollectionChanged += OnChannelsCollectionChanged;
+
+        // Suppress undo recording during initialization
+        _suppressUndoRecording = true;
         InitializeDefaultChannels();
         InitializeDefaultBuses();
+        _suppressUndoRecording = false;
     }
 
     partial void OnCurrentLayoutChanged(MixerLayoutType value)
@@ -236,6 +255,9 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
 
         foreach (var channel in defaultChannels)
         {
+            // Subscribe to changes before adding (CollectionChanged will also do this,
+            // but we're in initialization with suppression, so do it explicitly)
+            SubscribeToChannelChanges(channel);
             Channels.Add(channel);
         }
     }
@@ -326,13 +348,20 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void ResetAllChannels()
     {
-        foreach (var channel in Channels)
+        // Suppress individual undo recordings for bulk reset
+        using (SuppressUndoRecording())
         {
-            channel.Reset();
+            foreach (var channel in Channels)
+            {
+                channel.Reset();
+            }
+            MasterChannel.Reset();
+            MasterChannel.Volume = 1.0f; // Master defaults to unity
         }
-        MasterChannel.Reset();
-        MasterChannel.Volume = 1.0f; // Master defaults to unity
         HasSoloedChannel = false;
+        // Clear undo history since we've reset everything
+        MixerUndo.Clear();
+        NotifyMixerUndoStateChanged();
     }
 
     /// <summary>
@@ -341,9 +370,13 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void ClearSolos()
     {
-        foreach (var channel in Channels)
+        // Suppress individual undo recordings for bulk operation
+        using (SuppressUndoRecording())
         {
-            channel.IsSoloed = false;
+            foreach (var channel in Channels)
+            {
+                channel.IsSoloed = false;
+            }
         }
         HasSoloedChannel = false;
         UpdateEffectiveMuteStates();
@@ -355,9 +388,13 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void ClearMutes()
     {
-        foreach (var channel in Channels)
+        // Suppress individual undo recordings for bulk operation
+        using (SuppressUndoRecording())
         {
-            channel.IsMuted = false;
+            foreach (var channel in Channels)
+            {
+                channel.IsMuted = false;
+            }
         }
         UpdateEffectiveMuteStates();
     }
@@ -671,7 +708,255 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
         }
     }
 
-    #region Undo/Redo Integration
+    #region Mixer Undo Service Integration
+
+    /// <summary>
+    /// Gets the mixer undo service for mixer-specific undo/redo.
+    /// </summary>
+    private MixerUndoService MixerUndo => MixerUndoService.Instance;
+
+    /// <summary>
+    /// Gets whether mixer undo is available.
+    /// </summary>
+    public bool CanMixerUndo => MixerUndo.CanUndo;
+
+    /// <summary>
+    /// Gets whether mixer redo is available.
+    /// </summary>
+    public bool CanMixerRedo => MixerUndo.CanRedo;
+
+    /// <summary>
+    /// Gets the description of the next mixer undo operation.
+    /// </summary>
+    public string? NextMixerUndoDescription => MixerUndo.NextUndoDescription;
+
+    /// <summary>
+    /// Gets the description of the next mixer redo operation.
+    /// </summary>
+    public string? NextMixerRedoDescription => MixerUndo.NextRedoDescription;
+
+    /// <summary>
+    /// Undoes the last mixer change.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanMixerUndo))]
+    private void MixerUndoAction()
+    {
+        _suppressUndoRecording = true;
+        try
+        {
+            MixerUndo.Undo();
+            UpdateEffectiveMuteStates();
+        }
+        finally
+        {
+            _suppressUndoRecording = false;
+        }
+        NotifyMixerUndoStateChanged();
+    }
+
+    /// <summary>
+    /// Redoes the last undone mixer change.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanMixerRedo))]
+    private void MixerRedoAction()
+    {
+        _suppressUndoRecording = true;
+        try
+        {
+            MixerUndo.Redo();
+            UpdateEffectiveMuteStates();
+        }
+        finally
+        {
+            _suppressUndoRecording = false;
+        }
+        NotifyMixerUndoStateChanged();
+    }
+
+    /// <summary>
+    /// Clears the mixer undo/redo history.
+    /// </summary>
+    [RelayCommand]
+    private void ClearMixerUndoHistory()
+    {
+        MixerUndo.Clear();
+        NotifyMixerUndoStateChanged();
+    }
+
+    /// <summary>
+    /// Notifies that the mixer undo state has changed.
+    /// </summary>
+    private void NotifyMixerUndoStateChanged()
+    {
+        OnPropertyChanged(nameof(CanMixerUndo));
+        OnPropertyChanged(nameof(CanMixerRedo));
+        OnPropertyChanged(nameof(NextMixerUndoDescription));
+        OnPropertyChanged(nameof(NextMixerRedoDescription));
+        MixerUndoActionCommand.NotifyCanExecuteChanged();
+        MixerRedoActionCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>
+    /// Handles channel collection changes to set up property change tracking.
+    /// </summary>
+    private void OnChannelsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+        {
+            foreach (MixerChannel channel in e.NewItems)
+            {
+                SubscribeToChannelChanges(channel);
+            }
+        }
+
+        if (e.OldItems != null)
+        {
+            foreach (MixerChannel channel in e.OldItems)
+            {
+                UnsubscribeFromChannelChanges(channel);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Subscribes to property changes on a channel for undo tracking.
+    /// </summary>
+    private void SubscribeToChannelChanges(MixerChannel channel)
+    {
+        // Take initial snapshot
+        _channelSnapshots[channel] = new ChannelPropertySnapshot(channel);
+
+        // Subscribe to property changes
+        channel.PropertyChanging += OnChannelPropertyChanging;
+        channel.PropertyChanged += OnChannelPropertyChanged;
+    }
+
+    /// <summary>
+    /// Unsubscribes from property changes on a channel.
+    /// </summary>
+    private void UnsubscribeFromChannelChanges(MixerChannel channel)
+    {
+        channel.PropertyChanging -= OnChannelPropertyChanging;
+        channel.PropertyChanged -= OnChannelPropertyChanged;
+        _channelSnapshots.Remove(channel);
+    }
+
+    /// <summary>
+    /// Handles property changing events to capture the old value before change.
+    /// </summary>
+    private void OnChannelPropertyChanging(object? sender, PropertyChangingEventArgs e)
+    {
+        if (_suppressUndoRecording || sender is not MixerChannel channel)
+            return;
+
+        // Update snapshot with current value before it changes
+        if (_channelSnapshots.TryGetValue(channel, out var snapshot))
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(MixerChannel.Volume):
+                    snapshot.Volume = channel.Volume;
+                    break;
+                case nameof(MixerChannel.Pan):
+                    snapshot.Pan = channel.Pan;
+                    break;
+                case nameof(MixerChannel.IsMuted):
+                    snapshot.IsMuted = channel.IsMuted;
+                    break;
+                case nameof(MixerChannel.IsSoloed):
+                    snapshot.IsSoloed = channel.IsSoloed;
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handles property changed events to record the change for undo.
+    /// </summary>
+    private void OnChannelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (_suppressUndoRecording || sender is not MixerChannel channel)
+            return;
+
+        if (!_channelSnapshots.TryGetValue(channel, out var snapshot))
+            return;
+
+        switch (e.PropertyName)
+        {
+            case nameof(MixerChannel.Volume):
+                MixerUndo.RecordFaderChange(channel, snapshot.Volume, channel.Volume);
+                NotifyMixerUndoStateChanged();
+                break;
+
+            case nameof(MixerChannel.Pan):
+                MixerUndo.RecordPanChange(channel, snapshot.Pan, channel.Pan);
+                NotifyMixerUndoStateChanged();
+                break;
+
+            case nameof(MixerChannel.IsMuted):
+                MixerUndo.RecordMuteToggle(channel, snapshot.IsMuted, channel.IsMuted);
+                NotifyMixerUndoStateChanged();
+                break;
+
+            case nameof(MixerChannel.IsSoloed):
+                MixerUndo.RecordSoloToggle(channel, snapshot.IsSoloed, channel.IsSoloed);
+                NotifyMixerUndoStateChanged();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Suppresses undo recording for programmatic changes.
+    /// </summary>
+    /// <returns>An IDisposable that restores undo recording when disposed.</returns>
+    public IDisposable SuppressUndoRecording()
+    {
+        return new UndoRecordingSuppressor(this);
+    }
+
+    /// <summary>
+    /// Helper class to suppress and restore undo recording.
+    /// </summary>
+    private sealed class UndoRecordingSuppressor : IDisposable
+    {
+        private readonly MixerViewModel _viewModel;
+        private readonly bool _previousState;
+
+        public UndoRecordingSuppressor(MixerViewModel viewModel)
+        {
+            _viewModel = viewModel;
+            _previousState = viewModel._suppressUndoRecording;
+            viewModel._suppressUndoRecording = true;
+        }
+
+        public void Dispose()
+        {
+            _viewModel._suppressUndoRecording = _previousState;
+        }
+    }
+
+    /// <summary>
+    /// Snapshot of channel properties for undo tracking.
+    /// </summary>
+    private sealed class ChannelPropertySnapshot
+    {
+        public float Volume { get; set; }
+        public float Pan { get; set; }
+        public bool IsMuted { get; set; }
+        public bool IsSoloed { get; set; }
+
+        public ChannelPropertySnapshot(MixerChannel channel)
+        {
+            Volume = channel.Volume;
+            Pan = channel.Pan;
+            IsMuted = channel.IsMuted;
+            IsSoloed = channel.IsSoloed;
+        }
+    }
+
+    #endregion
+
+    #region Undo/Redo Integration (EditorUndoService)
 
     /// <summary>
     /// Gets the editor undo service.
@@ -1031,6 +1316,18 @@ public partial class MixerViewModel : ViewModelBase, IDisposable
         _recordingService.RecordingStopped -= OnRecordingStopped;
         _recordingService.RecordingStateChanged -= OnRecordingStateChanged;
         _recordingService.InputLevelsUpdated -= OnInputLevelsUpdated;
+
+        // Unsubscribe from channel collection changes
+        Channels.CollectionChanged -= OnChannelsCollectionChanged;
+
+        // Unsubscribe from all channel property changes
+        foreach (var channel in Channels)
+        {
+            UnsubscribeFromChannelChanges(channel);
+        }
+
+        // Clear mixer undo history
+        MixerUndo.Clear();
     }
 
     #endregion

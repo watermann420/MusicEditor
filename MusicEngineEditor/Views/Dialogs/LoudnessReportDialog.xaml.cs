@@ -210,7 +210,7 @@ public partial class LoudnessReportDialog : Window
         if (width <= 0 || height <= 0) return;
 
         // Draw grid lines
-        var gridBrush = new SolidColorBrush(Color.FromRgb(0x39, 0x3B, 0x40));
+        var gridBrush = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A));
         for (int lufs = 0; lufs >= -60; lufs -= 10)
         {
             double y = MapLufsToY(lufs, height);

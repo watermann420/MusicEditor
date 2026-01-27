@@ -19,8 +19,8 @@
         <SolidColorBrush x:Key="VelocityBarSelectedBrush" Color="#7BBFFF"/>
         <SolidColorBrush x:Key="VelocityBarHoverBrush" Color="#5CAFFF"/>
         <SolidColorBrush x:Key="VelocityLineBrush" Color="#FF9500"/>
-        <SolidColorBrush x:Key="LabelBrush" Color="#6F737A"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="LabelBrush" Color="#808080"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
 
         <!-- Gradient for velocity bars -->
         <LinearGradientBrush x:Key="VelocityBarGradient" StartPoint="0,1" EndPoint="0,0">

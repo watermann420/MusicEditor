@@ -674,7 +674,7 @@ public class CompletionProvider
             Text = content,
             FontFamily = new FontFamily("JetBrains Mono, Consolas"),
             FontSize = 12,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4)),
+            Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
             Padding = new Thickness(8, 4, 8, 4)
         };
 

@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using MusicEngineEditor.Models;
 using MusicEngineEditor.Services;
+using WaveformColorMode = MusicEngineEditor.Models.WaveformColorMode;
 
 namespace MusicEngineEditor.Controls;
 
@@ -46,11 +47,11 @@ public partial class WaveformDisplay : UserControl
 
     public static readonly DependencyProperty WaveformColorProperty =
         DependencyProperty.Register(nameof(WaveformColor), typeof(Color), typeof(WaveformDisplay),
-            new PropertyMetadata(Color.FromRgb(0x4C, 0xAF, 0x50), OnColorPropertyChanged));
+            new PropertyMetadata(Color.FromRgb(0x00, 0xCC, 0x66), OnColorPropertyChanged));
 
     public static readonly DependencyProperty WaveformColorRightProperty =
         DependencyProperty.Register(nameof(WaveformColorRight), typeof(Color), typeof(WaveformDisplay),
-            new PropertyMetadata(Color.FromRgb(0x21, 0x96, 0xF3), OnColorPropertyChanged));
+            new PropertyMetadata(Color.FromRgb(0x00, 0xD9, 0xFF), OnColorPropertyChanged));
 
     public static readonly DependencyProperty PlayheadColorProperty =
         DependencyProperty.Register(nameof(PlayheadColor), typeof(Color), typeof(WaveformDisplay),
@@ -58,7 +59,7 @@ public partial class WaveformDisplay : UserControl
 
     public static readonly DependencyProperty SelectionColorProperty =
         DependencyProperty.Register(nameof(SelectionColor), typeof(Color), typeof(WaveformDisplay),
-            new PropertyMetadata(Color.FromArgb(0x40, 0x4B, 0x6E, 0xAF), OnColorPropertyChanged));
+            new PropertyMetadata(Color.FromArgb(0x40, 0x00, 0xD9, 0xFF), OnColorPropertyChanged));
 
     public static readonly DependencyProperty DisplayModeProperty =
         DependencyProperty.Register(nameof(DisplayMode), typeof(WaveformDisplayMode), typeof(WaveformDisplay),
@@ -75,6 +76,22 @@ public partial class WaveformDisplay : UserControl
     public static readonly DependencyProperty IsLoadingProperty =
         DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(WaveformDisplay),
             new PropertyMetadata(false, OnIsLoadingChanged));
+
+    public static readonly DependencyProperty ColorModeProperty =
+        DependencyProperty.Register(nameof(ColorMode), typeof(WaveformColorMode), typeof(WaveformDisplay),
+            new PropertyMetadata(WaveformColorMode.Off, OnRenderPropertyChanged));
+
+    public static readonly DependencyProperty LoudnessColorLowProperty =
+        DependencyProperty.Register(nameof(LoudnessColorLow), typeof(Color), typeof(WaveformDisplay),
+            new PropertyMetadata(Color.FromRgb(0x1E, 0x88, 0xE5), OnColorPropertyChanged)); // Blue
+
+    public static readonly DependencyProperty LoudnessColorMidProperty =
+        DependencyProperty.Register(nameof(LoudnessColorMid), typeof(Color), typeof(WaveformDisplay),
+            new PropertyMetadata(Color.FromRgb(0x00, 0xCC, 0x66), OnColorPropertyChanged)); // Green
+
+    public static readonly DependencyProperty LoudnessColorHighProperty =
+        DependencyProperty.Register(nameof(LoudnessColorHigh), typeof(Color), typeof(WaveformDisplay),
+            new PropertyMetadata(Color.FromRgb(0xFF, 0x47, 0x57), OnColorPropertyChanged)); // Red
 
     #endregion
 
@@ -204,6 +221,42 @@ public partial class WaveformDisplay : UserControl
     {
         get => (bool)GetValue(IsLoadingProperty);
         set => SetValue(IsLoadingProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the waveform color mode (Off, Frequency, or Loudness).
+    /// </summary>
+    public WaveformColorMode ColorMode
+    {
+        get => (WaveformColorMode)GetValue(ColorModeProperty);
+        set => SetValue(ColorModeProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the color for quiet sections in loudness mode.
+    /// </summary>
+    public Color LoudnessColorLow
+    {
+        get => (Color)GetValue(LoudnessColorLowProperty);
+        set => SetValue(LoudnessColorLowProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the color for medium loudness sections in loudness mode.
+    /// </summary>
+    public Color LoudnessColorMid
+    {
+        get => (Color)GetValue(LoudnessColorMidProperty);
+        set => SetValue(LoudnessColorMidProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the color for loud sections in loudness mode.
+    /// </summary>
+    public Color LoudnessColorHigh
+    {
+        get => (Color)GetValue(LoudnessColorHighProperty);
+        set => SetValue(LoudnessColorHighProperty, value);
     }
 
     #endregion
@@ -494,6 +547,13 @@ public partial class WaveformDisplay : UserControl
         var centerY = yOffset + availableHeight / 2;
         var halfHeight = availableHeight / 2 * 0.95; // 95% to leave some margin
 
+        // Check if we need colored rendering
+        if (ColorMode != WaveformColorMode.Off)
+        {
+            RenderColoredWaveform(peaks, path, width, centerY, halfHeight);
+            return;
+        }
+
         var geometry = new StreamGeometry();
         using (var context = geometry.Open())
         {
@@ -531,6 +591,184 @@ public partial class WaveformDisplay : UserControl
 
         geometry.Freeze();
         path.Data = geometry;
+    }
+
+    /// <summary>
+    /// Renders a colored waveform using gradient brushes based on frequency or loudness.
+    /// </summary>
+    private void RenderColoredWaveform(WaveformPeak[] peaks, Path path, double width, double centerY, double halfHeight)
+    {
+        // Create a geometry group to hold multiple colored segments
+        var geometryGroup = new GeometryGroup();
+
+        // Process peaks in batches to create colored segments
+        // Batch size determines color granularity vs performance
+        var batchSize = Math.Max(1, peaks.Length / 200); // Max 200 color segments
+        var segmentCount = (peaks.Length + batchSize - 1) / batchSize;
+
+        for (var segment = 0; segment < segmentCount; segment++)
+        {
+            var startIdx = segment * batchSize;
+            var endIdx = Math.Min(startIdx + batchSize, peaks.Length);
+
+            if (startIdx >= peaks.Length)
+                break;
+
+            var segmentGeometry = new StreamGeometry();
+            using (var context = segmentGeometry.Open())
+            {
+                var startX = (double)startIdx * width / peaks.Length;
+                var endX = (double)endIdx * width / peaks.Length;
+
+                // Collect points for this segment
+                var topPoints = new List<Point>();
+                var bottomPoints = new List<Point>();
+
+                for (var i = startIdx; i < endIdx; i++)
+                {
+                    var x = (double)i * width / peaks.Length;
+                    var peak = peaks[i];
+
+                    var topY = centerY - peak.Max * halfHeight;
+                    var bottomY = centerY - peak.Min * halfHeight;
+
+                    topPoints.Add(new Point(x, topY));
+                    bottomPoints.Add(new Point(x, bottomY));
+                }
+
+                if (topPoints.Count == 0)
+                    continue;
+
+                // Draw polygon for this segment
+                context.BeginFigure(topPoints[0], true, true);
+
+                for (var i = 1; i < topPoints.Count; i++)
+                {
+                    context.LineTo(topPoints[i], true, false);
+                }
+
+                for (var i = bottomPoints.Count - 1; i >= 0; i--)
+                {
+                    context.LineTo(bottomPoints[i], true, false);
+                }
+            }
+
+            segmentGeometry.Freeze();
+            geometryGroup.Children.Add(segmentGeometry);
+        }
+
+        geometryGroup.Freeze();
+        path.Data = geometryGroup;
+
+        // Create gradient brush based on color mode
+        var gradientBrush = CreateColorGradientBrush(peaks, width);
+        path.Fill = gradientBrush;
+        path.Stroke = null; // No stroke for colored waveforms
+    }
+
+    /// <summary>
+    /// Creates a gradient brush for the waveform based on the current color mode.
+    /// </summary>
+    private Brush CreateColorGradientBrush(WaveformPeak[] peaks, double width)
+    {
+        if (peaks.Length == 0)
+            return new SolidColorBrush(WaveformColor);
+
+        var gradientStops = new GradientStopCollection();
+
+        // Sample peaks at intervals for gradient stops (max 50 stops for performance)
+        var sampleInterval = Math.Max(1, peaks.Length / 50);
+
+        for (var i = 0; i < peaks.Length; i += sampleInterval)
+        {
+            var offset = (double)i / (peaks.Length - 1);
+            var peak = peaks[i];
+            var color = GetColorForPeak(peak);
+            gradientStops.Add(new GradientStop(color, offset));
+        }
+
+        // Ensure we have the last stop
+        if (gradientStops.Count > 0 && gradientStops[gradientStops.Count - 1].Offset < 1.0)
+        {
+            gradientStops.Add(new GradientStop(GetColorForPeak(peaks[peaks.Length - 1]), 1.0));
+        }
+
+        var brush = new LinearGradientBrush(gradientStops, 0);
+        brush.Freeze();
+        return brush;
+    }
+
+    /// <summary>
+    /// Gets the appropriate color for a peak based on the current color mode.
+    /// </summary>
+    private Color GetColorForPeak(WaveformPeak peak)
+    {
+        return ColorMode switch
+        {
+            WaveformColorMode.Frequency => GetFrequencyColor(peak.FrequencyBands),
+            WaveformColorMode.Loudness => GetLoudnessColor(peak.Rms),
+            _ => WaveformColor
+        };
+    }
+
+    /// <summary>
+    /// Gets a color based on frequency band energies (bass=red, mids=green, highs=blue).
+    /// </summary>
+    private static Color GetFrequencyColor(FrequencyBands bands)
+    {
+        // Map frequency bands to RGB
+        // Bass -> Red, Mids -> Green, Highs -> Blue
+        var r = (byte)(bands.Bass * 255);
+        var g = (byte)(bands.Mids * 255);
+        var b = (byte)(bands.Highs * 255);
+
+        // Ensure minimum visibility
+        var maxComponent = Math.Max(r, Math.Max(g, b));
+        if (maxComponent < 50)
+        {
+            r = Math.Max(r, (byte)50);
+            g = Math.Max(g, (byte)50);
+            b = Math.Max(b, (byte)50);
+        }
+
+        return Color.FromRgb(r, g, b);
+    }
+
+    /// <summary>
+    /// Gets a color based on RMS loudness (gradient from quiet to loud).
+    /// </summary>
+    private Color GetLoudnessColor(float rms)
+    {
+        // Normalize RMS to 0-1 range (typical audio RMS is 0.0-0.5)
+        var normalized = Math.Min(1f, rms * 2.5f);
+
+        // Three-point gradient: Low (blue) -> Mid (green) -> High (red)
+        if (normalized < 0.5f)
+        {
+            // Interpolate between low and mid
+            var t = normalized * 2f;
+            return InterpolateColor(LoudnessColorLow, LoudnessColorMid, t);
+        }
+        else
+        {
+            // Interpolate between mid and high
+            var t = (normalized - 0.5f) * 2f;
+            return InterpolateColor(LoudnessColorMid, LoudnessColorHigh, t);
+        }
+    }
+
+    /// <summary>
+    /// Linearly interpolates between two colors.
+    /// </summary>
+    private static Color InterpolateColor(Color c1, Color c2, float t)
+    {
+        t = Math.Clamp(t, 0f, 1f);
+        return Color.FromArgb(
+            (byte)(c1.A + (c2.A - c1.A) * t),
+            (byte)(c1.R + (c2.R - c1.R) * t),
+            (byte)(c1.G + (c2.G - c1.G) * t),
+            (byte)(c1.B + (c2.B - c1.B) * t)
+        );
     }
 
     private static WaveformPeak[] MixPeaks(WaveformPeak[][] peaks)
@@ -843,6 +1081,50 @@ public partial class WaveformDisplay : UserControl
     {
         SelectionStart = -1;
         SelectionEnd = -1;
+    }
+
+    #endregion
+
+    #region Context Menu Handlers
+
+    private void SetColorMode_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem menuItem && menuItem.Tag is string tagStr)
+        {
+            var newMode = tagStr switch
+            {
+                "Frequency" => WaveformColorMode.Frequency,
+                "Loudness" => WaveformColorMode.Loudness,
+                _ => WaveformColorMode.Off
+            };
+
+            ColorMode = newMode;
+
+            // Update checkmarks
+            ColorModeOffItem.IsChecked = newMode == WaveformColorMode.Off;
+            ColorModeFrequencyItem.IsChecked = newMode == WaveformColorMode.Frequency;
+            ColorModeLoudnessItem.IsChecked = newMode == WaveformColorMode.Loudness;
+        }
+    }
+
+    private void SetDisplayMode_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem menuItem && menuItem.Tag is string tagStr)
+        {
+            DisplayMode = tagStr switch
+            {
+                "StereoOverlay" => WaveformDisplayMode.StereoOverlay,
+                "StereoStacked" => WaveformDisplayMode.StereoStacked,
+                "LeftOnly" => WaveformDisplayMode.LeftOnly,
+                "RightOnly" => WaveformDisplayMode.RightOnly,
+                _ => WaveformDisplayMode.Mixed
+            };
+        }
+    }
+
+    private void ZoomToFit_Click(object sender, RoutedEventArgs e)
+    {
+        ZoomToFit();
     }
 
     #endregion

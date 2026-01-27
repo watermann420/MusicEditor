@@ -651,12 +651,12 @@ public partial class StretchMarkersControl : UserControl
             if (ratio > 1.05)
             {
                 // Stretched (green)
-                fill = new SolidColorBrush(Color.FromArgb(0x40, 0x4C, 0xAF, 0x50));
+                fill = new SolidColorBrush(Color.FromArgb(0x40, 0x00, 0xCC, 0x66));
             }
             else if (ratio < 0.95)
             {
                 // Compressed (red)
-                fill = new SolidColorBrush(Color.FromArgb(0x40, 0xF4, 0x43, 0x36));
+                fill = new SolidColorBrush(Color.FromArgb(0x40, 0xFF, 0x47, 0x57));
             }
             else
             {
@@ -684,9 +684,9 @@ public partial class StretchMarkersControl : UserControl
                 : 1.0;
             StretchRatioText.Text = $"{ratio:F2}x";
             StretchRatioText.Foreground = ratio > 1.0
-                ? new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50))
+                ? new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66))
                 : ratio < 1.0
-                    ? new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36))
+                    ? new SolidColorBrush(Color.FromRgb(0xFF, 0x47, 0x57))
                     : new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC));
         }
         else

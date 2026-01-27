@@ -344,12 +344,12 @@ public class ChatMessage : INotifyPropertyChanged
     }
 
     public SolidColorBrush BubbleBackground => IsOwnMessage
-        ? new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF))
+        ? new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF))
         : new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x37));
 
     public SolidColorBrush TextColor => IsOwnMessage
         ? Brushes.White
-        : new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4));
+        : new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
 
     public SolidColorBrush TimestampColor => IsOwnMessage
         ? new SolidColorBrush(Color.FromArgb(0xB0, 0xFF, 0xFF, 0xFF))
@@ -421,7 +421,7 @@ public class ChatUser : INotifyPropertyChanged
     }
 
     public SolidColorBrush StatusColor => IsOnline
-        ? new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6A, 0xAB, 0x73))
+        ? new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88))
         : new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x60, 0x60, 0x60));
 
     public event PropertyChangedEventHandler? PropertyChanged;

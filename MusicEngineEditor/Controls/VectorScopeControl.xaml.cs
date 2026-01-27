@@ -317,7 +317,7 @@ public partial class VectorScopeControl : UserControl
                 Y1 = centerY - axisLength,
                 X2 = centerX,
                 Y2 = centerY + axisLength,
-                Stroke = new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)),
+                Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66)),
                 StrokeThickness = 0.5,
                 StrokeDashArray = new DoubleCollection { 4, 2 }
             };
@@ -418,7 +418,7 @@ public partial class VectorScopeControl : UserControl
             var mLabel = new TextBlock
             {
                 Text = "M",
-                Foreground = new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)),
+                Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66)),
                 FontSize = 9
             };
             Canvas.SetLeft(mLabel, centerX + 4);
@@ -568,7 +568,7 @@ public partial class VectorScopeControl : UserControl
         // Color based on correlation value
         if (_currentCorrelation > 0.5)
         {
-            CorrelationText.Foreground = new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)); // Green
+            CorrelationText.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66)); // Green
         }
         else if (_currentCorrelation < -0.3)
         {

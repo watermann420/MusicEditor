@@ -5,19 +5,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="800"
-             Background="#1E1F22"
+             Background="#0D0D0D"
              ClipToBounds="True">
 
     <UserControl.Resources>
         <!-- Colors matching the dark theme -->
-        <SolidColorBrush x:Key="PunchcardBackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="GridLineBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="PunchcardBackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="GridLineBrush" Color="#2A2A2A"/>
         <SolidColorBrush x:Key="BeatLineBrush" Color="#4A4D52"/>
-        <SolidColorBrush x:Key="PlayheadBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="PlayheadBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="PlayheadGlowBrush" Color="#7B9FDF"/>
-        <SolidColorBrush x:Key="TrackSeparatorBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="BeatLabelBrush" Color="#6F737A"/>
-        <SolidColorBrush x:Key="TrackLabelBrush" Color="#BCBEC4"/>
+        <SolidColorBrush x:Key="TrackSeparatorBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="BeatLabelBrush" Color="#808080"/>
+        <SolidColorBrush x:Key="TrackLabelBrush" Color="#E0E0E0"/>
         <SolidColorBrush x:Key="ActiveNoteBrush" Color="#FFD700"/>
 
         <!-- Glow effect for active notes -->
@@ -93,13 +93,13 @@
                Placement="Mouse"
                AllowsTransparency="True"
                IsOpen="False">
-            <Border Background="#3C3F41"
+            <Border Background="#252525"
                     BorderBrush="#43454A"
                     BorderThickness="1"
                     CornerRadius="4"
                     Padding="8,4">
                 <TextBlock x:Name="NoteTooltipText"
-                           Foreground="#BCBEC4"
+                           Foreground="#E0E0E0"
                            FontSize="12"
                            FontFamily="JetBrains Mono, Consolas, Courier New"/>
             </Border>

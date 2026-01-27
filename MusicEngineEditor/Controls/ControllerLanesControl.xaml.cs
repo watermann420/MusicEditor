@@ -116,7 +116,7 @@ public partial class ControllerLanesControl : UserControl
     private static readonly Color[] LaneColors =
     [
         Color.FromRgb(0xFF, 0x95, 0x00), // Orange
-        Color.FromRgb(0x4B, 0x6E, 0xAF), // Blue
+        Color.FromRgb(0x00, 0xD9, 0xFF), // Cyan
         Color.FromRgb(0x10, 0xB9, 0x81), // Green
         Color.FromRgb(0xEC, 0x48, 0x99), // Pink
         Color.FromRgb(0x8B, 0x5C, 0xF6), // Purple

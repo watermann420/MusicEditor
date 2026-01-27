@@ -23,11 +23,11 @@
         <SolidColorBrush x:Key="CCPointHoverBrush" Color="#FFB030"/>
         <SolidColorBrush x:Key="CCLineBrush" Color="#FF9500"/>
         <SolidColorBrush x:Key="CCFillBrush" Color="#40FF9500"/>
-        <SolidColorBrush x:Key="LabelBrush" Color="#6F737A"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="LabelBrush" Color="#808080"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
         <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="#252629"/>
-        <SolidColorBrush x:Key="ComboBoxBackgroundBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="ButtonHoverBrush" Color="#3C3F41"/>
+        <SolidColorBrush x:Key="ComboBoxBackgroundBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="ButtonHoverBrush" Color="#252525"/>
 
         <!-- Gradient for CC points -->
         <RadialGradientBrush x:Key="CCPointGradient" GradientOrigin="0.3,0.3">
@@ -43,7 +43,7 @@
         <!-- ComboBox Style -->
         <Style x:Key="CCLaneComboBoxStyle" TargetType="ComboBox">
             <Setter Property="Background" Value="{StaticResource ComboBoxBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="#BCBEC4"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="4,2"/>
@@ -80,7 +80,7 @@
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="#4A9EFF"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
@@ -113,10 +113,10 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
-                                <Setter Property="Foreground" Value="#BCBEC4"/>
+                                <Setter Property="Foreground" Value="#E0E0E0"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -248,7 +248,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top">
                 <TextBlock x:Name="HoverValueText"
-                           Foreground="#BCBEC4"
+                           Foreground="#E0E0E0"
                            FontSize="10"
                            Text="Value: 64"/>
             </Border>

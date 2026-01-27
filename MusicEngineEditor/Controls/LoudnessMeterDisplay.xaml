@@ -9,13 +9,13 @@
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="MeterBackgroundBrush" Color="#1A1A1A"/>
-        <SolidColorBrush x:Key="MeterBorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6F737A"/>
-        <SolidColorBrush x:Key="LoudnessGoodBrush" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="MeterBorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#808080"/>
+        <SolidColorBrush x:Key="LoudnessGoodBrush" Color="#00CC66"/>
         <SolidColorBrush x:Key="LoudnessWarningBrush" Color="#FFC107"/>
-        <SolidColorBrush x:Key="LoudnessDangerBrush" Color="#F44336"/>
-        <SolidColorBrush x:Key="TruePeakBrush" Color="#2196F3"/>
+        <SolidColorBrush x:Key="LoudnessDangerBrush" Color="#FF4757"/>
+        <SolidColorBrush x:Key="TruePeakBrush" Color="#00D9FF"/>
     </UserControl.Resources>
 
     <Border BorderBrush="{StaticResource MeterBorderBrush}"

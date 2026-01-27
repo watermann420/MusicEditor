@@ -102,8 +102,8 @@ public partial class ReferenceOverlayControl : UserControl
     // Colors
     private readonly Color _mixColor = Color.FromRgb(0x00, 0xCE, 0xD1);
     private readonly Color _referenceColor = Color.FromRgb(0xFF, 0x98, 0x00);
-    private readonly Color _positiveColor = Color.FromRgb(0x4C, 0xAF, 0x50);
-    private readonly Color _negativeColor = Color.FromRgb(0xF4, 0x43, 0x36);
+    private readonly Color _positiveColor = Color.FromRgb(0x00, 0xCC, 0x66);
+    private readonly Color _negativeColor = Color.FromRgb(0xFF, 0x47, 0x57);
     private readonly Color _neutralColor = Color.FromRgb(0x55, 0x55, 0x55);
 
     #endregion

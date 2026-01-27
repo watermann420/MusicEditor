@@ -79,12 +79,12 @@ public class ScoreRenderer
     /// <summary>
     /// Gets or sets the bar line color.
     /// </summary>
-    public Color BarLineColor { get; set; } = Color.FromRgb(0xBC, 0xBE, 0xC4);
+    public Color BarLineColor { get; set; } = Color.FromRgb(0xE0, 0xE0, 0xE0);
 
     /// <summary>
     /// Gets or sets the selected note color.
     /// </summary>
-    public Color SelectedNoteColor { get; set; } = Color.FromRgb(0x4B, 0x6E, 0xAF);
+    public Color SelectedNoteColor { get; set; } = Color.FromRgb(0x00, 0xD9, 0xFF);
 
     /// <summary>
     /// Gets or sets the ledger line color.

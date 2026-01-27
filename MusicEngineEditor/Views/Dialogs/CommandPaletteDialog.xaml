@@ -17,13 +17,13 @@
         Deactivated="Window_Deactivated">
 
     <Window.Resources>
-        <SolidColorBrush x:Key="PaletteBackgroundBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="PaletteBorderBrush" Color="#4B6EAF"/>
-        <SolidColorBrush x:Key="SearchBoxBackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="ItemHoverBrush" Color="#3C3F41"/>
-        <SolidColorBrush x:Key="ItemSelectedBrush" Color="#4B6EAF"/>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="PaletteBackgroundBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="PaletteBorderBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="SearchBoxBackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="ItemHoverBrush" Color="#252525"/>
+        <SolidColorBrush x:Key="ItemSelectedBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#808080"/>
         <SolidColorBrush x:Key="ShortcutBrush" Color="#9E9E9E"/>
 
         <Style x:Key="CommandListBoxItemStyle" TargetType="ListBoxItem">
@@ -140,7 +140,7 @@
 
                             <!-- Category Tag -->
                             <Border Grid.Column="0"
-                                    Background="#393B40"
+                                    Background="#2A2A2A"
                                     CornerRadius="3"
                                     Padding="6,2"
                                     Margin="0,0,8,0"

@@ -419,7 +419,7 @@ public partial class MediaBayView : Window
 
     private void ListViewButton_Click(object sender, RoutedEventArgs e)
     {
-        ListViewButton.Background = new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF));
+        ListViewButton.Background = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF));
         ListViewButton.Foreground = Brushes.White;
         GridViewButton.Background = new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x37));
         GridViewButton.Foreground = new SolidColorBrush(Color.FromRgb(0xA0, 0xA0, 0xA0));
@@ -427,7 +427,7 @@ public partial class MediaBayView : Window
 
     private void GridViewButton_Click(object sender, RoutedEventArgs e)
     {
-        GridViewButton.Background = new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF));
+        GridViewButton.Background = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF));
         GridViewButton.Foreground = Brushes.White;
         ListViewButton.Background = new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x37));
         ListViewButton.Foreground = new SolidColorBrush(Color.FromRgb(0xA0, 0xA0, 0xA0));
@@ -622,8 +622,8 @@ public class MediaBayItem : INotifyPropertyChanged
         "Red" => new SolidColorBrush(Color.FromRgb(0xE8, 0x5C, 0x5C)),
         "Orange" => new SolidColorBrush(Color.FromRgb(0xE8, 0xA7, 0x3C)),
         "Yellow" => new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0x5C)),
-        "Green" => new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73)),
-        "Blue" => new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF)),
+        "Green" => new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88)),
+        "Blue" => new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)),
         "Purple" => new SolidColorBrush(Color.FromRgb(0x9C, 0x7C, 0xE8)),
         _ => new SolidColorBrush(Colors.Transparent)
     };

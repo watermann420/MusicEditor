@@ -311,7 +311,7 @@ public partial class TrackInfo : ObservableObject
                 break;
 
             case TrackType.Audio:
-                Color = "#6AAB73";
+                Color = "#00FF88";
                 Icon = "audio";
                 InputSourceName = "Audio In 1/2";
                 break;

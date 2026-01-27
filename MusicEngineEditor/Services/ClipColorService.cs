@@ -104,13 +104,13 @@ public class ClipColorService : IClipColorService
         new ClipColorEntry("#FF6B9D", "Pink", "Primary"),
 
         // Audio Track Colors
-        new ClipColorEntry("#4CAF50", "Audio Green", "Audio"),
+        new ClipColorEntry("#00CC66", "Audio Green", "Audio"),
         new ClipColorEntry("#8BC34A", "Light Green", "Audio"),
         new ClipColorEntry("#CDDC39", "Lime", "Audio"),
         new ClipColorEntry("#009688", "Teal", "Audio"),
 
         // MIDI Track Colors
-        new ClipColorEntry("#2196F3", "MIDI Blue", "MIDI"),
+        new ClipColorEntry("#00D9FF", "MIDI Blue", "MIDI"),
         new ClipColorEntry("#03A9F4", "Light Blue", "MIDI"),
         new ClipColorEntry("#00BCD4", "Cyan", "MIDI"),
         new ClipColorEntry("#3F51B5", "Indigo", "MIDI"),
@@ -145,8 +145,8 @@ public class ClipColorService : IClipColorService
 
     private void InitializeContentTypeColors()
     {
-        _contentTypeColors[ClipContentType.Audio] = "#4CAF50";
-        _contentTypeColors[ClipContentType.Midi] = "#2196F3";
+        _contentTypeColors[ClipContentType.Audio] = "#00CC66";
+        _contentTypeColors[ClipContentType.Midi] = "#00D9FF";
         _contentTypeColors[ClipContentType.Drums] = "#E91E63";
         _contentTypeColors[ClipContentType.Bass] = "#FF5722";
         _contentTypeColors[ClipContentType.Vocals] = "#9C27B0";
@@ -181,7 +181,7 @@ public class ClipColorService : IClipColorService
     /// </summary>
     public string GetClipColor(string clipId)
     {
-        return _clipColors.TryGetValue(clipId, out var color) ? color : "#4CAF50";
+        return _clipColors.TryGetValue(clipId, out var color) ? color : "#00CC66";
     }
 
     /// <summary>
@@ -283,7 +283,7 @@ public class ClipColorService : IClipColorService
     {
         if (_clipColors.Remove(clipId))
         {
-            ClipColorChanged?.Invoke(this, new ClipColorChangedEventArgs(clipId, "#4CAF50", null));
+            ClipColorChanged?.Invoke(this, new ClipColorChangedEventArgs(clipId, "#00CC66", null));
         }
     }
 

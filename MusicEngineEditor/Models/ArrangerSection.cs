@@ -65,7 +65,7 @@ public partial class ArrangerSection : ObservableObject
     /// Display color as hex string.
     /// </summary>
     [ObservableProperty]
-    private string _color = "#4B6EAF";
+    private string _color = "#00D9FF";
 
     /// <summary>
     /// Indicates whether the section is selected.
@@ -138,7 +138,7 @@ public partial class ArrangerSection : ObservableObject
             SectionType.Buildup => "#20B2AA",    // Light Sea Green
             SectionType.Drop => "#FF1493",       // Deep Pink
             SectionType.Outro => "#708090",      // Slate Gray
-            _ => "#4B6EAF"                       // Default Accent
+            _ => "#00D9FF"                       // Default Accent
         };
     }
 

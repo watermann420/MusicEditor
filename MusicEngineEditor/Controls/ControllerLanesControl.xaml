@@ -10,15 +10,15 @@
     <UserControl.Resources>
         <!-- Colors -->
         <SolidColorBrush x:Key="BackgroundBrush" Color="#1A1A1A"/>
-        <SolidColorBrush x:Key="PanelBrush" Color="#252629"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryBrush" Color="#6F737A"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#141414"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="#808080"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
 
         <!-- Lane Colors (for different CC lanes) -->
         <SolidColorBrush x:Key="Lane1Brush" Color="#FF9500"/>
-        <SolidColorBrush x:Key="Lane2Brush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="Lane2Brush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="Lane3Brush" Color="#10B981"/>
         <SolidColorBrush x:Key="Lane4Brush" Color="#EC4899"/>
         <SolidColorBrush x:Key="Lane5Brush" Color="#8B5CF6"/>
@@ -43,7 +43,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>

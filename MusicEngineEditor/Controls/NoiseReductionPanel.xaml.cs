@@ -19,9 +19,7 @@ public partial class NoiseReductionPanel : UserControl
     private CancellationTokenSource? _learningCts;
     private bool _hasNoiseProfile;
     private bool _isBypassed;
-#pragma warning disable CS0414 // Field is assigned but its value is never used
     private bool _isShowingOriginal;
-#pragma warning restore CS0414
 
     /// <summary>
     /// Event raised when a parameter value changes.
@@ -103,6 +101,24 @@ public partial class NoiseReductionPanel : UserControl
         {
             _isBypassed = value;
             BypassToggle.IsChecked = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets whether the original (unprocessed) audio is being previewed.
+    /// When true, the noise reduction effect is temporarily bypassed for A/B comparison.
+    /// </summary>
+    public bool IsShowingOriginal
+    {
+        get => _isShowingOriginal;
+        set
+        {
+            if (_isShowingOriginal != value)
+            {
+                _isShowingOriginal = value;
+                UpdatePreviewModeUI();
+                PreviewModeChanged?.Invoke(this, value);
+            }
         }
     }
 
@@ -311,16 +327,61 @@ public partial class NoiseReductionPanel : UserControl
 
     private void AfterRadio_Checked(object sender, RoutedEventArgs e)
     {
-        _isShowingOriginal = false;
-        StatusText.Text = "Previewing processed audio";
-        PreviewModeChanged?.Invoke(this, false);
+        if (_isShowingOriginal)
+        {
+            _isShowingOriginal = false;
+            UpdatePreviewModeUI();
+            PreviewModeChanged?.Invoke(this, false);
+        }
     }
 
     private void BeforeRadio_Checked(object sender, RoutedEventArgs e)
     {
-        _isShowingOriginal = true;
-        StatusText.Text = "Previewing original audio";
-        PreviewModeChanged?.Invoke(this, true);
+        if (!_isShowingOriginal)
+        {
+            _isShowingOriginal = true;
+            UpdatePreviewModeUI();
+            PreviewModeChanged?.Invoke(this, true);
+        }
+    }
+
+    private void ABToggleButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Toggle between original and processed audio
+        IsShowingOriginal = !IsShowingOriginal;
+    }
+
+    /// <summary>
+    /// Updates the UI to reflect the current preview mode (Original vs Processed).
+    /// </summary>
+    private void UpdatePreviewModeUI()
+    {
+        if (StatusText == null) return;
+
+        // Update radio buttons
+        if (AfterRadio != null && BeforeRadio != null)
+        {
+            AfterRadio.IsChecked = !_isShowingOriginal;
+            BeforeRadio.IsChecked = _isShowingOriginal;
+        }
+
+        // Update status text with clear indication
+        StatusText.Text = _isShowingOriginal
+            ? "A/B: Previewing ORIGINAL audio (no processing)"
+            : "A/B: Previewing PROCESSED audio";
+
+        // Update the toggle button if it exists
+        if (ABToggleButton != null)
+        {
+            ABToggleButton.IsChecked = _isShowingOriginal;
+            ABToggleButton.Content = _isShowingOriginal ? "Original" : "Processed";
+        }
+
+        // Update the mode indicator label if it exists
+        if (PreviewModeIndicator != null)
+        {
+            PreviewModeIndicator.Text = _isShowingOriginal ? "ORIGINAL" : "PROCESSED";
+        }
     }
 
     /// <summary>
@@ -336,9 +397,36 @@ public partial class NoiseReductionPanel : UserControl
         PresetComboBox.SelectedIndex = 0;
         BypassToggle.IsChecked = false;
         AfterRadio.IsChecked = true;
+        BeforeRadio.IsChecked = false;
         NoiseProfileStatus.Text = "No noise profile captured";
         ClearProfileButton.IsEnabled = false;
         StatusText.Text = "Reset to defaults";
+        UpdatePreviewModeUI();
+    }
+
+    /// <summary>
+    /// Toggles between original and processed audio preview.
+    /// This is a convenience method for keyboard shortcuts or external triggers.
+    /// </summary>
+    public void ToggleABComparison()
+    {
+        IsShowingOriginal = !IsShowingOriginal;
+    }
+
+    /// <summary>
+    /// Shows the original (unprocessed) audio for A/B comparison.
+    /// </summary>
+    public void ShowOriginal()
+    {
+        IsShowingOriginal = true;
+    }
+
+    /// <summary>
+    /// Shows the processed audio (with noise reduction applied).
+    /// </summary>
+    public void ShowProcessed()
+    {
+        IsShowingOriginal = false;
     }
 }
 

@@ -36,7 +36,7 @@ public class CodeTooltipService
         _tooltip = new WpfToolTip
         {
             Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2B, 0x2D, 0x30)),
-            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xBC, 0xBE, 0xC4)),
+            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE0, 0xE0, 0xE0)),
             BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x3C, 0x3F, 0x41)),
             BorderThickness = new Thickness(1),
             Padding = new Thickness(10, 8, 10, 8),
@@ -176,7 +176,7 @@ public class CodeTooltipService
         {
             Text = description,
             TextWrapping = TextWrapping.Wrap,
-            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xBC, 0xBE, 0xC4))
+            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE0, 0xE0, 0xE0))
         };
         stack.Children.Add(descBlock);
 

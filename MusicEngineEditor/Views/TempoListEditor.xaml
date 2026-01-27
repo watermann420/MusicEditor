@@ -10,14 +10,14 @@
 
     <UserControl.Resources>
         <!-- Colors -->
-        <Color x:Key="EditorBackgroundColor">#1E1F22</Color>
-        <Color x:Key="HeaderBackgroundColor">#2B2D30</Color>
-        <Color x:Key="RowHoverColor">#3C3F41</Color>
-        <Color x:Key="RowSelectedColor">#4B6EAF</Color>
-        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
-        <Color x:Key="TextSecondaryColor">#6F737A</Color>
-        <Color x:Key="BorderColor">#393B40</Color>
-        <Color x:Key="AccentColor">#4B6EAF</Color>
+        <Color x:Key="EditorBackgroundColor">#0D0D0D</Color>
+        <Color x:Key="HeaderBackgroundColor">#181818</Color>
+        <Color x:Key="RowHoverColor">#252525</Color>
+        <Color x:Key="RowSelectedColor">#00D9FF</Color>
+        <Color x:Key="TextPrimaryColor">#E0E0E0</Color>
+        <Color x:Key="TextSecondaryColor">#808080</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+        <Color x:Key="AccentColor">#00D9FF</Color>
 
         <!-- Brushes -->
         <SolidColorBrush x:Key="EditorBackgroundBrush" Color="{StaticResource EditorBackgroundColor}"/>
@@ -88,7 +88,7 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#5C3535"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="#D32F2F"/>
-                                <Setter Property="Foreground" Value="#F75464"/>
+                                <Setter Property="Foreground" Value="#FF4757"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#D32F2F"/>
@@ -216,7 +216,7 @@
                         <DataTemplate>
                             <ComboBox SelectedValue="{Binding CurveType, UpdateSourceTrigger=PropertyChanged}"
                                       SelectedValuePath="Tag"
-                                      Background="#1E1F22"
+                                      Background="#0D0D0D"
                                       Foreground="White">
                                 <ComboBoxItem Content="Linear" Tag="Linear"/>
                                 <ComboBoxItem Content="S-Curve" Tag="SCurve"/>

@@ -26,10 +26,10 @@
             <Setter Property="Minimum" Value="0"/>
             <Setter Property="Maximum" Value="1"/>
             <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="#4CAF50"/>
+            <Setter Property="Foreground" Value="#00CC66"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsClipping}" Value="True">
-                    <Setter Property="Foreground" Value="#F44336"/>
+                    <Setter Property="Foreground" Value="#FF4757"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -207,7 +207,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
                     <TextBlock Text="Clipping!"
-                               Foreground="#F44336"
+                               Foreground="#FF4757"
                                FontWeight="Bold"
                                Visibility="{Binding IsClipping, Converter={StaticResource BoolToVisibilityConverter}}"
                                Margin="0,0,15,0"/>
@@ -317,7 +317,7 @@
                             Padding="15,8"
                             IsEnabled="{Binding IsRecording}"/>
                     <TextBlock Text="Punched In"
-                               Foreground="#4CAF50"
+                               Foreground="#00CC66"
                                FontWeight="Bold"
                                VerticalAlignment="Center"
                                Margin="20,0,0,0"
@@ -404,9 +404,9 @@
                                 Command="{Binding ToggleRecordingCommand}"
                                 ToolTip="Start/Stop Recording">
                             <Button.Background>
-                                <SolidColorBrush Color="{Binding IsRecording, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#F44336|#424242}"/>
+                                <SolidColorBrush Color="{Binding IsRecording, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#FF4757|#424242}"/>
                             </Button.Background>
-                            <Ellipse Width="24" Height="24" Fill="#F44336"/>
+                            <Ellipse Width="24" Height="24" Fill="#FF4757"/>
                         </Button>
 
                         <!-- Pause Button -->

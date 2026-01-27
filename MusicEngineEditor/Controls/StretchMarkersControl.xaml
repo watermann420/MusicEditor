@@ -78,7 +78,7 @@
                                 <Setter TargetName="Border" Property="Background" Value="#4A4A4A"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="Border" Property="Background" Value="#00D9FF"/>
                                 <Setter Property="Foreground" Value="#FFFFFF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -247,7 +247,7 @@
                                VerticalAlignment="Center"/>
                     <TextBlock x:Name="StretchRatioText"
                                Text="1.00x"
-                               Foreground="#4CAF50"
+                               Foreground="#00CC66"
                                FontWeight="SemiBold"
                                FontSize="11"
                                VerticalAlignment="Center"/>

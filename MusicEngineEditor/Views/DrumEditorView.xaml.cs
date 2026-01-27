@@ -149,7 +149,7 @@ public partial class DrumEditorView : UserControl
 
         double stepWidth = StepNumbersCanvas.ActualWidth / _stepCount;
         var brush = new SolidColorBrush(Color.FromRgb(0x6F, 0x73, 0x7A));
-        var accentBrush = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4));
+        var accentBrush = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
 
         for (int i = 0; i < _stepCount; i++)
         {

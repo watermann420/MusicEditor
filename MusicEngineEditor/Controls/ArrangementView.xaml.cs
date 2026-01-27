@@ -59,6 +59,11 @@ public partial class ArrangementView : UserControl
     private double _clipDragStartLength = 0.0;
     private double _clipContextMenuPosition;
 
+    // Collaboration cursor support
+    private readonly Dictionary<Guid, CollaboratorCursor> _collaboratorCursors = [];
+    private bool _isCollaborationCursorsEnabled;
+    private Point _lastLocalCursorPosition;
+
     /// <summary>
     /// Gets or sets the view model.
     /// </summary>
@@ -155,6 +160,7 @@ public partial class ArrangementView : UserControl
                 MarkerTrackControl.VisibleBeats = _viewModel?.VisibleBeats ?? 64;
                 MarkerTrackControl.ScrollOffset = _viewModel?.ScrollOffset ?? 0;
                 UpdateWaveformSync();
+                RefreshCollaboratorCursors();
                 break;
         }
     }
@@ -567,6 +573,12 @@ public partial class ArrangementView : UserControl
 
     private void SectionCanvas_MouseMove(object sender, MouseEventArgs e)
     {
+        // Send cursor position for collaboration
+        if (_isCollaborationCursorsEnabled)
+        {
+            SendLocalCursorUpdate(e.GetPosition(SectionCanvas));
+        }
+
         // Handle timeline scrubbing
         if (_isScrubbing && e.LeftButton == MouseButtonState.Pressed)
         {
@@ -1694,6 +1706,225 @@ public partial class ArrangementView : UserControl
         if (_dropPreviewRect != null)
         {
             _dropPreviewRect.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    #endregion
+
+    #region Collaboration Cursors
+
+    /// <summary>
+    /// View type identifier for the arrangement view.
+    /// </summary>
+    public const string ViewTypeIdentifier = "arrangement";
+
+    /// <summary>
+    /// Gets or sets whether collaboration cursor display is enabled.
+    /// </summary>
+    public bool IsCollaborationCursorsEnabled
+    {
+        get => _isCollaborationCursorsEnabled;
+        set
+        {
+            if (_isCollaborationCursorsEnabled == value) return;
+            _isCollaborationCursorsEnabled = value;
+
+            if (value)
+            {
+                EnableCollaborationCursors();
+            }
+            else
+            {
+                DisableCollaborationCursors();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Enables collaboration cursor visualization.
+    /// </summary>
+    public void EnableCollaborationCursors()
+    {
+        _isCollaborationCursorsEnabled = true;
+
+        // Register our section canvas with the cursor service
+        CollaboratorCursorService.Instance.RegisterCanvas(SectionCanvas, ViewTypeIdentifier);
+
+        // Subscribe to cursor updates
+        CollaboratorCursorService.Instance.CursorUpdated += CollaboratorCursorService_CursorUpdated;
+        CollaboratorCursorService.Instance.CursorRemoved += CollaboratorCursorService_CursorRemoved;
+
+        // Add existing cursors for this view
+        foreach (var cursorData in CollaboratorCursorService.Instance.GetCursorsForView(ViewTypeIdentifier))
+        {
+            AddOrUpdateCollaboratorCursor(cursorData);
+        }
+    }
+
+    /// <summary>
+    /// Disables collaboration cursor visualization.
+    /// </summary>
+    public void DisableCollaborationCursors()
+    {
+        _isCollaborationCursorsEnabled = false;
+
+        // Unsubscribe from cursor updates
+        CollaboratorCursorService.Instance.CursorUpdated -= CollaboratorCursorService_CursorUpdated;
+        CollaboratorCursorService.Instance.CursorRemoved -= CollaboratorCursorService_CursorRemoved;
+
+        // Unregister canvas
+        CollaboratorCursorService.Instance.UnregisterCanvas(SectionCanvas);
+
+        // Remove all cursor controls
+        foreach (var cursor in _collaboratorCursors.Values)
+        {
+            SectionCanvas.Children.Remove(cursor);
+        }
+        _collaboratorCursors.Clear();
+    }
+
+    /// <summary>
+    /// Sends local cursor position to collaborators.
+    /// </summary>
+    /// <param name="position">The mouse position in the canvas.</param>
+    public void SendLocalCursorUpdate(Point position)
+    {
+        if (!_isCollaborationCursorsEnabled || !CollaboratorCursorService.Instance.IsCollaborationActive)
+            return;
+
+        // Only send if position changed significantly (debounce)
+        var distance = Math.Sqrt(
+            Math.Pow(position.X - _lastLocalCursorPosition.X, 2) +
+            Math.Pow(position.Y - _lastLocalCursorPosition.Y, 2));
+
+        if (distance < 5) return;
+        _lastLocalCursorPosition = position;
+
+        // Convert pixel position to beat position
+        var beatPosition = PositionToBeats(position.X);
+        var trackY = position.Y;
+
+        // Determine track ID based on Y position (if applicable)
+        Guid? trackId = null;
+        // For now, we don't have track mapping in the section view
+
+        CollaboratorCursorService.Instance.SendLocalCursorUpdate(
+            ViewTypeIdentifier,
+            beatPosition,
+            trackY,
+            trackId);
+    }
+
+    /// <summary>
+    /// Sends local cursor selection to collaborators.
+    /// </summary>
+    /// <param name="selectionStart">Selection start position.</param>
+    /// <param name="selectionEnd">Selection end position.</param>
+    public void SendLocalSelectionUpdate(Point selectionStart, Point selectionEnd)
+    {
+        if (!_isCollaborationCursorsEnabled || !CollaboratorCursorService.Instance.IsCollaborationActive)
+            return;
+
+        var startBeat = PositionToBeats(selectionStart.X);
+        var endBeat = PositionToBeats(selectionEnd.X);
+
+        CollaboratorCursorService.Instance.SendLocalCursorUpdate(
+            ViewTypeIdentifier,
+            startBeat,
+            selectionStart.Y,
+            null,
+            (startBeat, selectionStart.Y),
+            (endBeat, selectionEnd.Y));
+    }
+
+    private void CollaboratorCursorService_CursorUpdated(object? sender, CursorUpdateEventArgs e)
+    {
+        if (e.CursorData.ViewType != ViewTypeIdentifier)
+            return;
+
+        Dispatcher.Invoke(() => AddOrUpdateCollaboratorCursor(e.CursorData));
+    }
+
+    private void CollaboratorCursorService_CursorRemoved(object? sender, Guid peerId)
+    {
+        Dispatcher.Invoke(() => RemoveCollaboratorCursor(peerId));
+    }
+
+    private void AddOrUpdateCollaboratorCursor(CollaboratorCursorData cursorData)
+    {
+        if (!_isCollaborationCursorsEnabled)
+            return;
+
+        if (!_collaboratorCursors.TryGetValue(cursorData.PeerId, out var cursor))
+        {
+            // Create new cursor control
+            cursor = CollaboratorCursor.Create(cursorData.PeerId, cursorData.PeerName, cursorData.Color);
+            _collaboratorCursors[cursorData.PeerId] = cursor;
+
+            SectionCanvas.Children.Add(cursor);
+            System.Windows.Controls.Panel.SetZIndex(cursor, 1000); // Ensure cursor is on top
+        }
+
+        // Convert beat position to pixel position
+        var pixelX = BeatsToPixels(cursorData.X);
+        var pixelY = cursorData.Y;
+
+        cursor.SetPosition(pixelX, pixelY);
+        cursor.PeerName = cursorData.PeerName;
+        cursor.IsActivelyEditing = cursorData.IsActivelyEditing;
+
+        // Update selection rectangle if present
+        if (cursorData.SelectionStart.HasValue && cursorData.SelectionEnd.HasValue)
+        {
+            var startPixelX = BeatsToPixels(cursorData.SelectionStart.Value.X);
+            var endPixelX = BeatsToPixels(cursorData.SelectionEnd.Value.X);
+
+            cursor.SetSelectionBounds(
+                startPixelX - pixelX,
+                cursorData.SelectionStart.Value.Y - pixelY,
+                endPixelX - startPixelX,
+                cursorData.SelectionEnd.Value.Y - cursorData.SelectionStart.Value.Y);
+        }
+        else
+        {
+            cursor.HideSelection();
+        }
+    }
+
+    private void RemoveCollaboratorCursor(Guid peerId)
+    {
+        if (_collaboratorCursors.TryGetValue(peerId, out var cursor))
+        {
+            SectionCanvas.Children.Remove(cursor);
+            _collaboratorCursors.Remove(peerId);
+        }
+    }
+
+    /// <summary>
+    /// Converts beat position to pixel position.
+    /// </summary>
+    /// <param name="beats">Beat position.</param>
+    /// <returns>Pixel X coordinate.</returns>
+    private double BeatsToPixels(double beats)
+    {
+        if (_viewModel == null || SectionCanvas.ActualWidth <= 0)
+            return 0;
+
+        var pixelsPerBeat = SectionCanvas.ActualWidth / _viewModel.VisibleBeats;
+        return (beats - _viewModel.ScrollOffset) * pixelsPerBeat;
+    }
+
+    /// <summary>
+    /// Refreshes all collaborator cursor positions (call when zoom/scroll changes).
+    /// </summary>
+    public void RefreshCollaboratorCursors()
+    {
+        if (!_isCollaborationCursorsEnabled)
+            return;
+
+        foreach (var cursorData in CollaboratorCursorService.Instance.GetCursorsForView(ViewTypeIdentifier))
+        {
+            AddOrUpdateCollaboratorCursor(cursorData);
         }
     }
 

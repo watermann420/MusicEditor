@@ -310,7 +310,7 @@ public partial class VersionTimelineControl : UserControl
         var branch = _branches.FirstOrDefault(b => b.Name == version.BranchName);
         var color = branch != null
             ? (Color)ColorConverter.ConvertFromString(branch.Color)
-            : Color.FromRgb(0x4B, 0x6E, 0xAF);
+            : Color.FromRgb(0x00, 0xD9, 0xFF);
 
         // Node circle
         var node = new Ellipse
@@ -342,7 +342,7 @@ public partial class VersionTimelineControl : UserControl
             {
                 Text = version.Name.Length > 15 ? version.Name.Substring(0, 12) + "..." : version.Name,
                 FontSize = 10,
-                Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4)),
+                Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
                 TextAlignment = TextAlignment.Center
             };
 
@@ -458,7 +458,7 @@ public partial class VersionTimelineControl : UserControl
         {
             SelectedVersionInfo.Children.Add(new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73)),
+                Background = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88)),
                 CornerRadius = new CornerRadius(3),
                 Padding = new Thickness(6, 2, 6, 2),
                 Margin = new Thickness(8, 0, 0, 0),

@@ -9,7 +9,9 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using MusicEngineEditor.Models;
 using MusicEngineEditor.ViewModels;
+using WaveformColorMode = MusicEngineEditor.Models.WaveformColorMode;
 
 namespace MusicEngineEditor.Controls;
 
@@ -30,7 +32,7 @@ public partial class AudioClipControl : UserControl
 
     public static readonly DependencyProperty ClipColorProperty =
         DependencyProperty.Register(nameof(ClipColor), typeof(Color), typeof(AudioClipControl),
-            new PropertyMetadata(Color.FromRgb(0x4C, 0xAF, 0x50), OnClipColorChanged));
+            new PropertyMetadata(Color.FromRgb(0x00, 0xCC, 0x66), OnClipColorChanged));
 
     public static readonly DependencyProperty PlayheadPositionProperty =
         DependencyProperty.Register(nameof(PlayheadPosition), typeof(double), typeof(AudioClipControl),
@@ -39,6 +41,14 @@ public partial class AudioClipControl : UserControl
     public static readonly DependencyProperty WaveformDataProperty =
         DependencyProperty.Register(nameof(WaveformData), typeof(float[]), typeof(AudioClipControl),
             new PropertyMetadata(null, OnWaveformDataChanged));
+
+    public static readonly DependencyProperty ColorModeProperty =
+        DependencyProperty.Register(nameof(ColorMode), typeof(WaveformColorMode), typeof(AudioClipControl),
+            new PropertyMetadata(WaveformColorMode.Off, OnColorModeChanged));
+
+    public static readonly DependencyProperty SampleRateProperty =
+        DependencyProperty.Register(nameof(SampleRate), typeof(int), typeof(AudioClipControl),
+            new PropertyMetadata(44100, OnWaveformDataChanged));
 
     #endregion
 
@@ -87,6 +97,24 @@ public partial class AudioClipControl : UserControl
     {
         get => (float[]?)GetValue(WaveformDataProperty);
         set => SetValue(WaveformDataProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the waveform color mode (Off, Frequency, or Loudness).
+    /// </summary>
+    public WaveformColorMode ColorMode
+    {
+        get => (WaveformColorMode)GetValue(ColorModeProperty);
+        set => SetValue(ColorModeProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the sample rate for frequency analysis.
+    /// </summary>
+    public int SampleRate
+    {
+        get => (int)GetValue(SampleRateProperty);
+        set => SetValue(SampleRateProperty, value);
     }
 
     #endregion
@@ -175,6 +203,14 @@ public partial class AudioClipControl : UserControl
     }
 
     private static void OnWaveformDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is AudioClipControl control)
+        {
+            control.RenderWaveform();
+        }
+    }
+
+    private static void OnColorModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is AudioClipControl control)
         {
@@ -353,34 +389,70 @@ public partial class AudioClipControl : UserControl
         var centerY = height / 2;
         var halfHeight = height / 2 * 0.9;
 
+        var samplesPerPixel = Math.Max(1, data.Length / (int)width);
+        var pixelCount = Math.Min((int)width, data.Length);
+
+        // Calculate peaks with color information
+        var peaks = new WaveformPeakInfo[pixelCount];
+        for (int x = 0; x < pixelCount; x++)
+        {
+            var sampleIndex = x * samplesPerPixel;
+            if (sampleIndex >= data.Length) break;
+
+            var min = 0f;
+            var max = 0f;
+            var sumSquares = 0.0;
+            var sampleCount = 0;
+
+            // Collect samples for this pixel
+            var chunkSamples = new float[Math.Min(samplesPerPixel, data.Length - sampleIndex)];
+
+            for (int i = 0; i < samplesPerPixel && sampleIndex + i < data.Length; i++)
+            {
+                var sample = data[sampleIndex + i];
+                if (sample < min) min = sample;
+                if (sample > max) max = sample;
+                sumSquares += sample * sample;
+                chunkSamples[sampleCount++] = sample;
+            }
+
+            // Resize array if needed
+            if (sampleCount < chunkSamples.Length)
+                Array.Resize(ref chunkSamples, sampleCount);
+
+            var rms = sampleCount > 0 ? (float)Math.Sqrt(sumSquares / sampleCount) : 0f;
+            var freqBands = ColorMode == WaveformColorMode.Frequency
+                ? AnalyzeFrequencyBands(chunkSamples, SampleRate)
+                : FrequencyBands.Empty;
+
+            peaks[x] = new WaveformPeakInfo(min, max, rms, freqBands);
+        }
+
+        // Render based on color mode
+        if (ColorMode == WaveformColorMode.Off)
+        {
+            RenderSimpleWaveform(peaks, pixelCount, centerY, halfHeight);
+        }
+        else
+        {
+            RenderColoredWaveform(peaks, pixelCount, width, centerY, halfHeight);
+        }
+    }
+
+    private void RenderSimpleWaveform(WaveformPeakInfo[] peaks, int pixelCount, double centerY, double halfHeight)
+    {
         var geometry = new StreamGeometry();
         using (var context = geometry.Open())
         {
-            var samplesPerPixel = Math.Max(1, data.Length / (int)width);
-            var pixelCount = Math.Min((int)width, data.Length);
-
             var topPoints = new Point[pixelCount];
             var bottomPoints = new Point[pixelCount];
 
             for (int x = 0; x < pixelCount; x++)
             {
-                var sampleIndex = x * samplesPerPixel;
-                if (sampleIndex >= data.Length) break;
-
-                var min = 0f;
-                var max = 0f;
-                for (int i = 0; i < samplesPerPixel && sampleIndex + i < data.Length; i++)
-                {
-                    var sample = data[sampleIndex + i];
-                    if (sample < min) min = sample;
-                    if (sample > max) max = sample;
-                }
-
-                topPoints[x] = new Point(x, centerY - max * halfHeight);
-                bottomPoints[x] = new Point(x, centerY - min * halfHeight);
+                topPoints[x] = new Point(x, centerY - peaks[x].Max * halfHeight);
+                bottomPoints[x] = new Point(x, centerY - peaks[x].Min * halfHeight);
             }
 
-            // Draw polygon
             context.BeginFigure(topPoints[0], true, true);
 
             for (int i = 1; i < pixelCount; i++)
@@ -396,6 +468,214 @@ public partial class AudioClipControl : UserControl
 
         geometry.Freeze();
         WaveformPath.Data = geometry;
+        WaveformPath.Fill = new SolidColorBrush(Colors.White);
+        WaveformPath.Opacity = 0.7;
+    }
+
+    private void RenderColoredWaveform(WaveformPeakInfo[] peaks, int pixelCount, double width, double centerY, double halfHeight)
+    {
+        var geometry = new StreamGeometry();
+        using (var context = geometry.Open())
+        {
+            var topPoints = new Point[pixelCount];
+            var bottomPoints = new Point[pixelCount];
+
+            for (int x = 0; x < pixelCount; x++)
+            {
+                topPoints[x] = new Point(x, centerY - peaks[x].Max * halfHeight);
+                bottomPoints[x] = new Point(x, centerY - peaks[x].Min * halfHeight);
+            }
+
+            context.BeginFigure(topPoints[0], true, true);
+
+            for (int i = 1; i < pixelCount; i++)
+            {
+                context.LineTo(topPoints[i], true, false);
+            }
+
+            for (int i = pixelCount - 1; i >= 0; i--)
+            {
+                context.LineTo(bottomPoints[i], true, false);
+            }
+        }
+
+        geometry.Freeze();
+        WaveformPath.Data = geometry;
+
+        // Create gradient brush based on color mode
+        var gradientBrush = CreateColorGradientBrush(peaks, pixelCount);
+        WaveformPath.Fill = gradientBrush;
+        WaveformPath.Opacity = 0.85;
+    }
+
+    private Brush CreateColorGradientBrush(WaveformPeakInfo[] peaks, int pixelCount)
+    {
+        if (pixelCount == 0)
+            return new SolidColorBrush(Colors.White);
+
+        var gradientStops = new GradientStopCollection();
+
+        // Sample peaks at intervals (max 50 stops for performance)
+        var sampleInterval = Math.Max(1, pixelCount / 50);
+
+        for (var i = 0; i < pixelCount; i += sampleInterval)
+        {
+            var offset = (double)i / (pixelCount - 1);
+            var color = GetColorForPeak(peaks[i]);
+            gradientStops.Add(new GradientStop(color, offset));
+        }
+
+        // Ensure we have the last stop
+        if (gradientStops.Count > 0 && gradientStops[gradientStops.Count - 1].Offset < 1.0)
+        {
+            gradientStops.Add(new GradientStop(GetColorForPeak(peaks[pixelCount - 1]), 1.0));
+        }
+
+        var brush = new LinearGradientBrush(gradientStops, 0);
+        brush.Freeze();
+        return brush;
+    }
+
+    private Color GetColorForPeak(WaveformPeakInfo peak)
+    {
+        return ColorMode switch
+        {
+            WaveformColorMode.Frequency => GetFrequencyColor(peak.FrequencyBands),
+            WaveformColorMode.Loudness => GetLoudnessColor(peak.Rms),
+            _ => Colors.White
+        };
+    }
+
+    private static Color GetFrequencyColor(FrequencyBands bands)
+    {
+        // Bass -> Red, Mids -> Green, Highs -> Blue
+        var r = (byte)(bands.Bass * 255);
+        var g = (byte)(bands.Mids * 255);
+        var b = (byte)(bands.Highs * 255);
+
+        // Ensure minimum visibility
+        var maxComponent = Math.Max(r, Math.Max(g, b));
+        if (maxComponent < 50)
+        {
+            r = Math.Max(r, (byte)50);
+            g = Math.Max(g, (byte)50);
+            b = Math.Max(b, (byte)50);
+        }
+
+        return Color.FromRgb(r, g, b);
+    }
+
+    private static Color GetLoudnessColor(float rms)
+    {
+        // Normalize RMS to 0-1 range
+        var normalized = Math.Min(1f, rms * 2.5f);
+
+        // Three-point gradient: Blue (quiet) -> Green (medium) -> Red (loud)
+        var colorLow = Color.FromRgb(0x1E, 0x88, 0xE5);  // Blue
+        var colorMid = Color.FromRgb(0x00, 0xCC, 0x66);  // Green
+        var colorHigh = Color.FromRgb(0xFF, 0x47, 0x57); // Red
+
+        if (normalized < 0.5f)
+        {
+            var t = normalized * 2f;
+            return InterpolateColor(colorLow, colorMid, t);
+        }
+        else
+        {
+            var t = (normalized - 0.5f) * 2f;
+            return InterpolateColor(colorMid, colorHigh, t);
+        }
+    }
+
+    private static Color InterpolateColor(Color c1, Color c2, float t)
+    {
+        t = Math.Clamp(t, 0f, 1f);
+        return Color.FromArgb(
+            (byte)(c1.A + (c2.A - c1.A) * t),
+            (byte)(c1.R + (c2.R - c1.R) * t),
+            (byte)(c1.G + (c2.G - c1.G) * t),
+            (byte)(c1.B + (c2.B - c1.B) * t)
+        );
+    }
+
+    /// <summary>
+    /// Analyzes frequency content using a simplified band-pass filter approach.
+    /// </summary>
+    private static FrequencyBands AnalyzeFrequencyBands(float[] samples, int sampleRate)
+    {
+        if (samples.Length < 4)
+            return FrequencyBands.Empty;
+
+        float bassEnergy = 0f, midsEnergy = 0f, highsEnergy = 0f;
+
+        // Low-pass filter for bass (cutoff ~300Hz)
+        float bassLp = 0f;
+        var bassAlpha = Math.Min(0.99f, 2.0f * MathF.PI * 300f / sampleRate);
+
+        // Band-pass for mids
+        float midLp1 = 0f, midLp2 = 0f;
+        var midAlpha1 = Math.Min(0.99f, 2.0f * MathF.PI * 2000f / sampleRate);
+        var midAlpha2 = Math.Min(0.99f, 2.0f * MathF.PI * 300f / sampleRate);
+
+        // High-pass for highs (cutoff ~2000Hz)
+        float highHp = 0f;
+        var highAlpha = Math.Min(0.99f, 2.0f * MathF.PI * 2000f / sampleRate);
+
+        for (var i = 0; i < samples.Length; i++)
+        {
+            var sample = samples[i];
+
+            bassLp += bassAlpha * (sample - bassLp);
+            var bassValue = bassLp;
+            bassEnergy += bassValue * bassValue;
+
+            midLp1 += midAlpha1 * (sample - midLp1);
+            midLp2 += midAlpha2 * (sample - midLp2);
+            var midsValue = midLp1 - midLp2;
+            midsEnergy += midsValue * midsValue;
+
+            var prevHighHp = highHp;
+            highHp = (1f - highAlpha) * (prevHighHp + sample - (i > 0 ? samples[i - 1] : 0f));
+            var highsValue = highHp;
+            highsEnergy += highsValue * highsValue;
+        }
+
+        var totalEnergy = bassEnergy + midsEnergy + highsEnergy;
+        if (totalEnergy < 0.0001f)
+            return FrequencyBands.Empty;
+
+        var bassRms = MathF.Sqrt(bassEnergy / samples.Length);
+        var midsRms = MathF.Sqrt(midsEnergy / samples.Length);
+        var highsRms = MathF.Sqrt(highsEnergy / samples.Length);
+
+        var maxRms = Math.Max(bassRms, Math.Max(midsRms, highsRms));
+        if (maxRms < 0.0001f)
+            return FrequencyBands.Empty;
+
+        return new FrequencyBands(
+            Math.Min(1f, bassRms / maxRms),
+            Math.Min(1f, midsRms / maxRms),
+            Math.Min(1f, highsRms / maxRms)
+        );
+    }
+
+    /// <summary>
+    /// Internal struct for waveform peak info during rendering.
+    /// </summary>
+    private readonly struct WaveformPeakInfo
+    {
+        public float Min { get; }
+        public float Max { get; }
+        public float Rms { get; }
+        public FrequencyBands FrequencyBands { get; }
+
+        public WaveformPeakInfo(float min, float max, float rms, FrequencyBands frequencyBands)
+        {
+            Min = min;
+            Max = max;
+            Rms = rms;
+            FrequencyBands = frequencyBands;
+        }
     }
 
     private static Color ParseColor(string hex)
@@ -406,7 +686,7 @@ public partial class AudioClipControl : UserControl
         }
         catch
         {
-            return Color.FromRgb(0x4C, 0xAF, 0x50);
+            return Color.FromRgb(0x00, 0xCC, 0x66);
         }
     }
 
@@ -619,6 +899,26 @@ public partial class AudioClipControl : UserControl
     private void DeleteMenuItem_Click(object sender, RoutedEventArgs e)
     {
         Clip?.DeleteCommand.Execute(null);
+    }
+
+    private void SetColorMode_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem menuItem && menuItem.Tag is string tagStr)
+        {
+            var newMode = tagStr switch
+            {
+                "Frequency" => WaveformColorMode.Frequency,
+                "Loudness" => WaveformColorMode.Loudness,
+                _ => WaveformColorMode.Off
+            };
+
+            ColorMode = newMode;
+
+            // Update checkmarks
+            ColorModeOffItem.IsChecked = newMode == WaveformColorMode.Off;
+            ColorModeFrequencyItem.IsChecked = newMode == WaveformColorMode.Frequency;
+            ColorModeLoudnessItem.IsChecked = newMode == WaveformColorMode.Loudness;
+        }
     }
 
     #endregion

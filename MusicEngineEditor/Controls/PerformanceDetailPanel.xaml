@@ -54,12 +54,12 @@
         </Style>
 
         <!-- Colors for meters -->
-        <Color x:Key="CpuColor">#6AAB73</Color>
-        <Color x:Key="RamColor">#4B6EAF</Color>
+        <Color x:Key="CpuColor">#00FF88</Color>
+        <Color x:Key="RamColor">#00D9FF</Color>
         <Color x:Key="BufferColor">#589DF6</Color>
-        <Color x:Key="DiskColor">#E8B339</Color>
-        <Color x:Key="WarningColor">#E8B339</Color>
-        <Color x:Key="CriticalColor">#F75464</Color>
+        <Color x:Key="DiskColor">#FFB800</Color>
+        <Color x:Key="WarningColor">#FFB800</Color>
+        <Color x:Key="CriticalColor">#FF4757</Color>
 
         <SolidColorBrush x:Key="CpuBrush" Color="{StaticResource CpuColor}"/>
         <SolidColorBrush x:Key="CriticalBrush" Color="{StaticResource CriticalColor}"/>
@@ -154,7 +154,7 @@
 
                         <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="12,0,0,0">
                             <TextBlock Text="Peak:" Style="{StaticResource LabelTextStyle}" Margin="0,0,4,0"/>
-                            <TextBlock x:Name="PeakCpuText" Text="0%" Style="{StaticResource ValueTextStyle}" Foreground="#F75464" MinWidth="35"/>
+                            <TextBlock x:Name="PeakCpuText" Text="0%" Style="{StaticResource ValueTextStyle}" Foreground="#FF4757" MinWidth="35"/>
                         </StackPanel>
                     </Grid>
                 </StackPanel>

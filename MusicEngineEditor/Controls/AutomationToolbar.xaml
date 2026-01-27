@@ -5,19 +5,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="32" d:DesignWidth="600"
-             Background="#1E1F22">
+             Background="#0D0D0D">
 
     <UserControl.Resources>
         <!-- Theme Colors -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="RecordArmBrush" Color="#CC4B4B"/>
         <SolidColorBrush x:Key="RecordArmActiveBrush" Color="#FF5555"/>
         <SolidColorBrush x:Key="ReadModeBrush" Color="#5A7FC4"/>
-        <SolidColorBrush x:Key="TouchModeBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="TouchModeBrush" Color="#00FF88"/>
         <SolidColorBrush x:Key="LatchModeBrush" Color="#D9A343"/>
         <SolidColorBrush x:Key="WriteModeBrush" Color="#C75450"/>
 
@@ -41,11 +41,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -77,7 +77,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
@@ -125,7 +125,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{Binding Tag, RelativeSource={RelativeSource Self}}"/>

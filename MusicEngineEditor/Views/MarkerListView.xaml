@@ -10,13 +10,13 @@
 
     <UserControl.Resources>
         <!-- Colors -->
-        <Color x:Key="ListBackgroundColor">#1E1F22</Color>
-        <Color x:Key="HeaderBackgroundColor">#2B2D30</Color>
-        <Color x:Key="RowHoverColor">#3C3F41</Color>
-        <Color x:Key="RowSelectedColor">#4B6EAF</Color>
-        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
-        <Color x:Key="TextSecondaryColor">#6F737A</Color>
-        <Color x:Key="BorderColor">#393B40</Color>
+        <Color x:Key="ListBackgroundColor">#0D0D0D</Color>
+        <Color x:Key="HeaderBackgroundColor">#181818</Color>
+        <Color x:Key="RowHoverColor">#252525</Color>
+        <Color x:Key="RowSelectedColor">#00D9FF</Color>
+        <Color x:Key="TextPrimaryColor">#E0E0E0</Color>
+        <Color x:Key="TextSecondaryColor">#808080</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
 
         <!-- Brushes -->
         <SolidColorBrush x:Key="ListBackgroundBrush" Color="{StaticResource ListBackgroundColor}"/>
@@ -29,7 +29,7 @@
 
         <!-- Search Box Style -->
         <Style x:Key="SearchBoxStyle" TargetType="TextBox">
-            <Setter Property="Background" Value="#1E1F22"/>
+            <Setter Property="Background" Value="#0D0D0D"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource ListBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -124,7 +124,7 @@
 
         <!-- Add Button Style -->
         <Style x:Key="AddButtonStyle" TargetType="Button" BasedOn="{StaticResource MarkerToolbarButtonStyle}">
-            <Setter Property="Background" Value="#4B6EAF"/>
+            <Setter Property="Background" Value="#00D9FF"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>

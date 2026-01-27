@@ -213,13 +213,13 @@ public partial class AutomationLaneControl : UserControl
     private AutomationCurveType _defaultCurveType = AutomationCurveType.Linear;
     private bool _showBezierHandles = true;
 
-    private readonly SolidColorBrush _curveColor = new(Color.FromRgb(0x6A, 0xAB, 0x73));
+    private readonly SolidColorBrush _curveColor = new(Color.FromRgb(0x00, 0xFF, 0x88));
     private readonly SolidColorBrush _pointColor = new(Color.FromRgb(0xE8, 0xE8, 0xE8));
     private readonly SolidColorBrush _pointSelectedColor = new(Color.FromRgb(0xFF, 0x9B, 0x4B));
     private readonly SolidColorBrush _handleColor = new(Color.FromRgb(0x7E, 0xA8, 0xDB));
     private readonly SolidColorBrush _handleLineColor = new(Color.FromRgb(0x5A, 0x5D, 0x60));
     private readonly SolidColorBrush _gridLineColor = new(Color.FromRgb(0x2B, 0x2D, 0x30));
-    private readonly SolidColorBrush _gridLineStrongColor = new(Color.FromRgb(0x39, 0x3B, 0x40));
+    private readonly SolidColorBrush _gridLineStrongColor = new(Color.FromRgb(0x2A, 0x2A, 0x2A));
 
     #endregion
 
@@ -846,7 +846,7 @@ public partial class AutomationLaneControl : UserControl
         var fillPath = new Path
         {
             Data = fillGeometry,
-            Fill = new SolidColorBrush(Color.FromArgb(30, 0x6A, 0xAB, 0x73)),
+            Fill = new SolidColorBrush(Color.FromArgb(30, 0x00, 0xFF, 0x88)),
             Stroke = null
         };
 
@@ -1027,7 +1027,7 @@ public partial class AutomationLaneControl : UserControl
         }
         catch
         {
-            ColorIndicator.Background = new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF));
+            ColorIndicator.Background = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF));
         }
     }
 

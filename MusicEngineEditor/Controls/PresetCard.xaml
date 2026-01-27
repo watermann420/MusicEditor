@@ -100,7 +100,7 @@
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-                        <Setter Property="Background" Value="#3C3F41"/>
+                        <Setter Property="Background" Value="#252525"/>
                     </Trigger>
                     <DataTrigger Binding="{Binding IsSelected, ElementName=PresetCardControl}" Value="True">
                         <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>

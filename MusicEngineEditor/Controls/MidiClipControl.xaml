@@ -11,7 +11,7 @@
 
     <UserControl.Resources>
         <!-- MIDI Clip Colors -->
-        <Color x:Key="MidiClipColor">#2196F3</Color>
+        <Color x:Key="MidiClipColor">#00D9FF</Color>
         <Color x:Key="MidiClipFillColor">#B02196F3</Color>
         <SolidColorBrush x:Key="MidiClipBrush" Color="{StaticResource MidiClipColor}"/>
         <SolidColorBrush x:Key="MidiClipFillBrush" Color="{StaticResource MidiClipFillColor}"/>

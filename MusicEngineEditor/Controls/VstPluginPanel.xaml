@@ -5,24 +5,24 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="300"
-             Background="#1E1F22">
+             Background="#0D0D0D">
 
     <UserControl.Resources>
         <!-- Colors matching the dark theme -->
-        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#181818"/>
         <SolidColorBrush x:Key="CardHoverBrush" Color="#313335"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
         <SolidColorBrush x:Key="BrightForegroundBrush" Color="#DFE1E5"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#00FF88"/>
         <SolidColorBrush x:Key="Vst3Color" Color="#9C7CE8"/>
         <SolidColorBrush x:Key="Vst2Color" Color="#E89C4B"/>
-        <SolidColorBrush x:Key="LoadedBrush" Color="#6AAB73"/>
-        <SolidColorBrush x:Key="UnloadedBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="LoadedBrush" Color="#00FF88"/>
+        <SolidColorBrush x:Key="UnloadedBrush" Color="#808080"/>
         <SolidColorBrush x:Key="BypassedBrush" Color="#E89C4B"/>
         <SolidColorBrush x:Key="BypassedBackgroundBrush" Color="#40E89C4B"/>
 
@@ -415,7 +415,7 @@
                         HorizontalAlignment="Center"
                         Margin="0,0,0,12">
                     <Border.Effect>
-                        <DropShadowEffect Color="#4B6EAF" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
+                        <DropShadowEffect Color="#00D9FF" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
                     </Border.Effect>
                     <TextBlock Text="..."
                                FontSize="16"

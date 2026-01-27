@@ -12,8 +12,8 @@
     <UserControl.Resources>
         <!-- Marker Colors -->
         <SolidColorBrush x:Key="MarkerBrush" Color="#FFC107"/>
-        <SolidColorBrush x:Key="LocatorMarkerBrush" Color="#4CAF50"/>
-        <SolidColorBrush x:Key="CycleMarkerBrush" Color="#2196F3"/>
+        <SolidColorBrush x:Key="LocatorMarkerBrush" Color="#00CC66"/>
+        <SolidColorBrush x:Key="CycleMarkerBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="TimelineBrush" Color="#40FFFFFF"/>
         <SolidColorBrush x:Key="GridBrush" Color="#20FFFFFF"/>
         <SolidColorBrush x:Key="BeatGridBrush" Color="#30FFFFFF"/>

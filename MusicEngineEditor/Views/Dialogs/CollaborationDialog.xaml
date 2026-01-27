@@ -5,25 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Collaboration"
-        Width="750" Height="550"
-        MinWidth="600" MinHeight="450"
+        Width="900" Height="600"
+        MinWidth="700" MinHeight="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
         Background="{DynamicResource BackgroundBrush}"
-        Foreground="{DynamicResource ForegroundBrush}">
+        Foreground="{DynamicResource ForegroundBrush}"
+        Loaded="Window_Loaded">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
         <!-- Role Badge Colors -->
-        <SolidColorBrush x:Key="HostBadgeBrush" Color="#6AAB73"/>
-        <SolidColorBrush x:Key="EditorBadgeBrush" Color="#4B6EAF"/>
-        <SolidColorBrush x:Key="ViewerBadgeBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="HostBadgeBrush" Color="#00FF88"/>
+        <SolidColorBrush x:Key="EditorBadgeBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="ViewerBadgeBrush" Color="#808080"/>
 
         <!-- Connection Status Colors -->
-        <SolidColorBrush x:Key="ConnectedBrush" Color="#6AAB73"/>
-        <SolidColorBrush x:Key="ConnectingBrush" Color="#E8B339"/>
-        <SolidColorBrush x:Key="DisconnectedBrush" Color="#F75464"/>
+        <SolidColorBrush x:Key="ConnectedBrush" Color="#00FF88"/>
+        <SolidColorBrush x:Key="ConnectingBrush" Color="#FFB800"/>
+        <SolidColorBrush x:Key="DisconnectedBrush" Color="#FF4757"/>
 
         <!-- Peer Item Style -->
         <Style x:Key="PeerItemStyle" TargetType="ListBoxItem">
@@ -42,10 +43,42 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Recent Session Item Style -->
+        <Style x:Key="RecentSessionItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4"
+                                BorderThickness="1"
+                                BorderBrush="Transparent">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -141,6 +174,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="280"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Create Session Panel -->
@@ -150,7 +184,7 @@
                         BorderThickness="0,0,1,0"
                         Padding="24">
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="&#x2795;"
+                        <TextBlock Text="+"
                                    FontSize="36"
                                    Foreground="{DynamicResource AccentBrush}"
                                    HorizontalAlignment="Center"/>
@@ -176,6 +210,15 @@
                                  Text="My Session"
                                  Margin="0,0,0,12"/>
 
+                        <TextBlock Text="Your Name"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Margin="0,0,0,4"/>
+                        <TextBox x:Name="CreateUsername"
+                                 Style="{DynamicResource InputTextBoxStyle}"
+                                 Text="User"
+                                 Margin="0,0,0,12"/>
+
                         <TextBlock Text="Password (optional)"
                                    FontSize="12"
                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
@@ -197,9 +240,11 @@
                 <!-- Join Session Panel -->
                 <Border Grid.Column="1"
                         Background="{DynamicResource PanelBackgroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,1,0"
                         Padding="24">
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="&#x1F517;"
+                        <TextBlock Text="&lt;-&gt;"
                                    FontSize="36"
                                    Foreground="{DynamicResource SuccessBrush}"
                                    HorizontalAlignment="Center"/>
@@ -224,6 +269,15 @@
                                  Style="{DynamicResource InputTextBoxStyle}"
                                  Margin="0,0,0,12"/>
 
+                        <TextBlock Text="Your Name"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   Margin="0,0,0,4"/>
+                        <TextBox x:Name="JoinUsername"
+                                 Style="{DynamicResource InputTextBoxStyle}"
+                                 Text="User"
+                                 Margin="0,0,0,12"/>
+
                         <TextBlock Text="Password (if required)"
                                    FontSize="12"
                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
@@ -240,6 +294,126 @@
                                 Click="JoinSession_Click"
                                 HorizontalAlignment="Stretch"/>
                     </StackPanel>
+                </Border>
+
+                <!-- Recent Sessions Panel -->
+                <Border Grid.Column="2"
+                        Background="{DynamicResource PanelBackgroundBrush}">
+                    <DockPanel>
+                        <!-- Header -->
+                        <Border DockPanel.Dock="Top"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="0,0,0,1"
+                                Padding="16,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Recent Sessions"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource BrightForegroundBrush}"/>
+                                    <TextBlock x:Name="RecentSessionCount"
+                                               Text="0 sessions"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Button Grid.Column="1"
+                                        Content="Clear"
+                                        Style="{DynamicResource ToolbarButtonStyle}"
+                                        Click="ClearHistory_Click"
+                                        Padding="8,4"
+                                        ToolTip="Clear session history"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Empty State -->
+                        <StackPanel x:Name="RecentSessionsEmpty"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    Visibility="Visible">
+                            <TextBlock Text="No recent sessions"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Your session history will appear here"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"
+                                       Opacity="0.7"/>
+                        </StackPanel>
+
+                        <!-- Session List -->
+                        <ListBox x:Name="RecentSessionsList"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ItemContainerStyle="{StaticResource RecentSessionItemStyle}"
+                                 Padding="8"
+                                 SelectionChanged="RecentSessionsList_SelectionChanged"
+                                 MouseDoubleClick="RecentSessionsList_MouseDoubleClick"
+                                 Visibility="Collapsed">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Session Name -->
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   Text="{Binding SessionName}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource BrightForegroundBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
+
+                                        <!-- Host Badge -->
+                                        <Border Grid.Row="0" Grid.Column="1"
+                                                Background="{StaticResource HostBadgeBrush}"
+                                                CornerRadius="3"
+                                                Padding="6,2"
+                                                Visibility="{Binding WasHost, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <TextBlock Text="Host"
+                                                       FontSize="9"
+                                                       FontWeight="Bold"
+                                                       Foreground="White"/>
+                                        </Border>
+
+                                        <!-- Session Code -->
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                                    Orientation="Horizontal"
+                                                    Margin="0,4,0,0">
+                                            <TextBlock Text="Code: "
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                            <TextBlock Text="{Binding SessionCode}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource AccentBrush}"
+                                                       FontWeight="SemiBold"/>
+                                        </StackPanel>
+
+                                        <!-- Description -->
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                                   Text="{Binding DisplayDescription}"
+                                                   FontSize="10"
+                                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                                   Margin="0,2,0,0"
+                                                   Opacity="0.8"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
                 </Border>
             </Grid>
 
@@ -443,18 +617,29 @@
                 Padding="16,12">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0"
+                <!-- Quick Reconnect Button -->
+                <Button x:Name="QuickReconnectButton"
+                        Grid.Column="0"
+                        Content="Quick Reconnect"
+                        Style="{DynamicResource SecondaryButtonStyle}"
+                        Click="QuickReconnect_Click"
+                        Visibility="Collapsed"
+                        Margin="0,0,12,0"
+                        ToolTip="Reconnect to most recent session"/>
+
+                <TextBlock Grid.Column="1"
                            x:Name="StatusText"
                            Text="Not connected to any session"
                            FontSize="12"
                            Foreground="{DynamicResource SecondaryForegroundBrush}"
                            VerticalAlignment="Center"/>
 
-                <Button Grid.Column="1"
+                <Button Grid.Column="2"
                         Content="Close"
                         Style="{DynamicResource SecondaryButtonStyle}"
                         Click="CloseButton_Click"

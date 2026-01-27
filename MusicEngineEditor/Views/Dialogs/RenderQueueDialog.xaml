@@ -9,21 +9,21 @@
         MinWidth="750" MinHeight="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
-        Background="#1E1F22"
-        Foreground="#BCBEC4">
+        Background="#0D0D0D"
+        Foreground="#E0E0E0">
 
     <Window.Resources>
         <!-- Theme Colors -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#252628"/>
-        <SolidColorBrush x:Key="EditorBackgroundBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#141414"/>
+        <SolidColorBrush x:Key="EditorBackgroundBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
         <SolidColorBrush x:Key="BrightForegroundBrush" Color="#E8E8E8"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#00FF88"/>
         <SolidColorBrush x:Key="ErrorBrush" Color="#C75450"/>
         <SolidColorBrush x:Key="WarningBrush" Color="#D9A343"/>
 
@@ -47,7 +47,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#393B40"/>
+                                <Setter Property="Background" Value="#2A2A2A"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
@@ -91,7 +91,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#2B2D30"/>
+                                <Setter Property="Background" Value="#181818"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Background" Value="#394B6E"/>

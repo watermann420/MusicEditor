@@ -83,7 +83,7 @@ public partial class TransferFunctionView : UserControl
     private bool _showPhase;
 
     // Colors
-    private readonly Color _beforeColor = Color.FromRgb(0x4C, 0xAF, 0x50);
+    private readonly Color _beforeColor = Color.FromRgb(0x00, 0xCC, 0x66);
     private readonly Color _afterColor = Color.FromRgb(0x00, 0xCE, 0xD1);
     private readonly Color _phaseColor = Color.FromRgb(0xFF, 0x98, 0x00);
     private readonly Color _unityColor = Color.FromRgb(0x5A, 0x5A, 0x5A);

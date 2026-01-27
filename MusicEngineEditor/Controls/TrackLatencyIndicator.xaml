@@ -13,14 +13,14 @@
     <UserControl.Resources>
         <!-- Colors -->
         <Color x:Key="TrackBackgroundColor">#1A1A1A</Color>
-        <Color x:Key="BorderColor">#393B40</Color>
-        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
-        <Color x:Key="TextSecondaryColor">#6F737A</Color>
-        <Color x:Key="LowLatencyColor">#6AAB73</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+        <Color x:Key="TextPrimaryColor">#E0E0E0</Color>
+        <Color x:Key="TextSecondaryColor">#808080</Color>
+        <Color x:Key="LowLatencyColor">#00FF88</Color>
         <Color x:Key="MediumLatencyColor">#E8B339</Color>
         <Color x:Key="HighLatencyColor">#F75464</Color>
         <Color x:Key="VeryHighLatencyColor">#FF0000</Color>
-        <Color x:Key="CompensatedColor">#4B6EAF</Color>
+        <Color x:Key="CompensatedColor">#00D9FF</Color>
 
         <!-- Brushes -->
         <SolidColorBrush x:Key="TrackBackgroundBrush" Color="{StaticResource TrackBackgroundColor}"/>

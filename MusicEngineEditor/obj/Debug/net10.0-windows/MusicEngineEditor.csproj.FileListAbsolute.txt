@@ -1078,3 +1078,13 @@ C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-win
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\MultiTrackPianoRollView.baml
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\ScoreEditorView.baml
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\TempoListEditor.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\CollaboratorCursor.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\StemSeparationPanel.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\CollaboratorCursor.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\StemSeparationPanel.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\SpectrumMatchOverlay.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\TrackVersionCompareDialog.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\SpectrumMatchOverlay.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\TrackVersionCompareDialog.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\TrackVersionCompareControl.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\TrackVersionCompareControl.g.cs

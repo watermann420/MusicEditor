@@ -27,19 +27,19 @@ public partial class PerformanceMeter : UserControl
     private const double MediumThreshold = 80.0; // 50-80% = Yellow
     // 80-100% = Red
 
-    private static readonly Color LowColor = Color.FromRgb(0x6A, 0xAB, 0x73);    // Green
-    private static readonly Color MediumColor = Color.FromRgb(0xE8, 0xB3, 0x39); // Yellow
-    private static readonly Color HighColor = Color.FromRgb(0xF7, 0x54, 0x64);   // Red
+    private static readonly Color LowColor = Color.FromRgb(0x00, 0xFF, 0x88);    // Green
+    private static readonly Color MediumColor = Color.FromRgb(0xFF, 0xB8, 0x00); // Yellow
+    private static readonly Color HighColor = Color.FromRgb(0xFF, 0x47, 0x57);   // Red
 
     // RAM Colors
-    private static readonly Color RamLowColor = Color.FromRgb(0x4B, 0x6E, 0xAF);    // Blue
-    private static readonly Color RamMediumColor = Color.FromRgb(0xE8, 0xB3, 0x39); // Yellow
-    private static readonly Color RamHighColor = Color.FromRgb(0xF7, 0x54, 0x64);   // Red
+    private static readonly Color RamLowColor = Color.FromRgb(0x00, 0xD9, 0xFF);    // Cyan
+    private static readonly Color RamMediumColor = Color.FromRgb(0xFF, 0xB8, 0x00); // Yellow
+    private static readonly Color RamHighColor = Color.FromRgb(0xFF, 0x47, 0x57);   // Red
 
     // Buffer Colors
-    private static readonly Color BufferOkColor = Color.FromRgb(0x6A, 0xAB, 0x73);      // Green
-    private static readonly Color BufferWarningColor = Color.FromRgb(0xE8, 0xB3, 0x39); // Yellow
-    private static readonly Color BufferCriticalColor = Color.FromRgb(0xF7, 0x54, 0x64);// Red
+    private static readonly Color BufferOkColor = Color.FromRgb(0x00, 0xFF, 0x88);      // Green
+    private static readonly Color BufferWarningColor = Color.FromRgb(0xFF, 0xB8, 0x00); // Yellow
+    private static readonly Color BufferCriticalColor = Color.FromRgb(0xFF, 0x47, 0x57);// Red
 
     // Disk Activity Color
     private static readonly Color DiskActiveColor = Color.FromRgb(0x58, 0x9D, 0xF6);    // Blue

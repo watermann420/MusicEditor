@@ -11,8 +11,8 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
         <!-- Note name colors -->
-        <SolidColorBrush x:Key="NoteNameBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SharpNoteBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="NoteNameBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SharpNoteBrush" Color="#808080"/>
     </UserControl.Resources>
 
     <Grid>

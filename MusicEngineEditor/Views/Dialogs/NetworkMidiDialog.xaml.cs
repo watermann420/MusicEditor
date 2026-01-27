@@ -95,7 +95,7 @@ public partial class NetworkMidiDialog : Window
             Name = "Studio A",
             Host = "192.168.1.100",
             Latency = 12,
-            LatencyBrush = new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73)),
+            LatencyBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88)),
             PeerCount = "3"
         });
 
@@ -104,7 +104,7 @@ public partial class NetworkMidiDialog : Window
             Name = "Remote Session",
             Host = "192.168.1.105",
             Latency = 45,
-            LatencyBrush = new SolidColorBrush(Color.FromRgb(0xE8, 0xB3, 0x39)),
+            LatencyBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xB8, 0x00)),
             PeerCount = "1"
         });
 
@@ -152,7 +152,7 @@ public partial class NetworkMidiDialog : Window
     private async Task ConnectToSessionAsync(string sessionName, bool isHost)
     {
         // Show connecting state
-        ConnectionIndicator.Fill = new SolidColorBrush(Color.FromRgb(0xE8, 0xB3, 0x39));
+        ConnectionIndicator.Fill = new SolidColorBrush(Color.FromRgb(0xFF, 0xB8, 0x00));
         ConnectionStatus.Text = "Connecting...";
         ConnectionStatusBorder.Background = new SolidColorBrush(Color.FromRgb(0x3D, 0x3D, 0x2D));
         StatusText.Text = $"Connecting to {sessionName}...";
@@ -163,7 +163,7 @@ public partial class NetworkMidiDialog : Window
         _isConnected = true;
 
         // Update UI
-        ConnectionIndicator.Fill = new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73));
+        ConnectionIndicator.Fill = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88));
         ConnectionStatus.Text = "Connected";
         ConnectionStatusBorder.Background = new SolidColorBrush(Color.FromRgb(0x2D, 0x3D, 0x2D));
 
@@ -180,8 +180,8 @@ public partial class NetworkMidiDialog : Window
                 IpAddress = "192.168.1.100",
                 Latency = 12,
                 LatencyDisplay = "12 ms",
-                LatencyBrush = new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73)),
-                StatusBrush = new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73))
+                LatencyBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88)),
+                StatusBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88))
             });
         }
 
@@ -192,7 +192,7 @@ public partial class NetworkMidiDialog : Window
             Latency = 0,
             LatencyDisplay = "Local",
             LatencyBrush = new SolidColorBrush(Color.FromRgb(0x6F, 0x73, 0x7A)),
-            StatusBrush = new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73))
+            StatusBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88))
         });
 
         // Switch to connected view
@@ -226,7 +226,7 @@ public partial class NetworkMidiDialog : Window
 
         Peers.Clear();
 
-        ConnectionIndicator.Fill = new SolidColorBrush(Color.FromRgb(0xF7, 0x54, 0x64));
+        ConnectionIndicator.Fill = new SolidColorBrush(Color.FromRgb(0xFF, 0x47, 0x57));
         ConnectionStatus.Text = "Not Connected";
         ConnectionStatusBorder.Background = new SolidColorBrush(Color.FromRgb(0x3D, 0x2D, 0x2D));
 

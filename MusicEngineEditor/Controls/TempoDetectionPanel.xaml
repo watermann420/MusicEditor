@@ -19,7 +19,7 @@
         <!-- Confidence Bar Style -->
         <Style x:Key="ConfidenceBarStyle" TargetType="ProgressBar">
             <Setter Property="Height" Value="6"/>
-            <Setter Property="Background" Value="#1E1F22"/>
+            <Setter Property="Background" Value="#0D0D0D"/>
             <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>

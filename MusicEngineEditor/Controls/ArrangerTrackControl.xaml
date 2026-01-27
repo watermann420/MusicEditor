@@ -59,7 +59,7 @@
 
         <!-- Section Type ComboBox Style -->
         <Style x:Key="SectionTypeComboStyle" TargetType="ComboBox">
-            <Setter Property="Background" Value="#2B2D30"/>
+            <Setter Property="Background" Value="#181818"/>
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>

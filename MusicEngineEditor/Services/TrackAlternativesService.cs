@@ -158,7 +158,7 @@ public class TrackAltClipData
     public double LengthBeats { get; set; }
     public string? FilePath { get; set; }
     public bool IsMuted { get; set; }
-    public string Color { get; set; } = "#4CAF50";
+    public string Color { get; set; } = "#00CC66";
     public double FadeIn { get; set; }
     public double FadeOut { get; set; }
     public double GainDb { get; set; }

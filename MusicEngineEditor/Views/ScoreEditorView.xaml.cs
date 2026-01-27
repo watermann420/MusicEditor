@@ -320,7 +320,7 @@ public partial class ScoreEditorView : UserControl
     /// </summary>
     private void DrawBarLines()
     {
-        var barBrush = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4));
+        var barBrush = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
         double staffHeight = 4 * EffectiveStaffLineSpacing;
         double topY = StaffMarginTop;
 
@@ -358,7 +358,7 @@ public partial class ScoreEditorView : UserControl
             Text = _viewModel.KeySignature,
             FontFamily = new FontFamily("Segoe UI"),
             FontSize = 12 * _viewModel.Zoom,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4))
+            Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0))
         };
 
         Canvas.SetLeft(keyText, StaffMarginLeft + 40);
@@ -467,7 +467,7 @@ public partial class ScoreEditorView : UserControl
         var container = new Canvas();
 
         var brush = note.IsSelected
-            ? new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF))
+            ? new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF))
             : new SolidColorBrush(Colors.White);
 
         bool isFilled = note.Duration != NoteDuration.Whole && note.Duration != NoteDuration.Half;

@@ -5,16 +5,16 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="400"
-             Background="#1E1F22">
+             Background="#0D0D0D">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
         <!-- Category Colors -->
-        <SolidColorBrush x:Key="CategoryIdea" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="CategoryIdea" Color="#00CC66"/>
         <SolidColorBrush x:Key="CategoryTodo" Color="#FF9800"/>
-        <SolidColorBrush x:Key="CategoryIssue" Color="#F44336"/>
-        <SolidColorBrush x:Key="CategoryMix" Color="#2196F3"/>
+        <SolidColorBrush x:Key="CategoryIssue" Color="#FF4757"/>
+        <SolidColorBrush x:Key="CategoryMix" Color="#00D9FF"/>
         <SolidColorBrush x:Key="CategoryArrangement" Color="#9C27B0"/>
         <SolidColorBrush x:Key="CategoryGeneral" Color="#9E9E9E"/>
 
@@ -27,7 +27,7 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#3C3F41"/>
+                    <Setter Property="Background" Value="#252525"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -51,7 +51,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -62,7 +62,7 @@
 
         <!-- Add Button Style -->
         <Style x:Key="AddButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#4B6EAF"/>
+            <Setter Property="Background" Value="#00D9FF"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="12,8"/>
@@ -90,7 +90,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="#3C3F41"
+    <Border BorderBrush="#252525"
             BorderThickness="1"
             CornerRadius="6">
         <Grid>
@@ -104,8 +104,8 @@
 
             <!-- Header -->
             <Border Grid.Row="0"
-                    Background="#2B2D30"
-                    BorderBrush="#3C3F41"
+                    Background="#181818"
+                    BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,10">
                 <Grid>
@@ -144,7 +144,7 @@
 
             <!-- Search and Filter -->
             <Border Grid.Row="1"
-                    Background="#2B2D30"
+                    Background="#181818"
                     Padding="12,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -153,8 +153,8 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Search Box -->
-                    <Border Background="#252628"
-                            BorderBrush="#3C3F41"
+                    <Border Background="#141414"
+                            BorderBrush="#252525"
                             BorderThickness="1"
                             CornerRadius="4"
                             Padding="8,4"
@@ -162,8 +162,8 @@
                         <TextBox x:Name="SearchBox"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 Foreground="#BCBEC4"
-                                 CaretBrush="#BCBEC4"
+                                 Foreground="#E0E0E0"
+                                 CaretBrush="#E0E0E0"
                                  FontSize="12"
                                  TextChanged="SearchBox_TextChanged"/>
                     </Border>
@@ -173,8 +173,8 @@
                               Grid.Column="1"
                               Width="100"
                               Background="#333337"
-                              Foreground="#BCBEC4"
-                              BorderBrush="#3C3F41"
+                              Foreground="#E0E0E0"
+                              BorderBrush="#252525"
                               SelectionChanged="CategoryFilterCombo_SelectionChanged">
                         <ComboBoxItem Content="All" IsSelected="True"/>
                         <ComboBoxItem Content="Ideas" Tag="Idea"/>
@@ -189,8 +189,8 @@
 
             <!-- Tag Filter -->
             <Border Grid.Row="2"
-                    Background="#2B2D30"
-                    BorderBrush="#3C3F41"
+                    Background="#181818"
+                    BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,6">
                 <ItemsControl x:Name="TagFilterPanel">
@@ -223,7 +223,7 @@
                                                     </Border>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsChecked" Value="True">
-                                                            <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                                            <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                                                             <Setter Property="Foreground" Value="White"/>
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
@@ -307,7 +307,7 @@
                                     <!-- Content (Rich Text) -->
                                     <TextBlock Grid.Row="2"
                                                Text="{Binding Content}"
-                                               Foreground="#BCBEC4"
+                                               Foreground="#E0E0E0"
                                                FontSize="12"
                                                TextWrapping="Wrap"
                                                MaxHeight="80"
@@ -370,8 +370,8 @@
 
             <!-- Add Note Panel -->
             <Border Grid.Row="4"
-                    Background="#2B2D30"
-                    BorderBrush="#3C3F41"
+                    Background="#181818"
+                    BorderBrush="#252525"
                     BorderThickness="0,1,0,0"
                     Padding="12">
                 <Grid>
@@ -385,9 +385,9 @@
                     <!-- Title -->
                     <TextBox x:Name="TitleTextBox"
                              Grid.Row="0"
-                             Background="#252628"
-                             Foreground="#BCBEC4"
-                             BorderBrush="#3C3F41"
+                             Background="#141414"
+                             Foreground="#E0E0E0"
+                             BorderBrush="#252525"
                              BorderThickness="1"
                              Padding="8,6"
                              FontSize="12"
@@ -403,8 +403,8 @@
                         <ComboBox x:Name="CategoryCombo"
                                   Width="100"
                                   Background="#333337"
-                                  Foreground="#BCBEC4"
-                                  BorderBrush="#3C3F41">
+                                  Foreground="#E0E0E0"
+                                  BorderBrush="#252525">
                             <ComboBoxItem Content="Idea" Tag="Idea" IsSelected="True"/>
                             <ComboBoxItem Content="To-Do" Tag="Todo"/>
                             <ComboBoxItem Content="Issue" Tag="Issue"/>
@@ -415,9 +415,9 @@
 
                         <TextBox x:Name="TagsTextBox"
                                  Grid.Column="1"
-                                 Background="#252628"
-                                 Foreground="#BCBEC4"
-                                 BorderBrush="#3C3F41"
+                                 Background="#141414"
+                                 Foreground="#E0E0E0"
+                                 BorderBrush="#252525"
                                  BorderThickness="1"
                                  Padding="8,6"
                                  FontSize="11"
@@ -428,9 +428,9 @@
                     <!-- Content -->
                     <TextBox x:Name="ContentTextBox"
                              Grid.Row="2"
-                             Background="#252628"
-                             Foreground="#BCBEC4"
-                             BorderBrush="#3C3F41"
+                             Background="#141414"
+                             Foreground="#E0E0E0"
+                             BorderBrush="#252525"
                              BorderThickness="1"
                              Padding="8,6"
                              Height="60"

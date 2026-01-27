@@ -183,7 +183,7 @@ public partial class ArrangerTrackControl : UserControl
         if (ArrangerCanvas.ActualWidth <= 0 || ArrangerCanvas.ActualHeight <= 0)
             return;
 
-        var gridBrush = new SolidColorBrush(Color.FromRgb(0x39, 0x3B, 0x40));
+        var gridBrush = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A));
         var strongGridBrush = new SolidColorBrush(Color.FromRgb(0x43, 0x45, 0x4A));
 
         // Draw vertical lines every bar (4 beats)

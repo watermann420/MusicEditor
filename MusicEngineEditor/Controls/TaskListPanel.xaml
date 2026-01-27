@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="350"
-             Background="#1E1F22">
+             Background="#0D0D0D">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -13,11 +13,11 @@
         <!-- Priority Colors -->
         <SolidColorBrush x:Key="PriorityHigh" Color="#E85C5C"/>
         <SolidColorBrush x:Key="PriorityMedium" Color="#E8A73C"/>
-        <SolidColorBrush x:Key="PriorityLow" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="PriorityLow" Color="#00FF88"/>
         <SolidColorBrush x:Key="PriorityNone" Color="#808080"/>
 
         <!-- Category Colors -->
-        <SolidColorBrush x:Key="CategoryMix" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="CategoryMix" Color="#00D9FF"/>
         <SolidColorBrush x:Key="CategoryArrangement" Color="#9C7CE8"/>
         <SolidColorBrush x:Key="CategoryRecording" Color="#E85CAF"/>
         <SolidColorBrush x:Key="CategoryMastering" Color="#5CBFE8"/>
@@ -31,7 +31,7 @@
             <Setter Property="Padding" Value="12,10"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#3C3F41"/>
+                    <Setter Property="Background" Value="#252525"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -57,8 +57,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#4B6EAF"/>
+                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00D9FF"/>
                                 <Setter TargetName="checkmark" Property="Visibility" Value="Visible"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -91,7 +91,7 @@
                                 <Setter TargetName="border" Property="Background" Value="#333337"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -101,7 +101,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="#3C3F41"
+    <Border BorderBrush="#252525"
             BorderThickness="1"
             CornerRadius="6">
         <Grid>
@@ -115,8 +115,8 @@
 
             <!-- Header -->
             <Border Grid.Row="0"
-                    Background="#2B2D30"
-                    BorderBrush="#3C3F41"
+                    Background="#181818"
+                    BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,10">
                 <Grid>
@@ -153,7 +153,7 @@
 
             <!-- Filter Bar -->
             <Border Grid.Row="1"
-                    Background="#2B2D30"
+                    Background="#181818"
                     Padding="12,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -183,8 +183,8 @@
                               Grid.Column="1"
                               Width="100"
                               Background="#333337"
-                              Foreground="#BCBEC4"
-                              BorderBrush="#3C3F41"
+                              Foreground="#E0E0E0"
+                              BorderBrush="#252525"
                               FontSize="11"
                               SelectionChanged="SortCombo_SelectionChanged">
                         <ComboBoxItem Content="Priority" IsSelected="True"/>
@@ -197,8 +197,8 @@
 
             <!-- Category Filter -->
             <Border Grid.Row="2"
-                    Background="#2B2D30"
-                    BorderBrush="#3C3F41"
+                    Background="#181818"
+                    BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,6">
                 <ItemsControl x:Name="CategoryFilterPanel">
@@ -340,8 +340,8 @@
 
             <!-- Add Task Panel -->
             <Border Grid.Row="4"
-                    Background="#2B2D30"
-                    BorderBrush="#3C3F41"
+                    Background="#181818"
+                    BorderBrush="#252525"
                     BorderThickness="0,1,0,0"
                     Padding="12">
                 <Grid>
@@ -355,8 +355,8 @@
                     <TextBox x:Name="TaskTitleTextBox"
                              Grid.Row="0"
                              Background="#252628"
-                             Foreground="#BCBEC4"
-                             BorderBrush="#3C3F41"
+                             Foreground="#E0E0E0"
+                             BorderBrush="#252525"
                              BorderThickness="1"
                              Padding="8,6"
                              FontSize="12"
@@ -374,8 +374,8 @@
                         <ComboBox x:Name="PriorityCombo"
                                   Grid.Column="0"
                                   Background="#333337"
-                                  Foreground="#BCBEC4"
-                                  BorderBrush="#3C3F41"
+                                  Foreground="#E0E0E0"
+                                  BorderBrush="#252525"
                                   FontSize="11"
                                   Margin="0,0,4,0">
                             <ComboBoxItem Content="High" Tag="High"/>
@@ -388,8 +388,8 @@
                         <ComboBox x:Name="CategoryCombo"
                                   Grid.Column="1"
                                   Background="#333337"
-                                  Foreground="#BCBEC4"
-                                  BorderBrush="#3C3F41"
+                                  Foreground="#E0E0E0"
+                                  BorderBrush="#252525"
                                   FontSize="11"
                                   Margin="4,0">
                             <ComboBoxItem Content="Mix" Tag="Mix"/>
@@ -403,8 +403,8 @@
                         <DatePicker x:Name="DueDatePicker"
                                     Grid.Column="2"
                                     Background="#333337"
-                                    Foreground="#BCBEC4"
-                                    BorderBrush="#3C3F41"
+                                    Foreground="#E0E0E0"
+                                    BorderBrush="#252525"
                                     FontSize="11"
                                     Margin="4,0,0,0"/>
                     </Grid>
@@ -412,7 +412,7 @@
                     <!-- Add Button -->
                     <Button Grid.Row="2"
                             Content="Add Task"
-                            Background="#4B6EAF"
+                            Background="#00D9FF"
                             Foreground="White"
                             BorderThickness="0"
                             Padding="12,8"

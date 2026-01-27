@@ -113,8 +113,8 @@ public class ThemeColors
     public string MenuBackground { get; set; } = "#2B2D30";
     public string StatusBarBackground { get; set; } = "#2B2D30";
     public string HeaderBackground { get; set; } = "#1E1F22";
-    public string HoverBackground { get; set; } = "#4B6EAF33";
-    public string SelectedBackground { get; set; } = "#4B6EAF";
+    public string HoverBackground { get; set; } = "#00D9FF33";
+    public string SelectedBackground { get; set; } = "#00D9FF";
     public string InputBackground { get; set; } = "#1E1F22";
 
     // Border Colors
@@ -129,16 +129,16 @@ public class ThemeColors
     public string BrightForeground { get; set; } = "#DFE1E5";
 
     // Accent Colors
-    public string Accent { get; set; } = "#4B6EAF";
+    public string Accent { get; set; } = "#00D9FF";
     public string AccentHover { get; set; } = "#5A7FC4";
     public string AccentPressed { get; set; } = "#3D5A91";
     public string Link { get; set; } = "#589DF6";
 
     // Status Colors
-    public string Success { get; set; } = "#6AAB73";
+    public string Success { get; set; } = "#00FF88";
     public string Error { get; set; } = "#F75464";
-    public string Warning { get; set; } = "#E8B339";
-    public string Info { get; set; } = "#4B6EAF";
+    public string Warning { get; set; } = "#FFB800";
+    public string Info { get; set; } = "#00D9FF";
 
     // Special Colors
     public string RunButton { get; set; } = "#499C54";

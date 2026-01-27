@@ -24,6 +24,32 @@ public enum MeterOrientation
 }
 
 /// <summary>
+/// Visual style for peak hold indicators.
+/// </summary>
+public enum PeakIndicatorDisplayStyle
+{
+    /// <summary>
+    /// Thin horizontal/vertical line at peak position.
+    /// </summary>
+    Line,
+
+    /// <summary>
+    /// Small rectangle block at peak position.
+    /// </summary>
+    Block,
+
+    /// <summary>
+    /// Triangle/arrow pointing to peak position.
+    /// </summary>
+    Arrow,
+
+    /// <summary>
+    /// Gradient fade from peak position.
+    /// </summary>
+    GradientFade
+}
+
+/// <summary>
 /// A professional VU/Peak meter control for audio level visualization.
 /// Features stereo support, peak hold indicators, clip detection, and smooth interpolation.
 /// Styled to match professional DAWs like Ableton Live and FL Studio.
@@ -42,6 +68,13 @@ public partial class LevelMeter : UserControl
     private const double MeterBarWidth = 12.0;
     private const double MeterSpacing = 4.0;
     private const double ScaleWidth = 24.0;
+
+    // Peak hold animation constants
+    private const double PeakFallAcceleration = 15.0; // Acceleration when falling (dB/s^2)
+    private const double MaxPeakFallVelocity = 80.0; // Maximum fall velocity (dB/s)
+    private const double PeakHoldIndicatorHeight = 3.0; // Height of peak indicator line
+    private const double MinPeakHoldTimeSeconds = 0.5;
+    private const double MaxPeakHoldTimeSeconds = 5.0;
 
     #endregion
 
@@ -82,6 +115,18 @@ public partial class LevelMeter : UserControl
     public static readonly DependencyProperty SmoothingEnabledProperty =
         DependencyProperty.Register(nameof(SmoothingEnabled), typeof(bool), typeof(LevelMeter),
             new PropertyMetadata(true));
+
+    public static readonly DependencyProperty PeakHoldFallAnimationProperty =
+        DependencyProperty.Register(nameof(PeakHoldFallAnimation), typeof(bool), typeof(LevelMeter),
+            new PropertyMetadata(true));
+
+    public static readonly DependencyProperty ResetPeakOnClickProperty =
+        DependencyProperty.Register(nameof(ResetPeakOnClick), typeof(bool), typeof(LevelMeter),
+            new PropertyMetadata(true));
+
+    public static readonly DependencyProperty PeakIndicatorStyleProperty =
+        DependencyProperty.Register(nameof(PeakIndicatorStyle), typeof(PeakIndicatorDisplayStyle), typeof(LevelMeter),
+            new PropertyMetadata(PeakIndicatorDisplayStyle.Line, OnPeakIndicatorStyleChanged));
 
     /// <summary>
     /// Gets or sets the left channel level (0.0 to 1.0, can exceed 1.0 for clipping indication).
@@ -164,6 +209,34 @@ public partial class LevelMeter : UserControl
         set => SetValue(SmoothingEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether smooth animated fallback is enabled for peak hold indicators.
+    /// When enabled, peaks accelerate smoothly when falling instead of linear fall.
+    /// </summary>
+    public bool PeakHoldFallAnimation
+    {
+        get => (bool)GetValue(PeakHoldFallAnimationProperty);
+        set => SetValue(PeakHoldFallAnimationProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether clicking on the meter resets the peak hold indicators.
+    /// </summary>
+    public bool ResetPeakOnClick
+    {
+        get => (bool)GetValue(ResetPeakOnClickProperty);
+        set => SetValue(ResetPeakOnClickProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the visual style of the peak hold indicator.
+    /// </summary>
+    public PeakIndicatorDisplayStyle PeakIndicatorStyle
+    {
+        get => (PeakIndicatorDisplayStyle)GetValue(PeakIndicatorStyleProperty);
+        set => SetValue(PeakIndicatorStyleProperty, value);
+    }
+
     #endregion
 
     #region Private Fields
@@ -192,6 +265,14 @@ public partial class LevelMeter : UserControl
     private DateTime _leftClipTime;
     private DateTime _rightClipTime;
 
+    // Peak hold animation state
+    private double _leftPeakFallVelocity;
+    private double _rightPeakFallVelocity;
+    private bool _leftPeakFalling;
+    private bool _rightPeakFalling;
+    private double _leftPeakOpacity = 1.0;
+    private double _rightPeakOpacity = 1.0;
+
     // Animation
     private DispatcherTimer? _updateTimer;
     private DateTime _lastUpdateTime;
@@ -207,6 +288,7 @@ public partial class LevelMeter : UserControl
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         SizeChanged += OnSizeChanged;
+        MouseLeftButtonDown += OnMouseLeftButtonDown;
     }
 
     #endregion
@@ -250,6 +332,23 @@ public partial class LevelMeter : UserControl
         }
     }
 
+    private static void OnPeakIndicatorStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is LevelMeter meter && meter._isInitialized)
+        {
+            meter.UpdatePeakIndicatorStyle();
+        }
+    }
+
+    private void OnMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (ResetPeakOnClick)
+        {
+            ResetPeakHold();
+            e.Handled = true;
+        }
+    }
+
     #endregion
 
     #region Public Methods
@@ -278,6 +377,13 @@ public partial class LevelMeter : UserControl
         _rightPeakLevel = MinDb;
         _leftClipping = false;
         _rightClipping = false;
+        // Reset peak animation state
+        _leftPeakFallVelocity = 0;
+        _rightPeakFallVelocity = 0;
+        _leftPeakFalling = false;
+        _rightPeakFalling = false;
+        _leftPeakOpacity = 1.0;
+        _rightPeakOpacity = 1.0;
         UpdateVisuals();
     }
 
@@ -290,6 +396,42 @@ public partial class LevelMeter : UserControl
         _rightClipping = false;
         UpdateClipIndicators();
     }
+
+    /// <summary>
+    /// Resets only the peak hold indicators to minimum level.
+    /// </summary>
+    public void ResetPeakHold()
+    {
+        _leftPeakLevel = MinDb;
+        _rightPeakLevel = MinDb;
+        _leftPeakFallVelocity = 0;
+        _rightPeakFallVelocity = 0;
+        _leftPeakFalling = false;
+        _rightPeakFalling = false;
+        _leftPeakOpacity = 1.0;
+        _rightPeakOpacity = 1.0;
+        UpdatePeakIndicators();
+    }
+
+    /// <summary>
+    /// Sets the peak hold time within valid range (0.5 to 5 seconds).
+    /// </summary>
+    /// <param name="seconds">Hold time in seconds.</param>
+    public void SetPeakHoldTime(double seconds)
+    {
+        seconds = Math.Max(MinPeakHoldTimeSeconds, Math.Min(MaxPeakHoldTimeSeconds, seconds));
+        PeakHoldTime = TimeSpan.FromSeconds(seconds);
+    }
+
+    /// <summary>
+    /// Gets the current peak level for the left channel in dB.
+    /// </summary>
+    public double LeftPeakDb => _leftPeakLevel;
+
+    /// <summary>
+    /// Gets the current peak level for the right channel in dB.
+    /// </summary>
+    public double RightPeakDb => _rightPeakLevel;
 
     #endregion
 
@@ -528,7 +670,8 @@ public partial class LevelMeter : UserControl
                 BlurRadius = 4,
                 ShadowDepth = 0,
                 Opacity = 0.6
-            }
+            },
+            ToolTip = "Click to reset peak hold"
         };
         grid.Children.Add(peakIndicator);
 
@@ -545,6 +688,9 @@ public partial class LevelMeter : UserControl
             _rightLevelBar = levelBar;
             _rightPeakIndicator = peakIndicator;
         }
+
+        // Apply current peak indicator style
+        ApplyPeakIndicatorStyle(peakIndicator, isLeft);
 
         return grid;
     }
@@ -595,7 +741,8 @@ public partial class LevelMeter : UserControl
                 BlurRadius = 4,
                 ShadowDepth = 0,
                 Opacity = 0.6
-            }
+            },
+            ToolTip = "Click to reset peak hold"
         };
         grid.Children.Add(peakIndicator);
 
@@ -612,6 +759,9 @@ public partial class LevelMeter : UserControl
             _rightLevelBar = levelBar;
             _rightPeakIndicator = peakIndicator;
         }
+
+        // Apply current peak indicator style
+        ApplyPeakIndicatorStyle(peakIndicator, isLeft);
 
         return grid;
     }
@@ -851,6 +1001,10 @@ public partial class LevelMeter : UserControl
                 double normalizedPeak = DbToNormalized(_leftPeakLevel);
                 double bottomMargin = availableHeight * normalizedPeak;
                 _leftPeakIndicator.Margin = new Thickness(3, 0, 3, bottomMargin + 2);
+                _leftPeakIndicator.Opacity = _leftPeakOpacity;
+
+                // Color the peak indicator based on level (red if near 0dB)
+                UpdatePeakIndicatorColor(_leftPeakIndicator, _leftPeakLevel);
             }
         }
 
@@ -862,6 +1016,10 @@ public partial class LevelMeter : UserControl
                 double normalizedPeak = DbToNormalized(_rightPeakLevel);
                 double bottomMargin = availableHeight * normalizedPeak;
                 _rightPeakIndicator.Margin = new Thickness(3, 0, 3, bottomMargin + 2);
+                _rightPeakIndicator.Opacity = _rightPeakOpacity;
+
+                // Color the peak indicator based on level (red if near 0dB)
+                UpdatePeakIndicatorColor(_rightPeakIndicator, _rightPeakLevel);
             }
         }
     }
@@ -876,6 +1034,10 @@ public partial class LevelMeter : UserControl
                 double normalizedPeak = DbToNormalized(_leftPeakLevel);
                 double leftMargin = availableWidth * normalizedPeak;
                 _leftPeakIndicator.Margin = new Thickness(leftMargin + 2, 3, 0, 3);
+                _leftPeakIndicator.Opacity = _leftPeakOpacity;
+
+                // Color the peak indicator based on level (red if near 0dB)
+                UpdatePeakIndicatorColor(_leftPeakIndicator, _leftPeakLevel);
             }
         }
 
@@ -887,7 +1049,48 @@ public partial class LevelMeter : UserControl
                 double normalizedPeak = DbToNormalized(_rightPeakLevel);
                 double leftMargin = availableWidth * normalizedPeak;
                 _rightPeakIndicator.Margin = new Thickness(leftMargin + 2, 3, 0, 3);
+                _rightPeakIndicator.Opacity = _rightPeakOpacity;
+
+                // Color the peak indicator based on level (red if near 0dB)
+                UpdatePeakIndicatorColor(_rightPeakIndicator, _rightPeakLevel);
             }
+        }
+    }
+
+    private void UpdatePeakIndicatorColor(Shapes.Rectangle? indicator, double peakLevelDb)
+    {
+        if (indicator == null || PeakIndicatorStyle != PeakIndicatorDisplayStyle.Line)
+            return;
+
+        // Color transitions: white -> yellow -> orange -> red based on level
+        Color peakColor;
+        if (peakLevelDb >= -3)
+        {
+            // Red zone (near 0dB)
+            peakColor = Color.FromRgb(0xFF, 0x44, 0x44);
+        }
+        else if (peakLevelDb >= -6)
+        {
+            // Orange zone
+            peakColor = Color.FromRgb(0xFF, 0x88, 0x00);
+        }
+        else if (peakLevelDb >= -12)
+        {
+            // Yellow zone
+            peakColor = Color.FromRgb(0xFF, 0xFF, 0x00);
+        }
+        else
+        {
+            // Normal white
+            peakColor = Colors.White;
+        }
+
+        indicator.Fill = new SolidColorBrush(peakColor);
+
+        // Update glow effect color to match
+        if (indicator.Effect is DropShadowEffect dropShadow)
+        {
+            dropShadow.Color = peakColor;
         }
     }
 
@@ -922,6 +1125,156 @@ public partial class LevelMeter : UserControl
         }
     }
 
+    private void UpdatePeakIndicatorStyle()
+    {
+        // Update the visual appearance of peak indicators based on style
+        ApplyPeakIndicatorStyle(_leftPeakIndicator, true);
+        ApplyPeakIndicatorStyle(_rightPeakIndicator, false);
+    }
+
+    private void ApplyPeakIndicatorStyle(Shapes.Rectangle? indicator, bool isLeft)
+    {
+        if (indicator == null) return;
+
+        bool isVertical = Orientation == MeterOrientation.Vertical;
+        var style = PeakIndicatorStyle;
+
+        // Get the appropriate brush based on style
+        Brush fillBrush = GetPeakIndicatorBrush(style, isLeft);
+        indicator.Fill = fillBrush;
+
+        // Apply style-specific dimensions and effects
+        switch (style)
+        {
+            case PeakIndicatorDisplayStyle.Line:
+                if (isVertical)
+                {
+                    indicator.Height = 2;
+                    indicator.RadiusX = 0;
+                    indicator.RadiusY = 0;
+                }
+                else
+                {
+                    indicator.Width = 2;
+                    indicator.RadiusX = 0;
+                    indicator.RadiusY = 0;
+                }
+                indicator.Effect = new DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.6
+                };
+                break;
+
+            case PeakIndicatorDisplayStyle.Block:
+                if (isVertical)
+                {
+                    indicator.Height = 4;
+                    indicator.RadiusX = 1;
+                    indicator.RadiusY = 1;
+                }
+                else
+                {
+                    indicator.Width = 4;
+                    indicator.RadiusX = 1;
+                    indicator.RadiusY = 1;
+                }
+                indicator.Effect = new DropShadowEffect
+                {
+                    Color = Colors.Yellow,
+                    BlurRadius = 6,
+                    ShadowDepth = 0,
+                    Opacity = 0.8
+                };
+                break;
+
+            case PeakIndicatorDisplayStyle.Arrow:
+                // Arrow style uses a pointed appearance
+                if (isVertical)
+                {
+                    indicator.Height = 5;
+                    indicator.RadiusX = 0;
+                    indicator.RadiusY = 0;
+                }
+                else
+                {
+                    indicator.Width = 5;
+                    indicator.RadiusX = 0;
+                    indicator.RadiusY = 0;
+                }
+                indicator.Effect = new DropShadowEffect
+                {
+                    Color = Colors.Cyan,
+                    BlurRadius = 5,
+                    ShadowDepth = 0,
+                    Opacity = 0.7
+                };
+                break;
+
+            case PeakIndicatorDisplayStyle.GradientFade:
+                if (isVertical)
+                {
+                    indicator.Height = 8;
+                    indicator.RadiusX = 0;
+                    indicator.RadiusY = 0;
+                }
+                else
+                {
+                    indicator.Width = 8;
+                    indicator.RadiusX = 0;
+                    indicator.RadiusY = 0;
+                }
+                indicator.Effect = new DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 8,
+                    ShadowDepth = 0,
+                    Opacity = 0.5
+                };
+                break;
+        }
+    }
+
+    private Brush GetPeakIndicatorBrush(PeakIndicatorDisplayStyle style, bool isLeft)
+    {
+        bool isVertical = Orientation == MeterOrientation.Vertical;
+
+        switch (style)
+        {
+            case PeakIndicatorDisplayStyle.Line:
+                return FindResource("PeakHoldBrush") as Brush ?? Brushes.White;
+
+            case PeakIndicatorDisplayStyle.Block:
+                return new SolidColorBrush(Color.FromRgb(0xFF, 0xEE, 0x00)); // Bright yellow
+
+            case PeakIndicatorDisplayStyle.Arrow:
+                return new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0xFF)); // Cyan
+
+            case PeakIndicatorDisplayStyle.GradientFade:
+                if (isVertical)
+                {
+                    return new LinearGradientBrush(
+                        Color.FromArgb(255, 255, 255, 255),
+                        Color.FromArgb(0, 255, 255, 255),
+                        new Point(0, 0),
+                        new Point(0, 1));
+                }
+                else
+                {
+                    return new LinearGradientBrush(
+                        Color.FromArgb(255, 255, 255, 255),
+                        Color.FromArgb(0, 255, 255, 255),
+                        new Point(1, 0),
+                        new Point(0, 0));
+                }
+
+            default:
+                return Brushes.White;
+        }
+    }
+
     #endregion
 
     #region Private Methods - Level Processing
@@ -939,6 +1292,10 @@ public partial class LevelMeter : UserControl
         {
             _leftPeakLevel = leftDb;
             _leftPeakTime = now;
+            // Reset fall animation state when new peak is captured
+            _leftPeakFalling = false;
+            _leftPeakFallVelocity = 0;
+            _leftPeakOpacity = 1.0;
         }
 
         // Update right peak
@@ -946,6 +1303,10 @@ public partial class LevelMeter : UserControl
         {
             _rightPeakLevel = rightDb;
             _rightPeakTime = now;
+            // Reset fall animation state when new peak is captured
+            _rightPeakFalling = false;
+            _rightPeakFallVelocity = 0;
+            _rightPeakOpacity = 1.0;
         }
 
         // Check for clipping
@@ -1010,19 +1371,27 @@ public partial class LevelMeter : UserControl
         var now = DateTime.UtcNow;
         var holdTime = PeakHoldTime;
 
-        // Left peak
-        if ((now - _leftPeakTime) > holdTime)
-        {
-            _leftPeakLevel -= PeakFallRate * deltaTime;
-            _leftPeakLevel = Math.Max(_leftPeakLevel, MinDb);
-        }
+        // Process left peak with animated fallback
+        ProcessSinglePeakHold(
+            ref _leftPeakLevel,
+            ref _leftPeakFallVelocity,
+            ref _leftPeakFalling,
+            ref _leftPeakOpacity,
+            _leftPeakTime,
+            holdTime,
+            now,
+            deltaTime);
 
-        // Right peak
-        if ((now - _rightPeakTime) > holdTime)
-        {
-            _rightPeakLevel -= PeakFallRate * deltaTime;
-            _rightPeakLevel = Math.Max(_rightPeakLevel, MinDb);
-        }
+        // Process right peak with animated fallback
+        ProcessSinglePeakHold(
+            ref _rightPeakLevel,
+            ref _rightPeakFallVelocity,
+            ref _rightPeakFalling,
+            ref _rightPeakOpacity,
+            _rightPeakTime,
+            holdTime,
+            now,
+            deltaTime);
 
         // Auto-reset clip indicators after 2 seconds
         if (_leftClipping && (now - _leftClipTime) > TimeSpan.FromSeconds(2))
@@ -1032,6 +1401,59 @@ public partial class LevelMeter : UserControl
         if (_rightClipping && (now - _rightClipTime) > TimeSpan.FromSeconds(2))
         {
             _rightClipping = false;
+        }
+    }
+
+    private void ProcessSinglePeakHold(
+        ref double peakLevel,
+        ref double fallVelocity,
+        ref bool isFalling,
+        ref double opacity,
+        DateTime peakTime,
+        TimeSpan holdTime,
+        DateTime now,
+        double deltaTime)
+    {
+        bool shouldFall = (now - peakTime) > holdTime;
+
+        if (shouldFall)
+        {
+            if (!isFalling)
+            {
+                // Start falling - initialize velocity
+                isFalling = true;
+                fallVelocity = PeakFallRate * 0.5; // Start with half the base fall rate
+            }
+
+            if (PeakHoldFallAnimation)
+            {
+                // Animated fall with acceleration (smooth easing effect)
+                // Accelerate the fall velocity over time
+                fallVelocity += PeakFallAcceleration * deltaTime;
+                fallVelocity = Math.Min(fallVelocity, MaxPeakFallVelocity);
+
+                // Apply velocity to peak level
+                peakLevel -= fallVelocity * deltaTime;
+
+                // Fade opacity as peak falls for visual effect
+                double normalizedLevel = DbToNormalized(peakLevel);
+                opacity = Math.Max(0.3, normalizedLevel); // Fade but maintain minimum visibility
+            }
+            else
+            {
+                // Linear fall (original behavior)
+                peakLevel -= PeakFallRate * deltaTime;
+                opacity = 1.0;
+            }
+
+            peakLevel = Math.Max(peakLevel, MinDb);
+        }
+        else
+        {
+            // Holding - reset fall state
+            isFalling = false;
+            fallVelocity = 0;
+            opacity = 1.0;
         }
     }
 

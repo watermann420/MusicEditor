@@ -5,19 +5,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="500"
-             Background="#1E1F22"
+             Background="#0D0D0D"
              MinHeight="350"
              MinWidth="400">
 
     <UserControl.Resources>
         <!-- Colors -->
-        <Color x:Key="BackgroundColor">#1E1F22</Color>
-        <Color x:Key="PanelBackgroundColor">#2B2D30</Color>
-        <Color x:Key="BorderColor">#393B40</Color>
-        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
-        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="BackgroundColor">#0D0D0D</Color>
+        <Color x:Key="PanelBackgroundColor">#181818</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+        <Color x:Key="TextPrimaryColor">#E0E0E0</Color>
+        <Color x:Key="TextSecondaryColor">#808080</Color>
         <Color x:Key="AccentColor">#55AAFF</Color>
-        <Color x:Key="ReferenceColor">#4CAF50</Color>
+        <Color x:Key="ReferenceColor">#00CC66</Color>
         <Color x:Key="TargetColor">#FF9800</Color>
         <Color x:Key="InPhaseColor">#00E676</Color>
         <Color x:Key="OutOfPhaseColor">#FF5252</Color>

@@ -197,7 +197,7 @@ public partial class TempoCurveEditor : UserControl
             return;
 
         var gridBrush = new SolidColorBrush(Color.FromRgb(0x2B, 0x2D, 0x30));
-        var strongGridBrush = new SolidColorBrush(Color.FromRgb(0x39, 0x3B, 0x40));
+        var strongGridBrush = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A));
         var tempoBrush = new SolidColorBrush(Color.FromRgb(0x35, 0x38, 0x3D));
 
         // Horizontal tempo lines
@@ -245,8 +245,8 @@ public partial class TempoCurveEditor : UserControl
             return;
 
         var sortedPoints = TempoPoints.OrderBy(p => p.Position).ToList();
-        var curveBrush = new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73));
-        var fillBrush = new SolidColorBrush(Color.FromArgb(40, 0x6A, 0xAB, 0x73));
+        var curveBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88));
+        var fillBrush = new SolidColorBrush(Color.FromArgb(40, 0x00, 0xFF, 0x88));
 
         var pathFigure = new PathFigure();
         var fillFigure = new PathFigure();

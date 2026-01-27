@@ -127,7 +127,7 @@ public class BoolToColorConverter : IValueConverter
         {
             // Undo items = green/success color, Redo items = gray
             return isUndoItem
-                ? Color.FromRgb(0x49, 0x9C, 0x54) // Green
+                ? Color.FromRgb(0x00, 0xCC, 0x66) // Green
                 : Color.FromRgb(0x6F, 0x73, 0x7A); // Gray
         }
         return Color.FromRgb(0x6F, 0x73, 0x7A);

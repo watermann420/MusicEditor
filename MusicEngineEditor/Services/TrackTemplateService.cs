@@ -103,7 +103,7 @@ public class TrackTemplate
     public bool IsBuiltIn { get; set; }
 
     /// <summary>Track color as hex string.</summary>
-    public string Color { get; set; } = "#4B6EAF";
+    public string Color { get; set; } = "#00D9FF";
 
     /// <summary>Track type (Audio, MIDI, Bus, etc.).</summary>
     public string TrackType { get; set; } = "MIDI";
@@ -460,7 +460,7 @@ public class TrackTemplateService : ITrackTemplateService
             IsBuiltIn = true,
             TrackType = "MIDI",
             InstrumentType = "PolySynth",
-            Color = "#4B6EAF",
+            Color = "#00D9FF",
             Effects =
             [
                 new() { EffectType = "Reverb", Parameters = new() { ["Mix"] = 0.2 } }
@@ -642,7 +642,7 @@ public class TrackTemplateService : ITrackTemplateService
             IsBuiltIn = true,
             TrackType = "MIDI",
             InstrumentType = "GranularSynth",
-            Color = "#4CAF50",
+            Color = "#00CC66",
             Effects =
             [
                 new() { EffectType = "Filter", Parameters = new() { ["Frequency"] = 8000 } },

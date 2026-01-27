@@ -362,8 +362,8 @@ public class PresetInfo : INotifyPropertyChanged
     public string TypeDisplay => IsUser ? "User" : "Factory";
 
     public SolidColorBrush TypeBadgeBrush => IsUser
-        ? new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF))
-        : new SolidColorBrush(Color.FromRgb(0x6A, 0xAB, 0x73));
+        ? new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF))
+        : new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88));
 
     public string FavoriteIcon => IsFavorite ? "*" : "*";
 

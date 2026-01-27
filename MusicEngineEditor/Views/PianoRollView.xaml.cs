@@ -971,7 +971,7 @@ public partial class PianoRollView : UserControl
                 var text = new TextBlock
                 {
                     Text = barNumber.ToString(),
-                    Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4)),
+                    Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
                     FontSize = 10,
                     FontWeight = FontWeights.SemiBold
                 };
@@ -989,7 +989,7 @@ public partial class PianoRollView : UserControl
             Y1 = RulerHeight - 1,
             X2 = totalWidth,
             Y2 = RulerHeight - 1,
-            Stroke = new SolidColorBrush(Color.FromRgb(0x39, 0x3B, 0x40)),
+            Stroke = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A)),
             StrokeThickness = 1
         };
         _rulerCanvas.Children.Add(bottomBorder);

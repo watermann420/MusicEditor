@@ -52,7 +52,7 @@ public partial class NoteExpressionLane : UserControl, INotifyPropertyChanged
     private Point? _lineStart;
 
     // Colors
-    private static readonly Color PitchBendColor = Color.FromRgb(0x21, 0x96, 0xF3);
+    private static readonly Color PitchBendColor = Color.FromRgb(0x00, 0xD9, 0xFF);
     private static readonly Color PressureColor = Color.FromRgb(0xFF, 0x98, 0x00);
     private static readonly Color SlideColor = Color.FromRgb(0x9C, 0x27, 0xB0);
 

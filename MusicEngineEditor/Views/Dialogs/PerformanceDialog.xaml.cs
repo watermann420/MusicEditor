@@ -51,12 +51,12 @@ public partial class PerformanceDialog : Window
     private const int MaxGraphPoints = 300; // 30 seconds at 10Hz
     private const double GraphPadding = 35.0;
 
-    private static readonly Color LowColor = Color.FromRgb(0x6A, 0xAB, 0x73);
-    private static readonly Color MediumColor = Color.FromRgb(0xE8, 0xB3, 0x39);
-    private static readonly Color HighColor = Color.FromRgb(0xF7, 0x54, 0x64);
-    private static readonly Color GraphLineColor = Color.FromRgb(0x4B, 0x6E, 0xAF);
-    private static readonly Color GraphFillColor = Color.FromArgb(0x33, 0x4B, 0x6E, 0xAF);
-    private static readonly Color GridLineColor = Color.FromRgb(0x39, 0x3B, 0x40);
+    private static readonly Color LowColor = Color.FromRgb(0x00, 0xFF, 0x88);
+    private static readonly Color MediumColor = Color.FromRgb(0xFF, 0xB8, 0x00);
+    private static readonly Color HighColor = Color.FromRgb(0xFF, 0x47, 0x57);
+    private static readonly Color GraphLineColor = Color.FromRgb(0x00, 0xD9, 0xFF);
+    private static readonly Color GraphFillColor = Color.FromArgb(0x33, 0x00, 0xD9, 0xFF);
+    private static readonly Color GridLineColor = Color.FromRgb(0x2A, 0x2A, 0x2A);
 
     #endregion
 

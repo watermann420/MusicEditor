@@ -310,7 +310,7 @@ public class SliderPopup : Window
         var border = new Border
         {
             Background = new SolidColorBrush(Color.FromRgb(0x2B, 0x2D, 0x30)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(6),
             Padding = new Thickness(12, 8, 12, 8),
@@ -452,7 +452,7 @@ public class SliderPopup : Window
             Height = 22,
             Margin = new Thickness(2, 0, 2, 0),
             Background = new SolidColorBrush(Color.FromRgb(0x3C, 0x3F, 0x41)),
-            Foreground = new SolidColorBrush(Color.FromRgb(0xBC, 0xBE, 0xC4)),
+            Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
             BorderThickness = new Thickness(0),
             FontSize = 10,
             Cursor = Cursors.Hand
@@ -482,7 +482,7 @@ public class SliderPopup : Window
 
         // Use system default but override colors
         style.Setters.Add(new Setter(Slider.ForegroundProperty,
-            new SolidColorBrush(Color.FromRgb(0x4B, 0x6E, 0xAF))));
+            new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF))));
 
         return style;
     }

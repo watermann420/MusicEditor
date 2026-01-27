@@ -5,22 +5,22 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="150" d:DesignWidth="600"
-             Background="#1E1F22"
+             Background="#0D0D0D"
              Loaded="UserControl_Loaded"
              SizeChanged="UserControl_SizeChanged">
 
     <UserControl.Resources>
         <!-- Theme Colors -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1F22"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>
         <SolidColorBrush x:Key="CanvasBackgroundBrush" Color="#252628"/>
-        <SolidColorBrush x:Key="GridLineBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="GridLineStrongBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="GridLineBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="GridLineStrongBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
-        <SolidColorBrush x:Key="CurveBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="CurveBrush" Color="#00FF88"/>
         <SolidColorBrush x:Key="PointBrush" Color="#E8E8E8"/>
         <SolidColorBrush x:Key="PointSelectedBrush" Color="#FF9B4B"/>
         <SolidColorBrush x:Key="PlayheadBrush" Color="#CC4B4B"/>
@@ -46,7 +46,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#393B40"/>
+                                <Setter TargetName="border" Property="Background" Value="#2A2A2A"/>
                                 <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -118,7 +118,7 @@
 
         <!-- Curve Type ComboBox Style -->
         <Style x:Key="CurveTypeComboStyle" TargetType="ComboBox">
-            <Setter Property="Background" Value="#2B2D30"/>
+            <Setter Property="Background" Value="#181818"/>
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>

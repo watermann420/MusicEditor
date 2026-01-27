@@ -491,10 +491,10 @@ public class EnhancedSessionNote : INotifyPropertyChanged
 
     public SolidColorBrush CategoryBrush => Category switch
     {
-        "Idea" => new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)),
-        "Todo" => new SolidColorBrush(Color.FromRgb(0xFF, 0x98, 0x00)),
-        "Issue" => new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36)),
-        "Mix" => new SolidColorBrush(Color.FromRgb(0x21, 0x96, 0xF3)),
+        "Idea" => new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66)),
+        "Todo" => new SolidColorBrush(Color.FromRgb(0xFF, 0xB8, 0x00)),
+        "Issue" => new SolidColorBrush(Color.FromRgb(0xFF, 0x47, 0x57)),
+        "Mix" => new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)),
         "Arrangement" => new SolidColorBrush(Color.FromRgb(0x9C, 0x27, 0xB0)),
         _ => new SolidColorBrush(Color.FromRgb(0x9E, 0x9E, 0x9E))
     };

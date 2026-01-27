@@ -217,7 +217,7 @@ public partial class MainWindow : Window
         var contextMenu = new System.Windows.Controls.ContextMenu
         {
             Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2B, 0x2D, 0x30)),
-            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xBC, 0xBE, 0xC4)),
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE0, 0xE0, 0xE0)),
             BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x3C, 0x3F, 0x41)),
         };
 
@@ -488,7 +488,7 @@ public partial class MainWindow : Window
         // Update status indicator based on running state
         if (_isRunning)
         {
-            StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6A, 0xAB, 0x73)); // Green
+            StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88)); // Green
         }
         else
         {
@@ -1218,7 +1218,7 @@ public partial class MainWindow : Window
             // Update glow color for hover effect
             if (RunStopButton.Template.FindName("glowEffect", RunStopButton) is DropShadowEffect glow)
             {
-                glow.Color = Color.FromRgb(0x4C, 0xAF, 0x50);
+                glow.Color = Color.FromRgb(0x00, 0xCC, 0x66);
             }
         }
     }
@@ -2689,8 +2689,8 @@ public class MidiDeviceInfo
 
     // Color for the type indicator
     public System.Windows.Media.Brush TypeColor => Type == "Input"
-        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6A, 0xAB, 0x73))  // Green for input
-        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4B, 0x6E, 0xAF)); // Blue for output
+        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88))  // Green for input
+        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF)); // Blue for output
 }
 
 public class VstPluginInfo
@@ -2735,9 +2735,9 @@ public class ProblemItem
 
     public System.Windows.Media.Brush IconColor => Severity switch
     {
-        ProblemSeverity.Error => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF7, 0x54, 0x64)),
-        ProblemSeverity.Warning => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE8, 0xB3, 0x39)),
-        ProblemSeverity.Info => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4B, 0x6E, 0xAF)),
+        ProblemSeverity.Error => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0x47, 0x57)),
+        ProblemSeverity.Warning => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xB8, 0x00)),
+        ProblemSeverity.Info => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF)),
         _ => System.Windows.Media.Brushes.White
     };
 }
@@ -2820,7 +2820,7 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6A, 0xAB, 0x73)); // Green
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88)); // Green
             }
             return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0x73, 0x7A)); // Gray
         }
@@ -2852,11 +2852,11 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             {
                 // Glowing background when playing
                 var alpha = (byte)(40 + 30 * Math.Sin(_pulsePhase));
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(alpha, 0x6A, 0xAB, 0x73));
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(alpha, 0x00, 0xFF, 0x88));
             }
             if (IsActive)
             {
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x33, 0x4B, 0x6E, 0xAF));
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x33, 0x00, 0xD9, 0xFF));
             }
             return System.Windows.Media.Brushes.Transparent;
         }
@@ -2874,9 +2874,9 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4B, 0x6E, 0xAF));
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF));
             }
-            return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x39, 0x3B, 0x40));
+            return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2A, 0x2A, 0x2A));
         }
     }
 

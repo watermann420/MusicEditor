@@ -10,17 +10,17 @@
         MinHeight="400" MinWidth="500"
         WindowStartupLocation="CenterOwner"
         Style="{StaticResource DarkWindowStyle}"
-        Background="#1E1F22"
+        Background="#0D0D0D"
         ResizeMode="CanResizeWithGrip">
 
     <Window.Resources>
         <!-- Graph colors -->
-        <Color x:Key="GraphLineColor">#4B6EAF</Color>
+        <Color x:Key="GraphLineColor">#00D9FF</Color>
         <Color x:Key="GraphFillColor">#334B6EAF</Color>
-        <Color x:Key="GraphGridColor">#2B2D30</Color>
-        <Color x:Key="CpuLowColor">#6AAB73</Color>
-        <Color x:Key="CpuMediumColor">#E8B339</Color>
-        <Color x:Key="CpuHighColor">#F75464</Color>
+        <Color x:Key="GraphGridColor">#181818</Color>
+        <Color x:Key="CpuLowColor">#00FF88</Color>
+        <Color x:Key="CpuMediumColor">#FFB800</Color>
+        <Color x:Key="CpuHighColor">#FF4757</Color>
 
         <SolidColorBrush x:Key="GraphLineBrush" Color="{StaticResource GraphLineColor}"/>
         <SolidColorBrush x:Key="GraphGridBrush" Color="{StaticResource GraphGridColor}"/>
@@ -30,7 +30,7 @@
 
         <!-- Section header style -->
         <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#BCBEC4"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,0,0,8"/>
@@ -38,7 +38,7 @@
 
         <!-- Stat label style -->
         <Style x:Key="StatLabelStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#6F737A"/>
+            <Setter Property="Foreground" Value="#808080"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Margin" Value="0,2"/>
         </Style>
@@ -107,8 +107,8 @@
 
             <!-- Left: CPU Graph -->
             <Border Grid.Column="0"
-                    Background="#2B2D30"
-                    BorderBrush="#393B40"
+                    Background="#181818"
+                    BorderBrush="#2A2A2A"
                     BorderThickness="1"
                     CornerRadius="6"
                     Margin="0,0,12,0"
@@ -119,8 +119,8 @@
                                Style="{StaticResource SectionHeaderStyle}"/>
 
                     <!-- Graph Canvas -->
-                    <Border Background="#1E1F22"
-                            BorderBrush="#393B40"
+                    <Border Background="#0D0D0D"
+                            BorderBrush="#2A2A2A"
                             BorderThickness="1"
                             CornerRadius="4">
                         <Grid>
@@ -137,8 +137,8 @@
 
             <!-- Right: Stats Panel -->
             <Border Grid.Column="1"
-                    Background="#2B2D30"
-                    BorderBrush="#393B40"
+                    Background="#181818"
+                    BorderBrush="#2A2A2A"
                     BorderThickness="1"
                     CornerRadius="6"
                     Padding="12">
@@ -267,8 +267,8 @@
 
         <!-- Plugin CPU Breakdown -->
         <Border Grid.Row="2"
-                Background="#2B2D30"
-                BorderBrush="#393B40"
+                Background="#181818"
+                BorderBrush="#2A2A2A"
                 BorderThickness="1"
                 CornerRadius="6"
                 Margin="0,12,0,0"
@@ -282,7 +282,7 @@
                 <ListView x:Name="PluginListView"
                           Background="Transparent"
                           BorderThickness="0"
-                          Foreground="#BCBEC4"
+                          Foreground="#E0E0E0"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListView.View>
                         <GridView>
@@ -291,7 +291,7 @@
                             <GridViewColumn Header="" Width="150">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border Background="#1E1F22"
+                                        <Border Background="#0D0D0D"
                                                 Height="8"
                                                 CornerRadius="2"
                                                 Width="140">
@@ -316,7 +316,7 @@
                 <!-- Empty state -->
                 <TextBlock x:Name="NoPluginsText"
                            Text="No plugins loaded"
-                           Foreground="#6F737A"
+                           Foreground="#808080"
                            FontStyle="Italic"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
@@ -328,12 +328,12 @@
         <Border Grid.Row="3" Margin="0,12,0,0">
             <Grid>
                 <TextBlock Text="Performance data updates every 100ms"
-                           Foreground="#6F737A"
+                           Foreground="#808080"
                            FontSize="10"
                            VerticalAlignment="Center"/>
                 <TextBlock x:Name="LastUpdateText"
                            Text="Last update: --"
-                           Foreground="#6F737A"
+                           Foreground="#808080"
                            FontSize="10"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"/>

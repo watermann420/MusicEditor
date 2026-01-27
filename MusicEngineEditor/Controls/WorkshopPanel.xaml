@@ -5,24 +5,24 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="500"
-             Background="#1E1F22">
+             Background="#0D0D0D">
 
     <UserControl.Resources>
         <!-- Colors matching the dark theme -->
-        <SolidColorBrush x:Key="WorkshopBackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="WorkshopBackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#181818"/>
         <SolidColorBrush x:Key="CardBackgroundBrush" Color="#313335"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
         <SolidColorBrush x:Key="SubtleBorderBrush" Color="#43454A"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
         <SolidColorBrush x:Key="BrightForegroundBrush" Color="#DFE1E5"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
         <SolidColorBrush x:Key="CodeBackgroundBrush" Color="#1A1B1E"/>
         <SolidColorBrush x:Key="RunButtonBrush" Color="#499C54"/>
         <SolidColorBrush x:Key="RunButtonHoverBrush" Color="#5AAF65"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#00FF88"/>
         <SolidColorBrush x:Key="WarningBrush" Color="#E9B85B"/>
         <SolidColorBrush x:Key="SidebarBrush" Color="#252628"/>
 
@@ -49,14 +49,14 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="Tag" Value="Active">
                                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
                                 <Setter TargetName="border" Property="Background">
                                     <Setter.Value>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                            <GradientStop Color="#3C3F41" Offset="0"/>
+                                            <GradientStop Color="#252525" Offset="0"/>
                                             <GradientStop Color="#252628" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Setter.Value>
@@ -79,13 +79,13 @@
                 <Setter.Value>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                         <GradientStop Color="#5A7FC4" Offset="0"/>
-                        <GradientStop Color="#4B6EAF" Offset="1"/>
+                        <GradientStop Color="#00D9FF" Offset="1"/>
                     </LinearGradientBrush>
                 </Setter.Value>
             </Setter>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="#4B6EAF" BlurRadius="6" ShadowDepth="0" Opacity="0.3"/>
+                    <DropShadowEffect Color="#00D9FF" BlurRadius="6" ShadowDepth="0" Opacity="0.3"/>
                 </Setter.Value>
             </Setter>
         </Style>
@@ -184,7 +184,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -243,7 +243,7 @@
                 <Border Grid.Row="0" Padding="20,24" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#2B2D30" Offset="0"/>
+                            <GradientStop Color="#181818" Offset="0"/>
                             <GradientStop Color="#252628" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
@@ -253,7 +253,7 @@
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                         <GradientStop Color="#5A7FC4" Offset="0"/>
-                                        <GradientStop Color="#4B6EAF" Offset="1"/>
+                                        <GradientStop Color="#00D9FF" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Border.Background>
                                 <TextBlock Text="&#x1F3B5;" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -376,7 +376,7 @@
                         Padding="28,18">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#2B2D30" Offset="0"/>
+                            <GradientStop Color="#181818" Offset="0"/>
                             <GradientStop Color="#27292C" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
@@ -398,7 +398,7 @@
                         </Button>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border Background="#1E1F22" CornerRadius="12" Padding="14,6">
+                            <Border Background="#0D0D0D" CornerRadius="12" Padding="14,6">
                                 <TextBlock x:Name="ProgressText"
                                            Text="1 / 9"
                                            Foreground="{StaticResource ForegroundBrush}"

@@ -14,13 +14,13 @@
 
     <Window.Resources>
         <!-- Colors -->
-        <Color x:Key="BackgroundColor">#1E1F22</Color>
-        <Color x:Key="PanelBackgroundColor">#2B2D30</Color>
-        <Color x:Key="BorderColor">#393B40</Color>
-        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
-        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="BackgroundColor">#0D0D0D</Color>
+        <Color x:Key="PanelBackgroundColor">#181818</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+        <Color x:Key="TextPrimaryColor">#E0E0E0</Color>
+        <Color x:Key="TextSecondaryColor">#808080</Color>
         <Color x:Key="AccentColor">#55AAFF</Color>
-        <Color x:Key="SuccessColor">#4CAF50</Color>
+        <Color x:Key="SuccessColor">#00CC66</Color>
         <Color x:Key="WarningColor">#FF9800</Color>
 
         <!-- Brushes -->
@@ -51,7 +51,7 @@
                     <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
                 </Trigger>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#3C3F41"/>
+                    <Setter Property="Background" Value="#252525"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -107,7 +107,7 @@
                                         <Setter.Value>
                                             <VisualBrush AlignmentX="Left" Stretch="None">
                                                 <VisualBrush.Visual>
-                                                    <TextBlock Text="Search effects..." Foreground="#6F737A" Margin="8,6"/>
+                                                    <TextBlock Text="Search effects..." Foreground="#808080" Margin="8,6"/>
                                                 </VisualBrush.Visual>
                                             </VisualBrush>
                                         </Setter.Value>

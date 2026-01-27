@@ -64,7 +64,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -113,7 +113,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Ellipse x:Name="ConnectionIndicator"
                                  Width="8" Height="8"
-                                 Fill="#F75464"
+                                 Fill="#FF4757"
                                  Margin="0,0,8,0"/>
                         <TextBlock x:Name="ConnectionStatus"
                                    Text="Not Connected"
@@ -438,7 +438,7 @@
                                   Click="AllChannelsCheck_Click"
                                   Margin="0,0,0,8"/>
 
-                        <Border Background="#1E1F22"
+                        <Border Background="#0D0D0D"
                                 CornerRadius="4"
                                 Padding="8"
                                 Margin="0,0,0,16">

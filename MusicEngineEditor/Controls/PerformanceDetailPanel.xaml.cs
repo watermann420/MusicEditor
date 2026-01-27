@@ -70,8 +70,8 @@ public partial class PerformanceDetailPanel : UserControl
     private const int MaxHistoryPoints = 600; // 60 seconds at 10Hz
     private const int GraphUpdateInterval = 100; // ms
 
-    private static readonly Color CpuColor = Color.FromRgb(0x6A, 0xAB, 0x73);
-    private static readonly Color PeakColor = Color.FromRgb(0xF7, 0x54, 0x64);
+    private static readonly Color CpuColor = Color.FromRgb(0x00, 0xFF, 0x88);
+    private static readonly Color PeakColor = Color.FromRgb(0xFF, 0x47, 0x57);
 
     #endregion
 
@@ -433,7 +433,7 @@ public partial class PerformanceDetailPanel : UserControl
         else if (cpuPercent < 80)
         {
             // Yellow
-            return Color.FromRgb(0xE8, 0xB3, 0x39);
+            return Color.FromRgb(0xFF, 0xB8, 0x00);
         }
         else
         {

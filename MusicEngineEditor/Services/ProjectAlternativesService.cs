@@ -532,7 +532,7 @@ public sealed class ProjectAlternativesService : INotifyPropertyChanged
     {
         var colors = new[]
         {
-            "#4B6EAF", "#6AAB73", "#9C7CE8", "#E8A73C",
+            "#00D9FF", "#00FF88", "#9C7CE8", "#E8A73C",
             "#E85C5C", "#5CBFE8", "#E85CAF", "#7CE89C"
         };
 
@@ -579,7 +579,7 @@ public class ProjectAlternative : INotifyPropertyChanged
     private string _description = string.Empty;
     private DateTime _createdAt;
     private DateTime _modifiedAt;
-    private string _color = "#4B6EAF";
+    private string _color = "#00D9FF";
     private AlternativeData? _data;
 
     public string Id { get => _id; set { _id = value; OnPropertyChanged(); } }

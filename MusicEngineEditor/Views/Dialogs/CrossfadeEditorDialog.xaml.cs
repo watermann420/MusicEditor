@@ -209,7 +209,7 @@ public partial class CrossfadeEditorDialog : Window
 
     private void DrawGrid(double margin, double graphWidth, double graphHeight)
     {
-        var gridBrush = new SolidColorBrush(Color.FromRgb(0x39, 0x3B, 0x40));
+        var gridBrush = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A));
 
         // Vertical center line
         var centerLine = new Line

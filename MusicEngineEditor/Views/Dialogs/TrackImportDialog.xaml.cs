@@ -212,7 +212,7 @@ public partial class TrackImportDialog : Window
     private static Color ParseColor(string? colorStr)
     {
         if (string.IsNullOrEmpty(colorStr))
-            return Color.FromRgb(0x4C, 0xAF, 0x50);
+            return Color.FromRgb(0x00, 0xCC, 0x66);
 
         try
         {
@@ -226,7 +226,7 @@ public partial class TrackImportDialog : Window
         }
         catch { }
 
-        return Color.FromRgb(0x4C, 0xAF, 0x50);
+        return Color.FromRgb(0x00, 0xCC, 0x66);
     }
 
     private void CollectImportOptions()
@@ -302,7 +302,7 @@ public class ImportableTrack : INotifyPropertyChanged
     private bool _hasAutomation;
     private bool _hasMidiData;
     private double _originalPosition;
-    private Color _color = Color.FromRgb(0x4C, 0xAF, 0x50);
+    private Color _color = Color.FromRgb(0x00, 0xCC, 0x66);
 
     public string Id { get => _id; set { _id = value; OnPropertyChanged(); } }
     public string Name { get => _name; set { _name = value; OnPropertyChanged(); } }

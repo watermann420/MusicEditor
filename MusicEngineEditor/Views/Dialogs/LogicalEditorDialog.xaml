@@ -9,19 +9,19 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
         MinWidth="600" MinHeight="500"
-        Background="#1E1F22"
-        Foreground="#BCBEC4">
+        Background="#0D0D0D"
+        Foreground="#E0E0E0">
 
     <Window.Resources>
         <!-- Colors -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="PanelBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryBrush" Color="#6F737A"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="#808080"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="WarningBrush" Color="#C75450"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="#499C54"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#00CC66"/>
 
         <!-- ComboBox Style -->
         <Style x:Key="EditorComboBox" TargetType="ComboBox">
@@ -64,7 +64,7 @@
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -92,7 +92,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>

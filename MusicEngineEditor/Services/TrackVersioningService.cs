@@ -255,8 +255,9 @@ public class TrackVersioningService : ITrackVersioningService
 
         if (data1 != null && data2 != null)
         {
-            // Compare notes
-            if (!SequenceEqual(data1.NoteEvents, data2.NoteEvents))
+            // Compare notes with detailed diff
+            comparison.NoteDiffs = CompareNotes(data1.NoteEvents, data2.NoteEvents);
+            if (comparison.NoteDiffs.Added.Count > 0 || comparison.NoteDiffs.Removed.Count > 0 || comparison.NoteDiffs.Modified.Count > 0)
             {
                 comparison.Differences.Add(new VersionDifference
                 {
@@ -266,8 +267,9 @@ public class TrackVersioningService : ITrackVersioningService
                 });
             }
 
-            // Compare clips
-            if (!SequenceEqual(data1.Clips, data2.Clips))
+            // Compare clips with detailed diff
+            comparison.ClipDiffs = CompareClips(data1.Clips, data2.Clips);
+            if (comparison.ClipDiffs.Added.Count > 0 || comparison.ClipDiffs.Removed.Count > 0 || comparison.ClipDiffs.Modified.Count > 0)
             {
                 comparison.Differences.Add(new VersionDifference
                 {
@@ -277,8 +279,9 @@ public class TrackVersioningService : ITrackVersioningService
                 });
             }
 
-            // Compare automation
-            if (!SequenceEqual(data1.AutomationLanes, data2.AutomationLanes))
+            // Compare automation with detailed diff
+            comparison.AutomationDiffs = CompareAutomation(data1.AutomationLanes, data2.AutomationLanes);
+            if (comparison.AutomationDiffs.Added.Count > 0 || comparison.AutomationDiffs.Removed.Count > 0 || comparison.AutomationDiffs.Modified.Count > 0)
             {
                 comparison.Differences.Add(new VersionDifference
                 {
@@ -288,8 +291,9 @@ public class TrackVersioningService : ITrackVersioningService
                 });
             }
 
-            // Compare effects
-            if (!SequenceEqual(data1.Effects, data2.Effects))
+            // Compare effects with detailed diff
+            comparison.EffectDiffs = CompareEffects(data1.Effects, data2.Effects);
+            if (comparison.EffectDiffs.Added.Count > 0 || comparison.EffectDiffs.Removed.Count > 0 || comparison.EffectDiffs.Modified.Count > 0)
             {
                 comparison.Differences.Add(new VersionDifference
                 {
@@ -298,11 +302,543 @@ public class TrackVersioningService : ITrackVersioningService
                     Value2 = $"{data2.Effects?.Count ?? 0} effects"
                 });
             }
+
+            // Compare custom parameters
+            comparison.ParameterDiffs = CompareParameters(data1.CustomData, data2.CustomData);
         }
 
         VersionCompared?.Invoke(this, new VersionCompareEventArgs(comparison));
 
         return comparison;
+    }
+
+    /// <summary>
+    /// Compares two sets of MIDI notes and returns detailed differences.
+    /// </summary>
+    private static NoteComparison CompareNotes(IList<NoteEventData>? notes1, IList<NoteEventData>? notes2)
+    {
+        var result = new NoteComparison();
+
+        var list1 = notes1?.ToList() ?? new List<NoteEventData>();
+        var list2 = notes2?.ToList() ?? new List<NoteEventData>();
+
+        // Create lookup by note identity (note number + start beat)
+        var notes1Dict = list1.ToDictionary(n => $"{n.NoteNumber}:{n.StartBeat:F4}", n => n);
+        var notes2Dict = list2.ToDictionary(n => $"{n.NoteNumber}:{n.StartBeat:F4}", n => n);
+
+        // Find added notes (in notes2 but not in notes1)
+        foreach (var note in list2)
+        {
+            var key = $"{note.NoteNumber}:{note.StartBeat:F4}";
+            if (!notes1Dict.ContainsKey(key))
+            {
+                result.Added.Add(new NoteDiffItem
+                {
+                    NoteNumber = note.NoteNumber,
+                    NoteName = GetNoteName(note.NoteNumber),
+                    NewStartBeat = note.StartBeat,
+                    NewDuration = note.DurationBeats,
+                    NewVelocity = note.Velocity
+                });
+            }
+        }
+
+        // Find removed notes (in notes1 but not in notes2)
+        foreach (var note in list1)
+        {
+            var key = $"{note.NoteNumber}:{note.StartBeat:F4}";
+            if (!notes2Dict.ContainsKey(key))
+            {
+                result.Removed.Add(new NoteDiffItem
+                {
+                    NoteNumber = note.NoteNumber,
+                    NoteName = GetNoteName(note.NoteNumber),
+                    OldStartBeat = note.StartBeat,
+                    OldDuration = note.DurationBeats,
+                    OldVelocity = note.Velocity
+                });
+            }
+        }
+
+        // Find modified notes
+        foreach (var note1 in list1)
+        {
+            var key = $"{note1.NoteNumber}:{note1.StartBeat:F4}";
+            if (notes2Dict.TryGetValue(key, out var note2))
+            {
+                var changes = new List<string>();
+                if (Math.Abs(note1.DurationBeats - note2.DurationBeats) > 0.001)
+                    changes.Add($"Duration: {note1.DurationBeats:F2} -> {note2.DurationBeats:F2}");
+                if (note1.Velocity != note2.Velocity)
+                    changes.Add($"Velocity: {note1.Velocity} -> {note2.Velocity}");
+
+                if (changes.Count > 0)
+                {
+                    result.Modified.Add(new NoteDiffItem
+                    {
+                        NoteNumber = note1.NoteNumber,
+                        NoteName = GetNoteName(note1.NoteNumber),
+                        OldStartBeat = note1.StartBeat,
+                        NewStartBeat = note2.StartBeat,
+                        OldDuration = note1.DurationBeats,
+                        NewDuration = note2.DurationBeats,
+                        OldVelocity = note1.Velocity,
+                        NewVelocity = note2.Velocity,
+                        Changes = changes
+                    });
+                }
+                else
+                {
+                    result.Unchanged.Add(new NoteDiffItem
+                    {
+                        NoteNumber = note1.NoteNumber,
+                        NoteName = GetNoteName(note1.NoteNumber),
+                        OldStartBeat = note1.StartBeat,
+                        OldDuration = note1.DurationBeats,
+                        OldVelocity = note1.Velocity
+                    });
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Compares two sets of clips and returns detailed differences.
+    /// </summary>
+    private static ClipComparison CompareClips(IList<ClipData>? clips1, IList<ClipData>? clips2)
+    {
+        var result = new ClipComparison();
+
+        var list1 = clips1?.ToList() ?? new List<ClipData>();
+        var list2 = clips2?.ToList() ?? new List<ClipData>();
+
+        var clips1Dict = list1.ToDictionary(c => c.Id, c => c);
+        var clips2Dict = list2.ToDictionary(c => c.Id, c => c);
+
+        // Find added clips
+        foreach (var clip in list2)
+        {
+            if (!clips1Dict.ContainsKey(clip.Id))
+            {
+                result.Added.Add(new ClipDiffItem
+                {
+                    ClipId = clip.Id,
+                    ClipName = clip.Name,
+                    NewStartBeat = clip.StartBeat,
+                    NewDuration = clip.DurationBeats,
+                    NewAudioPath = clip.AudioFilePath
+                });
+            }
+        }
+
+        // Find removed clips
+        foreach (var clip in list1)
+        {
+            if (!clips2Dict.ContainsKey(clip.Id))
+            {
+                result.Removed.Add(new ClipDiffItem
+                {
+                    ClipId = clip.Id,
+                    ClipName = clip.Name,
+                    OldStartBeat = clip.StartBeat,
+                    OldDuration = clip.DurationBeats,
+                    OldAudioPath = clip.AudioFilePath
+                });
+            }
+        }
+
+        // Find modified clips
+        foreach (var clip1 in list1)
+        {
+            if (clips2Dict.TryGetValue(clip1.Id, out var clip2))
+            {
+                var changes = new List<string>();
+                if (clip1.Name != clip2.Name)
+                    changes.Add($"Name: '{clip1.Name}' -> '{clip2.Name}'");
+                if (Math.Abs(clip1.StartBeat - clip2.StartBeat) > 0.001)
+                    changes.Add($"Position: {clip1.StartBeat:F2} -> {clip2.StartBeat:F2}");
+                if (Math.Abs(clip1.DurationBeats - clip2.DurationBeats) > 0.001)
+                    changes.Add($"Duration: {clip1.DurationBeats:F2} -> {clip2.DurationBeats:F2}");
+                if (clip1.AudioFilePath != clip2.AudioFilePath)
+                    changes.Add($"Audio file changed");
+
+                if (changes.Count > 0)
+                {
+                    result.Modified.Add(new ClipDiffItem
+                    {
+                        ClipId = clip1.Id,
+                        ClipName = clip2.Name,
+                        OldStartBeat = clip1.StartBeat,
+                        NewStartBeat = clip2.StartBeat,
+                        OldDuration = clip1.DurationBeats,
+                        NewDuration = clip2.DurationBeats,
+                        OldAudioPath = clip1.AudioFilePath,
+                        NewAudioPath = clip2.AudioFilePath,
+                        Changes = changes
+                    });
+                }
+                else
+                {
+                    result.Unchanged.Add(new ClipDiffItem
+                    {
+                        ClipId = clip1.Id,
+                        ClipName = clip1.Name,
+                        OldStartBeat = clip1.StartBeat,
+                        OldDuration = clip1.DurationBeats
+                    });
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Compares two sets of effects and returns detailed differences.
+    /// </summary>
+    private static EffectComparison CompareEffects(IList<EffectData>? effects1, IList<EffectData>? effects2)
+    {
+        var result = new EffectComparison();
+
+        var list1 = effects1?.ToList() ?? new List<EffectData>();
+        var list2 = effects2?.ToList() ?? new List<EffectData>();
+
+        var effects1Dict = list1.ToDictionary(e => e.Id, e => e);
+        var effects2Dict = list2.ToDictionary(e => e.Id, e => e);
+
+        // Find added effects
+        foreach (var effect in list2)
+        {
+            if (!effects1Dict.ContainsKey(effect.Id))
+            {
+                result.Added.Add(new EffectDiffItem
+                {
+                    EffectId = effect.Id,
+                    EffectName = effect.Name,
+                    PluginId = effect.PluginId,
+                    NewBypassed = effect.IsBypassed
+                });
+            }
+        }
+
+        // Find removed effects
+        foreach (var effect in list1)
+        {
+            if (!effects2Dict.ContainsKey(effect.Id))
+            {
+                result.Removed.Add(new EffectDiffItem
+                {
+                    EffectId = effect.Id,
+                    EffectName = effect.Name,
+                    PluginId = effect.PluginId,
+                    OldBypassed = effect.IsBypassed
+                });
+            }
+        }
+
+        // Find modified effects
+        foreach (var effect1 in list1)
+        {
+            if (effects2Dict.TryGetValue(effect1.Id, out var effect2))
+            {
+                var paramChanges = new List<ParameterDiffItem>();
+
+                // Compare bypass state
+                if (effect1.IsBypassed != effect2.IsBypassed)
+                {
+                    paramChanges.Add(new ParameterDiffItem
+                    {
+                        ParameterName = "Bypassed",
+                        OldValue = effect1.IsBypassed.ToString(),
+                        NewValue = effect2.IsBypassed.ToString(),
+                        Category = "State"
+                    });
+                }
+
+                // Compare parameters
+                var params1 = effect1.Parameters ?? new Dictionary<string, object>();
+                var params2 = effect2.Parameters ?? new Dictionary<string, object>();
+
+                foreach (var param2 in params2)
+                {
+                    if (!params1.TryGetValue(param2.Key, out var value1))
+                    {
+                        paramChanges.Add(new ParameterDiffItem
+                        {
+                            ParameterName = param2.Key,
+                            OldValue = null,
+                            NewValue = param2.Value?.ToString(),
+                            Category = "Parameter"
+                        });
+                    }
+                    else if (value1?.ToString() != param2.Value?.ToString())
+                    {
+                        paramChanges.Add(new ParameterDiffItem
+                        {
+                            ParameterName = param2.Key,
+                            OldValue = value1?.ToString(),
+                            NewValue = param2.Value?.ToString(),
+                            Category = "Parameter"
+                        });
+                    }
+                }
+
+                foreach (var param1 in params1)
+                {
+                    if (!params2.ContainsKey(param1.Key))
+                    {
+                        paramChanges.Add(new ParameterDiffItem
+                        {
+                            ParameterName = param1.Key,
+                            OldValue = param1.Value?.ToString(),
+                            NewValue = null,
+                            Category = "Parameter"
+                        });
+                    }
+                }
+
+                if (paramChanges.Count > 0)
+                {
+                    result.Modified.Add(new EffectDiffItem
+                    {
+                        EffectId = effect1.Id,
+                        EffectName = effect1.Name,
+                        PluginId = effect1.PluginId,
+                        OldBypassed = effect1.IsBypassed,
+                        NewBypassed = effect2.IsBypassed,
+                        ParameterChanges = paramChanges
+                    });
+                }
+                else
+                {
+                    result.Unchanged.Add(new EffectDiffItem
+                    {
+                        EffectId = effect1.Id,
+                        EffectName = effect1.Name,
+                        PluginId = effect1.PluginId
+                    });
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Compares two sets of automation lanes and returns detailed differences.
+    /// </summary>
+    private static AutomationComparison CompareAutomation(IList<AutomationLaneData>? lanes1, IList<AutomationLaneData>? lanes2)
+    {
+        var result = new AutomationComparison();
+
+        var list1 = lanes1?.ToList() ?? new List<AutomationLaneData>();
+        var list2 = lanes2?.ToList() ?? new List<AutomationLaneData>();
+
+        var lanes1Dict = list1.ToDictionary(l => l.ParameterId, l => l);
+        var lanes2Dict = list2.ToDictionary(l => l.ParameterId, l => l);
+
+        // Find added lanes
+        foreach (var lane in list2)
+        {
+            if (!lanes1Dict.ContainsKey(lane.ParameterId))
+            {
+                result.Added.Add(new AutomationDiffItem
+                {
+                    ParameterId = lane.ParameterId,
+                    ParameterName = lane.ParameterName,
+                    NewPointCount = lane.Points?.Count ?? 0
+                });
+            }
+        }
+
+        // Find removed lanes
+        foreach (var lane in list1)
+        {
+            if (!lanes2Dict.ContainsKey(lane.ParameterId))
+            {
+                result.Removed.Add(new AutomationDiffItem
+                {
+                    ParameterId = lane.ParameterId,
+                    ParameterName = lane.ParameterName,
+                    OldPointCount = lane.Points?.Count ?? 0
+                });
+            }
+        }
+
+        // Find modified lanes
+        foreach (var lane1 in list1)
+        {
+            if (lanes2Dict.TryGetValue(lane1.ParameterId, out var lane2))
+            {
+                var pointChanges = CompareAutomationPoints(lane1.Points, lane2.Points);
+
+                if (pointChanges.Count > 0)
+                {
+                    result.Modified.Add(new AutomationDiffItem
+                    {
+                        ParameterId = lane1.ParameterId,
+                        ParameterName = lane1.ParameterName,
+                        OldPointCount = lane1.Points?.Count ?? 0,
+                        NewPointCount = lane2.Points?.Count ?? 0,
+                        PointChanges = pointChanges
+                    });
+                }
+                else
+                {
+                    result.Unchanged.Add(new AutomationDiffItem
+                    {
+                        ParameterId = lane1.ParameterId,
+                        ParameterName = lane1.ParameterName,
+                        OldPointCount = lane1.Points?.Count ?? 0
+                    });
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Compares automation points between two lanes.
+    /// </summary>
+    private static List<AutomationPointChange> CompareAutomationPoints(IList<AutomationPointData>? points1, IList<AutomationPointData>? points2)
+    {
+        var result = new List<AutomationPointChange>();
+
+        var list1 = points1?.ToList() ?? new List<AutomationPointData>();
+        var list2 = points2?.ToList() ?? new List<AutomationPointData>();
+
+        var points1Dict = list1.ToDictionary(p => p.Beat, p => p);
+        var points2Dict = list2.ToDictionary(p => p.Beat, p => p);
+
+        // Find added points
+        foreach (var point in list2)
+        {
+            if (!points1Dict.ContainsKey(point.Beat))
+            {
+                result.Add(new AutomationPointChange
+                {
+                    Beat = point.Beat,
+                    NewValue = point.Value,
+                    ChangeType = PointChangeType.Added
+                });
+            }
+        }
+
+        // Find removed points
+        foreach (var point in list1)
+        {
+            if (!points2Dict.ContainsKey(point.Beat))
+            {
+                result.Add(new AutomationPointChange
+                {
+                    Beat = point.Beat,
+                    OldValue = point.Value,
+                    ChangeType = PointChangeType.Removed
+                });
+            }
+        }
+
+        // Find modified points
+        foreach (var point1 in list1)
+        {
+            if (points2Dict.TryGetValue(point1.Beat, out var point2))
+            {
+                if (Math.Abs(point1.Value - point2.Value) > 0.001)
+                {
+                    result.Add(new AutomationPointChange
+                    {
+                        Beat = point1.Beat,
+                        OldValue = point1.Value,
+                        NewValue = point2.Value,
+                        ChangeType = PointChangeType.Modified
+                    });
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Compares custom parameter dictionaries.
+    /// </summary>
+    private static ParameterComparison CompareParameters(Dictionary<string, object>? params1, Dictionary<string, object>? params2)
+    {
+        var result = new ParameterComparison();
+
+        var dict1 = params1 ?? new Dictionary<string, object>();
+        var dict2 = params2 ?? new Dictionary<string, object>();
+
+        // Find added parameters
+        foreach (var param in dict2)
+        {
+            if (!dict1.ContainsKey(param.Key))
+            {
+                result.Added.Add(new ParameterDiffItem
+                {
+                    ParameterName = param.Key,
+                    NewValue = param.Value?.ToString(),
+                    Category = "Custom"
+                });
+            }
+        }
+
+        // Find removed parameters
+        foreach (var param in dict1)
+        {
+            if (!dict2.ContainsKey(param.Key))
+            {
+                result.Removed.Add(new ParameterDiffItem
+                {
+                    ParameterName = param.Key,
+                    OldValue = param.Value?.ToString(),
+                    Category = "Custom"
+                });
+            }
+        }
+
+        // Find modified parameters
+        foreach (var param1 in dict1)
+        {
+            if (dict2.TryGetValue(param1.Key, out var value2))
+            {
+                if (param1.Value?.ToString() != value2?.ToString())
+                {
+                    result.Modified.Add(new ParameterDiffItem
+                    {
+                        ParameterName = param1.Key,
+                        OldValue = param1.Value?.ToString(),
+                        NewValue = value2?.ToString(),
+                        Category = "Custom"
+                    });
+                }
+                else
+                {
+                    result.Unchanged.Add(new ParameterDiffItem
+                    {
+                        ParameterName = param1.Key,
+                        OldValue = param1.Value?.ToString(),
+                        Category = "Custom"
+                    });
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Gets the note name for a MIDI note number.
+    /// </summary>
+    private static string GetNoteName(int noteNumber)
+    {
+        var noteNames = new[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+        var octave = (noteNumber / 12) - 1;
+        var noteName = noteNames[noteNumber % 12];
+        return $"{noteName}{octave}";
     }
 
     /// <summary>
@@ -601,6 +1137,30 @@ public class VersionComparison
     public List<VersionDifference> Differences { get; set; } = new();
 
     public bool HasDifferences => Differences.Count > 0;
+
+    // Detailed comparison results
+    public ParameterComparison? ParameterDiffs { get; set; }
+    public ClipComparison? ClipDiffs { get; set; }
+    public EffectComparison? EffectDiffs { get; set; }
+    public AutomationComparison? AutomationDiffs { get; set; }
+    public NoteComparison? NoteDiffs { get; set; }
+
+    // Summary counts
+    public int TotalAdded => (ParameterDiffs?.Added.Count ?? 0) + (ClipDiffs?.Added.Count ?? 0) +
+                             (EffectDiffs?.Added.Count ?? 0) + (AutomationDiffs?.Added.Count ?? 0) +
+                             (NoteDiffs?.Added.Count ?? 0);
+
+    public int TotalRemoved => (ParameterDiffs?.Removed.Count ?? 0) + (ClipDiffs?.Removed.Count ?? 0) +
+                               (EffectDiffs?.Removed.Count ?? 0) + (AutomationDiffs?.Removed.Count ?? 0) +
+                               (NoteDiffs?.Removed.Count ?? 0);
+
+    public int TotalModified => (ParameterDiffs?.Modified.Count ?? 0) + (ClipDiffs?.Modified.Count ?? 0) +
+                                (EffectDiffs?.Modified.Count ?? 0) + (AutomationDiffs?.Modified.Count ?? 0) +
+                                (NoteDiffs?.Modified.Count ?? 0);
+
+    public int TotalUnchanged => (ParameterDiffs?.Unchanged.Count ?? 0) + (ClipDiffs?.Unchanged.Count ?? 0) +
+                                 (EffectDiffs?.Unchanged.Count ?? 0) + (AutomationDiffs?.Unchanged.Count ?? 0) +
+                                 (NoteDiffs?.Unchanged.Count ?? 0);
 }
 
 public class VersionDifference
@@ -608,6 +1168,129 @@ public class VersionDifference
     public string Property { get; set; } = string.Empty;
     public string Value1 { get; set; } = string.Empty;
     public string Value2 { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Comparison results for track parameters (volume, pan, etc.).
+/// </summary>
+public class ParameterComparison
+{
+    public List<ParameterDiffItem> Added { get; set; } = new();
+    public List<ParameterDiffItem> Removed { get; set; } = new();
+    public List<ParameterDiffItem> Modified { get; set; } = new();
+    public List<ParameterDiffItem> Unchanged { get; set; } = new();
+}
+
+public class ParameterDiffItem
+{
+    public string ParameterName { get; set; } = string.Empty;
+    public string? OldValue { get; set; }
+    public string? NewValue { get; set; }
+    public string Category { get; set; } = "General"; // Volume, Pan, Send, etc.
+}
+
+/// <summary>
+/// Comparison results for clips/regions.
+/// </summary>
+public class ClipComparison
+{
+    public List<ClipDiffItem> Added { get; set; } = new();
+    public List<ClipDiffItem> Removed { get; set; } = new();
+    public List<ClipDiffItem> Modified { get; set; } = new();
+    public List<ClipDiffItem> Unchanged { get; set; } = new();
+}
+
+public class ClipDiffItem
+{
+    public string ClipId { get; set; } = string.Empty;
+    public string ClipName { get; set; } = string.Empty;
+    public double? OldStartBeat { get; set; }
+    public double? NewStartBeat { get; set; }
+    public double? OldDuration { get; set; }
+    public double? NewDuration { get; set; }
+    public string? OldAudioPath { get; set; }
+    public string? NewAudioPath { get; set; }
+    public List<string> Changes { get; set; } = new();
+}
+
+/// <summary>
+/// Comparison results for effects.
+/// </summary>
+public class EffectComparison
+{
+    public List<EffectDiffItem> Added { get; set; } = new();
+    public List<EffectDiffItem> Removed { get; set; } = new();
+    public List<EffectDiffItem> Modified { get; set; } = new();
+    public List<EffectDiffItem> Unchanged { get; set; } = new();
+}
+
+public class EffectDiffItem
+{
+    public string EffectId { get; set; } = string.Empty;
+    public string EffectName { get; set; } = string.Empty;
+    public string PluginId { get; set; } = string.Empty;
+    public bool? OldBypassed { get; set; }
+    public bool? NewBypassed { get; set; }
+    public List<ParameterDiffItem> ParameterChanges { get; set; } = new();
+}
+
+/// <summary>
+/// Comparison results for automation lanes.
+/// </summary>
+public class AutomationComparison
+{
+    public List<AutomationDiffItem> Added { get; set; } = new();
+    public List<AutomationDiffItem> Removed { get; set; } = new();
+    public List<AutomationDiffItem> Modified { get; set; } = new();
+    public List<AutomationDiffItem> Unchanged { get; set; } = new();
+}
+
+public class AutomationDiffItem
+{
+    public string ParameterId { get; set; } = string.Empty;
+    public string ParameterName { get; set; } = string.Empty;
+    public int OldPointCount { get; set; }
+    public int NewPointCount { get; set; }
+    public List<AutomationPointChange> PointChanges { get; set; } = new();
+}
+
+public class AutomationPointChange
+{
+    public double Beat { get; set; }
+    public double? OldValue { get; set; }
+    public double? NewValue { get; set; }
+    public PointChangeType ChangeType { get; set; }
+}
+
+public enum PointChangeType
+{
+    Added,
+    Removed,
+    Modified
+}
+
+/// <summary>
+/// Comparison results for MIDI notes.
+/// </summary>
+public class NoteComparison
+{
+    public List<NoteDiffItem> Added { get; set; } = new();
+    public List<NoteDiffItem> Removed { get; set; } = new();
+    public List<NoteDiffItem> Modified { get; set; } = new();
+    public List<NoteDiffItem> Unchanged { get; set; } = new();
+}
+
+public class NoteDiffItem
+{
+    public int NoteNumber { get; set; }
+    public string NoteName { get; set; } = string.Empty;
+    public double? OldStartBeat { get; set; }
+    public double? NewStartBeat { get; set; }
+    public double? OldDuration { get; set; }
+    public double? NewDuration { get; set; }
+    public int? OldVelocity { get; set; }
+    public int? NewVelocity { get; set; }
+    public List<string> Changes { get; set; } = new();
 }
 
 /// <summary>

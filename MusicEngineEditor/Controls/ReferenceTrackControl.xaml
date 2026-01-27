@@ -357,6 +357,26 @@
                                    Visibility="Collapsed"
                                    IsHitTestVisible="False"/>
 
+                        <!-- Loop Start Handle -->
+                        <Rectangle x:Name="LoopStartHandle"
+                                   Fill="#803498DB"
+                                   Width="6"
+                                   Cursor="SizeWE"
+                                   Visibility="Collapsed"
+                                   MouseLeftButtonDown="LoopStartHandle_MouseLeftButtonDown"
+                                   MouseLeftButtonUp="LoopHandle_MouseLeftButtonUp"
+                                   MouseMove="LoopHandle_MouseMove"/>
+
+                        <!-- Loop End Handle -->
+                        <Rectangle x:Name="LoopEndHandle"
+                                   Fill="#803498DB"
+                                   Width="6"
+                                   Cursor="SizeWE"
+                                   Visibility="Collapsed"
+                                   MouseLeftButtonDown="LoopEndHandle_MouseLeftButtonDown"
+                                   MouseLeftButtonUp="LoopHandle_MouseLeftButtonUp"
+                                   MouseMove="LoopHandle_MouseMove"/>
+
                         <!-- Waveform Path -->
                         <Path x:Name="WaveformPath"
                               Fill="{StaticResource ReferenceWaveformBrush}"

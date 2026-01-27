@@ -45,8 +45,8 @@ public partial class ChordTrackControl : UserControl
     private double _contextMenuPosition;
 
     // Colors for chord qualities
-    private static readonly Color MajorColor = Color.FromRgb(0x4C, 0xAF, 0x50);
-    private static readonly Color MinorColor = Color.FromRgb(0x21, 0x96, 0xF3);
+    private static readonly Color MajorColor = Color.FromRgb(0x00, 0xCC, 0x66);
+    private static readonly Color MinorColor = Color.FromRgb(0x00, 0xD9, 0xFF);
     private static readonly Color DominantColor = Color.FromRgb(0xFF, 0x98, 0x00);
     private static readonly Color DiminishedColor = Color.FromRgb(0x9C, 0x27, 0xB0);
     private static readonly Color AugmentedColor = Color.FromRgb(0xE9, 0x1E, 0x63);

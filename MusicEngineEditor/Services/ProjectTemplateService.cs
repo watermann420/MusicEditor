@@ -623,13 +623,13 @@ public class ProjectTemplateService : IProjectTemplateService
             Tags = new List<string> { "electronic", "edm", "synth", "dance", "house", "techno" },
             Tracks = new List<TemplateTrack>
             {
-                new() { Name = "Kick", Type = TemplateTrackType.Midi, Color = "#F44336", DefaultInstrument = "SimpleSynth", Group = "Drums" },
+                new() { Name = "Kick", Type = TemplateTrackType.Midi, Color = "#FF4757", DefaultInstrument = "SimpleSynth", Group = "Drums" },
                 new() { Name = "Snare", Type = TemplateTrackType.Midi, Color = "#FF9800", DefaultInstrument = "SimpleSynth", Group = "Drums" },
                 new() { Name = "Hi-Hats", Type = TemplateTrackType.Midi, Color = "#FFC107", DefaultInstrument = "SimpleSynth", Group = "Drums" },
                 new() { Name = "Bass", Type = TemplateTrackType.Midi, Color = "#3F51B5", DefaultInstrument = "SimpleSynth" },
                 new() { Name = "Lead", Type = TemplateTrackType.Midi, Color = "#9C27B0", DefaultInstrument = "SupersawSynth" },
                 new() { Name = "Pad", Type = TemplateTrackType.Midi, Color = "#00BCD4", DefaultInstrument = "PolySynth" },
-                new() { Name = "FX", Type = TemplateTrackType.Midi, Color = "#4CAF50", DefaultInstrument = "GranularSynth" },
+                new() { Name = "FX", Type = TemplateTrackType.Midi, Color = "#00CC66", DefaultInstrument = "GranularSynth" },
                 new() { Name = "Reverb Return", Type = TemplateTrackType.Return, Color = "#607D8B" },
                 new() { Name = "Delay Return", Type = TemplateTrackType.Return, Color = "#607D8B" },
                 new() { Name = "Master", Type = TemplateTrackType.Master, Color = "#6F737A", DefaultEffects = new List<string> { "Limiter" } }
@@ -684,13 +684,13 @@ public class ProjectTemplateService : IProjectTemplateService
             Tracks = new List<TemplateTrack>
             {
                 new() { Name = "808 Bass", Type = TemplateTrackType.Midi, Color = "#E91E63", DefaultInstrument = "SimpleSynth", DefaultEffects = new List<string> { "Distortion", "Compressor" } },
-                new() { Name = "Kick", Type = TemplateTrackType.Midi, Color = "#F44336", DefaultInstrument = "SimpleSynth", Group = "Drums" },
+                new() { Name = "Kick", Type = TemplateTrackType.Midi, Color = "#FF4757", DefaultInstrument = "SimpleSynth", Group = "Drums" },
                 new() { Name = "Snare/Clap", Type = TemplateTrackType.Midi, Color = "#FF9800", DefaultInstrument = "SimpleSynth", Group = "Drums" },
                 new() { Name = "Hi-Hats", Type = TemplateTrackType.Midi, Color = "#FFEB3B", DefaultInstrument = "SimpleSynth", Group = "Drums" },
                 new() { Name = "Percs", Type = TemplateTrackType.Midi, Color = "#FFC107", DefaultInstrument = "SimpleSynth", Group = "Drums" },
                 new() { Name = "Melody", Type = TemplateTrackType.Midi, Color = "#9C27B0", DefaultInstrument = "PolySynth" },
                 new() { Name = "Chords", Type = TemplateTrackType.Midi, Color = "#673AB7", DefaultInstrument = "PolySynth" },
-                new() { Name = "Lead Vocal", Type = TemplateTrackType.Audio, Color = "#2196F3", DefaultEffects = new List<string> { "Compressor", "ParametricEQ", "Reverb" } },
+                new() { Name = "Lead Vocal", Type = TemplateTrackType.Audio, Color = "#00D9FF", DefaultEffects = new List<string> { "Compressor", "ParametricEQ", "Reverb" } },
                 new() { Name = "Ad-libs", Type = TemplateTrackType.Audio, Color = "#03A9F4", DefaultEffects = new List<string> { "Compressor", "Delay" } },
                 new() { Name = "FX/Risers", Type = TemplateTrackType.Midi, Color = "#00BCD4", DefaultInstrument = "GranularSynth" },
                 new() { Name = "Reverb Return", Type = TemplateTrackType.Return, Color = "#607D8B" },
@@ -715,14 +715,14 @@ public class ProjectTemplateService : IProjectTemplateService
             Tags = new List<string> { "podcast", "voice", "speech", "interview", "recording", "spoken" },
             Tracks = new List<TemplateTrack>
             {
-                new() { Name = "Host", Type = TemplateTrackType.Audio, Color = "#4CAF50", DefaultEffects = new List<string> { "ParametricEQ", "Compressor", "DeEsser", "Gate" } },
+                new() { Name = "Host", Type = TemplateTrackType.Audio, Color = "#00CC66", DefaultEffects = new List<string> { "ParametricEQ", "Compressor", "DeEsser", "Gate" } },
                 new() { Name = "Co-Host", Type = TemplateTrackType.Audio, Color = "#8BC34A", DefaultEffects = new List<string> { "ParametricEQ", "Compressor", "DeEsser", "Gate" } },
                 new() { Name = "Guest", Type = TemplateTrackType.Audio, Color = "#CDDC39", DefaultEffects = new List<string> { "ParametricEQ", "Compressor", "DeEsser", "NoiseReduction" } },
                 new() { Name = "Intro Music", Type = TemplateTrackType.Audio, Color = "#FF9800" },
                 new() { Name = "Outro Music", Type = TemplateTrackType.Audio, Color = "#FF5722" },
                 new() { Name = "Sound FX", Type = TemplateTrackType.Audio, Color = "#9C27B0" },
                 new() { Name = "Background Music", Type = TemplateTrackType.Audio, Color = "#673AB7", Volume = 0.3f },
-                new() { Name = "Voice Bus", Type = TemplateTrackType.Bus, Color = "#2196F3", DefaultEffects = new List<string> { "Compressor" } },
+                new() { Name = "Voice Bus", Type = TemplateTrackType.Bus, Color = "#00D9FF", DefaultEffects = new List<string> { "Compressor" } },
                 new() { Name = "Master", Type = TemplateTrackType.Master, Color = "#6F737A", DefaultEffects = new List<string> { "Limiter", "LoudnessNormalizer" } }
             }
         });
@@ -751,7 +751,7 @@ public class ProjectTemplateService : IProjectTemplateService
                 new() { Name = "Synth Texture", Type = TemplateTrackType.Midi, Color = "#673AB7", DefaultInstrument = "GranularSynth", Group = "Synths" },
                 new() { Name = "Synth Bass", Type = TemplateTrackType.Midi, Color = "#3F51B5", DefaultInstrument = "SimpleSynth", Group = "Synths" },
                 new() { Name = "Percussion", Type = TemplateTrackType.Midi, Color = "#FF5722", DefaultInstrument = "SimpleSynth", Group = "Rhythm" },
-                new() { Name = "Taikos/Epic Drums", Type = TemplateTrackType.Midi, Color = "#F44336", DefaultInstrument = "SimpleSynth", Group = "Rhythm" },
+                new() { Name = "Taikos/Epic Drums", Type = TemplateTrackType.Midi, Color = "#FF4757", DefaultInstrument = "SimpleSynth", Group = "Rhythm" },
                 new() { Name = "Risers/Hits", Type = TemplateTrackType.Midi, Color = "#00BCD4", DefaultInstrument = "GranularSynth", Group = "FX" },
                 new() { Name = "Drones/Ambience", Type = TemplateTrackType.Midi, Color = "#009688", DefaultInstrument = "GranularSynth", Group = "FX" },
                 new() { Name = "Foley/SFX", Type = TemplateTrackType.Audio, Color = "#795548", Group = "FX" },

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using NAudio.Wave;
 using Shapes = System.Windows.Shapes;
 using Control = System.Windows.Controls.Control;
 using CheckBox = System.Windows.Controls.CheckBox;
@@ -94,11 +95,19 @@ public partial class AudioSuiteDialog : Window
     private float[]? _processedSamples;
     private int _sampleRate = 44100;
     private int _channels = 2;
-#pragma warning disable CS0414 // Field is assigned but its value is never used
     private bool _isPreviewing;
-#pragma warning restore CS0414
     private CancellationTokenSource? _previewCts;
     private bool _isComparing;
+
+    // Audio preview playback
+    private WaveOutEvent? _waveOut;
+    private AudioPreviewSampleProvider? _previewProvider;
+    private readonly object _previewLock = new();
+
+    /// <summary>
+    /// Preview duration in seconds.
+    /// </summary>
+    private const double PreviewDurationSeconds = 5.0;
 
     #endregion
 
@@ -580,6 +589,9 @@ public partial class AudioSuiteDialog : Window
     {
         if (_originalSamples == null || _selectedEffect == null) return;
 
+        // Stop any existing preview
+        StopPreviewPlayback();
+
         _previewCts?.Cancel();
         _previewCts = new CancellationTokenSource();
 
@@ -587,17 +599,124 @@ public partial class AudioSuiteDialog : Window
         PreviewButton.IsEnabled = false;
         StopPreviewButton.IsEnabled = true;
 
-        // Process and play preview
+        // Process samples
         var processedSamples = ProcessSamples(_originalSamples);
         _processedSamples = processedSamples;
+
+        // Calculate preview section (up to 5 seconds)
+        int previewSamples = (int)(PreviewDurationSeconds * _sampleRate * _channels);
+        previewSamples = Math.Min(previewSamples, processedSamples.Length);
+
+        // Create a preview section
+        var previewSection = new float[previewSamples];
+        Array.Copy(processedSamples, previewSection, previewSamples);
+
+        // Start audio playback
+        StartPreviewPlayback(previewSection);
 
         PreviewRequested?.Invoke(this, processedSamples);
         UpdateWaveformDisplay();
     }
 
+    /// <summary>
+    /// Starts audio playback for the preview samples.
+    /// </summary>
+    /// <param name="samples">The audio samples to play.</param>
+    private void StartPreviewPlayback(float[] samples)
+    {
+        lock (_previewLock)
+        {
+            try
+            {
+                // Create sample provider
+                _previewProvider = new AudioPreviewSampleProvider(samples, _sampleRate, _channels);
+                _previewProvider.PlaybackFinished += OnPreviewPlaybackFinished;
+
+                // Create and configure wave output
+                _waveOut = new WaveOutEvent
+                {
+                    DesiredLatency = 100 // 100ms latency for smooth preview
+                };
+                _waveOut.Init(_previewProvider);
+                _waveOut.PlaybackStopped += OnWaveOutPlaybackStopped;
+                _waveOut.Play();
+
+                System.Diagnostics.Debug.WriteLine($"[AudioSuiteDialog] Preview started: {samples.Length} samples, {_sampleRate}Hz, {_channels}ch");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AudioSuiteDialog] Preview playback error: {ex.Message}");
+                StopPreviewPlayback();
+
+                // Update UI
+                Dispatcher.Invoke(() =>
+                {
+                    _isPreviewing = false;
+                    PreviewButton.IsEnabled = true;
+                    StopPreviewButton.IsEnabled = false;
+                    MessageBox.Show($"Preview playback failed: {ex.Message}", "Preview Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                });
+            }
+        }
+    }
+
+    /// <summary>
+    /// Stops the audio preview playback.
+    /// </summary>
+    private void StopPreviewPlayback()
+    {
+        lock (_previewLock)
+        {
+            try
+            {
+                if (_previewProvider != null)
+                {
+                    _previewProvider.PlaybackFinished -= OnPreviewPlaybackFinished;
+                    _previewProvider = null;
+                }
+
+                if (_waveOut != null)
+                {
+                    _waveOut.PlaybackStopped -= OnWaveOutPlaybackStopped;
+                    _waveOut.Stop();
+                    _waveOut.Dispose();
+                    _waveOut = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AudioSuiteDialog] Error stopping preview: {ex.Message}");
+            }
+        }
+    }
+
+    private void OnPreviewPlaybackFinished(object? sender, EventArgs e)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            StopPreview();
+        });
+    }
+
+    private void OnWaveOutPlaybackStopped(object? sender, StoppedEventArgs e)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (_isPreviewing)
+            {
+                _isPreviewing = false;
+                PreviewButton.IsEnabled = true;
+                StopPreviewButton.IsEnabled = false;
+            }
+        });
+    }
+
     private void StopPreview()
     {
         _previewCts?.Cancel();
+        StopPreviewPlayback();
+
         _isPreviewing = false;
         PreviewButton.IsEnabled = true;
         StopPreviewButton.IsEnabled = false;
@@ -778,4 +897,115 @@ public partial class AudioSuiteDialog : Window
     }
 
     #endregion
+}
+
+/// <summary>
+/// Sample provider for audio preview playback.
+/// Plays a float[] buffer once and signals when finished.
+/// </summary>
+internal sealed class AudioPreviewSampleProvider : ISampleProvider
+{
+    private readonly float[] _samples;
+    private readonly int _sampleRate;
+    private readonly int _channels;
+    private int _position;
+    private bool _finished;
+
+    /// <summary>
+    /// Gets the wave format of this sample provider.
+    /// </summary>
+    public WaveFormat WaveFormat { get; }
+
+    /// <summary>
+    /// Raised when playback reaches the end of the buffer.
+    /// </summary>
+    public event EventHandler? PlaybackFinished;
+
+    /// <summary>
+    /// Creates a new audio preview sample provider.
+    /// </summary>
+    /// <param name="samples">The audio samples to play.</param>
+    /// <param name="sampleRate">The sample rate.</param>
+    /// <param name="channels">The number of channels.</param>
+    public AudioPreviewSampleProvider(float[] samples, int sampleRate, int channels)
+    {
+        _samples = samples ?? throw new ArgumentNullException(nameof(samples));
+        _sampleRate = sampleRate > 0 ? sampleRate : 44100;
+        _channels = channels > 0 ? channels : 2;
+        _position = 0;
+        _finished = false;
+
+        WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(_sampleRate, _channels);
+    }
+
+    /// <summary>
+    /// Gets the current playback position in samples.
+    /// </summary>
+    public int Position => _position;
+
+    /// <summary>
+    /// Gets the total number of samples.
+    /// </summary>
+    public int TotalSamples => _samples.Length;
+
+    /// <summary>
+    /// Gets whether playback has finished.
+    /// </summary>
+    public bool IsFinished => _finished;
+
+    /// <summary>
+    /// Resets the playback position to the beginning.
+    /// </summary>
+    public void Reset()
+    {
+        _position = 0;
+        _finished = false;
+    }
+
+    /// <summary>
+    /// Reads samples into the buffer.
+    /// </summary>
+    /// <param name="buffer">The buffer to fill.</param>
+    /// <param name="offset">The offset in the buffer.</param>
+    /// <param name="count">The number of samples to read.</param>
+    /// <returns>The number of samples read.</returns>
+    public int Read(float[] buffer, int offset, int count)
+    {
+        if (_finished)
+        {
+            // Fill with silence
+            for (int i = 0; i < count; i++)
+            {
+                buffer[offset + i] = 0f;
+            }
+            return count;
+        }
+
+        int samplesAvailable = _samples.Length - _position;
+        int samplesToCopy = Math.Min(count, samplesAvailable);
+
+        if (samplesToCopy > 0)
+        {
+            Array.Copy(_samples, _position, buffer, offset, samplesToCopy);
+            _position += samplesToCopy;
+        }
+
+        // Fill remaining with silence
+        if (samplesToCopy < count)
+        {
+            for (int i = samplesToCopy; i < count; i++)
+            {
+                buffer[offset + i] = 0f;
+            }
+        }
+
+        // Check if finished
+        if (_position >= _samples.Length && !_finished)
+        {
+            _finished = true;
+            PlaybackFinished?.Invoke(this, EventArgs.Empty);
+        }
+
+        return count;
+    }
 }

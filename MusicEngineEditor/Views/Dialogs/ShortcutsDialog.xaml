@@ -417,7 +417,7 @@
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Text" Value="Yes"/>
-                                            <Setter Property="Foreground" Value="#6AAB73"/>
+                                            <Setter Property="Foreground" Value="#00FF88"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding SelectedShortcut.IsCustomizable}" Value="False">
                                                     <Setter Property="Text" Value="No"/>

@@ -4,60 +4,61 @@
     <!-- Global Converters -->
     <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
-    <!-- JetBrains Rider Dark Theme Colors (Authentic) -->
+    <!-- Modern DAW Dark Theme - Deep Black with Cyan Accents -->
+    <!-- Inspired by Ableton Live, FL Studio, Bitwig Studio -->
 
-    <!-- Background Colors -->
-    <Color x:Key="BackgroundColor">#1E1F22</Color>
-    <Color x:Key="EditorBackgroundColor">#1E1F22</Color>
-    <Color x:Key="PanelBackgroundColor">#2B2D30</Color>
-    <Color x:Key="ToolbarBackgroundColor">#2B2D30</Color>
-    <Color x:Key="MenuBackgroundColor">#2B2D30</Color>
-    <Color x:Key="StatusBarBackgroundColor">#2B2D30</Color>
-    <Color x:Key="HeaderBackgroundColor">#1E1F22</Color>
-    <Color x:Key="HoverBackgroundColor">#4B6EAF33</Color>
-    <Color x:Key="SelectedBackgroundColor">#4B6EAF</Color>
-    <Color x:Key="InputBackgroundColor">#1E1F22</Color>
+    <!-- Background Colors - Deep True Blacks -->
+    <Color x:Key="BackgroundColor">#0D0D0D</Color>
+    <Color x:Key="EditorBackgroundColor">#121212</Color>
+    <Color x:Key="PanelBackgroundColor">#181818</Color>
+    <Color x:Key="ToolbarBackgroundColor">#141414</Color>
+    <Color x:Key="MenuBackgroundColor">#161616</Color>
+    <Color x:Key="StatusBarBackgroundColor">#141414</Color>
+    <Color x:Key="HeaderBackgroundColor">#161616</Color>
+    <Color x:Key="HoverBackgroundColor">#00D9FF20</Color>
+    <Color x:Key="SelectedBackgroundColor">#00D9FF</Color>
+    <Color x:Key="InputBackgroundColor">#0A0A0A</Color>
 
-    <!-- Border Colors -->
-    <Color x:Key="BorderColor">#393B40</Color>
-    <Color x:Key="SplitterColor">#2B2D30</Color>
-    <Color x:Key="SubtleBorderColor">#43454A</Color>
+    <!-- Border Colors - Subtle Dark Borders -->
+    <Color x:Key="BorderColor">#2A2A2A</Color>
+    <Color x:Key="SplitterColor">#161616</Color>
+    <Color x:Key="SubtleBorderColor">#333333</Color>
 
-    <!-- Text Colors -->
-    <Color x:Key="ForegroundColor">#BCBEC4</Color>
-    <Color x:Key="SecondaryForegroundColor">#6F737A</Color>
-    <Color x:Key="DisabledForegroundColor">#5C5E63</Color>
-    <Color x:Key="BrightForegroundColor">#DFE1E5</Color>
+    <!-- Text Colors - Bright and Readable -->
+    <Color x:Key="ForegroundColor">#E0E0E0</Color>
+    <Color x:Key="SecondaryForegroundColor">#808080</Color>
+    <Color x:Key="DisabledForegroundColor">#505050</Color>
+    <Color x:Key="BrightForegroundColor">#FFFFFF</Color>
 
-    <!-- Accent Colors (Rider Blue) -->
-    <Color x:Key="AccentColor">#4B6EAF</Color>
-    <Color x:Key="AccentHoverColor">#5A7FC4</Color>
-    <Color x:Key="AccentPressedColor">#3D5A91</Color>
-    <Color x:Key="LinkColor">#589DF6</Color>
+    <!-- Accent Colors - Vibrant Cyan/Teal -->
+    <Color x:Key="AccentColor">#00D9FF</Color>
+    <Color x:Key="AccentHoverColor">#33E1FF</Color>
+    <Color x:Key="AccentPressedColor">#00A8CC</Color>
+    <Color x:Key="LinkColor">#00D9FF</Color>
 
-    <!-- Status Colors -->
-    <Color x:Key="SuccessColor">#6AAB73</Color>
-    <Color x:Key="ErrorColor">#F75464</Color>
-    <Color x:Key="WarningColor">#E8B339</Color>
-    <Color x:Key="InfoColor">#4B6EAF</Color>
+    <!-- Status Colors - Vibrant and Clear -->
+    <Color x:Key="SuccessColor">#00FF88</Color>
+    <Color x:Key="ErrorColor">#FF4757</Color>
+    <Color x:Key="WarningColor">#FFB800</Color>
+    <Color x:Key="InfoColor">#00D9FF</Color>
 
-    <!-- Special Colors -->
-    <Color x:Key="RunButtonColor">#499C54</Color>
-    <Color x:Key="RunButtonHoverColor">#5AAF65</Color>
-    <Color x:Key="RunButtonPressedColor">#3D8B47</Color>
-    <Color x:Key="StopButtonColor">#C75450</Color>
-    <Color x:Key="StopButtonHoverColor">#D96560</Color>
+    <!-- Run Button Colors - Vibrant Green -->
+    <Color x:Key="RunButtonColor">#00CC66</Color>
+    <Color x:Key="RunButtonHoverColor">#00E673</Color>
+    <Color x:Key="RunButtonPressedColor">#00994D</Color>
+    <Color x:Key="StopButtonColor">#FF4757</Color>
+    <Color x:Key="StopButtonHoverColor">#FF6B7A</Color>
 
     <!-- Run Button Gradient Colors -->
-    <Color x:Key="RunButtonGradientStartColor">#4CAF50</Color>
-    <Color x:Key="RunButtonGradientEndColor">#388E3C</Color>
-    <Color x:Key="RunButtonGlowColor">#66BB6A</Color>
-    <Color x:Key="RunButtonGlowDimColor">#2E7D32</Color>
+    <Color x:Key="RunButtonGradientStartColor">#00E673</Color>
+    <Color x:Key="RunButtonGradientEndColor">#00994D</Color>
+    <Color x:Key="RunButtonGlowColor">#00FF88</Color>
+    <Color x:Key="RunButtonGlowDimColor">#006633</Color>
 
     <!-- Stop Button Colors -->
-    <Color x:Key="StopButtonMainColor">#D32F2F</Color>
-    <Color x:Key="StopButtonHoverMainColor">#E53935</Color>
-    <Color x:Key="StopButtonPressedMainColor">#B71C1C</Color>
+    <Color x:Key="StopButtonMainColor">#FF4757</Color>
+    <Color x:Key="StopButtonHoverMainColor">#FF6B7A</Color>
+    <Color x:Key="StopButtonPressedMainColor">#CC3945</Color>
 
     <!-- Brushes from Colors (using DynamicResource for hot-swap support) -->
     <SolidColorBrush x:Key="BackgroundBrush" Color="{DynamicResource BackgroundColor}"/>
@@ -91,20 +92,20 @@
     <SolidColorBrush x:Key="StopButtonBrush" Color="{DynamicResource StopButtonColor}"/>
     <SolidColorBrush x:Key="StopButtonHoverBrush" Color="{DynamicResource StopButtonHoverColor}"/>
 
-    <!-- Run Button Gradient Brush -->
+    <!-- Run Button Gradient Brush - Vibrant Green -->
     <LinearGradientBrush x:Key="RunButtonGradientBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Color="{DynamicResource RunButtonGradientStartColor}" Offset="0"/>
         <GradientStop Color="{DynamicResource RunButtonGradientEndColor}" Offset="1"/>
     </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="RunButtonHoverGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#5DBF61" Offset="0"/>
-        <GradientStop Color="#43A047" Offset="1"/>
+        <GradientStop Color="#00FF88" Offset="0"/>
+        <GradientStop Color="#00CC66" Offset="1"/>
     </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="RunButtonPressedGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#388E3C" Offset="0"/>
-        <GradientStop Color="#2E7D32" Offset="1"/>
+        <GradientStop Color="#00994D" Offset="0"/>
+        <GradientStop Color="#007A3D" Offset="1"/>
     </LinearGradientBrush>
 
     <!-- Stop Button Brushes -->
@@ -153,11 +154,11 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            <Setter TargetName="border" Property="Background" Value="#252525"/>
                             <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
@@ -186,7 +187,7 @@
                             BorderThickness="0">
                         <Border.Effect>
                             <DropShadowEffect x:Name="shadowEffect"
-                                              Color="#4CAF50"
+                                              Color="#00FF88"
                                               BlurRadius="0"
                                               ShadowDepth="0"
                                               Opacity="0"/>
@@ -203,10 +204,10 @@
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="shadowEffect"
                                                          Storyboard.TargetProperty="BlurRadius"
-                                                         To="8" Duration="0:0:0.2"/>
+                                                         To="12" Duration="0:0:0.2"/>
                                         <DoubleAnimation Storyboard.TargetName="shadowEffect"
                                                          Storyboard.TargetProperty="Opacity"
-                                                         To="0.6" Duration="0:0:0.2"/>
+                                                         To="0.7" Duration="0:0:0.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>
@@ -228,8 +229,8 @@
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource RunButtonPressedGradientBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="border" Property="Background" Value="#3D5940"/>
-                            <Setter Property="Foreground" Value="#8A8A8A"/>
+                            <Setter TargetName="border" Property="Background" Value="#1A3320"/>
+                            <Setter Property="Foreground" Value="#606060"/>
                             <Setter TargetName="border" Property="Effect">
                                 <Setter.Value>
                                     <DropShadowEffect BlurRadius="0" Opacity="0" ShadowDepth="0"/>
@@ -260,7 +261,7 @@
                             BorderThickness="0">
                         <Border.Effect>
                             <DropShadowEffect x:Name="stopShadowEffect"
-                                              Color="#D32F2F"
+                                              Color="#FF4757"
                                               BlurRadius="0"
                                               ShadowDepth="0"
                                               Opacity="0"/>
@@ -318,7 +319,7 @@
 
     <!-- Running Button Style (Animated Pulsing Glow for Active Script) -->
     <Style x:Key="RunningButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="#4CAF50"/>
+        <Setter Property="Background" Value="#00CC66"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="FontSize" Value="12"/>
@@ -332,10 +333,10 @@
                             Padding="{TemplateBinding Padding}"
                             CornerRadius="4"
                             BorderThickness="2"
-                            BorderBrush="#66BB6A">
+                            BorderBrush="#00FF88">
                         <Border.Effect>
                             <DropShadowEffect x:Name="pulseGlow"
-                                              Color="#4CAF50"
+                                              Color="#00CC66"
                                               BlurRadius="12"
                                               ShadowDepth="0"
                                               Opacity="0.7"/>
@@ -363,7 +364,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#66BB6A"/>
+                            <Setter TargetName="border" Property="Background" Value="#00FF88"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="#388E3C"/>
@@ -403,11 +404,11 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            <Setter TargetName="border" Property="Background" Value="#252525"/>
                             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                            <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -430,10 +431,10 @@
         <Setter Property="FontSize" Value="12"/>
         <Style.Triggers>
             <Trigger Property="IsHighlighted" Value="True">
-                <Setter Property="Foreground" Value="#1E1F22"/>
+                <Setter Property="Foreground" Value="#0D0D0D"/>
             </Trigger>
             <Trigger Property="IsSubmenuOpen" Value="True">
-                <Setter Property="Foreground" Value="#1E1F22"/>
+                <Setter Property="Foreground" Value="#0D0D0D"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -560,7 +561,7 @@
                                 <Condition Property="IsSelected" Value="false"/>
                                 <Condition Property="IsMouseOver" Value="true"/>
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                            <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -677,7 +678,7 @@
 
     <!-- ToolTip Style -->
     <Style TargetType="ToolTip">
-        <Setter Property="Background" Value="#3C3F41"/>
+        <Setter Property="Background" Value="#252525"/>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
@@ -686,7 +687,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToolTip">
-                    <Border Background="#3C3F41"
+                    <Border Background="#252525"
                             BorderBrush="{DynamicResource SubtleBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="4"
@@ -706,8 +707,8 @@
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#2B2D30" Offset="0"/>
-                    <GradientStop Color="#252628" Offset="1"/>
+                    <GradientStop Color="#181818" Offset="0"/>
+                    <GradientStop Color="#141414" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
@@ -718,13 +719,13 @@
 
     <!-- Accent Gradient Brush -->
     <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#4B6EAF" Offset="0"/>
+        <GradientStop Color="#00D9FF" Offset="0"/>
         <GradientStop Color="#3D5A91" Offset="1"/>
     </LinearGradientBrush>
 
     <!-- Modern Card Style -->
     <Style x:Key="CardStyle" TargetType="Border">
-        <Setter Property="Background" Value="#2B2D30"/>
+        <Setter Property="Background" Value="#181818"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="6"/>
@@ -746,8 +747,8 @@
 
     <!-- ComboBox Toggle Button Style -->
     <Style x:Key="ComboBoxToggleButtonStyle" TargetType="ToggleButton">
-        <Setter Property="Background" Value="#1A1A1A"/>
-        <Setter Property="BorderBrush" Value="#3C3F41"/>
+        <Setter Property="Background" Value="#161616"/>
+        <Setter Property="BorderBrush" Value="#252525"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Focusable" Value="False"/>
         <Setter Property="ClickMode" Value="Press"/>
@@ -791,9 +792,9 @@
 
     <!-- Modern ComboBox Style -->
     <Style TargetType="ComboBox">
-        <Setter Property="Background" Value="#1A1A1A"/>
+        <Setter Property="Background" Value="#161616"/>
         <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderBrush" Value="#3C3F41"/>
+        <Setter Property="BorderBrush" Value="#252525"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="8,6"/>
         <Setter Property="FontSize" Value="12"/>
@@ -833,8 +834,8 @@
                                Focusable="False"
                                PopupAnimation="Slide">
                             <Border x:Name="DropDownBorder"
-                                    Background="#1A1A1A"
-                                    BorderBrush="#3C3F41"
+                                    Background="#161616"
+                                    BorderBrush="#252525"
                                     BorderThickness="1"
                                     CornerRadius="4"
                                     Margin="0,2,0,0"
@@ -877,7 +878,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                            <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -991,7 +992,7 @@
 
     <!-- Modern Progress Bar Style -->
     <Style TargetType="ProgressBar">
-        <Setter Property="Background" Value="#1E1F22"/>
+        <Setter Property="Background" Value="#0D0D0D"/>
         <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Height" Value="4"/>
@@ -1030,10 +1031,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            <Setter TargetName="border" Property="Background" Value="#252525"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                            <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                             <Setter Property="Foreground" Value="White"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
@@ -1064,7 +1065,7 @@
                             CornerRadius="4">
                         <Border.Effect>
                             <DropShadowEffect x:Name="shadowEffect"
-                                              Color="#4B6EAF"
+                                              Color="#00D9FF"
                                               BlurRadius="0"
                                               ShadowDepth="0"
                                               Opacity="0"/>
@@ -1135,16 +1136,16 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                            <Setter TargetName="border" Property="Background" Value="#252525"/>
                             <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                            <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                             <Setter Property="Foreground" Value="White"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
-                            <Setter TargetName="border" Property="BorderBrush" Value="#393B40"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="#2A2A2A"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -1190,8 +1191,8 @@
                             <Setter TargetName="checkBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="checkBorder" Property="Background" Value="#2B2D30"/>
-                            <Setter TargetName="checkBorder" Property="BorderBrush" Value="#393B40"/>
+                            <Setter TargetName="checkBorder" Property="Background" Value="#181818"/>
+                            <Setter TargetName="checkBorder" Property="BorderBrush" Value="#2A2A2A"/>
                             <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -1223,7 +1224,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                            <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -1278,8 +1279,8 @@
                             <Setter TargetName="radioBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="radioBorder" Property="Background" Value="#2B2D30"/>
-                            <Setter TargetName="radioBorder" Property="BorderBrush" Value="#393B40"/>
+                            <Setter TargetName="radioBorder" Property="Background" Value="#181818"/>
+                            <Setter TargetName="radioBorder" Property="BorderBrush" Value="#2A2A2A"/>
                             <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -1332,7 +1333,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="RowBackground" Value="Transparent"/>
-        <Setter Property="AlternatingRowBackground" Value="#252628"/>
+        <Setter Property="AlternatingRowBackground" Value="#141414"/>
         <Setter Property="GridLinesVisibility" Value="Horizontal"/>
         <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource BorderBrush}"/>
@@ -1357,7 +1358,7 @@
                 <Setter Property="Foreground" Value="White"/>
             </Trigger>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#3C3F41"/>
+                <Setter Property="Background" Value="#252525"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -1398,7 +1399,7 @@
                             <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#3C3F41"/>
+                            <Setter TargetName="Border" Property="Background" Value="#252525"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

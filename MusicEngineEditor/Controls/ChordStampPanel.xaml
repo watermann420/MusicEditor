@@ -5,18 +5,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="200" d:DesignWidth="300"
-             Background="#2B2D30">
+             Background="#181818">
 
     <UserControl.Resources>
         <!-- Colors matching dark theme -->
-        <Color x:Key="BackgroundColor">#2B2D30</Color>
+        <Color x:Key="BackgroundColor">#181818</Color>
         <Color x:Key="PanelBackgroundColor">#252629</Color>
-        <Color x:Key="BorderColor">#393B40</Color>
-        <Color x:Key="TextPrimaryColor">#BCBEC4</Color>
-        <Color x:Key="TextSecondaryColor">#6F737A</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+        <Color x:Key="TextPrimaryColor">#E0E0E0</Color>
+        <Color x:Key="TextSecondaryColor">#808080</Color>
         <Color x:Key="AccentColor">#4A9EFF</Color>
-        <Color x:Key="ButtonHoverColor">#3C3F41</Color>
-        <Color x:Key="ButtonActiveColor">#4B6EAF</Color>
+        <Color x:Key="ButtonHoverColor">#252525</Color>
+        <Color x:Key="ButtonActiveColor">#00D9FF</Color>
 
         <!-- Brushes -->
         <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>

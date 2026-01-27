@@ -34,7 +34,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -47,8 +47,8 @@
         </Style>
 
         <!-- Category badge colors -->
-        <SolidColorBrush x:Key="FactoryBadgeBrush" Color="#6AAB73"/>
-        <SolidColorBrush x:Key="UserBadgeBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="FactoryBadgeBrush" Color="#00FF88"/>
+        <SolidColorBrush x:Key="UserBadgeBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="PluginBadgeBrush" Color="#9C7CE8"/>
     </Window.Resources>
 
@@ -107,7 +107,7 @@
 
                 <!-- Search Box -->
                 <Border Grid.Column="0"
-                        Background="#252628"
+                        Background="#141414"
                         BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="4"
@@ -287,7 +287,7 @@
                         Content="Delete"
                         Command="{Binding DeletePresetCommand}"
                         Style="{DynamicResource ToolbarButtonStyle}"
-                        Foreground="#F75464"
+                        Foreground="#FF4757"
                         Padding="12,6"
                         ToolTip="Delete selected user preset"/>
 

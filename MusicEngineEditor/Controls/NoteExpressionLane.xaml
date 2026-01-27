@@ -6,12 +6,12 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls"
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="600"
-             Background="#1E1F22"
+             Background="#0D0D0D"
              ClipToBounds="True">
 
     <UserControl.Resources>
         <!-- Colors -->
-        <SolidColorBrush x:Key="PitchBendBrush" Color="#2196F3"/>
+        <SolidColorBrush x:Key="PitchBendBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="PressureBrush" Color="#FF9800"/>
         <SolidColorBrush x:Key="SlideBrush" Color="#9C27B0"/>
         <SolidColorBrush x:Key="GridLineBrush" Color="#2A2A2A"/>
@@ -43,7 +43,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -80,7 +80,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#3F5A7D"/>

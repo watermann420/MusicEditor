@@ -9,16 +9,16 @@
         MinWidth="500" MinHeight="550"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
-        Background="#1E1F22"
-        Foreground="#BCBEC4">
+        Background="#0D0D0D"
+        Foreground="#E0E0E0">
 
     <Window.Resources>
         <!-- Dark theme colors -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="PanelBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#808080"/>
         <SolidColorBrush x:Key="AccentBrush" Color="#4A9EFF"/>
 
         <!-- Section style -->

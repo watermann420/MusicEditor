@@ -16,7 +16,7 @@
         <Color x:Key="CompRegionColor">#FFEB3B</Color>
         <Color x:Key="CompHighlightColor">#80FFEB3B</Color>
         <Color x:Key="CrossfadeHandleColor">#00BCD4</Color>
-        <Color x:Key="ActiveTakeColor">#4CAF50</Color>
+        <Color x:Key="ActiveTakeColor">#00CC66</Color>
 
         <SolidColorBrush x:Key="TakeHeaderBrush" Color="{StaticResource TakeHeaderColor}"/>
         <SolidColorBrush x:Key="TakeBackgroundBrush" Color="{StaticResource TakeBackgroundColor}"/>
@@ -89,7 +89,7 @@
 
         <!-- Flatten Button Style (Primary Action) -->
         <Style x:Key="FlattenButtonStyle" TargetType="Button" BasedOn="{StaticResource CompToolbarButtonStyle}">
-            <Setter Property="Background" Value="#4B6EAF"/>
+            <Setter Property="Background" Value="#00D9FF"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Style.Triggers>

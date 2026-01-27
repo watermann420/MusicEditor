@@ -403,7 +403,7 @@ public partial class ChannelSettingsDialog : Window
             Y1 = centerY,
             X2 = width,
             Y2 = centerY,
-            Stroke = new SolidColorBrush(Color.FromRgb(0x39, 0x3B, 0x40)),
+            Stroke = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A)),
             StrokeThickness = 1,
             StrokeDashArray = new DoubleCollection { 4, 4 }
         };

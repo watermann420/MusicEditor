@@ -7,20 +7,20 @@
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="280"
              d:DataContext="{d:DesignInstance Type=vm:TrackPropertiesViewModel}"
-             Background="#1E1F22">
+             Background="#0D0D0D">
 
     <UserControl.Resources>
         <!-- Colors matching the dark theme -->
-        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#2B2D30"/>
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#181818"/>
         <SolidColorBrush x:Key="CardHoverBrush" Color="#313335"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
         <SolidColorBrush x:Key="BrightForegroundBrush" Color="#DFE1E5"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
         <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#00FF88"/>
         <SolidColorBrush x:Key="WarningBrush" Color="#E8B339"/>
         <SolidColorBrush x:Key="ErrorBrush" Color="#F75464"/>
         <SolidColorBrush x:Key="MuteActiveBrush" Color="#FF5555"/>
@@ -258,7 +258,7 @@
                                                 <Ellipse x:Name="thumbEllipse"
                                                          Width="14" Height="14"
                                                          Fill="{StaticResource AccentBrush}"
-                                                         Stroke="#1E1F22"
+                                                         Stroke="#0D0D0D"
                                                          StrokeThickness="2"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
@@ -295,7 +295,7 @@
                 BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#2B2D30" Offset="0"/>
+                    <GradientStop Color="#181818" Offset="0"/>
                     <GradientStop Color="#252628" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
@@ -538,7 +538,7 @@
                                             <BeginStoryboard>
                                                 <Storyboard>
                                                     <ColorAnimation Storyboard.TargetProperty="(ToggleButton.Background).(SolidColorBrush.Color)"
-                                                                    To="#6AAB73" Duration="0:0:0.1"/>
+                                                                    To="#00FF88" Duration="0:0:0.1"/>
                                                 </Storyboard>
                                             </BeginStoryboard>
                                         </EventTrigger>

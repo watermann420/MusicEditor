@@ -12,12 +12,12 @@
 
     <UserControl.Resources>
         <!-- Colors -->
-        <Color x:Key="SelectionColor">#4B6EAF</Color>
+        <Color x:Key="SelectionColor">#00D9FF</Color>
         <Color x:Key="SelectionFillColor">#304B6EAF</Color>
         <Color x:Key="HandleColor">#FFFFFF</Color>
         <Color x:Key="InfoBackgroundColor">#E0000000</Color>
-        <Color x:Key="TextColor">#BCBEC4</Color>
-        <Color x:Key="GridColor">#2B2D30</Color>
+        <Color x:Key="TextColor">#E0E0E0</Color>
+        <Color x:Key="GridColor">#181818</Color>
 
         <!-- Brushes -->
         <SolidColorBrush x:Key="SelectionBrush" Color="{StaticResource SelectionColor}"/>

@@ -17,8 +17,8 @@
 
         <!-- Format badge colors -->
         <SolidColorBrush x:Key="Vst2BadgeBrush" Color="#9C7CE8"/>
-        <SolidColorBrush x:Key="Vst3BadgeBrush" Color="#6AAB73"/>
-        <SolidColorBrush x:Key="InternalBadgeBrush" Color="#4B6EAF"/>
+        <SolidColorBrush x:Key="Vst3BadgeBrush" Color="#00FF88"/>
+        <SolidColorBrush x:Key="InternalBadgeBrush" Color="#00D9FF"/>
 
         <!-- Category list item style -->
         <Style x:Key="CategoryListItemStyle" TargetType="ListBoxItem">
@@ -38,7 +38,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -68,7 +68,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
@@ -100,7 +100,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Search Box -->
-                <Border Background="#252628"
+                <Border Background="#141414"
                         BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="4"

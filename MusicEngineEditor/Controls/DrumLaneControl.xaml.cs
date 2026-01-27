@@ -196,7 +196,7 @@ public partial class DrumLaneControl : UserControl
 
     private Rectangle CreateStepElement(DrumStep step, double width, double height)
     {
-        var baseColor = Lane != null ? ParseColor(Lane.Color) : Color.FromRgb(0x4B, 0x6E, 0xAF);
+        var baseColor = Lane != null ? ParseColor(Lane.Color) : Color.FromRgb(0x00, 0xD9, 0xFF);
 
         // Determine background based on step position (beat grouping)
         var isDownbeat = step.StepIndex % 4 == 0;
@@ -223,7 +223,7 @@ public partial class DrumLaneControl : UserControl
             Fill = new SolidColorBrush(fillColor),
             Stroke = step.IsPlaying
                 ? new SolidColorBrush(Colors.White)
-                : new SolidColorBrush(Color.FromRgb(0x39, 0x3B, 0x40)),
+                : new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A)),
             StrokeThickness = step.IsPlaying ? 2 : 1,
             RadiusX = 3,
             RadiusY = 3,
@@ -242,7 +242,7 @@ public partial class DrumLaneControl : UserControl
             Steps[oldStep].IsPlaying = false;
             if (_stepElements.TryGetValue(oldStep, out var oldRect))
             {
-                oldRect.Stroke = new SolidColorBrush(Color.FromRgb(0x39, 0x3B, 0x40));
+                oldRect.Stroke = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A));
                 oldRect.StrokeThickness = 1;
             }
         }
@@ -303,7 +303,7 @@ public partial class DrumLaneControl : UserControl
             return;
 
         var step = Steps[stepIndex];
-        var baseColor = Lane != null ? ParseColor(Lane.Color) : Color.FromRgb(0x4B, 0x6E, 0xAF);
+        var baseColor = Lane != null ? ParseColor(Lane.Color) : Color.FromRgb(0x00, 0xD9, 0xFF);
         var isDownbeat = stepIndex % 4 == 0;
         var backgroundColor = isDownbeat
             ? Color.FromRgb(0x2B, 0x2D, 0x30)
@@ -328,7 +328,7 @@ public partial class DrumLaneControl : UserControl
         }
         catch
         {
-            return Color.FromRgb(0x4B, 0x6E, 0xAF);
+            return Color.FromRgb(0x00, 0xD9, 0xFF);
         }
     }
 
@@ -397,7 +397,7 @@ public partial class DrumLaneControl : UserControl
         var border = new Border
         {
             Background = new SolidColorBrush(Color.FromRgb(0x2B, 0x2D, 0x30)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x39, 0x3B, 0x40)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A)),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(4),
             Padding = new Thickness(8)

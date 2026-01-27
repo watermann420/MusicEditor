@@ -139,7 +139,7 @@ public partial class DrumLane : ObservableObject
     /// Display color for the lane.
     /// </summary>
     [ObservableProperty]
-    private string _color = "#4B6EAF";
+    private string _color = "#00D9FF";
 
     /// <summary>
     /// Volume adjustment for the lane (0.0 - 1.0).
