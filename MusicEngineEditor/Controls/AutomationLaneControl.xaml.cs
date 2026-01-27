@@ -398,7 +398,41 @@ public partial class AutomationLaneControl : UserControl
 
     private void ColorIndicator_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        // TODO: Show color picker dialog
+        if (Lane == null) return;
+
+        // Parse current lane color
+        Color currentColor;
+        try
+        {
+            currentColor = (Color)ColorConverter.ConvertFromString(Lane.Color);
+        }
+        catch
+        {
+            currentColor = Color.FromRgb(0x00, 0xD9, 0xFF);
+        }
+
+        // Create and show color picker dialog
+        var colorDialog = new System.Windows.Forms.ColorDialog
+        {
+            Color = System.Drawing.Color.FromArgb(
+                currentColor.A, currentColor.R, currentColor.G, currentColor.B),
+            FullOpen = true,
+            AnyColor = true
+        };
+
+        if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        {
+            var newColor = Color.FromArgb(
+                colorDialog.Color.A,
+                colorDialog.Color.R,
+                colorDialog.Color.G,
+                colorDialog.Color.B);
+
+            // Update lane color
+            Lane.Color = $"#{newColor.A:X2}{newColor.R:X2}{newColor.G:X2}{newColor.B:X2}";
+            ColorIndicator.Background = new SolidColorBrush(newColor);
+            LaneSettingsChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private void CurveTypeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -5,38 +5,29 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="150" d:DesignWidth="400"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinHeight="80"
              MinWidth="200">
 
     <UserControl.Resources>
-        <!-- Dark theme colors -->
-        <Color x:Key="BackgroundColor">#0D0D0D</Color>
-        <Color x:Key="GridColor">#181818</Color>
-        <Color x:Key="BorderColor">#2A2A2A</Color>
-        <Color x:Key="TextColor">#808080</Color>
-        <Color x:Key="BarColor">#00CED1</Color>
-        <Color x:Key="BarTopColor">#00FFFF</Color>
-        <Color x:Key="PeakColor">#FFFFFF</Color>
-
-        <!-- Brushes -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
-        <SolidColorBrush x:Key="GridBrush" Color="{StaticResource GridColor}"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
-        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
-        <SolidColorBrush x:Key="PeakBrush" Color="{StaticResource PeakColor}"/>
+        <!-- Dark theme colors - using theme resources -->
+        <SolidColorBrush x:Key="LocalBackgroundBrush" Color="{DynamicResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="GridBrush" Color="{DynamicResource SpectrumGridColor}"/>
+        <SolidColorBrush x:Key="LocalBorderBrush" Color="{DynamicResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{DynamicResource SecondaryForegroundColor}"/>
+        <SolidColorBrush x:Key="PeakBrush" Color="{DynamicResource BrightForegroundColor}"/>
 
         <!-- Bar gradient (bottom to top: dark cyan to bright cyan) -->
         <LinearGradientBrush x:Key="BarGradientBrush" StartPoint="0,1" EndPoint="0,0">
-            <GradientStop Color="#004D4D" Offset="0.0"/>
-            <GradientStop Color="#008080" Offset="0.3"/>
-            <GradientStop Color="#00CED1" Offset="0.6"/>
-            <GradientStop Color="#00FFFF" Offset="0.85"/>
-            <GradientStop Color="#7FFFFF" Offset="1.0"/>
+            <GradientStop Color="{DynamicResource SpectrumGradient1Color}" Offset="0.0"/>
+            <GradientStop Color="{DynamicResource SpectrumGradient2Color}" Offset="0.3"/>
+            <GradientStop Color="{DynamicResource SpectrumGradient3Color}" Offset="0.6"/>
+            <GradientStop Color="{DynamicResource SpectrumGradient4Color}" Offset="0.85"/>
+            <GradientStop Color="{DynamicResource SpectrumGradient5Color}" Offset="1.0"/>
         </LinearGradientBrush>
 
         <!-- Outline style brush -->
-        <SolidColorBrush x:Key="OutlineBrush" Color="#00CED1"/>
+        <SolidColorBrush x:Key="OutlineBrush" Color="{DynamicResource SpectrumBarColor}"/>
     </UserControl.Resources>
 
     <Grid x:Name="MainGrid">
@@ -57,10 +48,10 @@
 
         <!-- Spectrum Display Area -->
         <Border Grid.Row="0" Grid.Column="1"
-                BorderBrush="{StaticResource BorderBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1"
                 CornerRadius="2"
-                Background="{StaticResource BackgroundBrush}">
+                Background="{DynamicResource BackgroundBrush}">
             <Canvas x:Name="SpectrumCanvas"
                     ClipToBounds="True"/>
         </Border>

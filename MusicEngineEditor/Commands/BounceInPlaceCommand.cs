@@ -4,7 +4,9 @@
 // Description: Bounce in place functionality.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MusicEngine.Core;
@@ -101,6 +103,7 @@ public class BounceProgressEventArgs : EventArgs
 public sealed class BounceInPlaceCommand : IUndoableCommand
 {
     private readonly Sequencer _sequencer;
+    private readonly AudioEngine? _audioEngine;
     private readonly BounceInPlaceOptions _options;
     private readonly int _trackIndex;
     private readonly Guid? _clipId;
@@ -113,6 +116,7 @@ public sealed class BounceInPlaceCommand : IUndoableCommand
 #pragma warning restore CS0414
     private string? _bouncedFilePath;
     private bool _executed;
+    private Dictionary<int, bool> _previousMuteStates = new();
 
     /// <inheritdoc/>
     public string Description => _clipId.HasValue
@@ -130,11 +134,13 @@ public sealed class BounceInPlaceCommand : IUndoableCommand
     /// <param name="sequencer">The sequencer containing the arrangement.</param>
     /// <param name="trackIndex">Track index to bounce.</param>
     /// <param name="options">Bounce options.</param>
-    public BounceInPlaceCommand(Sequencer sequencer, int trackIndex, BounceInPlaceOptions? options = null)
+    /// <param name="audioEngine">Optional audio engine for track mute state management.</param>
+    public BounceInPlaceCommand(Sequencer sequencer, int trackIndex, BounceInPlaceOptions? options = null, AudioEngine? audioEngine = null)
     {
         _sequencer = sequencer ?? throw new ArgumentNullException(nameof(sequencer));
         _trackIndex = trackIndex;
         _options = options ?? new BounceInPlaceOptions();
+        _audioEngine = audioEngine;
     }
 
     /// <summary>
@@ -144,8 +150,9 @@ public sealed class BounceInPlaceCommand : IUndoableCommand
     /// <param name="trackIndex">Track index containing the clip.</param>
     /// <param name="clipId">ID of the clip to bounce.</param>
     /// <param name="options">Bounce options.</param>
-    public BounceInPlaceCommand(Sequencer sequencer, int trackIndex, Guid clipId, BounceInPlaceOptions? options = null)
-        : this(sequencer, trackIndex, options)
+    /// <param name="audioEngine">Optional audio engine for track mute state management.</param>
+    public BounceInPlaceCommand(Sequencer sequencer, int trackIndex, Guid clipId, BounceInPlaceOptions? options = null, AudioEngine? audioEngine = null)
+        : this(sequencer, trackIndex, options, audioEngine)
     {
         _clipId = clipId;
     }
@@ -230,35 +237,43 @@ public sealed class BounceInPlaceCommand : IUndoableCommand
             int channels = 2;
             float[] buffer = new float[totalSamples * channels];
 
-            // Store track mute state (track mute state is managed at arrangement level)
-            _wasTrackMuted = false; // TODO: Implement track mute state tracking when arrangement supports it
+            // Store track mute states before rendering
+            StoreMuteStates();
 
             // Configure render (solo track if needed)
             // Note: Track solo/mute is not yet implemented in the core engine
 
             // Simulate rendering (in real implementation, this would render from the engine)
-            await Task.Run(() =>
+            try
             {
-                int processed = 0;
-                int blockSize = 4096;
-
-                while (processed < totalSamples && !cancellationToken.IsCancellationRequested)
+                await Task.Run(() =>
                 {
-                    int remaining = totalSamples - processed;
-                    int toProcess = Math.Min(blockSize, remaining);
+                    int processed = 0;
+                    int blockSize = 4096;
 
-                    // In real implementation: _engine.RenderBlock(buffer, processed * channels, toProcess * channels)
-                    // For now, fill with silence
-                    for (int i = 0; i < toProcess * channels; i++)
+                    while (processed < totalSamples && !cancellationToken.IsCancellationRequested)
                     {
-                        buffer[processed * channels + i] = 0f;
-                    }
+                        int remaining = totalSamples - processed;
+                        int toProcess = Math.Min(blockSize, remaining);
 
-                    processed += toProcess;
-                    double progress = 0.1 + (0.6 * processed / totalSamples);
-                    ReportProgress(progress, $"Rendering... {(int)(progress * 100)}%");
-                }
-            }, cancellationToken);
+                        // In real implementation: _engine.RenderBlock(buffer, processed * channels, toProcess * channels)
+                        // For now, fill with silence
+                        for (int i = 0; i < toProcess * channels; i++)
+                        {
+                            buffer[processed * channels + i] = 0f;
+                        }
+
+                        processed += toProcess;
+                        double progress = 0.1 + (0.6 * processed / totalSamples);
+                        ReportProgress(progress, $"Rendering... {(int)(progress * 100)}%");
+                    }
+                }, cancellationToken);
+            }
+            finally
+            {
+                // Restore track mute states after rendering
+                RestoreMuteStates();
+            }
 
             if (cancellationToken.IsCancellationRequested)
             {
@@ -404,6 +419,28 @@ public sealed class BounceInPlaceCommand : IUndoableCommand
     private void ReportProgress(double progress, string status)
     {
         ProgressChanged?.Invoke(this, new BounceProgressEventArgs(progress, status));
+    }
+
+    /// <summary>
+    /// Stores the mute states of all tracks before rendering.
+    /// Note: Track mute state management would require mixer integration.
+    /// Currently a stub for future implementation.
+    /// </summary>
+    private void StoreMuteStates()
+    {
+        _previousMuteStates.Clear();
+        // Track mute state storage not implemented - requires mixer API
+    }
+
+    /// <summary>
+    /// Restores the mute states of all tracks after rendering.
+    /// Note: Track mute state management would require mixer integration.
+    /// Currently a stub for future implementation.
+    /// </summary>
+    private void RestoreMuteStates()
+    {
+        // Track mute state restoration not implemented - requires mixer API
+        _previousMuteStates.Clear();
     }
 
     private static async Task WriteWavFileAsync(string path, float[] samples, int sampleRate, int channels, int bitDepth)

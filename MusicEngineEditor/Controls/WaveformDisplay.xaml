@@ -9,16 +9,16 @@
              ClipToBounds="True">
 
     <UserControl.Resources>
-        <!-- Waveform Colors -->
-        <SolidColorBrush x:Key="WaveformFillBrush" Color="#00CC66"/>
-        <SolidColorBrush x:Key="WaveformStrokeBrush" Color="#66BB6A"/>
-        <SolidColorBrush x:Key="WaveformRightChannelBrush" Color="#00D9FF"/>
-        <SolidColorBrush x:Key="WaveformRightChannelStrokeBrush" Color="#64B5F6"/>
-        <SolidColorBrush x:Key="PlayheadBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="SelectionBrush" Color="#404B6EAF"/>
-        <SolidColorBrush x:Key="SelectionBorderBrush" Color="#00D9FF"/>
-        <SolidColorBrush x:Key="CenterLineBrush" Color="#40FFFFFF"/>
-        <SolidColorBrush x:Key="LoadingTextBrush" Color="#808080"/>
+        <!-- Waveform Colors - using theme resources -->
+        <SolidColorBrush x:Key="WaveformFillBrush" Color="{DynamicResource WaveformLeftChannelColor}"/>
+        <SolidColorBrush x:Key="WaveformStrokeBrush" Color="{DynamicResource WaveformLeftChannelStrokeColor}"/>
+        <SolidColorBrush x:Key="WaveformRightChannelBrush" Color="{DynamicResource WaveformRightChannelColor}"/>
+        <SolidColorBrush x:Key="WaveformRightChannelStrokeBrush" Color="{DynamicResource WaveformRightChannelStrokeColor}"/>
+        <SolidColorBrush x:Key="PlayheadBrush" Color="{DynamicResource BrightForegroundColor}"/>
+        <SolidColorBrush x:Key="SelectionBrush" Color="{DynamicResource WaveformSelectionColor}"/>
+        <SolidColorBrush x:Key="SelectionBorderBrush" Color="{DynamicResource AccentColor}"/>
+        <SolidColorBrush x:Key="CenterLineBrush" Color="{DynamicResource WaveformCenterLineColor}"/>
+        <SolidColorBrush x:Key="LoadingTextBrush" Color="{DynamicResource SecondaryForegroundColor}"/>
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid">

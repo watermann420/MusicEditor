@@ -63,6 +63,69 @@
     <Color x:Key="StopButtonHoverMainColor">#FF6B7A</Color>
     <Color x:Key="StopButtonPressedMainColor">#CC3945</Color>
 
+    <!-- Hover/Interactive States -->
+    <Color x:Key="CloseButtonHoverColor">#FF4757</Color>
+    <SolidColorBrush x:Key="CloseButtonHoverBrush" Color="{StaticResource CloseButtonHoverColor}"/>
+
+    <!-- Gradient Colors -->
+    <Color x:Key="ToolbarGradientTopColor">#181818</Color>
+    <Color x:Key="ToolbarGradientBottomColor">#141414</Color>
+    <Color x:Key="StatusBarGradientTopColor">#141414</Color>
+    <Color x:Key="StatusBarGradientBottomColor">#0D0D0D</Color>
+
+    <!-- Run Button Additional Colors -->
+    <Color x:Key="RunButtonActiveColor">#107C10</Color>
+    <Color x:Key="RunButtonDarkColor">#2D5A2D</Color>
+    <SolidColorBrush x:Key="RunButtonActiveBrush" Color="{StaticResource RunButtonActiveColor}"/>
+    <SolidColorBrush x:Key="RunButtonDarkBrush" Color="{StaticResource RunButtonDarkColor}"/>
+
+    <!-- Element Hover Color (used in inline triggers) -->
+    <Color x:Key="ElementHoverColor">#252525</Color>
+    <SolidColorBrush x:Key="ElementHoverBrush" Color="{StaticResource ElementHoverColor}"/>
+
+    <!-- Status Indicator Colors -->
+    <Color x:Key="StatusSuccessGlowColor">#00FF88</Color>
+    <Color x:Key="StatusSuccessMainColor">#00CC66</Color>
+
+    <!-- Piano Roll Colors -->
+    <Color x:Key="PianoRollBackgroundColor">#1A1A1A</Color>
+    <Color x:Key="BlackKeyLaneColor">#151515</Color>
+    <Color x:Key="GridLineColor">#2A2A2A</Color>
+    <Color x:Key="BarLineColor">#3A3A3A</Color>
+    <Color x:Key="NoteSurfaceColor">#4A9EFF</Color>
+    <Color x:Key="NoteSelectionColor">#304A9EFF</Color>
+    <SolidColorBrush x:Key="PianoRollBackgroundBrush" Color="{StaticResource PianoRollBackgroundColor}"/>
+    <SolidColorBrush x:Key="BlackKeyLaneBrush" Color="{StaticResource BlackKeyLaneColor}"/>
+    <SolidColorBrush x:Key="GridLineBrush" Color="{StaticResource GridLineColor}"/>
+    <SolidColorBrush x:Key="BarLineBrush" Color="{StaticResource BarLineColor}"/>
+    <SolidColorBrush x:Key="NoteSurfaceBrush" Color="{StaticResource NoteSurfaceColor}"/>
+
+    <!-- Spectrum Analyzer Colors -->
+    <Color x:Key="SpectrumGridColor">#181818</Color>
+    <Color x:Key="SpectrumBarColor">#00CED1</Color>
+    <Color x:Key="SpectrumBarTopColor">#00FFFF</Color>
+    <Color x:Key="SpectrumGradient1Color">#004D4D</Color>
+    <Color x:Key="SpectrumGradient2Color">#008080</Color>
+    <Color x:Key="SpectrumGradient3Color">#00CED1</Color>
+    <Color x:Key="SpectrumGradient4Color">#00FFFF</Color>
+    <Color x:Key="SpectrumGradient5Color">#7FFFFF</Color>
+    <SolidColorBrush x:Key="SpectrumGridBrush" Color="{StaticResource SpectrumGridColor}"/>
+    <SolidColorBrush x:Key="SpectrumBarBrush" Color="{StaticResource SpectrumBarColor}"/>
+
+    <!-- Waveform Colors -->
+    <Color x:Key="WaveformLeftChannelColor">#00CC66</Color>
+    <Color x:Key="WaveformLeftChannelStrokeColor">#66BB6A</Color>
+    <Color x:Key="WaveformRightChannelColor">#00D9FF</Color>
+    <Color x:Key="WaveformRightChannelStrokeColor">#64B5F6</Color>
+    <Color x:Key="WaveformSelectionColor">#404B6EAF</Color>
+    <Color x:Key="WaveformCenterLineColor">#40FFFFFF</Color>
+    <SolidColorBrush x:Key="WaveformLeftChannelBrush" Color="{StaticResource WaveformLeftChannelColor}"/>
+    <SolidColorBrush x:Key="WaveformRightChannelBrush" Color="{StaticResource WaveformRightChannelColor}"/>
+
+    <!-- Analysis Panel Colors -->
+    <Color x:Key="AnalysisPanelColor">#252629</Color>
+    <SolidColorBrush x:Key="AnalysisPanelBrush" Color="{StaticResource AnalysisPanelColor}"/>
+
     <!-- Brushes from Colors (using DynamicResource for hot-swap support) -->
     <SolidColorBrush x:Key="BackgroundBrush" Color="{DynamicResource BackgroundColor}"/>
     <SolidColorBrush x:Key="EditorBackgroundBrush" Color="{DynamicResource EditorBackgroundColor}"/>

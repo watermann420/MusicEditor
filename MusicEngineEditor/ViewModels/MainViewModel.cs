@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -871,7 +872,26 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void Debug()
     {
-        // TODO: Implement debugging
+        var audioEngineService = AudioEngineService.Instance;
+        var audioEngine = audioEngineService.AudioEngine;
+
+        var debugInfo = new StringBuilder();
+        debugInfo.AppendLine("=== Debug Information ===");
+        debugInfo.AppendLine($"Audio Engine Initialized: {audioEngineService.IsInitialized}");
+        debugInfo.AppendLine($"Is Playing: {_playbackService.IsPlaying}");
+        debugInfo.AppendLine($"Is Paused: {_playbackService.IsPaused}");
+        debugInfo.AppendLine($"Sample Rate: {audioEngineService.SampleRate}");
+        debugInfo.AppendLine($"Buffer Size: {audioEngineService.BufferSize}");
+        debugInfo.AppendLine($"BPM: {_playbackService.BPM}");
+        debugInfo.AppendLine($"Current Beat: {_playbackService.CurrentBeat:F2}");
+        debugInfo.AppendLine($"Current Time: {_playbackService.CurrentTime:F3}s");
+        debugInfo.AppendLine($"Loop Enabled: {_playbackService.LoopEnabled}");
+        debugInfo.AppendLine($"Track Count: N/A");
+        debugInfo.AppendLine($"Project: {CurrentProject?.Name ?? "None"}");
+        debugInfo.AppendLine($"Open Documents: {OpenDocuments.Count}");
+
+        System.Diagnostics.Debug.WriteLine(debugInfo.ToString());
+        StatusMessage = "Debug info written to output";
     }
 
     [RelayCommand]

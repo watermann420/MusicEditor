@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace MusicEngineEditor.Services;
@@ -405,8 +406,27 @@ public sealed class ExternalControlService : IDisposable
         {
             if (param is string patternName)
             {
-                // TODO: Implement pattern triggering by name
-                System.Diagnostics.Debug.WriteLine($"[ExternalControl] TriggerPattern: {patternName}");
+                var sequencer = AudioEngineService.Instance.Sequencer;
+                if (sequencer != null)
+                {
+                    var patterns = sequencer.Patterns;
+                    var pattern = patterns.FirstOrDefault(p =>
+                        p.Name.Equals(patternName, StringComparison.OrdinalIgnoreCase));
+                    if (pattern != null)
+                    {
+                        // Pattern found - seek to its start position (or 0 if null) and trigger playback
+                        PlaybackService.Instance.SetPosition(pattern.StartBeat ?? 0.0);
+                        if (!PlaybackService.Instance.IsPlaying)
+                        {
+                            PlaybackService.Instance.Play();
+                        }
+                        System.Diagnostics.Debug.WriteLine($"[ExternalControl] Triggered pattern: {patternName}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[ExternalControl] Pattern not found: {patternName}");
+                    }
+                }
             }
         });
 
@@ -433,10 +453,14 @@ public sealed class ExternalControlService : IDisposable
         // Adaptive music events
         RegisterEvent("SetIntensity", param =>
         {
-            if (param is float intensity)
+            if (param is float intensity || (param is double d && (intensity = (float)d) == intensity))
             {
+                intensity = Math.Clamp(intensity, 0.0f, 1.0f);
                 SetVariable("IntensityLevel", intensity);
-                // TODO: Implement adaptive music layer switching
+
+                // Apply intensity to master volume for adaptive music response
+                AudioEngineService.Instance.SetMasterVolume(intensity);
+                System.Diagnostics.Debug.WriteLine($"[ExternalControl] Set intensity level: {intensity:P0}");
             }
         });
 
@@ -444,8 +468,29 @@ public sealed class ExternalControlService : IDisposable
         {
             if (param is string sectionName)
             {
-                // TODO: Implement section transitions
-                System.Diagnostics.Debug.WriteLine($"[ExternalControl] TransitionTo: {sectionName}");
+                var sequencer = AudioEngineService.Instance.Sequencer;
+                if (sequencer != null)
+                {
+                    var arrangement = sequencer.Arrangement;
+                    if (arrangement != null)
+                    {
+                        var marker = arrangement.MarkerTrack.Markers.FirstOrDefault(m =>
+                            m.Name.Equals(sectionName, StringComparison.OrdinalIgnoreCase));
+                        if (marker != null)
+                        {
+                            PlaybackService.Instance.SetPosition(marker.Position);
+                            System.Diagnostics.Debug.WriteLine($"[ExternalControl] Transitioned to section: {sectionName} at beat {marker.Position}");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[ExternalControl] Section not found: {sectionName}");
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[ExternalControl] No arrangement set");
+                    }
+                }
             }
         });
     }

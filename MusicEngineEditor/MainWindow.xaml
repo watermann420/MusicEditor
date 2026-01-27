@@ -15,7 +15,7 @@
         WindowStyle="None"
         AllowsTransparency="False"
         ResizeMode="CanResizeWithGrip"
-        Background="#0D0D0D">
+        Background="{DynamicResource BackgroundBrush}">
 
     <Window.InputBindings>
         <!-- Run with Ctrl+Enter or F5 -->
@@ -46,7 +46,7 @@
         </Grid.RowDefinitions>
 
         <!-- Custom Title Bar with Menu and Window Controls -->
-        <Border Grid.Row="0" Background="#0D0D0D" BorderBrush="#2A2A2A" BorderThickness="0,0,0,1"
+        <Border Grid.Row="0" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
                 MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
                 MouseLeftButtonUp="TitleBar_MouseLeftButtonUp"
                 MouseMove="TitleBar_MouseMove">
@@ -66,15 +66,15 @@
                     <Menu Background="Transparent" VerticalAlignment="Center">
                         <Menu.Resources>
                             <Style TargetType="MenuItem">
-                                <Setter Property="Foreground" Value="#E0E0E0"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                                 <Setter Property="Padding" Value="8,6"/>
                                 <Setter Property="FontSize" Value="12"/>
                                 <Style.Triggers>
                                     <Trigger Property="IsHighlighted" Value="True">
-                                        <Setter Property="Background" Value="#252525"/>
+                                        <Setter Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                     </Trigger>
                                     <Trigger Property="IsSubmenuOpen" Value="True">
-                                        <Setter Property="Background" Value="#252525"/>
+                                        <Setter Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -139,7 +139,7 @@
 
                 <!-- Center: Window Title -->
                 <TextBlock Grid.Column="1" Text="MusicEngine Editor"
-                           Foreground="#808080" FontSize="12" FontWeight="Normal"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}" FontSize="12" FontWeight="Normal"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            IsHitTestVisible="False"/>
 
@@ -155,12 +155,12 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
                                             <Border x:Name="border" Background="Transparent">
-                                                <Path Data="M 0,0 H 10" Stroke="#E0E0E0" StrokeThickness="1"
+                                                <Path Data="M 0,0 H 10" Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#252525"/>
+                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -183,19 +183,19 @@
                                                 <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <!-- Maximize icon (square) -->
                                                     <Rectangle x:Name="MaximizeIcon" Width="10" Height="10"
-                                                               Stroke="#E0E0E0" StrokeThickness="1" Fill="Transparent"/>
+                                                               Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1" Fill="Transparent"/>
                                                     <!-- Restore icon (two overlapping squares) - hidden by default -->
                                                     <Canvas x:Name="RestoreIcon" Width="10" Height="10" Visibility="Collapsed">
-                                                        <Rectangle Width="8" Height="8" Stroke="#E0E0E0" StrokeThickness="1"
+                                                        <Rectangle Width="8" Height="8" Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
                                                                    Fill="Transparent" Canvas.Left="2" Canvas.Top="0"/>
-                                                        <Rectangle Width="8" Height="8" Stroke="#E0E0E0" StrokeThickness="1"
-                                                                   Fill="#0D0D0D" Canvas.Left="0" Canvas.Top="2"/>
+                                                        <Rectangle Width="8" Height="8" Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
+                                                                   Fill="{DynamicResource BackgroundBrush}" Canvas.Left="0" Canvas.Top="2"/>
                                                     </Canvas>
                                                 </Grid>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#252525"/>
+                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -215,12 +215,12 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
                                             <Border x:Name="border" Background="Transparent">
-                                                <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" Stroke="#E0E0E0" StrokeThickness="1"
+                                                <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#FF4757"/>
+                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource CloseButtonHoverBrush}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -237,8 +237,8 @@
         <Border Grid.Row="1" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#181818" Offset="0"/>
-                    <GradientStop Color="#121212" Offset="1"/>
+                    <GradientStop Color="{StaticResource ToolbarGradientTopColor}" Offset="0"/>
+                    <GradientStop Color="{StaticResource EditorBackgroundColor}" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
             <DockPanel Margin="10,8">
@@ -261,7 +261,7 @@
                             Cursor="Hand" MinWidth="70">
                         <Button.Style>
                             <Style TargetType="Button">
-                                <Setter Property="Background" Value="#2D5A2D"/>
+                                <Setter Property="Background" Value="{DynamicResource RunButtonDarkBrush}"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                                 <Setter Property="FontSize" Value="12"/>
@@ -314,8 +314,8 @@
                 <Border DockPanel.Dock="Right" CornerRadius="6" Padding="14,6" Margin="8,0,0,0">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#141414" Offset="0"/>
-                            <GradientStop Color="#0D0D0D" Offset="1"/>
+                            <GradientStop Color="{StaticResource ToolbarGradientBottomColor}" Offset="0"/>
+                            <GradientStop Color="{StaticResource BackgroundColor}" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
                     <Border.Effect>
@@ -369,8 +369,8 @@
                         <Border DockPanel.Dock="Top" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Color="#181818" Offset="0"/>
-                                    <GradientStop Color="#141414" Offset="1"/>
+                                    <GradientStop Color="{StaticResource ToolbarGradientTopColor}" Offset="0"/>
+                                    <GradientStop Color="{StaticResource ToolbarGradientBottomColor}" Offset="1"/>
                                 </LinearGradientBrush>
                             </Border.Background>
                             <DockPanel Margin="12,10">
@@ -472,7 +472,7 @@
                                                                 <Condition Property="IsSelected" Value="False"/>
                                                                 <Condition Property="IsMouseOver" Value="True"/>
                                                             </MultiTrigger.Conditions>
-                                                            <Setter TargetName="Border" Property="Background" Value="#252525"/>
+                                                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                                         </MultiTrigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
@@ -631,7 +631,7 @@
                                                         </Border>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="Border" Property="Background" Value="#252525"/>
+                                                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                                             </Trigger>
                                                             <Trigger Property="IsSelected" Value="True">
                                                                 <Setter TargetName="Border" Property="Background" Value="#00D9FF"/>
@@ -803,8 +803,8 @@
         <StatusBar Grid.Row="3">
             <StatusBar.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#181818" Offset="0"/>
-                    <GradientStop Color="#121212" Offset="1"/>
+                    <GradientStop Color="{StaticResource ToolbarGradientTopColor}" Offset="0"/>
+                    <GradientStop Color="{StaticResource EditorBackgroundColor}" Offset="1"/>
                 </LinearGradientBrush>
             </StatusBar.Background>
             <StatusBarItem>
@@ -842,7 +842,7 @@
 
                     <TextBlock Text="|" Foreground="{StaticResource BorderBrush}" Margin="0,0,8,0" FontSize="11"/>
 
-                    <Border Background="#0D0D0D" CornerRadius="3" Padding="8,2" Margin="0,0,12,0">
+                    <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="3" Padding="8,2" Margin="0,0,12,0">
                         <TextBlock x:Name="CaretPositionDisplay" Text="Ln 1, Col 1" FontSize="11"/>
                     </Border>
 

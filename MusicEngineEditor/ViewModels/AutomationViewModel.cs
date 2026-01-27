@@ -55,6 +55,9 @@ public partial class AutomationViewModel : ViewModelBase
     [ObservableProperty]
     private AutomationCurveType _defaultCurveType = AutomationCurveType.Linear;
 
+    [ObservableProperty]
+    private double _viewWidth = 800.0;
+
     /// <summary>
     /// Gets the automation player instance.
     /// </summary>
@@ -271,7 +274,45 @@ public partial class AutomationViewModel : ViewModelBase
     [RelayCommand]
     private void ZoomToFit()
     {
-        // TODO: Calculate optimal zoom based on all tracks
+        TimeScale = CalculateOptimalZoom();
+    }
+
+    /// <summary>
+    /// Calculates the optimal zoom level to fit all automation data in view.
+    /// </summary>
+    /// <returns>The optimal time scale value.</returns>
+    private double CalculateOptimalZoom()
+    {
+        if (Tracks == null || !Tracks.Any())
+            return 50.0;
+
+        double maxTime = 0;
+        foreach (var track in Tracks)
+        {
+            if (track.Lanes != null)
+            {
+                foreach (var lane in track.Lanes)
+                {
+                    if (lane.Lane?.Curve?.Points != null && lane.Lane.Curve.Points.Any())
+                    {
+                        var lastPoint = lane.Lane.Curve.Points.Max(p => p.Time);
+                        maxTime = Math.Max(maxTime, lastPoint);
+                    }
+                }
+            }
+        }
+
+        if (maxTime <= 0)
+            return 50.0;
+
+        // Use ViewWidth property (can be set by the view) with a fallback
+        double viewWidth = ViewWidth > 0 ? ViewWidth : 800;
+
+        // Calculate optimal zoom with 10% padding
+        double optimalZoom = viewWidth / (maxTime * 1.1);
+
+        // Clamp to reasonable range (10 to 500 pixels per time unit)
+        return Math.Clamp(optimalZoom, 10.0, 500.0);
     }
 
     [RelayCommand]

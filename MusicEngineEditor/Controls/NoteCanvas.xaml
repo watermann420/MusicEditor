@@ -5,23 +5,23 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="800"
-             Background="#1A1A1A"
+             Background="{DynamicResource PianoRollBackgroundBrush}"
              ClipToBounds="True"
              Focusable="True">
 
     <UserControl.Resources>
-        <!-- Colors for the Piano Roll -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#1A1A1A"/>
-        <SolidColorBrush x:Key="WhiteKeyLaneBrush" Color="#1A1A1A"/>
-        <SolidColorBrush x:Key="BlackKeyLaneBrush" Color="#151515"/>
-        <SolidColorBrush x:Key="GridLineBrush" Color="#2A2A2A"/>
-        <SolidColorBrush x:Key="BarLineBrush" Color="#3A3A3A"/>
-        <SolidColorBrush x:Key="NoteDefaultBrush" Color="#4A9EFF"/>
-        <SolidColorBrush x:Key="NoteSelectedBorderBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="PlayheadBrush" Color="#FF5555"/>
-        <SolidColorBrush x:Key="GhostNoteBrush" Color="#4A9EFF"/>
-        <SolidColorBrush x:Key="SelectionRectBrush" Color="#304A9EFF"/>
-        <SolidColorBrush x:Key="SelectionRectBorderBrush" Color="#4A9EFF"/>
+        <!-- Colors for the Piano Roll - using theme resources -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{DynamicResource PianoRollBackgroundColor}"/>
+        <SolidColorBrush x:Key="WhiteKeyLaneBrush" Color="{DynamicResource PianoRollBackgroundColor}"/>
+        <SolidColorBrush x:Key="BlackKeyLaneBrush" Color="{DynamicResource BlackKeyLaneColor}"/>
+        <SolidColorBrush x:Key="GridLineBrush" Color="{DynamicResource GridLineColor}"/>
+        <SolidColorBrush x:Key="BarLineBrush" Color="{DynamicResource BarLineColor}"/>
+        <SolidColorBrush x:Key="NoteDefaultBrush" Color="{DynamicResource NoteSurfaceColor}"/>
+        <SolidColorBrush x:Key="NoteSelectedBorderBrush" Color="{DynamicResource BrightForegroundColor}"/>
+        <SolidColorBrush x:Key="PlayheadBrush" Color="{DynamicResource ErrorColor}"/>
+        <SolidColorBrush x:Key="GhostNoteBrush" Color="{DynamicResource NoteSurfaceColor}"/>
+        <SolidColorBrush x:Key="SelectionRectBrush" Color="{DynamicResource NoteSelectionColor}"/>
+        <SolidColorBrush x:Key="SelectionRectBorderBrush" Color="{DynamicResource NoteSurfaceColor}"/>
 
         <!-- Drop shadow for notes -->
         <DropShadowEffect x:Key="NoteDropShadow"
