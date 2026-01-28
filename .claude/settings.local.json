@@ -18,7 +18,9 @@
       "Bash(cmd /c:*)",
       "Bash(C:/Program\\\\ Files/dotnet/dotnet.exe build:*)",
       "Bash(dir /s /b \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\*.csproj\")",
-      "Bash(\"C:\\\\Program Files\\\\dotnet\\\\dotnet.exe\" build \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEngine\\\\MusicEngine.csproj\")"
+      "Bash(\"C:\\\\Program Files\\\\dotnet\\\\dotnet.exe\" build \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEngine\\\\MusicEngine.csproj\")",
+      "Bash(\"C:\\\\Program Files\\\\dotnet\\\\dotnet.exe\" build \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEngine\\\\MusicEngine.sln\" --no-restore)",
+      "Bash(\"C:\\\\Program Files\\\\dotnet\\\\dotnet.exe\" --list-sdks)"
     ]
   }
 }
