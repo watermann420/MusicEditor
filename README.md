@@ -19,8 +19,9 @@ Discord: discord.gg/tWkqHMsB6a
 
 ### Code Editor
 - Syntax highlighting optimized for MusicEngine scripts
-- Intelligent autocomplete for classes, methods, and parameters
+- Intelligent autocomplete for classes, methods, and parameters (improved synth.* members)
 - Strudel-style inline sliders (drag numbers to change values)
+- **Inline visuals** (punchcard, piano roll glow, mixer meters) at 60 FPS, inserted via code comments
 - Live code visualization (active patterns glow)
 - Dark/Light themes
 
@@ -50,6 +51,24 @@ git clone https://github.com/watermann420/MusicEngineEditor.git
 ```
 
 Then **double-click `StartEditor.bat`** - done!
+
+---
+
+## Inline Visuals (editor-only)
+
+Add a command as a comment and the visual appears right under that line:
+
+```csharp
+// .punchcard
+// .pianoroll
+// .mixervisual height=160
+```
+
+- 60 FPS updates
+- Notes glow while playing
+- Mixer meters show per-channel levels
+
+See `docs/InlineVisuals.md` for details.
 
 ---
 

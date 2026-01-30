@@ -45,6 +45,7 @@ public partial class MainWindow : Window
     private bool _showingOutput = true;
     private CompletionProvider? _completionProvider;
     private InlineSliderService? _inlineSliderService;
+    private InlineVisualEngine? _inlineVisuals;
     private VisualizationIntegration? _visualization;
 
     // VST Plugin Windows
@@ -86,6 +87,9 @@ public partial class MainWindow : Window
         // Setup autocomplete using the new CompletionProvider
         // Triggers on Ctrl+Space and automatically on dot (.)
         _completionProvider = EditorSetup.SetupCompletion(CodeEditor);
+
+        // Inline visuals (Strudel-style overlays under code lines)
+        _inlineVisuals = new InlineVisualEngine(CodeEditor);
 
         // Handle Ctrl+Enter for run and other keyboard shortcuts
         CodeEditor.PreviewKeyDown += CodeEditor_PreviewKeyDown;
@@ -405,10 +409,14 @@ public partial class MainWindow : Window
             // Populate MIDI devices list
             RefreshMidiDevices();
 
-            // Connect visualization to the sequencer
+            // Connect visualization and inline visuals to the sequencer
             if (_engineService.Sequencer != null)
             {
                 _visualization?.ConnectToSequencer(_engineService.Sequencer);
+                if (_inlineVisuals != null)
+                {
+                    _inlineVisuals.Sequencer = _engineService.Sequencer;
+                }
             }
 
             // Initialize Transport ViewModel
@@ -455,6 +463,7 @@ public partial class MainWindow : Window
         _statusTimer.Stop();
         _sliderHotReloadTimer?.Stop();
         _inlineSliderService?.Dispose();
+        _inlineVisuals?.Dispose();
         _visualization?.Dispose();
         _transportViewModel?.Dispose();
         _performanceMonitorService.Dispose();

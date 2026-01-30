@@ -1230,3 +1230,9 @@ C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-win
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\PolyphonicPitchView.baml
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\SessionView.baml
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\SpectralEditorView.baml
+C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\MixerInlineControl.baml
+C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PianoRollInlineControl.baml
+C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\MixerInlineControl.g.cs
+C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PianoRollInlineControl.g.cs
+C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PunchcardInlineControl.g.cs
+C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PunchcardInlineControl.baml

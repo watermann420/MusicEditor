@@ -491,18 +491,42 @@
     </Style>
 
     <Style TargetType="MenuItem">
-        <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-        <Setter Property="Padding" Value="10,5"/>
         <Setter Property="FontSize" Value="12"/>
-        <Style.Triggers>
-            <Trigger Property="IsHighlighted" Value="True">
-                <Setter Property="Foreground" Value="#0D0D0D"/>
-            </Trigger>
-            <Trigger Property="IsSubmenuOpen" Value="True">
-                <Setter Property="Foreground" Value="#0D0D0D"/>
-            </Trigger>
-        </Style.Triggers>
+        <Setter Property="Padding" Value="10,5"/>
+        <Setter Property="Background" Value="{DynamicResource MenuBackgroundBrush}"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="0"
+                            CornerRadius="3"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter ContentSource="Header"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="#252525"/>
+                            <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsSubmenuOpen" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="#303030"/>
+                            <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                    <Setter Property="Background" Value="{DynamicResource MenuBackgroundBrush}"/>
+                </Style>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- ContextMenu Style -->

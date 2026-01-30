@@ -237,6 +237,12 @@ public class CompletionProvider
         // First check if it's a known global object
         var objectLower = objectName.ToLower();
 
+        // synth.* shortcuts
+        if (objectLower == "synth")
+        {
+            return GetSynthMembersList();
+        }
+
         // Check declared variables first
         if (_declaredVariables.TryGetValue(objectName, out var varType))
         {
@@ -256,6 +262,7 @@ public class CompletionProvider
             _ => GetMembersForType(InferTypeFromContext(objectName))
         };
     }
+
 
     /// <summary>
     /// Infer the type of a variable from context
@@ -293,7 +300,7 @@ public class CompletionProvider
     {
         return typeName.ToLower() switch
         {
-            "synth" => GetSynthMembers(),
+            "synth" => GetSynthMembersList(),
             "sampler" => GetSamplerMembers(),
             "pattern" => GetPatternMembers(),
             "vst" or "vstplugin" => GetVstPluginMembers(),
@@ -383,10 +390,12 @@ public class CompletionProvider
             CompletionItems.GetMidiInputCount,
             CompletionItems.GetMidiOutputCount,
             CompletionItems.GetMidiInputName,
+            CompletionItems.GetMidiOutputCount,
+            CompletionItems.GetMidiInputName,
         };
     }
 
-    private static List<MusicEngineCompletionData> GetSynthMembers()
+    private static List<MusicEngineCompletionData> GetSynthMembersList()
     {
         return new List<MusicEngineCompletionData>
         {
@@ -395,6 +404,35 @@ public class CompletionProvider
             CompletionItems.AllNotesOff,
             CompletionItems.SetParameter,
             CompletionItems.GetParameter,
+            CompletionItems.RouteMidiInput,
+            CompletionItems.MapRange,
+            new MusicEngineCompletionData("SetWaveform", CompletionItemType.Method,
+                "void SetWaveform(int waveform)", "Set oscillator waveform (0=sine,1=tri,2=saw,3=square)",
+                "SetWaveform()", -1),
+            new MusicEngineCompletionData("SetCutoff", CompletionItemType.Method,
+                "void SetCutoff(float value)", "Set filter cutoff (0-1)",
+                "SetCutoff()", -1),
+            new MusicEngineCompletionData("SetResonance", CompletionItemType.Method,
+                "void SetResonance(float value)", "Set filter resonance (0-1)",
+                "SetResonance()", -1),
+            new MusicEngineCompletionData("SetAttack", CompletionItemType.Method,
+                "void SetAttack(float seconds)", "Set envelope attack time in seconds",
+                "SetAttack()", -1),
+            new MusicEngineCompletionData("SetRelease", CompletionItemType.Method,
+                "void SetRelease(float seconds)", "Set envelope release time in seconds",
+                "SetRelease()", -1),
+            new MusicEngineCompletionData("SetPan", CompletionItemType.Method,
+                "void SetPan(float pan)", "Set stereo pan (-1..1)",
+                "SetPan()", -1),
+            new MusicEngineCompletionData("SetVolume", CompletionItemType.Method,
+                "void SetVolume(float volume)", "Set output volume (0..1.5)",
+                "SetVolume()", -1),
+            new MusicEngineCompletionData("AddEffect", CompletionItemType.Method,
+                "void AddEffect(string type)", "Insert an effect into the synth chain",
+                "AddEffect(\"\")", -2),
+            new MusicEngineCompletionData("AddModulator", CompletionItemType.Method,
+                "void AddModulator(string type)", "Add an LFO/envelope modulator",
+                "AddModulator(\"\")", -2)
         };
     }
 
@@ -706,7 +744,10 @@ public class CompletionProvider
         _completionWindow = new CompletionWindow(_editor.TextArea)
         {
             Width = 400,
-            MinWidth = 300
+            MinWidth = 300,
+            WindowStyle = WindowStyle.None,
+            AllowsTransparency = true,
+            ShowInTaskbar = false,
         };
 
         // Adjust start offset for replacement

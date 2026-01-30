@@ -63,20 +63,61 @@
                     <Image Source="/Resources/Icons/CodeEditorLogo.png" Width="50" Height="800" Margin="8,0,8,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Stretch="Uniform"/>
 
                     <!-- Menu Bar (integrated into title bar) -->
-                    <Menu Background="Transparent" VerticalAlignment="Center">
+                    <Menu Background="{DynamicResource MenuBackgroundBrush}"
+                          Foreground="{DynamicResource ForegroundBrush}"
+                          VerticalAlignment="Center"
+                          BorderThickness="0"
+                          Padding="0">
                         <Menu.Resources>
-                            <Style TargetType="MenuItem">
+                            <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                <Setter Property="Background" Value="{DynamicResource MenuBackgroundBrush}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                                 <Setter Property="Padding" Value="8,6"/>
                                 <Setter Property="FontSize" Value="12"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsHighlighted" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
-                                    </Trigger>
-                                    <Trigger Property="IsSubmenuOpen" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
-                                    </Trigger>
-                                </Style.Triggers>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="MenuItem">
+                                            <Grid>
+                                                <Border x:Name="Border"
+                                                        Background="{TemplateBinding Background}"
+                                                        Padding="{TemplateBinding Padding}"
+                                                        CornerRadius="3">
+                                                    <ContentPresenter ContentSource="Header"/>
+                                                </Border>
+                                                <Popup x:Name="PART_Popup"
+                                                       Placement="Bottom"
+                                                       PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                       IsOpen="{TemplateBinding IsSubmenuOpen}"
+                                                       AllowsTransparency="True"
+                                                       Focusable="False"
+                                                       PopupAnimation="Fade">
+                                                    <Border Background="{DynamicResource MenuBackgroundBrush}"
+                                                            BorderBrush="{DynamicResource BorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="3"
+                                                            Padding="2">
+                                                        <StackPanel IsItemsHost="True"
+                                                                    KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                                                    </Border>
+                                                </Popup>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsHighlighted" Value="True">
+                                                    <Setter TargetName="Border" Property="Background" Value="#252525"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSubmenuOpen" Value="True">
+                                                    <Setter TargetName="Border" Property="Background" Value="#303030"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+                                                </Trigger>
+                                                <Trigger Property="HasItems" Value="False">
+                                                    <Setter TargetName="PART_Popup" Property="Visibility" Value="Collapsed"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
                             </Style>
                         </Menu.Resources>
                         <MenuItem Header="File">

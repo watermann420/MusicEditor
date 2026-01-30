@@ -1,0 +1,12 @@
+<UserControl x:Class="MusicEngineEditor.Controls.InlineVisuals.PunchcardInlineControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             xmlns:controls="clr-namespace:MusicEngineEditor.Controls"
+             Height="140"
+             Width="520"
+             Background="#101010">
+    <Border CornerRadius="6" BorderBrush="#222" BorderThickness="1" Padding="4" Background="#141414">
+        <controls:PunchcardVisualization x:Name="Punch" />
+    </Border>
+</UserControl>

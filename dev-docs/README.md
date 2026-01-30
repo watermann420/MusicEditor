@@ -32,6 +32,7 @@ This folder contains technical documentation for developers integrating MusicEng
   - NAT traversal considerations
 
 - **[ModularEffects.md](ModularEffects.md)** - Code-based modular effects system
+- **[InlineVisuals.md](InlineVisuals.md)** - Editor inline visual engine (60 FPS overlays)
   - All available node types
   - Building custom synthesizers
   - Creating effect chains

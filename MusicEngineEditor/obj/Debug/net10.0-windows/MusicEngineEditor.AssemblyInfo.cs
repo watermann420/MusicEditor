@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCopyrightAttribute("Copyright (c) 2025 MusicEngine")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Professional music production and audio scripting environment")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e888583c0e1c093274f2a1812bfb0b64c9e83c00")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d8213bf3472d1a6911aed777db6ab7b810b01d1a")]
 [assembly: System.Reflection.AssemblyProductAttribute("MusicEngine Editor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MusicEngineEditor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
