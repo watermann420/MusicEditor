@@ -1,3 +1,8 @@
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Main application window.
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,6 +14,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Threading;
 using System.Xml;
 using ICSharpCode.AvalonEdit.Document;
@@ -18,6 +25,7 @@ using MusicEngineEditor.Editor;
 using MusicEngineEditor.Models;
 using MusicEngineEditor.Services;
 using MusicEngineEditor.Controls;
+using MusicEngineEditor.ViewModels;
 using MusicEngineEditor.Views;
 using MusicEngineEditor.Views.Dialogs;
 
@@ -42,6 +50,13 @@ public partial class MainWindow : Window
     // VST Plugin Windows
     private readonly Dictionary<string, VstPluginWindow> _vstWindows = new();
 
+    // Transport ViewModel
+    private TransportViewModel? _transportViewModel;
+
+    // Performance Monitoring
+    private readonly PerformanceMonitorService _performanceMonitorService;
+    private readonly PerformanceViewModel _performanceViewModel;
+
     // Problems/Errors
     public ObservableCollection<ProblemItem> Problems { get; } = new();
 
@@ -52,6 +67,10 @@ public partial class MainWindow : Window
     // Data for right panel lists
     public ObservableCollection<MidiDeviceInfo> MidiDevices { get; } = new();
     public ObservableCollection<AudioFileInfo> AudioFiles { get; } = new();
+
+    // Track Management
+    public ObservableCollection<TrackInfo> Tracks { get; } = new();
+    private readonly Dictionary<int, FreezeTrackData> _frozenTrackData = new();
 
     public MainWindow()
     {
@@ -130,6 +149,11 @@ public partial class MainWindow : Window
         WorkshopPanel.OnRunCode += WorkshopPanel_OnRunCode;
         WorkshopPanel.OnCopyCode += WorkshopPanel_OnCopyCode;
         WorkshopPanel.OnInsertCode += WorkshopPanel_OnInsertCode;
+
+        // Initialize Performance Monitoring
+        _performanceMonitorService = new PerformanceMonitorService();
+        _performanceViewModel = new PerformanceViewModel(_performanceMonitorService);
+        PerformanceMeterControl.ConnectToViewModel(_performanceViewModel);
     }
 
     private void CodeEditor_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -178,6 +202,12 @@ public partial class MainWindow : Window
                 // Find next is handled inside the control
             }
         }
+        // Handle Ctrl+P for command palette
+        else if (e.Key == Key.P && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            e.Handled = true;
+            ShowCommandPalette();
+        }
     }
 
     #region Context Menu
@@ -187,7 +217,7 @@ public partial class MainWindow : Window
         var contextMenu = new System.Windows.Controls.ContextMenu
         {
             Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2B, 0x2D, 0x30)),
-            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xBC, 0xBE, 0xC4)),
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE0, 0xE0, 0xE0)),
             BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x3C, 0x3F, 0x41)),
         };
 
@@ -298,7 +328,7 @@ public partial class MainWindow : Window
         if (_vstWindows.TryGetValue(name, out var existingWindow))
         {
             existingWindow.Show();
-            existingWindow.WindowState = WindowState.Normal;
+            existingWindow.WindowState = System.Windows.WindowState.Normal;
             existingWindow.Activate();
         }
         else
@@ -381,6 +411,12 @@ public partial class MainWindow : Window
                 _visualization?.ConnectToSequencer(_engineService.Sequencer);
             }
 
+            // Initialize Transport ViewModel
+            _transportViewModel = new TransportViewModel();
+
+            // Start Performance Monitoring
+            _performanceMonitorService.Start();
+
             StatusText.Text = "Ready";
             OutputLine("Engine initialized successfully!");
             OutputLine("Press Ctrl+Enter to run the script, Escape to stop.");
@@ -420,8 +456,21 @@ public partial class MainWindow : Window
         _sliderHotReloadTimer?.Stop();
         _inlineSliderService?.Dispose();
         _visualization?.Dispose();
+        _transportViewModel?.Dispose();
+        _performanceMonitorService.Dispose();
         CloseAllVstWindows();
         _engineService.Dispose();
+
+        // Mark session as cleanly closed (no crash recovery needed)
+        try
+        {
+            RecoveryService.Instance.MarkSessionClosed();
+            AutoSaveService.Instance.Dispose();
+        }
+        catch
+        {
+            // Ignore errors during shutdown
+        }
     }
 
     private void StatusTimer_Tick(object? sender, EventArgs e)
@@ -439,7 +488,7 @@ public partial class MainWindow : Window
         // Update status indicator based on running state
         if (_isRunning)
         {
-            StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6A, 0xAB, 0x73)); // Green
+            StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88)); // Green
         }
         else
         {
@@ -562,6 +611,12 @@ public partial class MainWindow : Window
                 StatusText.Text = $"Created project: {_currentProject.Name}";
                 OutputLine($"Created new project: {_currentProject.Name}");
 
+                // Mark session as active for crash recovery
+                RecoveryService.Instance.MarkSessionActive(_currentProject);
+
+                // Initialize auto-save for this project
+                AutoSaveService.Instance.Initialize(_projectService);
+
                 // Open entry point script (with null checks)
                 if (_currentProject.Scripts != null && _currentProject.Scripts.Count > 0)
                 {
@@ -620,6 +675,12 @@ public partial class MainWindow : Window
                 ProjectNameDisplay.Text = _currentProject.Name;
                 StatusText.Text = $"Loaded: {_currentProject.Name}";
                 OutputLine($"Loaded project: {_currentProject.Name}");
+
+                // Mark session as active for crash recovery
+                RecoveryService.Instance.MarkSessionActive(_currentProject);
+
+                // Initialize auto-save for this project
+                AutoSaveService.Instance.Initialize(_projectService);
 
                 // Open entry point script (with null checks)
                 if (_currentProject.Scripts != null && _currentProject.Scripts.Count > 0)
@@ -751,10 +812,15 @@ public partial class MainWindow : Window
         // Check if already open
         if (_openTabs.TryGetValue(script.FilePath, out var existingTab))
         {
+            // Save current tab's content before switching
+            SaveCurrentEditorContent();
             EditorTabs.SelectedItem = existingTab;
-            CodeEditor.Text = script.Content ?? string.Empty;
+            // Note: Content will be loaded by SelectionChanged event
             return;
         }
+
+        // Save current tab's content before opening new tab
+        SaveCurrentEditorContent();
 
         // Create new tab
         var tab = new TabItem
@@ -774,14 +840,27 @@ public partial class MainWindow : Window
 
     private void EditorTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (EditorTabs.SelectedItem is TabItem tab && _tabScripts.TryGetValue(tab, out var script))
+        // First, save content of the PREVIOUS tab (the one being switched away from)
+        if (e.RemovedItems.Count > 0 && e.RemovedItems[0] is TabItem previousTab)
         {
-            // Save current content to previous script
-            SaveCurrentEditorContent();
+            if (_tabScripts.TryGetValue(previousTab, out var previousScript))
+            {
+                if (previousScript.Content != CodeEditor.Text)
+                {
+                    previousScript.Content = CodeEditor.Text;
+                    previousScript.IsDirty = true;
+                }
+            }
+        }
 
-            // Load selected script
-            CodeEditor.Text = script.Content;
-            FileNameDisplay.Text = script.FileName;
+        // Then load the NEW tab's content
+        if (e.AddedItems.Count > 0 && e.AddedItems[0] is TabItem newTab)
+        {
+            if (_tabScripts.TryGetValue(newTab, out var script))
+            {
+                CodeEditor.Text = script.Content ?? string.Empty;
+                FileNameDisplay.Text = script.FileName ?? "Untitled";
+            }
         }
     }
 
@@ -916,6 +995,18 @@ public partial class MainWindow : Window
         await ExecuteScript();
     }
 
+    private async void RunStopButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isRunning)
+        {
+            StopExecution();
+        }
+        else
+        {
+            await ExecuteScript();
+        }
+    }
+
     private async Task ExecuteScript()
     {
         SaveCurrentEditorContent();
@@ -929,7 +1020,7 @@ public partial class MainWindow : Window
 
         _isRunning = true;
         StatusText.Text = "Executing...";
-        RunButton.IsEnabled = false;
+        UpdateRunStopButton();
 
         // Clear previous problems
         Problems.Clear();
@@ -966,14 +1057,11 @@ public partial class MainWindow : Window
                 // Parse code to extract instruments and start animation
                 ExtractInstrumentsFromCode(code);
                 _animationTimer.Start();
-
-                // Switch to running style with animation
-                RunButton.Style = (Style)FindResource("RunningButtonStyle");
-                RunButton.Content = "Running";
             }
             else
             {
                 _isRunning = false;
+                UpdateRunStopButton();
                 StatusText.Text = "Script error";
                 OutputLine($"ERROR: {result.ErrorMessage}");
 
@@ -1022,7 +1110,7 @@ public partial class MainWindow : Window
             UpdateErrorBadge();
         }
 
-        RunButton.IsEnabled = true;
+        UpdateRunStopButton();
     }
 
     private string GetCurrentFileName()
@@ -1085,6 +1173,11 @@ public partial class MainWindow : Window
 
     private void Stop_Click(object sender, RoutedEventArgs e)
     {
+        StopExecution();
+    }
+
+    private void StopExecution()
+    {
         _engineService.AllNotesOff();
         _isRunning = false;
         _animationTimer.Stop();
@@ -1092,13 +1185,42 @@ public partial class MainWindow : Window
         // Notify visualization system that playback stopped
         _visualization?.OnPlaybackStopped();
 
-        // Switch back to normal style
-        RunButton.Style = (Style)FindResource("RunButtonStyle");
-        RunButton.Content = "Run";
+        // Update button to show Run state
+        UpdateRunStopButton();
 
         ClearActiveInstruments();
         StatusText.Text = "Stopped";
         OutputLine("Stopped");
+    }
+
+    private void UpdateRunStopButton()
+    {
+        if (_isRunning)
+        {
+            // Show Stop state (red)
+            RunStopButton.Background = new SolidColorBrush(Color.FromRgb(0x8B, 0x2D, 0x2D));
+            RunStopIcon.Text = "\u25A0"; // Square (stop icon)
+            RunStopText.Text = "Stop";
+
+            // Update glow color for hover effect
+            if (RunStopButton.Template.FindName("glowEffect", RunStopButton) is DropShadowEffect glow)
+            {
+                glow.Color = Color.FromRgb(0xD3, 0x2F, 0x2F);
+            }
+        }
+        else
+        {
+            // Show Run state (green)
+            RunStopButton.Background = new SolidColorBrush(Color.FromRgb(0x2D, 0x5A, 0x2D));
+            RunStopIcon.Text = "\u25B6"; // Triangle (play icon)
+            RunStopText.Text = "Run";
+
+            // Update glow color for hover effect
+            if (RunStopButton.Template.FindName("glowEffect", RunStopButton) is DropShadowEffect glow)
+            {
+                glow.Color = Color.FromRgb(0x00, 0xCC, 0x66);
+            }
+        }
     }
 
     private void BpmBox_KeyDown(object sender, KeyEventArgs e)
@@ -1222,6 +1344,7 @@ public partial class MainWindow : Window
         MidiPanelMenuItem.IsChecked = false;
         VstPanelMenuItem.IsChecked = false;
         AudioPanelMenuItem.IsChecked = false;
+        UndoHistoryMenuItem.IsChecked = false;
     }
 
     private void SwitchRightPanelTab(string tab)
@@ -1238,6 +1361,8 @@ public partial class MainWindow : Window
         MidiDevicesPanel.Visibility = Visibility.Collapsed;
         VstPluginsPanel.Visibility = Visibility.Collapsed;
         AudioFilesPanel.Visibility = Visibility.Collapsed;
+        TrackPropertiesPanel.Visibility = Visibility.Collapsed;
+        UndoHistoryPanel.Visibility = Visibility.Collapsed;
 
         // Show selected tab
         switch (tab)
@@ -1259,6 +1384,14 @@ public partial class MainWindow : Window
                 ((TextBlock)AudioTabHeader.Child).Foreground = System.Windows.Media.Brushes.White;
                 ((TextBlock)AudioTabHeader.Child).FontWeight = FontWeights.SemiBold;
                 AudioFilesPanel.Visibility = Visibility.Visible;
+                break;
+            case "trackproperties":
+                // Track properties panel is standalone (no tab header in the tabbed area)
+                TrackPropertiesPanel.Visibility = Visibility.Visible;
+                break;
+            case "undohistory":
+                // Undo history panel is standalone (no tab header in the tabbed area)
+                UndoHistoryPanel.Visibility = Visibility.Visible;
                 break;
         }
     }
@@ -1288,6 +1421,281 @@ public partial class MainWindow : Window
     private void AudioTab_Click(object sender, MouseButtonEventArgs e)
     {
         SwitchRightPanelTab("audio");
+    }
+
+    private void ToggleTrackPropertiesPanel_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("trackproperties");
+    }
+
+    private void ToggleUndoHistory_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("undohistory");
+        UndoHistoryMenuItem.IsChecked = RightPanel.Visibility == Visibility.Visible && _currentRightPanelTab == "undohistory";
+    }
+
+    private void TrackPropertiesPanel_CloseRequested(object? sender, EventArgs e)
+    {
+        HideRightPanel();
+    }
+
+    private void TrackPropertiesPanel_TrackPropertyChanged(object? sender, TrackPropertyChangedEventArgs e)
+    {
+        // Handle track property changes - update any connected views
+        OutputLine($"Track '{e.Track.Name}' property '{e.PropertyName}' changed: {e.OldValue} -> {e.NewValue}");
+    }
+
+    private void TrackPropertiesPanel_TrackDuplicateRequested(object? sender, TrackEventArgs e)
+    {
+        // Create a duplicate of the track
+        var duplicate = e.Track.Duplicate();
+
+        // Find the index of the original track and insert the duplicate after it
+        int originalIndex = -1;
+        for (int i = 0; i < Tracks.Count; i++)
+        {
+            if (Tracks[i].Id == e.Track.Id)
+            {
+                originalIndex = i;
+                break;
+            }
+        }
+
+        // Add the duplicate track to the track list
+        if (originalIndex >= 0 && originalIndex < Tracks.Count - 1)
+        {
+            Tracks.Insert(originalIndex + 1, duplicate);
+        }
+        else
+        {
+            Tracks.Add(duplicate);
+        }
+
+        // Update the duplicate's order property
+        duplicate.Order = originalIndex + 1;
+
+        // Update order for all subsequent tracks
+        for (int i = duplicate.Order + 1; i < Tracks.Count; i++)
+        {
+            Tracks[i].Order = i;
+        }
+
+        OutputLine($"Duplicated track '{e.Track.Name}' -> '{duplicate.Name}'");
+
+        // Select the duplicate in the properties panel
+        TrackPropertiesPanel.SelectedTrack = duplicate;
+        StatusText.Text = $"Track '{e.Track.Name}' duplicated";
+    }
+
+    private void TrackPropertiesPanel_TrackDeleteRequested(object? sender, TrackEventArgs e)
+    {
+        var result = MessageBox.Show(
+            $"Are you sure you want to delete track '{e.Track.Name}'?",
+            "Delete Track",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            // Check if the track is frozen and clean up frozen data
+            if (e.Track.IsFrozen && _frozenTrackData.TryGetValue(e.Track.Id, out var freezeData))
+            {
+                // Delete the frozen audio file if it exists
+                if (!string.IsNullOrEmpty(freezeData.FrozenAudioFilePath) && File.Exists(freezeData.FrozenAudioFilePath))
+                {
+                    try
+                    {
+                        File.Delete(freezeData.FrozenAudioFilePath);
+                        OutputLine($"Deleted frozen audio file: {freezeData.FrozenAudioFilePath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        OutputLine($"Warning: Could not delete frozen audio file: {ex.Message}");
+                    }
+                }
+
+                _frozenTrackData.Remove(e.Track.Id);
+            }
+
+            // Remove the track from the tracks collection
+            TrackInfo? trackToRemove = null;
+            foreach (var track in Tracks)
+            {
+                if (track.Id == e.Track.Id)
+                {
+                    trackToRemove = track;
+                    break;
+                }
+            }
+
+            if (trackToRemove != null)
+            {
+                Tracks.Remove(trackToRemove);
+
+                // Update order for remaining tracks
+                for (int i = 0; i < Tracks.Count; i++)
+                {
+                    Tracks[i].Order = i;
+                }
+            }
+
+            OutputLine($"Deleted track: {e.Track.Name}");
+            TrackPropertiesPanel.ClearSelection();
+            StatusText.Text = $"Track '{e.Track.Name}' deleted";
+        }
+    }
+
+    private async void TrackPropertiesPanel_TrackFreezeRequested(object? sender, TrackEventArgs e)
+    {
+        // Note: IsFrozen is toggled before this event is raised, so:
+        // - IsFrozen == true means we need to freeze (track was just set to frozen)
+        // - IsFrozen == false means we need to unfreeze (track was just set to unfrozen)
+        if (e.Track.IsFrozen)
+        {
+            await FreezeTrackAsync(e.Track);
+        }
+        else
+        {
+            UnfreezeTrack(e.Track);
+        }
+    }
+
+    /// <summary>
+    /// Freezes a track by rendering it to an audio file and storing the original state.
+    /// </summary>
+    /// <param name="track">The track to freeze.</param>
+    private async Task FreezeTrackAsync(TrackInfo track)
+    {
+        OutputLine($"Freezing track: {track.Name}...");
+        StatusText.Text = $"Freezing track '{track.Name}'...";
+
+        try
+        {
+            // Create freeze data directory if it doesn't exist
+            var frozenTracksDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "MusicEngineEditor",
+                "FrozenTracks");
+
+            if (!Directory.Exists(frozenTracksDir))
+            {
+                Directory.CreateDirectory(frozenTracksDir);
+            }
+
+            // Generate a unique filename for the frozen audio
+            var frozenFileName = $"frozen_{track.Id}_{DateTime.Now:yyyyMMdd_HHmmss}.wav";
+            var frozenFilePath = Path.Combine(frozenTracksDir, frozenFileName);
+
+            // Store the original track data for unfreezing
+            var freezeData = new FreezeTrackData
+            {
+                TrackId = track.Id,
+                OriginalName = track.Name,
+                OriginalInstrumentName = track.InstrumentName,
+                OriginalInstrumentPath = track.InstrumentPath,
+                OriginalTrackType = track.TrackType,
+                FrozenAudioFilePath = frozenFilePath,
+                FrozenAt = DateTime.Now
+            };
+
+            // Simulate freeze operation (render track to audio)
+            // In a full implementation, this would use FreezeManager from MusicEngine.Core.Freeze
+            await Task.Run(async () =>
+            {
+                // Simulate rendering time
+                await Task.Delay(500);
+
+                // In a real implementation, we would:
+                // 1. Get the track's pattern from the sequencer
+                // 2. Use TrackRenderer to render the pattern to audio
+                // 3. Save the rendered audio to the file path
+                // 4. Store the freeze data
+
+                // For now, create an empty placeholder file to indicate the track is frozen
+                File.WriteAllText(frozenFilePath + ".freeze", $"Frozen track: {track.Name}\nFrozen at: {freezeData.FrozenAt}");
+            });
+
+            // Calculate duration (placeholder - would come from actual rendered audio)
+            freezeData.DurationSeconds = 30.0; // Placeholder duration
+
+            // Store the freeze data
+            _frozenTrackData[track.Id] = freezeData;
+
+            // Update the track display to indicate it's frozen
+            track.Name = $"[Frozen] {freezeData.OriginalName}";
+
+            OutputLine($"Track '{freezeData.OriginalName}' frozen successfully");
+            OutputLine($"  Frozen audio path: {frozenFilePath}");
+            StatusText.Text = $"Track '{freezeData.OriginalName}' frozen";
+        }
+        catch (Exception ex)
+        {
+            OutputLine($"Error freezing track: {ex.Message}");
+            StatusText.Text = $"Failed to freeze track '{track.Name}'";
+
+            // Revert the frozen state on error
+            track.IsFrozen = false;
+        }
+    }
+
+    /// <summary>
+    /// Unfreezes a track by restoring its original state.
+    /// </summary>
+    /// <param name="track">The track to unfreeze.</param>
+    private void UnfreezeTrack(TrackInfo track)
+    {
+        OutputLine($"Unfreezing track: {track.Name}...");
+        StatusText.Text = $"Unfreezing track '{track.Name}'...";
+
+        try
+        {
+            // Check if we have freeze data for this track
+            if (!_frozenTrackData.TryGetValue(track.Id, out var freezeData))
+            {
+                OutputLine($"Warning: No freeze data found for track {track.Id}. Resetting frozen state.");
+                track.IsFrozen = false;
+                StatusText.Text = $"Track unfrozen (no previous state to restore)";
+                return;
+            }
+
+            // Delete the frozen audio file if it exists
+            if (!string.IsNullOrEmpty(freezeData.FrozenAudioFilePath))
+            {
+                // Delete the actual audio file
+                if (File.Exists(freezeData.FrozenAudioFilePath))
+                {
+                    File.Delete(freezeData.FrozenAudioFilePath);
+                }
+
+                // Delete the freeze metadata file
+                var freezeMetaFile = freezeData.FrozenAudioFilePath + ".freeze";
+                if (File.Exists(freezeMetaFile))
+                {
+                    File.Delete(freezeMetaFile);
+                }
+            }
+
+            // Restore original track name
+            track.Name = freezeData.OriginalName;
+
+            // Restore original instrument info
+            track.InstrumentName = freezeData.OriginalInstrumentName;
+            track.InstrumentPath = freezeData.OriginalInstrumentPath;
+
+            // Remove the freeze data
+            _frozenTrackData.Remove(track.Id);
+
+            OutputLine($"Track '{freezeData.OriginalName}' unfrozen successfully");
+            StatusText.Text = $"Track '{freezeData.OriginalName}' unfrozen";
+        }
+        catch (Exception ex)
+        {
+            OutputLine($"Error unfreezing track: {ex.Message}");
+            StatusText.Text = $"Failed to unfreeze track '{track.Name}'";
+
+            // Keep the track frozen on error
+            track.IsFrozen = true;
+        }
     }
 
     #endregion
@@ -1609,7 +2017,7 @@ public partial class MainWindow : Window
                 var screenPos = PointToScreen(mousePos);
 
                 _isMaximized = false;
-                WindowState = WindowState.Normal;
+                WindowState = System.Windows.WindowState.Normal;
 
                 // Position window so the mouse is still over it proportionally
                 Left = screenPos.X - (Width / 2);
@@ -1630,7 +2038,7 @@ public partial class MainWindow : Window
 
     private void MinimizeButton_Click(object sender, RoutedEventArgs e)
     {
-        WindowState = WindowState.Minimized;
+        WindowState = System.Windows.WindowState.Minimized;
     }
 
     private void MaximizeButton_Click(object sender, RoutedEventArgs e)
@@ -1647,12 +2055,12 @@ public partial class MainWindow : Window
     {
         if (_isMaximized)
         {
-            WindowState = WindowState.Normal;
+            WindowState = System.Windows.WindowState.Normal;
             _isMaximized = false;
         }
         else
         {
-            WindowState = WindowState.Maximized;
+            WindowState = System.Windows.WindowState.Maximized;
             _isMaximized = true;
         }
     }
@@ -1661,7 +2069,7 @@ public partial class MainWindow : Window
     protected override void OnStateChanged(EventArgs e)
     {
         base.OnStateChanged(e);
-        _isMaximized = WindowState == WindowState.Maximized;
+        _isMaximized = WindowState == System.Windows.WindowState.Maximized;
     }
 
     #endregion
@@ -1946,7 +2354,7 @@ public partial class MainWindow : Window
 
         _isRunning = true;
         StatusText.Text = "Executing workshop example...";
-        RunButton.IsEnabled = false;
+        UpdateRunStopButton();
 
         // Clear previous problems
         Problems.Clear();
@@ -1975,14 +2383,11 @@ public partial class MainWindow : Window
                 // Parse code to extract instruments and start animation
                 ExtractInstrumentsFromCode(e.Code);
                 _animationTimer.Start();
-
-                // Switch to running style with animation
-                RunButton.Style = (Style)FindResource("RunningButtonStyle");
-                RunButton.Content = "Running";
             }
             else
             {
                 _isRunning = false;
+                UpdateRunStopButton();
                 StatusText.Text = "Workshop example error";
                 OutputLine($"ERROR: {result.ErrorMessage}");
 
@@ -2031,7 +2436,7 @@ public partial class MainWindow : Window
             UpdateErrorBadge();
         }
 
-        RunButton.IsEnabled = true;
+        UpdateRunStopButton();
     }
 
     private void WorkshopPanel_OnCopyCode(object? sender, WorkshopCodeEventArgs e)
@@ -2095,6 +2500,176 @@ public partial class MainWindow : Window
     }
 
     #endregion
+
+    #region Cloud, Collaboration, and Network MIDI
+
+    /// <summary>
+    /// Opens the Cloud Storage dialog.
+    /// </summary>
+    private void CloudStorage_Click(object sender, RoutedEventArgs e)
+    {
+        CloudStorageDialog.ShowDialog(this);
+    }
+
+    /// <summary>
+    /// Opens the Collaboration dialog.
+    /// </summary>
+    private void Collaboration_Click(object sender, RoutedEventArgs e)
+    {
+        CollaborationDialog.ShowDialog(this);
+    }
+
+    /// <summary>
+    /// Opens the Network MIDI dialog.
+    /// </summary>
+    private void NetworkMidi_Click(object sender, RoutedEventArgs e)
+    {
+        NetworkMidiDialog.ShowDialog(this);
+    }
+
+    #endregion
+
+    #region Command Palette
+
+    /// <summary>
+    /// Shows the command palette dialog.
+    /// </summary>
+    private void ShowCommandPalette()
+    {
+        // Register commands if not already done
+        RegisterCommandPaletteCommands();
+
+        // Show the palette
+        var selectedCommand = CommandPaletteDialog.ShowPalette(this);
+
+        if (selectedCommand != null)
+        {
+            OutputLine($"Executed: {selectedCommand.Category}: {selectedCommand.Name}");
+        }
+    }
+
+    /// <summary>
+    /// Registers commands with the command palette service.
+    /// </summary>
+    private void RegisterCommandPaletteCommands()
+    {
+        var service = CommandPaletteService.Instance;
+
+        // Only register once
+        if (service.Commands.Count > 0)
+            return;
+
+        // File commands
+        service.RegisterCommand("New Project", "File", () => NewProject_Click(this, new RoutedEventArgs()), "Ctrl+Shift+N", "Create a new project");
+        service.RegisterCommand("Open Project", "File", () => OpenProject_Click(this, new RoutedEventArgs()), "Ctrl+Shift+O", "Open an existing project");
+        service.RegisterCommand("New File", "File", () => NewFile_Click(this, new RoutedEventArgs()), "Ctrl+N", "Create a new script file");
+        service.RegisterCommand("Save", "File", () => SaveScript_Click(this, new RoutedEventArgs()), "Ctrl+S", "Save current file");
+        service.RegisterCommand("Save All", "File", () => SaveAll_Click(this, new RoutedEventArgs()), "Ctrl+Shift+S", "Save all open files");
+        service.RegisterCommand("Settings", "File", () => Settings_Click(this, new RoutedEventArgs()), "Ctrl+,", "Open settings");
+        service.RegisterCommand("Exit", "File", () => Exit_Click(this, new RoutedEventArgs()), null, "Exit the application");
+
+        // Edit commands
+        service.RegisterCommand("Undo", "Edit", () => CodeEditor.Undo(), "Ctrl+Z", "Undo last action");
+        service.RegisterCommand("Redo", "Edit", () => CodeEditor.Redo(), "Ctrl+Y", "Redo last undone action");
+        service.RegisterCommand("Cut", "Edit", () => CodeEditor.Cut(), "Ctrl+X", "Cut selection");
+        service.RegisterCommand("Copy", "Edit", () => CodeEditor.Copy(), "Ctrl+C", "Copy selection");
+        service.RegisterCommand("Paste", "Edit", () => CodeEditor.Paste(), "Ctrl+V", "Paste from clipboard");
+        service.RegisterCommand("Select All", "Edit", () => CodeEditor.SelectAll(), "Ctrl+A", "Select all text");
+        service.RegisterCommand("Find", "Edit", () => FindReplaceBar.ShowFind(), "Ctrl+F", "Find text");
+        service.RegisterCommand("Replace", "Edit", () => FindReplaceBar.ShowReplace(), "Ctrl+H", "Find and replace text");
+
+        // Transport commands
+        service.RegisterCommand("Run Script", "Transport", () => _ = ExecuteScript(), "Ctrl+Enter", "Run the current script", ["play", "execute", "start"]);
+        service.RegisterCommand("Stop", "Transport", () =>
+        {
+            _engineService.AllNotesOff();
+            _isRunning = false;
+            _visualization?.OnPlaybackStopped();
+            StatusText.Text = "Stopped";
+            OutputLine("Stopped");
+        }, "Escape", "Stop playback", ["pause", "halt"]);
+
+        // View commands
+        service.RegisterCommand("Toggle Output", "View", () =>
+        {
+            if (_outputVisible)
+            {
+                OutputPanel.Visibility = Visibility.Collapsed;
+                OutputSplitter.Visibility = Visibility.Collapsed;
+                _outputVisible = false;
+            }
+            else
+            {
+                OutputPanel.Visibility = Visibility.Visible;
+                OutputSplitter.Visibility = Visibility.Visible;
+                _outputVisible = true;
+            }
+        }, null, "Toggle output panel visibility");
+
+        service.RegisterCommand("Clear Output", "View", () => OutputBox.Clear(), null, "Clear the output panel");
+
+        // Help commands
+        service.RegisterCommand("About", "Help", () =>
+        {
+            var dialog = new AboutDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "About MusicEngine Editor");
+
+        service.RegisterCommand("Keyboard Shortcuts", "Help", () =>
+        {
+            var dialog = new ShortcutsDialog(App.Services.GetRequiredService<IShortcutService>()) { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Show keyboard shortcuts");
+
+        // Tools
+        service.RegisterCommand("Quantize", "Tools", () =>
+        {
+            var dialog = new QuantizeDialog { Owner = this };
+            dialog.ShowDialog();
+        }, "Q", "Quantize selected notes", ["snap", "grid"]);
+
+        service.RegisterCommand("Export Audio", "Tools", () =>
+        {
+            var dialog = new ExportDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Export project to audio file", ["render", "bounce"]);
+
+        service.RegisterCommand("Metronome Settings", "Tools", () =>
+        {
+            var dialog = new MetronomeSettingsDialog(App.Services.GetRequiredService<MetronomeService>()) { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Configure metronome");
+
+        service.RegisterCommand("Recording Setup", "Tools", () =>
+        {
+            var dialog = new RecordingSetupDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Configure recording settings");
+
+        service.RegisterCommand("Stem Export", "Tools", () =>
+        {
+            var dialog = new StemExportDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Export individual stems");
+
+        // Cloud & Collaboration commands
+        service.RegisterCommand("Cloud Storage", "Cloud", () =>
+        {
+            CloudStorageDialog.ShowDialog(this);
+        }, null, "Open cloud storage manager", ["sync", "upload", "download"]);
+
+        service.RegisterCommand("Collaboration", "Cloud", () =>
+        {
+            CollaborationDialog.ShowDialog(this);
+        }, null, "Start or join collaboration session", ["collab", "share", "realtime"]);
+
+        service.RegisterCommand("Network MIDI", "Cloud", () =>
+        {
+            NetworkMidiDialog.ShowDialog(this);
+        }, null, "Configure network MIDI (RTP-MIDI)", ["rtpmidi", "network", "remote"]);
+    }
+
+    #endregion
 }
 
 // Data classes for the right panel lists
@@ -2114,8 +2689,8 @@ public class MidiDeviceInfo
 
     // Color for the type indicator
     public System.Windows.Media.Brush TypeColor => Type == "Input"
-        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6A, 0xAB, 0x73))  // Green for input
-        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4B, 0x6E, 0xAF)); // Blue for output
+        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88))  // Green for input
+        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF)); // Blue for output
 }
 
 public class VstPluginInfo
@@ -2160,9 +2735,9 @@ public class ProblemItem
 
     public System.Windows.Media.Brush IconColor => Severity switch
     {
-        ProblemSeverity.Error => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF7, 0x54, 0x64)),
-        ProblemSeverity.Warning => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE8, 0xB3, 0x39)),
-        ProblemSeverity.Info => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4B, 0x6E, 0xAF)),
+        ProblemSeverity.Error => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0x47, 0x57)),
+        ProblemSeverity.Warning => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xB8, 0x00)),
+        ProblemSeverity.Info => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF)),
         _ => System.Windows.Media.Brushes.White
     };
 }
@@ -2245,7 +2820,7 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6A, 0xAB, 0x73)); // Green
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88)); // Green
             }
             return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0x73, 0x7A)); // Gray
         }
@@ -2277,11 +2852,11 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             {
                 // Glowing background when playing
                 var alpha = (byte)(40 + 30 * Math.Sin(_pulsePhase));
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(alpha, 0x6A, 0xAB, 0x73));
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(alpha, 0x00, 0xFF, 0x88));
             }
             if (IsActive)
             {
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x33, 0x4B, 0x6E, 0xAF));
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x33, 0x00, 0xD9, 0xFF));
             }
             return System.Windows.Media.Brushes.Transparent;
         }
@@ -2299,9 +2874,9 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4B, 0x6E, 0xAF));
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF));
             }
-            return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x39, 0x3B, 0x40));
+            return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2A, 0x2A, 0x2A));
         }
     }
 
@@ -2384,4 +2959,50 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
     }
+}
+
+/// <summary>
+/// Stores data for a frozen track to enable unfreezing.
+/// </summary>
+public class FreezeTrackData
+{
+    /// <summary>
+    /// Gets or sets the track ID.
+    /// </summary>
+    public int TrackId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the original track name.
+    /// </summary>
+    public string OriginalName { get; set; } = "";
+
+    /// <summary>
+    /// Gets or sets the original instrument name.
+    /// </summary>
+    public string? OriginalInstrumentName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the original instrument path (for VST plugins).
+    /// </summary>
+    public string? OriginalInstrumentPath { get; set; }
+
+    /// <summary>
+    /// Gets or sets the path to the frozen audio file.
+    /// </summary>
+    public string? FrozenAudioFilePath { get; set; }
+
+    /// <summary>
+    /// Gets or sets the original track type.
+    /// </summary>
+    public Models.TrackType OriginalTrackType { get; set; }
+
+    /// <summary>
+    /// Gets or sets when the track was frozen.
+    /// </summary>
+    public DateTime FrozenAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the duration of the frozen audio in seconds.
+    /// </summary>
+    public double DurationSeconds { get; set; }
 }

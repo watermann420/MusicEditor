@@ -1,0 +1,89 @@
+<UserControl x:Class="MusicEngineEditor.Controls.NoteCanvas"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="800"
+             Background="{DynamicResource PianoRollBackgroundBrush}"
+             ClipToBounds="True"
+             Focusable="True">
+
+    <UserControl.Resources>
+        <!-- Colors for the Piano Roll - using theme resources -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{DynamicResource PianoRollBackgroundColor}"/>
+        <SolidColorBrush x:Key="WhiteKeyLaneBrush" Color="{DynamicResource PianoRollBackgroundColor}"/>
+        <SolidColorBrush x:Key="BlackKeyLaneBrush" Color="{DynamicResource BlackKeyLaneColor}"/>
+        <SolidColorBrush x:Key="GridLineBrush" Color="{DynamicResource GridLineColor}"/>
+        <SolidColorBrush x:Key="BarLineBrush" Color="{DynamicResource BarLineColor}"/>
+        <SolidColorBrush x:Key="NoteDefaultBrush" Color="{DynamicResource NoteSurfaceColor}"/>
+        <SolidColorBrush x:Key="NoteSelectedBorderBrush" Color="{DynamicResource BrightForegroundColor}"/>
+        <SolidColorBrush x:Key="PlayheadBrush" Color="{DynamicResource ErrorColor}"/>
+        <SolidColorBrush x:Key="GhostNoteBrush" Color="{DynamicResource NoteSurfaceColor}"/>
+        <SolidColorBrush x:Key="SelectionRectBrush" Color="{DynamicResource NoteSelectionColor}"/>
+        <SolidColorBrush x:Key="SelectionRectBorderBrush" Color="{DynamicResource NoteSurfaceColor}"/>
+
+        <!-- Drop shadow for notes -->
+        <DropShadowEffect x:Key="NoteDropShadow"
+                          Color="#000000"
+                          BlurRadius="4"
+                          ShadowDepth="1"
+                          Opacity="0.3"/>
+
+        <!-- Glow effect for selected notes -->
+        <DropShadowEffect x:Key="SelectedNoteGlow"
+                          Color="#4A9EFF"
+                          BlurRadius="10"
+                          ShadowDepth="0"
+                          Opacity="0.6"/>
+    </UserControl.Resources>
+
+    <Grid x:Name="MainGrid">
+        <!-- Grid lines layer (bottom) -->
+        <Canvas x:Name="GridCanvas"
+                Background="{StaticResource BackgroundBrush}"
+                ClipToBounds="True"/>
+
+        <!-- Note lanes layer -->
+        <Canvas x:Name="LaneCanvas"
+                Background="Transparent"
+                ClipToBounds="True"
+                IsHitTestVisible="False"/>
+
+        <!-- Notes layer -->
+        <Canvas x:Name="NotesCanvas"
+                Background="Transparent"
+                ClipToBounds="True"/>
+
+        <!-- Ghost note preview layer -->
+        <Canvas x:Name="GhostNoteCanvas"
+                Background="Transparent"
+                ClipToBounds="True"
+                IsHitTestVisible="False"/>
+
+        <!-- Selection rectangle layer -->
+        <Canvas x:Name="SelectionCanvas"
+                Background="Transparent"
+                ClipToBounds="True"
+                IsHitTestVisible="False">
+            <Rectangle x:Name="SelectionRect"
+                       Fill="{StaticResource SelectionRectBrush}"
+                       Stroke="{StaticResource SelectionRectBorderBrush}"
+                       StrokeThickness="1"
+                       StrokeDashArray="4 2"
+                       Visibility="Collapsed"/>
+        </Canvas>
+
+        <!-- Playhead layer (top) -->
+        <Canvas x:Name="PlayheadCanvas"
+                Background="Transparent"
+                ClipToBounds="True"
+                IsHitTestVisible="False">
+            <Line x:Name="PlayheadLine"
+                  Y1="0"
+                  Stroke="{StaticResource PlayheadBrush}"
+                  StrokeThickness="2"
+                  Opacity="0.9"/>
+        </Canvas>
+    </Grid>
+</UserControl>

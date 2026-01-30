@@ -1,0 +1,263 @@
+<UserControl x:Class="MusicEngineEditor.Controls.PunchLocatorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="50" d:DesignWidth="800"
+             Background="{DynamicResource PanelBackgroundBrush}"
+             ClipToBounds="True">
+
+    <UserControl.Resources>
+        <!-- Punch Marker Triangle Style -->
+        <Style x:Key="PunchMarkerStyle" TargetType="Polygon">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="3" ShadowDepth="1" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toggle Button Style for Punch Enable/Disable -->
+        <Style x:Key="PunchToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{DynamicResource SubtleBorderBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#CC3333"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CC3333"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Pre/Post Roll Spinner Style -->
+        <Style x:Key="RollSpinnerStyle" TargetType="TextBox">
+            <Setter Property="Width" Value="35"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Padding" Value="2,1"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource ToolbarBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title -->
+                <TextBlock Grid.Column="0"
+                           Text="Punch Recording"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource BrightForegroundBrush}"
+                           VerticalAlignment="Center"/>
+
+                <!-- Punch In Toggle -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0">
+                    <ToggleButton x:Name="PunchInToggle"
+                                  Content="IN"
+                                  Style="{StaticResource PunchToggleStyle}"
+                                  Checked="PunchInToggle_Checked"
+                                  Unchecked="PunchInToggle_Unchecked"
+                                  ToolTip="Enable punch-in (recording starts at punch-in marker)"/>
+                    <TextBlock x:Name="PunchInPositionText"
+                               Text="--.--.--"
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="6,0,0,0"
+                               MinWidth="50"/>
+                </StackPanel>
+
+                <!-- Punch Out Toggle -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,0,0,0">
+                    <ToggleButton x:Name="PunchOutToggle"
+                                  Content="OUT"
+                                  Style="{StaticResource PunchToggleStyle}"
+                                  Checked="PunchOutToggle_Checked"
+                                  Unchecked="PunchOutToggle_Unchecked"
+                                  ToolTip="Enable punch-out (recording stops at punch-out marker)"/>
+                    <TextBlock x:Name="PunchOutPositionText"
+                               Text="--.--.--"
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="6,0,0,0"
+                               MinWidth="50"/>
+                </StackPanel>
+
+                <!-- Pre-Roll Setting -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Pre:"
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0"/>
+                    <TextBox x:Name="PreRollTextBox"
+                             Text="1"
+                             Style="{StaticResource RollSpinnerStyle}"
+                             TextChanged="PreRollTextBox_TextChanged"
+                             ToolTip="Pre-roll bars before punch-in"/>
+                    <TextBlock Text="bars"
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0"/>
+                </StackPanel>
+
+                <!-- Post-Roll Setting -->
+                <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <TextBlock Text="Post:"
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,4,0"/>
+                    <TextBox x:Name="PostRollTextBox"
+                             Text="1"
+                             Style="{StaticResource RollSpinnerStyle}"
+                             TextChanged="PostRollTextBox_TextChanged"
+                             ToolTip="Post-roll bars after punch-out"/>
+                    <TextBlock Text="bars"
+                               FontSize="10"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0"/>
+                </StackPanel>
+
+                <!-- Auto-Punch Toggle -->
+                <ToggleButton x:Name="AutoPunchToggle"
+                              Grid.Column="6"
+                              Content="Auto"
+                              Style="{StaticResource PunchToggleStyle}"
+                              Margin="12,0,0,0"
+                              Checked="AutoPunchToggle_Checked"
+                              Unchecked="AutoPunchToggle_Unchecked"
+                              ToolTip="Auto-punch mode: automatically start/stop recording at punch points"/>
+            </Grid>
+        </Border>
+
+        <!-- Punch Locator Canvas -->
+        <Canvas Grid.Row="1"
+                x:Name="PunchCanvas"
+                Background="Transparent"
+                MouseLeftButtonDown="PunchCanvas_MouseLeftButtonDown"
+                MouseMove="PunchCanvas_MouseMove"
+                MouseLeftButtonUp="PunchCanvas_MouseLeftButtonUp">
+
+            <!-- Punch Region Highlight (between In and Out markers) -->
+            <Rectangle x:Name="PunchRegionRect"
+                       Fill="#33CC3333"
+                       Height="40"
+                       Canvas.Top="0"
+                       Visibility="Collapsed"/>
+
+            <!-- Pre-Roll Region (before punch-in) -->
+            <Rectangle x:Name="PreRollRegionRect"
+                       Fill="#22FFAA00"
+                       Height="40"
+                       Canvas.Top="0"
+                       Visibility="Collapsed"/>
+
+            <!-- Post-Roll Region (after punch-out) -->
+            <Rectangle x:Name="PostRollRegionRect"
+                       Fill="#22FFAA00"
+                       Height="40"
+                       Canvas.Top="0"
+                       Visibility="Collapsed"/>
+
+            <!-- Punch In Marker (Red Triangle pointing down) -->
+            <Canvas x:Name="PunchInMarker" Visibility="Collapsed">
+                <Polygon x:Name="PunchInTriangle"
+                         Points="0,0 10,0 5,10"
+                         Fill="#CC3333"
+                         Style="{StaticResource PunchMarkerStyle}"
+                         MouseLeftButtonDown="PunchInMarker_MouseLeftButtonDown"/>
+                <Rectangle Width="2"
+                           Height="40"
+                           Fill="#CC3333"
+                           Canvas.Left="4"
+                           Canvas.Top="10"/>
+                <TextBlock Text="IN"
+                           FontSize="8"
+                           FontWeight="Bold"
+                           Foreground="#CC3333"
+                           Canvas.Left="-2"
+                           Canvas.Top="12"/>
+            </Canvas>
+
+            <!-- Punch Out Marker (Red Triangle pointing down) -->
+            <Canvas x:Name="PunchOutMarker" Visibility="Collapsed">
+                <Polygon x:Name="PunchOutTriangle"
+                         Points="0,0 10,0 5,10"
+                         Fill="#CC3333"
+                         Style="{StaticResource PunchMarkerStyle}"
+                         MouseLeftButtonDown="PunchOutMarker_MouseLeftButtonDown"/>
+                <Rectangle Width="2"
+                           Height="40"
+                           Fill="#CC3333"
+                           Canvas.Left="4"
+                           Canvas.Top="10"/>
+                <TextBlock Text="OUT"
+                           FontSize="8"
+                           FontWeight="Bold"
+                           Foreground="#CC3333"
+                           Canvas.Left="-4"
+                           Canvas.Top="12"/>
+            </Canvas>
+
+            <!-- Playhead indicator -->
+            <Rectangle x:Name="Playhead"
+                       Width="2"
+                       Fill="{DynamicResource AccentBrush}"
+                       Canvas.Top="0"
+                       Visibility="Collapsed"/>
+        </Canvas>
+    </Grid>
+</UserControl>

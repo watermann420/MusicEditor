@@ -1,4 +1,7 @@
-// Global using directives to resolve ambiguity between WPF and WinForms
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: MusicEngineEditor component.
 
 global using MessageBox = System.Windows.MessageBox;
 global using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
@@ -23,3 +26,13 @@ global using Orientation = System.Windows.Controls.Orientation;
 global using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 global using Timer = System.Threading.Timer;
 global using Cursors = System.Windows.Input.Cursors;
+
+// Drag and drop types - use WPF
+global using Clipboard = System.Windows.Clipboard;
+global using DataFormats = System.Windows.DataFormats;
+global using DataObject = System.Windows.DataObject;
+global using DragDropEffects = System.Windows.DragDropEffects;
+global using DragEventArgs = System.Windows.DragEventArgs;
+global using MenuItem = System.Windows.Controls.MenuItem;
+global using ColorConverter = System.Windows.Media.ColorConverter;
+global using Rectangle = System.Windows.Shapes.Rectangle;

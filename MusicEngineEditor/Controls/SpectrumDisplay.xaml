@@ -1,0 +1,65 @@
+<UserControl x:Class="MusicEngineEditor.Controls.SpectrumDisplay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="150" d:DesignWidth="400"
+             Background="{DynamicResource BackgroundBrush}"
+             MinHeight="80"
+             MinWidth="200">
+
+    <UserControl.Resources>
+        <!-- Dark theme colors - using theme resources -->
+        <SolidColorBrush x:Key="LocalBackgroundBrush" Color="{DynamicResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="GridBrush" Color="{DynamicResource SpectrumGridColor}"/>
+        <SolidColorBrush x:Key="LocalBorderBrush" Color="{DynamicResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{DynamicResource SecondaryForegroundColor}"/>
+        <SolidColorBrush x:Key="PeakBrush" Color="{DynamicResource BrightForegroundColor}"/>
+
+        <!-- Bar gradient (bottom to top: dark cyan to bright cyan) -->
+        <LinearGradientBrush x:Key="BarGradientBrush" StartPoint="0,1" EndPoint="0,0">
+            <GradientStop Color="{DynamicResource SpectrumGradient1Color}" Offset="0.0"/>
+            <GradientStop Color="{DynamicResource SpectrumGradient2Color}" Offset="0.3"/>
+            <GradientStop Color="{DynamicResource SpectrumGradient3Color}" Offset="0.6"/>
+            <GradientStop Color="{DynamicResource SpectrumGradient4Color}" Offset="0.85"/>
+            <GradientStop Color="{DynamicResource SpectrumGradient5Color}" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <!-- Outline style brush -->
+        <SolidColorBrush x:Key="OutlineBrush" Color="{DynamicResource SpectrumBarColor}"/>
+    </UserControl.Resources>
+
+    <Grid x:Name="MainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- dB Scale -->
+        <Canvas x:Name="DbScaleCanvas"
+                Grid.Row="0" Grid.Column="0"
+                Width="28"
+                Background="Transparent"/>
+
+        <!-- Spectrum Display Area -->
+        <Border Grid.Row="0" Grid.Column="1"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="2"
+                Background="{DynamicResource BackgroundBrush}">
+            <Canvas x:Name="SpectrumCanvas"
+                    ClipToBounds="True"/>
+        </Border>
+
+        <!-- Frequency Labels -->
+        <Canvas x:Name="FrequencyCanvas"
+                Grid.Row="1" Grid.Column="1"
+                Height="16"
+                Background="Transparent"/>
+    </Grid>
+</UserControl>

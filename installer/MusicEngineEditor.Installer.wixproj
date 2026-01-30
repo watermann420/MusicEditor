@@ -1,0 +1,34 @@
+<Project Sdk="WixToolset.Sdk/4.0.5">
+  <PropertyGroup>
+    <!-- Output settings -->
+    <OutputName>MusicEngineEditor-Setup</OutputName>
+    <OutputType>Package</OutputType>
+
+    <!-- Installer version and metadata -->
+    <InstallerVersion>500</InstallerVersion>
+
+    <!-- Platform target -->
+    <InstallerPlatform>x64</InstallerPlatform>
+
+    <!-- Compression -->
+    <DefaultCompressionLevel>high</DefaultCompressionLevel>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Path to published application files -->
+    <PublishDir>..\MusicEngineEditor\bin\publish\</PublishDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Include the main WiX source file -->
+    <Compile Include="Package.wxs" />
+  </ItemGroup>
+
+  <!-- Define variables that can be passed during build -->
+  <PropertyGroup>
+    <DefineConstants>
+      PublishDir=$(PublishDir);
+      ProductVersion=1.0.0.0
+    </DefineConstants>
+  </PropertyGroup>
+</Project>

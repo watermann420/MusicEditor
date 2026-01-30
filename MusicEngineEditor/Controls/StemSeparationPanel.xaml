@@ -1,0 +1,554 @@
+<UserControl x:Class="MusicEngineEditor.Controls.StemSeparationPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="500" d:DesignWidth="360"
+             Background="{DynamicResource PanelBackgroundBrush}">
+
+    <UserControl.Resources>
+        <!-- Parameter Label Style -->
+        <Style x:Key="ParameterLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <!-- Parameter Value Style -->
+        <Style x:Key="ParameterValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="MinWidth" Value="40"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+        </Style>
+
+        <!-- Stem Row Button Style -->
+        <Style x:Key="StemControlButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Solo Button Style (Yellow when active) -->
+        <Style x:Key="SoloButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource StemControlButtonStyle}">
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#FFB800"/>
+                    <Setter Property="Foreground" Value="#0D0D0D"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Mute Button Style (Red when active) -->
+        <Style x:Key="MuteButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource StemControlButtonStyle}">
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#FF4757"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Small Export Button Style -->
+        <Style x:Key="SmallExportButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource DisabledForegroundBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Volume Slider Style -->
+        <Style x:Key="VolumeSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Value" Value="100"/>
+            <Setter Property="TickFrequency" Value="1"/>
+            <Setter Property="IsSnapToTickEnabled" Value="True"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="16">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <TextBlock Grid.Row="0"
+                       Text="Stem Separation"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource BrightForegroundBrush}"
+                       Margin="0,0,0,16"/>
+
+            <!-- Quality Selection -->
+            <Grid Grid.Row="1" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Quality:"
+                           Style="{StaticResource ParameterLabelStyle}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+
+                <ComboBox Grid.Column="1"
+                          x:Name="QualityComboBox"
+                          SelectionChanged="QualityComboBox_SelectionChanged">
+                    <ComboBoxItem Content="Fast" Tag="Fast"/>
+                    <ComboBoxItem Content="Medium" Tag="Medium" IsSelected="True"/>
+                    <ComboBoxItem Content="High" Tag="High"/>
+                    <ComboBoxItem Content="Ultra" Tag="Ultra"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- File Input Section -->
+            <Border Grid.Row="2"
+                    Background="{DynamicResource BackgroundBrush}"
+                    CornerRadius="4"
+                    Padding="12"
+                    Margin="0,0,0,12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="Source Audio"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ForegroundBrush}"
+                               Margin="0,0,0,8"/>
+
+                    <Grid Grid.Row="1" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0"
+                                 x:Name="FilePathTextBox"
+                                 Text=""
+                                 IsReadOnly="True"
+                                 VerticalContentAlignment="Center"
+                                 Margin="0,0,8,0"/>
+
+                        <Button Grid.Column="1"
+                                x:Name="BrowseButton"
+                                Content="Browse..."
+                                Style="{DynamicResource SecondaryButtonStyle}"
+                                Click="BrowseButton_Click"
+                                Padding="10,6"/>
+                    </Grid>
+
+                    <Button Grid.Row="2"
+                            x:Name="UseSelectedClipButton"
+                            Content="Use Selected Clip"
+                            Style="{DynamicResource SecondaryButtonStyle}"
+                            Click="UseSelectedClipButton_Click"
+                            HorizontalAlignment="Stretch"/>
+                </Grid>
+            </Border>
+
+            <!-- Separate Button and Progress -->
+            <Grid Grid.Row="3" Margin="0,0,0,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Separate Button -->
+                <Button Grid.Row="0"
+                        x:Name="SeparateButton"
+                        Content="Separate Stems"
+                        Style="{DynamicResource PrimaryButtonStyle}"
+                        Click="SeparateButton_Click"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,0,0,8"/>
+
+                <!-- Progress Section -->
+                <StackPanel Grid.Row="1"
+                            x:Name="ProgressPanel"
+                            Visibility="Collapsed">
+                    <ProgressBar x:Name="SeparationProgressBar"
+                                 Height="6"
+                                 Margin="0,0,0,4"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   x:Name="ProgressPhaseText"
+                                   Text="Analyzing spectrum..."
+                                   FontSize="11"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock Grid.Column="1"
+                                   x:Name="ProgressPercentText"
+                                   Text="0%"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ForegroundBrush}"
+                                   FontWeight="SemiBold"/>
+                    </Grid>
+                    <Button x:Name="CancelButton"
+                            Content="Cancel"
+                            Style="{DynamicResource SecondaryButtonStyle}"
+                            Click="CancelButton_Click"
+                            HorizontalAlignment="Right"
+                            Margin="0,8,0,0"
+                            Padding="12,4"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Stem Controls Section -->
+            <Border Grid.Row="4"
+                    x:Name="StemControlsPanel"
+                    Background="{DynamicResource BackgroundBrush}"
+                    CornerRadius="4"
+                    Padding="12"
+                    Visibility="Collapsed">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="Separated Stems"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ForegroundBrush}"
+                               Margin="0,0,0,12"/>
+
+                    <!-- Vocals Row -->
+                    <Grid Grid.Row="1" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="Vocals"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ForegroundBrush}"
+                                   VerticalAlignment="Center"/>
+
+                        <ToggleButton Grid.Column="1"
+                                      x:Name="VocalsSoloButton"
+                                      Content="S"
+                                      Style="{StaticResource SoloButtonStyle}"
+                                      ToolTip="Solo Vocals"
+                                      Margin="0,0,4,0"
+                                      Checked="SoloButton_Changed"
+                                      Unchecked="SoloButton_Changed"/>
+
+                        <ToggleButton Grid.Column="2"
+                                      x:Name="VocalsMuteButton"
+                                      Content="M"
+                                      Style="{StaticResource MuteButtonStyle}"
+                                      ToolTip="Mute Vocals"
+                                      Margin="0,0,8,0"
+                                      Checked="MuteButton_Changed"
+                                      Unchecked="MuteButton_Changed"/>
+
+                        <Slider Grid.Column="3"
+                                x:Name="VocalsVolumeSlider"
+                                Style="{StaticResource VolumeSliderStyle}"
+                                ToolTip="Vocals Volume"
+                                ValueChanged="VolumeSlider_ValueChanged"/>
+
+                        <TextBlock Grid.Column="4"
+                                   x:Name="VocalsVolumeText"
+                                   Text="100%"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center"
+                                   MinWidth="35"
+                                   TextAlignment="Right"
+                                   Margin="4,0,8,0"/>
+
+                        <Button Grid.Column="5"
+                                x:Name="VocalsExportButton"
+                                Content="Export"
+                                Style="{StaticResource SmallExportButtonStyle}"
+                                Click="ExportStemButton_Click"
+                                Tag="Vocals"/>
+                    </Grid>
+
+                    <!-- Drums Row -->
+                    <Grid Grid.Row="2" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="Drums"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ForegroundBrush}"
+                                   VerticalAlignment="Center"/>
+
+                        <ToggleButton Grid.Column="1"
+                                      x:Name="DrumsSoloButton"
+                                      Content="S"
+                                      Style="{StaticResource SoloButtonStyle}"
+                                      ToolTip="Solo Drums"
+                                      Margin="0,0,4,0"
+                                      Checked="SoloButton_Changed"
+                                      Unchecked="SoloButton_Changed"/>
+
+                        <ToggleButton Grid.Column="2"
+                                      x:Name="DrumsMuteButton"
+                                      Content="M"
+                                      Style="{StaticResource MuteButtonStyle}"
+                                      ToolTip="Mute Drums"
+                                      Margin="0,0,8,0"
+                                      Checked="MuteButton_Changed"
+                                      Unchecked="MuteButton_Changed"/>
+
+                        <Slider Grid.Column="3"
+                                x:Name="DrumsVolumeSlider"
+                                Style="{StaticResource VolumeSliderStyle}"
+                                ToolTip="Drums Volume"
+                                ValueChanged="VolumeSlider_ValueChanged"/>
+
+                        <TextBlock Grid.Column="4"
+                                   x:Name="DrumsVolumeText"
+                                   Text="100%"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center"
+                                   MinWidth="35"
+                                   TextAlignment="Right"
+                                   Margin="4,0,8,0"/>
+
+                        <Button Grid.Column="5"
+                                x:Name="DrumsExportButton"
+                                Content="Export"
+                                Style="{StaticResource SmallExportButtonStyle}"
+                                Click="ExportStemButton_Click"
+                                Tag="Drums"/>
+                    </Grid>
+
+                    <!-- Bass Row -->
+                    <Grid Grid.Row="3" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="Bass"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ForegroundBrush}"
+                                   VerticalAlignment="Center"/>
+
+                        <ToggleButton Grid.Column="1"
+                                      x:Name="BassSoloButton"
+                                      Content="S"
+                                      Style="{StaticResource SoloButtonStyle}"
+                                      ToolTip="Solo Bass"
+                                      Margin="0,0,4,0"
+                                      Checked="SoloButton_Changed"
+                                      Unchecked="SoloButton_Changed"/>
+
+                        <ToggleButton Grid.Column="2"
+                                      x:Name="BassMuteButton"
+                                      Content="M"
+                                      Style="{StaticResource MuteButtonStyle}"
+                                      ToolTip="Mute Bass"
+                                      Margin="0,0,8,0"
+                                      Checked="MuteButton_Changed"
+                                      Unchecked="MuteButton_Changed"/>
+
+                        <Slider Grid.Column="3"
+                                x:Name="BassVolumeSlider"
+                                Style="{StaticResource VolumeSliderStyle}"
+                                ToolTip="Bass Volume"
+                                ValueChanged="VolumeSlider_ValueChanged"/>
+
+                        <TextBlock Grid.Column="4"
+                                   x:Name="BassVolumeText"
+                                   Text="100%"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center"
+                                   MinWidth="35"
+                                   TextAlignment="Right"
+                                   Margin="4,0,8,0"/>
+
+                        <Button Grid.Column="5"
+                                x:Name="BassExportButton"
+                                Content="Export"
+                                Style="{StaticResource SmallExportButtonStyle}"
+                                Click="ExportStemButton_Click"
+                                Tag="Bass"/>
+                    </Grid>
+
+                    <!-- Other Row -->
+                    <Grid Grid.Row="4" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="Other"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ForegroundBrush}"
+                                   VerticalAlignment="Center"/>
+
+                        <ToggleButton Grid.Column="1"
+                                      x:Name="OtherSoloButton"
+                                      Content="S"
+                                      Style="{StaticResource SoloButtonStyle}"
+                                      ToolTip="Solo Other"
+                                      Margin="0,0,4,0"
+                                      Checked="SoloButton_Changed"
+                                      Unchecked="SoloButton_Changed"/>
+
+                        <ToggleButton Grid.Column="2"
+                                      x:Name="OtherMuteButton"
+                                      Content="M"
+                                      Style="{StaticResource MuteButtonStyle}"
+                                      ToolTip="Mute Other"
+                                      Margin="0,0,8,0"
+                                      Checked="MuteButton_Changed"
+                                      Unchecked="MuteButton_Changed"/>
+
+                        <Slider Grid.Column="3"
+                                x:Name="OtherVolumeSlider"
+                                Style="{StaticResource VolumeSliderStyle}"
+                                ToolTip="Other Volume"
+                                ValueChanged="VolumeSlider_ValueChanged"/>
+
+                        <TextBlock Grid.Column="4"
+                                   x:Name="OtherVolumeText"
+                                   Text="100%"
+                                   FontSize="10"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                   VerticalAlignment="Center"
+                                   MinWidth="35"
+                                   TextAlignment="Right"
+                                   Margin="4,0,8,0"/>
+
+                        <Button Grid.Column="5"
+                                x:Name="OtherExportButton"
+                                Content="Export"
+                                Style="{StaticResource SmallExportButtonStyle}"
+                                Click="ExportStemButton_Click"
+                                Tag="Other"/>
+                    </Grid>
+
+                    <!-- Export All Button -->
+                    <Button Grid.Row="5"
+                            x:Name="ExportAllButton"
+                            Content="Export All Stems"
+                            Style="{DynamicResource PrimaryButtonStyle}"
+                            Click="ExportAllButton_Click"
+                            HorizontalAlignment="Stretch"/>
+                </Grid>
+            </Border>
+
+            <!-- Status -->
+            <TextBlock Grid.Row="6"
+                       x:Name="StatusText"
+                       Text="Select an audio file or clip to separate"
+                       FontSize="11"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                       Margin="0,12,0,0"
+                       TextWrapping="Wrap"/>
+        </Grid>
+    </Border>
+</UserControl>

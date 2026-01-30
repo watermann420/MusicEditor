@@ -1,0 +1,153 @@
+{
+  "id": "builtin",
+  "name": "Built-in Essentials",
+  "author": "MusicEngine",
+  "license": "Royalty-Free",
+  "version": "1.0.0",
+  "samples": [
+    {
+      "id": "kick_01",
+      "name": "Acoustic Kick",
+      "category": "Drums",
+      "filePath": "Drums/kick_acoustic.wav",
+      "bpm": null,
+      "key": null,
+      "tags": ["kick", "acoustic", "punchy"]
+    },
+    {
+      "id": "snare_01",
+      "name": "Tight Snare",
+      "category": "Drums",
+      "filePath": "Drums/snare_tight.wav",
+      "bpm": null,
+      "key": null,
+      "tags": ["snare", "tight", "crisp"]
+    },
+    {
+      "id": "hihat_01",
+      "name": "Closed Hi-Hat",
+      "category": "Drums",
+      "filePath": "Drums/hihat_closed.wav",
+      "bpm": null,
+      "key": null,
+      "tags": ["hihat", "closed", "tight"]
+    },
+    {
+      "id": "hihat_02",
+      "name": "Open Hi-Hat",
+      "category": "Drums",
+      "filePath": "Drums/hihat_open.wav",
+      "bpm": null,
+      "key": null,
+      "tags": ["hihat", "open", "sustain"]
+    },
+    {
+      "id": "clap_01",
+      "name": "Electronic Clap",
+      "category": "Drums",
+      "filePath": "Drums/clap_electronic.wav",
+      "bpm": null,
+      "key": null,
+      "tags": ["clap", "electronic", "snappy"]
+    },
+    {
+      "id": "bass_01",
+      "name": "Sub Bass Hit",
+      "category": "Bass",
+      "filePath": "Bass/sub_hit.wav",
+      "bpm": null,
+      "key": "C",
+      "tags": ["bass", "sub", "808"]
+    },
+    {
+      "id": "bass_02",
+      "name": "Synth Bass Stab",
+      "category": "Bass",
+      "filePath": "Bass/synth_stab.wav",
+      "bpm": null,
+      "key": "F",
+      "tags": ["bass", "synth", "stab"]
+    },
+    {
+      "id": "bass_03",
+      "name": "Reese Bass",
+      "category": "Bass",
+      "filePath": "Bass/reese.wav",
+      "bpm": null,
+      "key": "E",
+      "tags": ["bass", "reese", "dnb"]
+    },
+    {
+      "id": "synth_01",
+      "name": "Pad Atmosphere",
+      "category": "Synths",
+      "filePath": "Synths/pad_atmosphere.wav",
+      "bpm": null,
+      "key": "Am",
+      "tags": ["pad", "atmosphere", "ambient"]
+    },
+    {
+      "id": "synth_02",
+      "name": "Lead Pluck",
+      "category": "Synths",
+      "filePath": "Synths/lead_pluck.wav",
+      "bpm": null,
+      "key": "C",
+      "tags": ["lead", "pluck", "melodic"]
+    },
+    {
+      "id": "synth_03",
+      "name": "Chord Stab",
+      "category": "Synths",
+      "filePath": "Synths/chord_stab.wav",
+      "bpm": null,
+      "key": "Dm",
+      "tags": ["chord", "stab", "house"]
+    },
+    {
+      "id": "synth_04",
+      "name": "Arp Sequence",
+      "category": "Synths",
+      "filePath": "Synths/arp_sequence.wav",
+      "bpm": 128,
+      "key": "G",
+      "tags": ["arp", "sequence", "trance"]
+    },
+    {
+      "id": "fx_01",
+      "name": "Riser Impact",
+      "category": "FX",
+      "filePath": "FX/riser_impact.wav",
+      "bpm": null,
+      "key": null,
+      "tags": ["riser", "impact", "transition"]
+    },
+    {
+      "id": "fx_02",
+      "name": "Sweep Down",
+      "category": "FX",
+      "filePath": "FX/sweep_down.wav",
+      "bpm": null,
+      "key": null,
+      "tags": ["sweep", "down", "transition"]
+    },
+    {
+      "id": "fx_03",
+      "name": "White Noise Burst",
+      "category": "FX",
+      "filePath": "FX/noise_burst.wav",
+      "bpm": null,
+      "key": null,
+      "tags": ["noise", "burst", "fill"]
+    },
+    {
+      "id": "fx_04",
+      "name": "Reverse Cymbal",
+      "category": "FX",
+      "filePath": "FX/reverse_cymbal.wav",
+      "bpm": null,
+      "key": null,
+      "tags": ["reverse", "cymbal", "buildup"]
+    }
+  ]
+}

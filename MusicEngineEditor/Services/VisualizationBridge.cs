@@ -1,6 +1,7 @@
-// VisualizationBridge.cs
-// Central service that connects the MusicEngine to all visualization components.
-// Ensures real-time synchronization between audio playback and visual feedback.
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Bridge between audio and visualization.
 
 using System;
 using System.Collections.Generic;

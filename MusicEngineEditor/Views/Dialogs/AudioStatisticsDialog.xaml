@@ -1,0 +1,305 @@
+<Window x:Class="MusicEngineEditor.Views.Dialogs.AudioStatisticsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Audio Statistics"
+        Width="500" Height="520"
+        MinWidth="450" MinHeight="450"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
+
+    <Window.Resources>
+        <!-- Stat Row Style -->
+        <Style x:Key="StatLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+        </Style>
+
+        <Style x:Key="StatValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+
+        <Style x:Key="StatUnitStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="4,0,0,0"/>
+            <Setter Property="MinWidth" Value="40"/>
+        </Style>
+
+        <!-- Section Header Style -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <!-- Stat Row Border Style -->
+        <Style x:Key="StatRowStyle" TargetType="Border">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0,6"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- File Selection Header -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="20,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Audio File"
+                               FontWeight="SemiBold"
+                               FontSize="12"
+                               Foreground="{DynamicResource BrightForegroundBrush}"
+                               Margin="0,0,0,4"/>
+                    <TextBlock x:Name="FilePathText"
+                               Text="No file selected"
+                               FontSize="11"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        x:Name="BrowseButton"
+                        Content="Browse..."
+                        Click="BrowseButton_Click"
+                        Padding="15,6"
+                        Margin="10,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Statistics Content -->
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="20">
+            <StackPanel>
+                <!-- File Information Section -->
+                <TextBlock Text="File Information" Style="{StaticResource SectionHeaderStyle}"/>
+                <Border Background="{DynamicResource PanelBackgroundBrush}"
+                        CornerRadius="6"
+                        Padding="16"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <Border Style="{StaticResource StatRowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Duration" Style="{StaticResource StatLabelStyle}"/>
+                                <TextBlock x:Name="DurationValue" Grid.Column="1" Text="--:--" Style="{StaticResource StatValueStyle}"/>
+                                <TextBlock Grid.Column="2" Text="" Style="{StaticResource StatUnitStyle}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource StatRowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Sample Rate" Style="{StaticResource StatLabelStyle}"/>
+                                <TextBlock x:Name="SampleRateValue" Grid.Column="1" Text="--" Style="{StaticResource StatValueStyle}"/>
+                                <TextBlock Grid.Column="2" Text="Hz" Style="{StaticResource StatUnitStyle}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource StatRowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Bit Depth" Style="{StaticResource StatLabelStyle}"/>
+                                <TextBlock x:Name="BitDepthValue" Grid.Column="1" Text="--" Style="{StaticResource StatValueStyle}"/>
+                                <TextBlock Grid.Column="2" Text="bit" Style="{StaticResource StatUnitStyle}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource StatRowStyle}" BorderThickness="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Channels" Style="{StaticResource StatLabelStyle}"/>
+                                <TextBlock x:Name="ChannelsValue" Grid.Column="1" Text="--" Style="{StaticResource StatValueStyle}"/>
+                                <TextBlock Grid.Column="2" Text="" Style="{StaticResource StatUnitStyle}"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Level Statistics Section -->
+                <TextBlock Text="Level Statistics" Style="{StaticResource SectionHeaderStyle}"/>
+                <Border Background="{DynamicResource PanelBackgroundBrush}"
+                        CornerRadius="6"
+                        Padding="16"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <Border Style="{StaticResource StatRowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Peak Level" Style="{StaticResource StatLabelStyle}"/>
+                                <TextBlock x:Name="PeakLevelValue" Grid.Column="1" Text="--" Style="{StaticResource StatValueStyle}"/>
+                                <TextBlock Grid.Column="2" Text="dBFS" Style="{StaticResource StatUnitStyle}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource StatRowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="True Peak" Style="{StaticResource StatLabelStyle}"/>
+                                <TextBlock x:Name="TruePeakValue" Grid.Column="1" Text="--" Style="{StaticResource StatValueStyle}"/>
+                                <TextBlock Grid.Column="2" Text="dBTP" Style="{StaticResource StatUnitStyle}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource StatRowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="RMS Level" Style="{StaticResource StatLabelStyle}"/>
+                                <TextBlock x:Name="RmsLevelValue" Grid.Column="1" Text="--" Style="{StaticResource StatValueStyle}"/>
+                                <TextBlock Grid.Column="2" Text="dBFS" Style="{StaticResource StatUnitStyle}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource StatRowStyle}" BorderThickness="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="DC Offset" Style="{StaticResource StatLabelStyle}"/>
+                                <TextBlock x:Name="DcOffsetValue" Grid.Column="1" Text="--" Style="{StaticResource StatValueStyle}"/>
+                                <TextBlock Grid.Column="2" Text="%" Style="{StaticResource StatUnitStyle}"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Dynamics Section -->
+                <TextBlock Text="Dynamics" Style="{StaticResource SectionHeaderStyle}"/>
+                <Border Background="{DynamicResource PanelBackgroundBrush}"
+                        CornerRadius="6"
+                        Padding="16"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <Border Style="{StaticResource StatRowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Crest Factor" Style="{StaticResource StatLabelStyle}"/>
+                                <TextBlock x:Name="CrestFactorValue" Grid.Column="1" Text="--" Style="{StaticResource StatValueStyle}"/>
+                                <TextBlock Grid.Column="2" Text="dB" Style="{StaticResource StatUnitStyle}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource StatRowStyle}" BorderThickness="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Dynamic Range" Style="{StaticResource StatLabelStyle}"/>
+                                <TextBlock x:Name="DynamicRangeValue" Grid.Column="1" Text="--" Style="{StaticResource StatValueStyle}"/>
+                                <TextBlock Grid.Column="2" Text="dB" Style="{StaticResource StatUnitStyle}"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Analysis Progress -->
+                <Border x:Name="ProgressPanel"
+                        Background="{DynamicResource PanelBackgroundBrush}"
+                        CornerRadius="6"
+                        Padding="16"
+                        Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock x:Name="ProgressText"
+                                   Text="Analyzing..."
+                                   FontSize="12"
+                                   Foreground="{DynamicResource ForegroundBrush}"
+                                   Margin="0,0,0,8"/>
+                        <ProgressBar x:Name="AnalysisProgress"
+                                     Height="6"
+                                     IsIndeterminate="True"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Bottom Button Panel -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="20,15">
+            <Grid>
+                <Button x:Name="AnalyzeButton"
+                        Content="Analyze"
+                        Click="AnalyzeButton_Click"
+                        HorizontalAlignment="Left"
+                        Padding="20,8"
+                        Background="{DynamicResource AccentBrush}"
+                        Foreground="White"
+                        IsEnabled="False"/>
+
+                <Button Content="Close"
+                        IsCancel="True"
+                        Click="CloseButton_Click"
+                        HorizontalAlignment="Right"
+                        Padding="20,8"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

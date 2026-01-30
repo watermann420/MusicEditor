@@ -1,151 +1,59 @@
 <?xml version="1.0"?>
-<SyntaxDefinition name="C# Script" extensions=".csx;.cs"
+<SyntaxDefinition name="CSharpScript" extensions=".csx;.cs"
     xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
 
-    <!-- Colors for Dark Theme (VS Code / JetBrains style) -->
+    <!-- Rider Dark Theme Colors -->
 
-    <!-- Basic syntax elements -->
-    <Color name="Comment" foreground="#6A9955" />
-    <Color name="String" foreground="#CE9178" />
-    <Color name="Char" foreground="#CE9178" />
-    <Color name="Number" foreground="#B5CEA8" />
-    <Color name="Punctuation" foreground="#D4D4D4" />
-    <Color name="Operator" foreground="#D4D4D4" />
-    <Color name="Preprocessor" foreground="#9B9B9B" />
+    <!-- Comments: Muted Gray-Green (like Rider - less bright) -->
+    <Color name="Comment" foreground="#7A8A7A" fontStyle="italic" />
 
-    <!-- Keywords (purple/magenta for control flow and var) -->
-    <Color name="Keyword" foreground="#C586C0" fontWeight="bold" />
-    <Color name="ControlKeyword" foreground="#C586C0" fontWeight="bold" />
+    <!-- Strings: Orange/Salmon -->
+    <Color name="String" foreground="#6A8759" />
 
-    <!-- Types (teal/cyan) -->
-    <Color name="Type" foreground="#4EC9B0" />
-    <Color name="BuiltInType" foreground="#4EC9B0" />
+    <!-- Characters -->
+    <Color name="Char" foreground="#6A8759" />
 
-    <!-- Methods/Functions (yellow) -->
-    <Color name="Method" foreground="#DCDCAA" />
+    <!-- Numbers: Light Blue -->
+    <Color name="Number" foreground="#6897BB" />
 
-    <!-- Modifiers and other keywords (blue) -->
-    <Color name="ModifierKeyword" foreground="#569CD6" fontWeight="bold" />
+    <!-- Preprocessor -->
+    <Color name="Preprocessor" foreground="#BBB529" />
 
-    <!-- MusicEngine Specific Colors -->
-    <Color name="MusicAPIKeyword" foreground="#FF8C00" fontWeight="bold" />
-    <Color name="VstMidiKeyword" foreground="#9CDCFE" fontWeight="bold" />
-    <Color name="EngineType" foreground="#4EC9B0" fontWeight="bold" />
+    <!-- Keywords: Orange (like Rider) -->
+    <Color name="Keyword" foreground="#CC7832" />
+
+    <!-- Types: Light Purple/Lavender (like Rider for classes) -->
+    <Color name="Type" foreground="#A9B7C6" />
+
+    <!-- Class names: Beige/Tan -->
+    <Color name="ClassName" foreground="#A9B7C6" fontWeight="bold" />
+
+    <!-- Method calls: Yellow-ish -->
+    <Color name="MethodCall" foreground="#FFC66D" />
+
+    <!-- Parameters and variables -->
+    <Color name="Parameter" foreground="#A9B7C6" />
 
     <RuleSet ignoreCase="false">
 
-        <!-- Preprocessor directives -->
-        <Span color="Preprocessor" begin="#" />
-
-        <!-- Single-line comments -->
+        <!-- Comments first (highest priority) -->
+        <Span color="Comment" begin="///" />
         <Span color="Comment" begin="//" />
-
-        <!-- Multi-line comments -->
         <Span color="Comment" multiline="true" begin="/\*" end="\*/" />
 
-        <!-- Documentation comments -->
-        <Span color="Comment" begin="///" />
+        <!-- Preprocessor -->
+        <Span color="Preprocessor" begin="#" />
 
         <!-- Strings -->
-        <Span color="String" begin="&quot;" end="&quot;" escape="\\" />
-
-        <!-- Verbatim strings -->
-        <Span color="String" multiline="true" begin="@&quot;" end="&quot;&quot;" escape="&quot;&quot;" />
-
-        <!-- Interpolated strings -->
+        <Span color="String" multiline="true" begin="&quot;&quot;&quot;" end="&quot;&quot;&quot;" />
+        <Span color="String" multiline="true" begin="@&quot;" end="&quot;" escape="&quot;&quot;" />
         <Span color="String" begin="\$&quot;" end="&quot;" escape="\\" />
-
-        <!-- Characters -->
+        <Span color="String" begin="&quot;" end="&quot;" escape="\\" />
         <Span color="Char" begin="'" end="'" escape="\\" />
 
-        <!-- ==================== MusicEngine API ==================== -->
-
-        <!-- Music API Keywords (Bright Orange #FF8C00) -->
-        <Keywords color="MusicAPIKeyword">
-            <Word>CreateSynth</Word>
-            <Word>CreatePattern</Word>
-            <Word>NoteOn</Word>
-            <Word>NoteOff</Word>
-            <Word>StartPattern</Word>
-            <Word>StopPattern</Word>
-            <Word>Start</Word>
-            <Word>Stop</Word>
-            <Word>SetBpm</Word>
-            <Word>Skip</Word>
-            <Word>Print</Word>
-            <Word>LoadVst</Word>
-            <Word>LoadVstByIndex</Word>
-            <Word>GetVst</Word>
-            <Word>RouteToVst</Word>
-            <Word>ListVstPlugins</Word>
-            <Word>AddFrequencyTrigger</Word>
-            <Word>Random</Word>
-            <Word>RandomInt</Word>
-            <Word>MapControl</Word>
-            <Word>MapPitchBend</Word>
-            <Word>MapBpm</Word>
-            <Word>MapStart</Word>
-            <Word>MapStop</Word>
-            <Word>MapSkip</Word>
-            <Word>MapScratch</Word>
-            <Word>PlayNote</Word>
-            <Word>SetTempo</Word>
-            <Word>GetTempo</Word>
-            <Word>AddTrack</Word>
-            <Word>RemoveTrack</Word>
-            <Word>SetVolume</Word>
-            <Word>SetPan</Word>
-            <Word>Mute</Word>
-            <Word>Solo</Word>
-            <Word>Record</Word>
-            <Word>Quantize</Word>
-        </Keywords>
-
-        <!-- VST/MIDI Keywords (Light Blue #9CDCFE) -->
-        <Keywords color="VstMidiKeyword">
-            <Word>vst</Word>
-            <Word>midi</Word>
-            <Word>route</Word>
-            <Word>audio</Word>
-            <Word>patterns</Word>
-            <Word>Engine</Word>
-            <Word>Sequencer</Word>
-            <Word>RouteMidi</Word>
-            <Word>MidiIn</Word>
-            <Word>MidiOut</Word>
-            <Word>MidiChannel</Word>
-            <Word>MidiDevice</Word>
-            <Word>VstHost</Word>
-            <Word>VstParameter</Word>
-            <Word>AudioInput</Word>
-            <Word>AudioOutput</Word>
-            <Word>SampleRate</Word>
-            <Word>BufferSize</Word>
-            <Word>Latency</Word>
-        </Keywords>
-
-        <!-- MusicEngine Types -->
-        <Keywords color="EngineType">
-            <Word>SimpleSynth</Word>
-            <Word>VstPlugin</Word>
-            <Word>Pattern</Word>
-            <Word>NoteEvent</Word>
-            <Word>AudioEngine</Word>
-            <Word>ISynth</Word>
-            <Word>WaveType</Word>
-            <Word>Track</Word>
-            <Word>Clip</Word>
-            <Word>Sample</Word>
-            <Word>Oscillator</Word>
-            <Word>Filter</Word>
-            <Word>Envelope</Word>
-            <Word>LFO</Word>
-        </Keywords>
-
-        <!-- ==================== C# Language ==================== -->
-
-        <!-- C# Control Flow Keywords (Purple/Magenta #C586C0) -->
-        <Keywords color="ControlKeyword">
+        <!-- Keywords (Orange - like Rider) -->
+        <Keywords color="Keyword">
+            <!-- Control flow -->
             <Word>if</Word>
             <Word>else</Word>
             <Word>switch</Word>
@@ -165,34 +73,97 @@
             <Word>goto</Word>
             <Word>yield</Word>
             <Word>await</Word>
-            <Word>var</Word>
-            <Word>in</Word>
-            <Word>is</Word>
-            <Word>as</Word>
+            <Word>when</Word>
+            <Word>and</Word>
+            <Word>or</Word>
+            <Word>not</Word>
+            <!-- Declaration -->
+            <Word>class</Word>
+            <Word>struct</Word>
+            <Word>record</Word>
+            <Word>interface</Word>
+            <Word>enum</Word>
+            <Word>delegate</Word>
+            <Word>event</Word>
+            <Word>namespace</Word>
+            <!-- Modifiers -->
+            <Word>public</Word>
+            <Word>private</Word>
+            <Word>protected</Word>
+            <Word>internal</Word>
+            <Word>static</Word>
+            <Word>readonly</Word>
+            <Word>const</Word>
+            <Word>volatile</Word>
+            <Word>async</Word>
+            <Word>virtual</Word>
+            <Word>override</Word>
+            <Word>abstract</Word>
+            <Word>sealed</Word>
+            <Word>extern</Word>
+            <Word>unsafe</Word>
+            <Word>partial</Word>
             <Word>new</Word>
+            <Word>ref</Word>
+            <Word>out</Word>
+            <Word>in</Word>
+            <Word>params</Word>
+            <Word>this</Word>
+            <Word>base</Word>
+            <Word>using</Word>
+            <Word>lock</Word>
+            <Word>fixed</Word>
+            <Word>checked</Word>
+            <Word>unchecked</Word>
+            <Word>stackalloc</Word>
+            <Word>implicit</Word>
+            <Word>explicit</Word>
+            <Word>operator</Word>
+            <Word>init</Word>
+            <Word>required</Word>
+            <Word>file</Word>
+            <Word>scoped</Word>
+            <Word>global</Word>
+            <!-- Context -->
+            <Word>var</Word>
+            <Word>nameof</Word>
             <Word>typeof</Word>
             <Word>sizeof</Word>
-            <Word>nameof</Word>
-            <Word>when</Word>
+            <Word>is</Word>
+            <Word>as</Word>
             <Word>where</Word>
-        </Keywords>
-
-        <!-- C# Built-in Types (Teal/Cyan #4EC9B0) -->
-        <Keywords color="BuiltInType">
+            <Word>select</Word>
+            <Word>from</Word>
+            <Word>orderby</Word>
+            <Word>ascending</Word>
+            <Word>descending</Word>
+            <Word>group</Word>
+            <Word>by</Word>
+            <Word>into</Word>
+            <Word>join</Word>
+            <Word>on</Word>
+            <Word>equals</Word>
+            <Word>let</Word>
+            <Word>with</Word>
+            <!-- Literals -->
+            <Word>true</Word>
+            <Word>false</Word>
+            <Word>null</Word>
+            <!-- Built-in types -->
             <Word>int</Word>
-            <Word>string</Word>
-            <Word>float</Word>
-            <Word>double</Word>
-            <Word>bool</Word>
+            <Word>uint</Word>
+            <Word>long</Word>
+            <Word>ulong</Word>
+            <Word>short</Word>
+            <Word>ushort</Word>
             <Word>byte</Word>
             <Word>sbyte</Word>
-            <Word>char</Word>
+            <Word>float</Word>
+            <Word>double</Word>
             <Word>decimal</Word>
-            <Word>long</Word>
-            <Word>short</Word>
-            <Word>uint</Word>
-            <Word>ulong</Word>
-            <Word>ushort</Word>
+            <Word>bool</Word>
+            <Word>char</Word>
+            <Word>string</Word>
             <Word>object</Word>
             <Word>void</Word>
             <Word>dynamic</Word>
@@ -200,121 +171,90 @@
             <Word>nuint</Word>
         </Keywords>
 
-        <!-- C# Modifier Keywords (Blue #569CD6) -->
-        <Keywords color="ModifierKeyword">
-            <Word>abstract</Word>
-            <Word>async</Word>
-            <Word>base</Word>
-            <Word>checked</Word>
-            <Word>class</Word>
-            <Word>const</Word>
-            <Word>delegate</Word>
-            <Word>enum</Word>
-            <Word>event</Word>
-            <Word>explicit</Word>
-            <Word>extern</Word>
-            <Word>fixed</Word>
-            <Word>implicit</Word>
-            <Word>interface</Word>
-            <Word>internal</Word>
-            <Word>lock</Word>
-            <Word>namespace</Word>
-            <Word>operator</Word>
-            <Word>out</Word>
-            <Word>override</Word>
-            <Word>params</Word>
-            <Word>private</Word>
-            <Word>protected</Word>
-            <Word>public</Word>
-            <Word>readonly</Word>
-            <Word>ref</Word>
-            <Word>sealed</Word>
-            <Word>stackalloc</Word>
-            <Word>static</Word>
-            <Word>struct</Word>
-            <Word>this</Word>
-            <Word>unchecked</Word>
-            <Word>unsafe</Word>
-            <Word>using</Word>
-            <Word>virtual</Word>
-            <Word>volatile</Word>
-            <Word>record</Word>
-            <Word>init</Word>
-            <Word>required</Word>
-            <Word>file</Word>
-            <Word>scoped</Word>
-            <Word>partial</Word>
-        </Keywords>
-
-        <!-- C# Literal Keywords (Purple/Magenta #C586C0) -->
-        <Keywords color="Keyword">
-            <Word>true</Word>
-            <Word>false</Word>
-            <Word>null</Word>
-        </Keywords>
-
-        <!-- Common .NET Types (Teal/Cyan #4EC9B0) -->
-        <Keywords color="Type">
+        <!-- .NET Types (Light text with bold) -->
+        <Keywords color="ClassName">
             <Word>String</Word>
             <Word>Int32</Word>
             <Word>Int64</Word>
-            <Word>Int16</Word>
             <Word>Double</Word>
             <Word>Single</Word>
             <Word>Boolean</Word>
             <Word>Object</Word>
-            <Word>Byte</Word>
-            <Word>Char</Word>
-            <Word>Decimal</Word>
             <Word>List</Word>
             <Word>Dictionary</Word>
             <Word>HashSet</Word>
-            <Word>Queue</Word>
-            <Word>Stack</Word>
             <Word>Array</Word>
             <Word>Task</Word>
             <Word>Action</Word>
             <Word>Func</Word>
-            <Word>Predicate</Word>
             <Word>Exception</Word>
             <Word>Console</Word>
             <Word>Math</Word>
-            <Word>Thread</Word>
+            <Word>Random</Word>
             <Word>DateTime</Word>
             <Word>TimeSpan</Word>
             <Word>Guid</Word>
-            <Word>Uri</Word>
-            <Word>Tuple</Word>
-            <Word>ValueTuple</Word>
-            <Word>Span</Word>
-            <Word>Memory</Word>
-            <Word>ReadOnlySpan</Word>
-            <Word>ReadOnlyMemory</Word>
-            <Word>IEnumerable</Word>
-            <Word>IList</Word>
-            <Word>ICollection</Word>
-            <Word>IDictionary</Word>
-            <Word>IDisposable</Word>
-            <Word>IAsyncDisposable</Word>
-            <Word>CancellationToken</Word>
             <Word>StringBuilder</Word>
             <Word>Regex</Word>
+            <Word>File</Word>
+            <Word>Path</Word>
+            <Word>Directory</Word>
+            <Word>Stream</Word>
+            <Word>CancellationToken</Word>
+            <Word>IEnumerable</Word>
+            <Word>IList</Word>
+            <Word>IDictionary</Word>
+            <Word>IDisposable</Word>
         </Keywords>
 
-        <!-- Numbers (Light Green #B5CEA8) -->
-        <Rule color="Number">
-            \b0[xX][0-9a-fA-F]+[uUlL]*  |
-            \b0[bB][01]+[uUlL]*         |
-            (   \b\d+(\.[0-9]+)?   |
-                \.[0-9]+
-            )
-            ([eE][+-]?[0-9]+)?
-            [fFdDmMlLuU]*
-        </Rule>
+        <!-- MusicEngine Types (Yellow/Gold) -->
+        <Keywords color="MethodCall">
+            <Word>AudioEngine</Word>
+            <Word>Sequencer</Word>
+            <Word>Engine</Word>
+            <Word>SimpleSynth</Word>
+            <Word>PolySynth</Word>
+            <Word>FMSynth</Word>
+            <Word>WavetableSynth</Word>
+            <Word>GranularSynth</Word>
+            <Word>Pattern</Word>
+            <Word>NoteEvent</Word>
+            <Word>Track</Word>
+            <Word>VstPlugin</Word>
+            <Word>VstHost</Word>
+            <Word>EffectChain</Word>
+            <Word>ReverbEffect</Word>
+            <Word>DelayEffect</Word>
+            <Word>ChorusEffect</Word>
+            <Word>CompressorEffect</Word>
+            <Word>FilterEffect</Word>
+            <Word>Envelope</Word>
+            <Word>LFO</Word>
+            <Word>Oscillator</Word>
+            <Word>WaveType</Word>
+            <!-- API Methods -->
+            <Word>CreateSynth</Word>
+            <Word>CreatePattern</Word>
+            <Word>NoteOn</Word>
+            <Word>NoteOff</Word>
+            <Word>Start</Word>
+            <Word>Stop</Word>
+            <Word>SetBpm</Word>
+            <Word>StartPattern</Word>
+            <Word>StopPattern</Word>
+            <Word>LoadVst</Word>
+            <Word>Print</Word>
+            <Word>PlayNote</Word>
+            <Word>AddEffect</Word>
+            <Word>SetVolume</Word>
+            <Word>SetPan</Word>
+        </Keywords>
 
-        <!-- Operators (Light Gray #D4D4D4) -->
-        <Rule color="Operator">
-            [+\-*/%&amp;|^!~&lt;&gt;=?:]+
+        <!-- Numbers -->
+        <Rule color="Number">
+            \b0[xX][0-9a-fA-F_]+[uUlL]*\b |
+            \b0[bB][01_]+[uUlL]*\b |
+            \b[0-9][0-9_]*\.?[0-9_]*([eE][+-]?[0-9_]+)?[fFdDmMlLuU]*\b
         </Rule>
 
     </RuleSet>

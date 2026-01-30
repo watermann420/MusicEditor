@@ -1,4 +1,10 @@
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Service implementation.
+
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -15,8 +21,58 @@ public class ProjectService : IProjectService
 {
     private const string ProjectExtension = ".meproj";
     private const string ScriptExtension = ".me";
+    private const int MaxRecentProjects = 10;
+    private const string RecentProjectsFileName = "recent.json";
+
+    /// <summary>
+    /// Path to the MusicEngine test_script.csx file used as default startup content.
+    /// This is resolved relative to the solution directory.
+    /// </summary>
+    private static readonly string TestScriptPath = GetTestScriptPath();
+
+    private readonly List<RecentProjectEntry> _recentProjects = new();
+    private readonly string _recentProjectsPath;
+
+    private static string GetTestScriptPath()
+    {
+        // Try to find test_script.csx relative to the application
+        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+
+        // Navigate up from bin/Debug/net8.0-windows to find MusicEngine sibling folder
+        var dir = new DirectoryInfo(baseDir);
+        while (dir != null && dir.Parent != null)
+        {
+            var testScriptPath = Path.Combine(dir.Parent.FullName, "MusicEngine", "test_script.csx");
+            if (File.Exists(testScriptPath))
+            {
+                return testScriptPath;
+            }
+
+            // Also check in RiderProjects parent
+            var riderProjectsPath = Path.Combine(dir.FullName, "..", "..", "MusicEngine", "test_script.csx");
+            if (File.Exists(riderProjectsPath))
+            {
+                return Path.GetFullPath(riderProjectsPath);
+            }
+
+            dir = dir.Parent;
+        }
+
+        // Fallback: Try common development paths
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var fallbackPath = Path.Combine(userProfile, "RiderProjects", "MusicEngine", "test_script.csx");
+        if (File.Exists(fallbackPath))
+        {
+            return fallbackPath;
+        }
+
+        return string.Empty;
+    }
 
     public MusicProject? CurrentProject { get; private set; }
+
+    /// <inheritdoc />
+    public IReadOnlyList<RecentProjectEntry> RecentProjects => _recentProjects.AsReadOnly();
 
     public event EventHandler<MusicProject>? ProjectLoaded;
     public event EventHandler? ProjectClosed;
@@ -27,6 +83,16 @@ public class ProjectService : IProjectService
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
+
+    public ProjectService()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var appFolder = Path.Combine(localAppData, "MusicEngineEditor");
+        Directory.CreateDirectory(appFolder);
+        _recentProjectsPath = Path.Combine(appFolder, RecentProjectsFileName);
+
+        LoadRecentProjects();
+    }
 
     public async Task<MusicProject> CreateProjectAsync(string name, string path)
     {
@@ -63,6 +129,9 @@ public class ProjectService : IProjectService
 
         CurrentProject = project;
         ProjectLoaded?.Invoke(this, project);
+
+        // Add to recent projects
+        AddToRecentProjects(project.FilePath);
 
         return project;
     }
@@ -136,6 +205,9 @@ public class ProjectService : IProjectService
 
         CurrentProject = project;
         ProjectLoaded?.Invoke(this, project);
+
+        // Add to recent projects
+        AddToRecentProjects(projectFilePath);
 
         return project;
     }
@@ -217,7 +289,17 @@ public class ProjectService : IProjectService
         ns ??= $"{project.Namespace}.Scripts";
         filePath ??= Path.Combine(projectDir, "Scripts", $"{name}{ScriptExtension}");
 
-        var header = $@"// ============================================
+        string content;
+
+        if (isEntryPoint && !string.IsNullOrEmpty(TestScriptPath) && File.Exists(TestScriptPath))
+        {
+            // Use the MusicEngine test_script.csx content as the default startup script
+            content = File.ReadAllText(TestScriptPath);
+        }
+        else
+        {
+            // Fallback to the original template format
+            var header = $@"// ============================================
 // MusicEngine Script
 // Project: {project.Name}
 // Namespace: {ns}
@@ -228,7 +310,7 @@ public class ProjectService : IProjectService
 #project {project.Name}
 ";
 
-        var content = isEntryPoint ? $@"{header}
+            content = isEntryPoint ? $@"{header}
 namespace {ns}
 {{
     public class {name} : MusicScript
@@ -263,6 +345,7 @@ namespace {ns}
     }}
 }}
 ";
+        }
 
         return new MusicScript
         {
@@ -372,6 +455,87 @@ namespace {ns}
     {
         project.References.Remove(reference);
         await SaveProjectAsync(project);
+    }
+
+    /// <inheritdoc />
+    public void AddToRecentProjects(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+            return;
+
+        // Remove existing entry with same path (case-insensitive on Windows)
+        var existing = _recentProjects.FirstOrDefault(
+            r => string.Equals(r.Path, path, StringComparison.OrdinalIgnoreCase));
+
+        if (existing != null)
+        {
+            _recentProjects.Remove(existing);
+        }
+
+        // Add new entry at the beginning
+        var entry = new RecentProjectEntry
+        {
+            Path = path,
+            Name = Path.GetFileNameWithoutExtension(path),
+            LastOpened = DateTime.UtcNow
+        };
+
+        _recentProjects.Insert(0, entry);
+
+        // Trim to max count
+        while (_recentProjects.Count > MaxRecentProjects)
+        {
+            _recentProjects.RemoveAt(_recentProjects.Count - 1);
+        }
+
+        SaveRecentProjects();
+    }
+
+    /// <inheritdoc />
+    public void ClearRecentProjects()
+    {
+        _recentProjects.Clear();
+        SaveRecentProjects();
+    }
+
+    private void LoadRecentProjects()
+    {
+        _recentProjects.Clear();
+
+        if (!File.Exists(_recentProjectsPath))
+            return;
+
+        try
+        {
+            var json = File.ReadAllText(_recentProjectsPath);
+            var entries = JsonSerializer.Deserialize<List<RecentProjectEntry>>(json, JsonOptions);
+
+            if (entries != null)
+            {
+                // Only add entries where the file still exists
+                foreach (var entry in entries.Where(e => File.Exists(e.Path)).Take(MaxRecentProjects))
+                {
+                    _recentProjects.Add(entry);
+                }
+            }
+        }
+        catch
+        {
+            // Ignore errors loading recent projects
+        }
+    }
+
+    private void SaveRecentProjects()
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(_recentProjects, JsonOptions);
+            File.WriteAllText(_recentProjectsPath, json);
+        }
+        catch
+        {
+            // Ignore errors saving recent projects
+        }
     }
 
     private static string SanitizeNamespace(string name)

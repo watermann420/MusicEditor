@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(dotnet build:*)",
+      "Bash(where:*)",
+      "Bash(\"C:\\\\Program Files\\\\dotnet\\\\dotnet.exe\" build \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\MusicEngineEditor\\\\MusicEngineEditor.csproj\" --configuration Debug)",
+      "Bash(dir \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\MusicEngineEditor\\\\Resources\\\\Icons\")",
+      "Bash(dir /s /b \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\")",
+      "Bash(findstr:*)",
+      "Bash(powershell:*)",
+      "Bash(dir \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\")",
+      "Bash(dir \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\dev-docs\")",
+      "Bash(dir \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\MusicEngineEditor\")",
+      "Bash(dir \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\" /s /b)",
+      "Bash(\"C:/Program Files/dotnet/dotnet.exe\" build MusicEngineEditor/MusicEngineEditor.csproj)",
+      "Bash(cmd /c \"dotnet build MusicEngineEditor/MusicEngineEditor.csproj\")",
+      "Bash(cmd /c:*)",
+      "Bash(C:/Program\\\\ Files/dotnet/dotnet.exe build:*)",
+      "Bash(dir /s /b \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEditor\\\\*.csproj\")",
+      "Bash(\"C:\\\\Program Files\\\\dotnet\\\\dotnet.exe\" build \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEngine\\\\MusicEngine.csproj\")",
+      "Bash(\"C:\\\\Program Files\\\\dotnet\\\\dotnet.exe\" build \"C:\\\\Users\\\\water\\\\RiderProjects\\\\MusicEngine\\\\MusicEngine.sln\" --no-restore)",
+      "Bash(\"C:\\\\Program Files\\\\dotnet\\\\dotnet.exe\" --list-sdks)",
+      "Bash(dir /s /b \"C:\\\\Users\\\\water\\\\RiderProjects\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\water\\\\RiderProjects\" -Directory -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Where-Object { $_Name -like \"*MusicEngine*\" })",
+      "Bash(Select-Object -First 20 -ExpandProperty FullName)"
+    ]
+  }
+}

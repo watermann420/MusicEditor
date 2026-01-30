@@ -5,19 +5,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="80" d:DesignWidth="400"
-             Background="#2B2D30"
+             Background="#181818"
              Visibility="Collapsed">
 
     <UserControl.Resources>
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#2B2D30"/>
-        <SolidColorBrush x:Key="InputBackgroundBrush" Color="#1E1F22"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#393B40"/>
-        <SolidColorBrush x:Key="FocusBorderBrush" Color="#4B6EAF"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#BCBEC4"/>
-        <SolidColorBrush x:Key="SecondaryBrush" Color="#6F737A"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="InputBackgroundBrush" Color="#0D0D0D"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="FocusBorderBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="#808080"/>
         <SolidColorBrush x:Key="HighlightBrush" Color="#214283"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#4B6EAF"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="#6AAB73"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#00FF88"/>
 
         <!-- Search TextBox Style -->
         <Style x:Key="SearchInputStyle" TargetType="TextBox">
@@ -39,7 +39,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4">
                             <Border.Effect>
-                                <DropShadowEffect x:Name="focusShadow" Color="#4B6EAF" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                                <DropShadowEffect x:Name="focusShadow" Color="#00D9FF" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
                             </Border.Effect>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -106,11 +106,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                                 <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4B6EAF"/>
+                                <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -137,7 +137,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                <Setter TargetName="border" Property="Background" Value="#252525"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#214283"/>
@@ -155,7 +155,7 @@
             Padding="12,10">
         <Border.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                <GradientStop Color="#2B2D30" Offset="0"/>
+                <GradientStop Color="#181818" Offset="0"/>
                 <GradientStop Color="#27292C" Offset="1"/>
             </LinearGradientBrush>
         </Border.Background>
@@ -223,7 +223,7 @@
                 </StackPanel>
 
                 <!-- Results Counter -->
-                <Border Grid.Column="3" Background="#1E1F22" CornerRadius="4" Padding="10,4" Margin="4,0">
+                <Border Grid.Column="3" Background="#0D0D0D" CornerRadius="4" Padding="10,4" Margin="4,0">
                     <TextBlock x:Name="ResultsCounter"
                                Text="0 results"
                                Foreground="{StaticResource SecondaryBrush}"

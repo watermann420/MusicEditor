@@ -1,0 +1,175 @@
+<UserControl x:Class="MusicEngineEditor.Controls.TrackVersionCompareControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="350"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Version item style -->
+        <Style x:Key="VersionItemStyle" TargetType="Border">
+            <Setter Property="Background" Value="#181818"/>
+            <Setter Property="BorderBrush" Value="#252525"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#333337"/>
+                    <Setter Property="BorderBrush" Value="#00D9FF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Button style -->
+        <Style x:Key="CompareButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#00D9FF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#5B7EBF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3B5E9F"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border BorderBrush="#252525"
+            BorderThickness="1"
+            CornerRadius="6">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Background="#181818"
+                    BorderBrush="#252525"
+                    BorderThickness="0,0,0,1"
+                    Padding="12,10">
+                <StackPanel>
+                    <TextBlock Text="Compare Versions"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="White"/>
+                    <TextBlock x:Name="TrackNameText"
+                               Text="Select versions to compare"
+                               FontSize="11"
+                               Foreground="#808080"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Version selection -->
+            <Grid Grid.Row="1" Margin="12,12,12,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Version A -->
+                <TextBlock Grid.Row="0"
+                           Text="Version A (Base)"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="#808080"
+                           Margin="0,0,0,4"/>
+                <ComboBox x:Name="VersionACombo"
+                          Grid.Row="1"
+                          DisplayMemberPath="DisplayName"
+                          Background="#181818"
+                          Foreground="#E0E0E0"
+                          BorderBrush="#252525"
+                          SelectionChanged="VersionCombo_SelectionChanged"
+                          Margin="0,0,0,12"/>
+
+                <!-- Version B -->
+                <TextBlock Grid.Row="2"
+                           Text="Version B (Compare)"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="#808080"
+                           Margin="0,0,0,4"/>
+                <ComboBox x:Name="VersionBCombo"
+                          Grid.Row="3"
+                          DisplayMemberPath="DisplayName"
+                          Background="#181818"
+                          Foreground="#E0E0E0"
+                          BorderBrush="#252525"
+                          SelectionChanged="VersionCombo_SelectionChanged"/>
+            </Grid>
+
+            <!-- Quick diff preview -->
+            <ScrollViewer Grid.Row="2"
+                          VerticalScrollBarVisibility="Auto"
+                          Margin="12,12,12,0">
+                <StackPanel x:Name="QuickDiffPanel">
+                    <!-- Summary will be populated here -->
+                    <TextBlock x:Name="QuickDiffText"
+                               Text="Select two versions to see a quick comparison"
+                               FontSize="11"
+                               Foreground="#808080"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Actions -->
+            <Border Grid.Row="3"
+                    Background="#181818"
+                    BorderBrush="#252525"
+                    BorderThickness="0,1,0,0"
+                    Padding="12">
+                <StackPanel>
+                    <Button x:Name="CompareButton"
+                            Content="Open Detailed Comparison"
+                            Style="{StaticResource CompareButtonStyle}"
+                            Click="CompareButton_Click"
+                            IsEnabled="False"/>
+                    <Button x:Name="QuickCompareButton"
+                            Content="Quick Compare"
+                            Background="#333337"
+                            Foreground="#E0E0E0"
+                            BorderThickness="0"
+                            Padding="16,8"
+                            Margin="0,8,0,0"
+                            Cursor="Hand"
+                            Click="QuickCompareButton_Click"
+                            IsEnabled="False"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

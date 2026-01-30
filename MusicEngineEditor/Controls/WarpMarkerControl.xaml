@@ -1,0 +1,221 @@
+<UserControl x:Class="MusicEngineEditor.Controls.WarpMarkerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="800"
+             Background="#1E1E1E">
+
+    <UserControl.Resources>
+        <!-- Marker Colors -->
+        <SolidColorBrush x:Key="MarkerUserBrush" Color="#FF9900"/>
+        <SolidColorBrush x:Key="MarkerTransientBrush" Color="#4A9EFF"/>
+        <SolidColorBrush x:Key="MarkerBeatBrush" Color="#00CC66"/>
+        <SolidColorBrush x:Key="MarkerAnchorBrush" Color="#CC3366"/>
+        <SolidColorBrush x:Key="MarkerSelectedBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="MarkerLockedBrush" Color="#666666"/>
+
+        <!-- Grid Colors -->
+        <SolidColorBrush x:Key="GridBeatBrush" Color="#333333"/>
+        <SolidColorBrush x:Key="GridBarBrush" Color="#555555"/>
+        <SolidColorBrush x:Key="WaveformBrush" Color="#4A9EFF"/>
+        <SolidColorBrush x:Key="RulerBackgroundBrush" Color="#252526"/>
+        <SolidColorBrush x:Key="RulerTextBrush" Color="#AAAAAA"/>
+
+        <!-- Toolbar Button Style -->
+        <Style x:Key="WarpToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#3C3C3C"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#4A4A4A"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#2A2A2A"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toggle Button Style -->
+        <Style x:Key="WarpToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="#3C3C3C"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#4A4A4A"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#4A9EFF"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="WarpComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="#3C3C3C"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="2,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Toolbar -->
+            <RowDefinition Height="*"/>      <!-- Waveform + Markers -->
+            <RowDefinition Height="24"/>     <!-- Beat Grid Ruler -->
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Background="#2D2D30" Padding="4" BorderBrush="#3C3C3C" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Main Actions -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <ToggleButton x:Name="WarpEnabledToggle"
+                                  Content="Warp"
+                                  Width="60"
+                                  Style="{StaticResource WarpToggleButtonStyle}"
+                                  ToolTip="Enable/Disable Warping"
+                                  Checked="WarpEnabledToggle_Changed"
+                                  Unchecked="WarpEnabledToggle_Changed"/>
+
+                    <Rectangle Width="1" Fill="#555555" Margin="8,2"/>
+
+                    <Button x:Name="AddMarkerBtn"
+                            Content="+ Marker"
+                            Style="{StaticResource WarpToolbarButtonStyle}"
+                            ToolTip="Click on waveform to add marker"
+                            Click="AddMarkerBtn_Click"/>
+
+                    <Button x:Name="AutoWarpBtn"
+                            Content="Auto Warp"
+                            Style="{StaticResource WarpToolbarButtonStyle}"
+                            ToolTip="Detect transients and create markers"
+                            Click="AutoWarpBtn_Click"/>
+
+                    <Button x:Name="QuantizeBtn"
+                            Content="Quantize"
+                            Style="{StaticResource WarpToolbarButtonStyle}"
+                            ToolTip="Snap markers to beat grid"
+                            Click="QuantizeBtn_Click"/>
+
+                    <Button x:Name="ResetBtn"
+                            Content="Reset"
+                            Style="{StaticResource WarpToolbarButtonStyle}"
+                            ToolTip="Reset all markers to original positions"
+                            Click="ResetBtn_Click"/>
+                </StackPanel>
+
+                <!-- Right: Grid Size -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <TextBlock Text="Grid:"
+                               VerticalAlignment="Center"
+                               Foreground="#AAAAAA"
+                               Margin="8,0,4,0"/>
+                    <ComboBox x:Name="GridSizeCombo"
+                              Width="80"
+                              Style="{StaticResource WarpComboBoxStyle}"
+                              SelectionChanged="GridSizeCombo_SelectionChanged">
+                        <ComboBoxItem Content="1/1" Tag="4.0"/>
+                        <ComboBoxItem Content="1/2" Tag="2.0"/>
+                        <ComboBoxItem Content="1/4" Tag="1.0"/>
+                        <ComboBoxItem Content="1/8" Tag="0.5"/>
+                        <ComboBoxItem Content="1/16" Tag="0.25" IsSelected="True"/>
+                        <ComboBoxItem Content="1/32" Tag="0.125"/>
+                    </ComboBox>
+
+                    <Rectangle Width="1" Fill="#555555" Margin="8,2"/>
+
+                    <TextBlock x:Name="MarkerInfoText"
+                               Text="0 markers"
+                               VerticalAlignment="Center"
+                               Foreground="#888888"
+                               Margin="4,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Canvas with Waveform and Markers -->
+        <Grid Grid.Row="1">
+            <!-- Grid Lines Canvas (bottom layer) -->
+            <Canvas x:Name="GridCanvas"
+                    Background="Transparent"
+                    IsHitTestVisible="False"/>
+
+            <!-- Waveform Canvas -->
+            <Canvas x:Name="WaveformCanvas"
+                    Background="Transparent"
+                    IsHitTestVisible="False">
+                <Path x:Name="WaveformPath"
+                      Stroke="{StaticResource WaveformBrush}"
+                      StrokeThickness="1"
+                      Opacity="0.6"/>
+            </Canvas>
+
+            <!-- Markers Canvas (top layer for interaction) -->
+            <Canvas x:Name="WarpCanvas"
+                    Background="Transparent"
+                    ClipToBounds="True"
+                    MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                    MouseMove="Canvas_MouseMove"
+                    MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
+                    MouseRightButtonDown="Canvas_MouseRightButtonDown"/>
+        </Grid>
+
+        <!-- Beat Ruler -->
+        <Canvas x:Name="BeatRuler"
+                Grid.Row="2"
+                Background="{StaticResource RulerBackgroundBrush}"
+                ClipToBounds="True"/>
+    </Grid>
+</UserControl>

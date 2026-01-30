@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  MusicEngine Editor WiX v4 Installer
+
+  This installer package provides:
+  - Program Files installation
+  - Start Menu shortcuts
+  - Optional Desktop shortcut
+  - Uninstall support
+  - License agreement
+-->
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <!-- Package definition -->
+  <Package Name="MusicEngine Editor"
+           Manufacturer="MusicEngine"
+           Version="!(bind.FileVersion.MusicEngineEditor.exe)"
+           UpgradeCode="A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
+           Scope="perMachine"
+           Language="1033"
+           Codepage="1252">
+
+    <!-- Summary information -->
+    <SummaryInformation Description="MusicEngine Editor - Professional music production and audio scripting environment"
+                        Manufacturer="MusicEngine" />
+
+    <!-- Upgrade handling - removes previous versions -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
+                  Schedule="afterInstallInitialize" />
+
+    <!-- Embed cabinet files in MSI for single-file distribution -->
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- License agreement - replace with your actual license file -->
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+    <!-- Use WixUI_InstallDir for standard installation UI with directory selection -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+
+    <!-- UI customization -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+    <!-- Desktop shortcut checkbox (default: checked) -->
+    <Property Id="INSTALL_DESKTOP_SHORTCUT" Value="1" />
+
+    <!-- Feature tree -->
+    <Feature Id="ProductFeature" Title="MusicEngine Editor" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+    <!-- Standard buttons and dialog behavior -->
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/MusicEngine" />
+
+    <!-- Icon for Add/Remove Programs -->
+    <Icon Id="AppIcon" SourceFile="$(var.PublishDir)MusicEngineEditor.exe" />
+  </Package>
+
+  <!-- Directory structure -->
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="MusicEngine Editor">
+        <!-- Application files go here -->
+      </Directory>
+    </StandardDirectory>
+
+    <!-- Start Menu -->
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="MusicEngine Editor" />
+    </StandardDirectory>
+
+    <!-- Desktop -->
+    <StandardDirectory Id="DesktopFolder" />
+  </Fragment>
+
+  <!-- Application components -->
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Main executable -->
+      <Component Id="MainExecutable" Guid="B2C3D4E5-F6A7-8901-BCDE-F23456789012">
+        <File Id="MusicEngineEditor.exe"
+              Source="$(var.PublishDir)MusicEngineEditor.exe"
+              KeyPath="yes">
+          <!-- File associations could be added here -->
+        </File>
+      </Component>
+
+      <!-- Harvest all other files from publish directory -->
+      <!-- In production, use HeatDirectory or Files element with wildcard -->
+      <Component Id="RuntimeFiles" Guid="C3D4E5F6-A7B8-9012-CDEF-345678901234">
+        <File Id="MusicEngineEditor.dll"
+              Source="$(var.PublishDir)MusicEngineEditor.dll" />
+      </Component>
+
+      <Component Id="DepsJson" Guid="D4E5F6A7-B8C9-0123-DEF0-456789012345">
+        <File Id="MusicEngineEditor.deps.json"
+              Source="$(var.PublishDir)MusicEngineEditor.deps.json"
+              KeyPath="yes" />
+      </Component>
+
+      <Component Id="RuntimeConfigJson" Guid="E5F6A7B8-C9D0-1234-EF01-567890123456">
+        <File Id="MusicEngineEditor.runtimeconfig.json"
+              Source="$(var.PublishDir)MusicEngineEditor.runtimeconfig.json"
+              KeyPath="yes" />
+      </Component>
+
+      <!-- Additional runtime files would be harvested automatically in production -->
+    </ComponentGroup>
+
+    <!-- Start Menu shortcut -->
+    <Component Id="StartMenuShortcut" Guid="F6A7B8C9-D0E1-2345-F012-678901234567" Directory="ApplicationProgramsFolder">
+      <Shortcut Id="StartMenuShortcut"
+                Name="MusicEngine Editor"
+                Description="Professional music production and audio scripting environment"
+                Target="[INSTALLFOLDER]MusicEngineEditor.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveApplicationProgramsFolder" On="uninstall" />
+      <RegistryValue Root="HKCU"
+                     Key="Software\MusicEngine\MusicEngineEditor"
+                     Name="StartMenuShortcut"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes" />
+    </Component>
+
+    <!-- Desktop shortcut (conditional) -->
+    <Component Id="DesktopShortcut" Guid="A7B8C9D0-E1F2-3456-0123-789012345678" Directory="DesktopFolder">
+      <Condition>INSTALL_DESKTOP_SHORTCUT</Condition>
+      <Shortcut Id="DesktopShortcut"
+                Name="MusicEngine Editor"
+                Description="Professional music production and audio scripting environment"
+                Target="[INSTALLFOLDER]MusicEngineEditor.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RegistryValue Root="HKCU"
+                     Key="Software\MusicEngine\MusicEngineEditor"
+                     Name="DesktopShortcut"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes" />
+    </Component>
+  </Fragment>
+
+</Wix>

@@ -1,3 +1,8 @@
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: ViewModel for settings dialog.
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using MusicEngineEditor.Models;
 using MusicEngineEditor.Services;
 
@@ -17,6 +23,7 @@ namespace MusicEngineEditor.ViewModels;
 public partial class SettingsViewModel : ViewModelBase
 {
     private readonly ISettingsService _settingsService;
+    private readonly IThemeService _themeService;
     private AppSettings _originalSettings = null!;
 
     // Audio Settings
@@ -95,7 +102,24 @@ public partial class SettingsViewModel : ViewModelBase
     public SettingsViewModel(ISettingsService settingsService)
     {
         _settingsService = settingsService;
+        _themeService = App.Services.GetRequiredService<IThemeService>();
         InitializeCollections();
+    }
+
+    /// <summary>
+    /// Called when the selected theme changes - applies theme immediately for hot-swap
+    /// </summary>
+    partial void OnSelectedThemeChanged(string value)
+    {
+        try
+        {
+            // Apply theme immediately for hot-swap without restart
+            _themeService.ApplyTheme(value);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to apply theme: {ex.Message}");
+        }
     }
 
     /// <summary>

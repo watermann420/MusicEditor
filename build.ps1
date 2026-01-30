@@ -4,7 +4,9 @@
 param(
     [switch]$Release,
     [switch]$Clean,
-    [switch]$Run
+    [switch]$Run,
+    [switch]$Publish,
+    [switch]$Installer
 )
 
 $ErrorActionPreference = "Stop"
@@ -135,5 +137,79 @@ if ($Run) {
         Start-Process $exePath
     } else {
         Write-Host "ERROR: Executable not found at $exePath" -ForegroundColor Red
+    }
+}
+
+# Publish if requested
+if ($Publish) {
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "  Publishing Application" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host ""
+
+    $publishDir = "$scriptDir\MusicEngineEditor\bin\publish"
+
+    # Clean previous publish output
+    if (Test-Path $publishDir) {
+        Write-Host "Cleaning previous publish output..." -ForegroundColor Gray
+        Remove-Item -Path $publishDir -Recurse -Force
+    }
+
+    Write-Host "Publishing self-contained win-x64 application..." -ForegroundColor Yellow
+    Push-Location "$scriptDir\MusicEngineEditor"
+    $publishResult = dotnet publish -c Release -r win-x64 --self-contained true -p:PublishDir="$publishDir\" -p:PublishReadyToRun=true 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Publish failed" -ForegroundColor Red
+        Write-Host $publishResult -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
+    Pop-Location
+
+    Write-Host "Application published successfully" -ForegroundColor Green
+    Write-Host "Output: $publishDir" -ForegroundColor Cyan
+}
+
+# Build installer if requested
+if ($Installer) {
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "  Building Installer" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host ""
+
+    $installerProject = "$scriptDir\installer\MusicEngineEditor.Installer.wixproj"
+    $installerOutput = "$scriptDir\installer\bin\Release"
+
+    # Check if publish output exists
+    $publishDir = "$scriptDir\MusicEngineEditor\bin\publish"
+    if (-not (Test-Path "$publishDir\MusicEngineEditor.exe")) {
+        Write-Host "ERROR: Published application not found. Run with -Publish first." -ForegroundColor Red
+        exit 1
+    }
+
+    # Clean previous installer output
+    if (Test-Path $installerOutput) {
+        Remove-Item -Path $installerOutput -Recurse -Force
+    }
+
+    Write-Host "Building WiX installer..." -ForegroundColor Yellow
+    $installerResult = dotnet build $installerProject -c Release 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "WARNING: Installer build failed" -ForegroundColor Yellow
+        Write-Host "This may be because WiX v4 SDK is not installed." -ForegroundColor Yellow
+        Write-Host "Install with: dotnet tool install --global wix" -ForegroundColor Yellow
+        Write-Host "Then run: wix extension add WixToolset.UI.wixext" -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Build output:" -ForegroundColor Gray
+        Write-Host $installerResult -ForegroundColor Gray
+    } else {
+        Write-Host "Installer built successfully" -ForegroundColor Green
+
+        $msiFile = Get-ChildItem -Path $installerOutput -Filter "*.msi" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($msiFile) {
+            Write-Host "Output: $($msiFile.FullName)" -ForegroundColor Cyan
+        }
     }
 }

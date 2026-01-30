@@ -1,6 +1,7 @@
-// PlaybackHighlightRenderer.cs
-// Renders real-time visual feedback in the code editor synchronized to audio playback.
-// Shows white rectangular outlines around code that is currently playing.
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Highlights active code during playback.
 
 using System;
 using System.Collections.Generic;

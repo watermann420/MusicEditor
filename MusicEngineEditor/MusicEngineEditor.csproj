@@ -17,6 +17,16 @@
     <DisableImplicitNuGetFallbackFolder>false</DisableImplicitNuGetFallbackFolder>
   </PropertyGroup>
 
+  <!-- Assembly and Product Metadata -->
+  <PropertyGroup>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Product>MusicEngine Editor</Product>
+    <Company>MusicEngine</Company>
+    <Copyright>Copyright (c) 2025 MusicEngine</Copyright>
+    <Description>Professional music production and audio scripting environment</Description>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Code Editor with Syntax Highlighting -->
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
@@ -34,6 +44,9 @@
     <!-- Logging -->
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+
+    <!-- Audio Processing (for sample preview) -->
+    <PackageReference Include="NAudio" Version="2.2.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,7 +54,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Editor\CSharpScript.xshd" />
+    <EmbeddedResource Include="Editor\CSharpScript.xshd">
+      <LogicalName>MusicEngineEditor.Editor.CSharpScript.xshd</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!-- Sound Pack Resources -->
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\SoundPacks\**\*" />
+  </ItemGroup>
+
+  <!-- Logo/Icon Resources -->
+  <ItemGroup>
+    <Resource Include="Resources\Icons\CodeEditorLogo.png" />
   </ItemGroup>
 
 </Project>

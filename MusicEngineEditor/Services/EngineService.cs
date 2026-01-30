@@ -1,3 +1,8 @@
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Service implementation.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,7 +43,7 @@ public class EngineService : IDisposable
 
             await Task.Run(() =>
             {
-                _engine = new AudioEngine();
+                _engine = new AudioEngine(sampleRate: null, logger: null);
                 _engine.Initialize();
 
                 _sequencer = new Sequencer();

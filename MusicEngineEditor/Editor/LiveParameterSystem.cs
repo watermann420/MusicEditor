@@ -1,6 +1,7 @@
-// LiveParameterSystem.cs
-// System for live parameter updates that affect running patterns without restart.
-// Enables real-time slider control of velocity, duration, BPM, and other parameters.
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Real-time parameter binding system.
 
 using System;
 using System.Collections.Generic;

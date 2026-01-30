@@ -1,3 +1,8 @@
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Pattern punchcard visualization.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -453,7 +458,7 @@ public partial class PunchcardVisualization : UserControl
 
     private void RenderGrid(double totalWidth, double totalHeight)
     {
-        var gridLineBrush = FindResource("GridLineBrush") as SolidColorBrush ?? new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x39, 0x3B, 0x40));
+        var gridLineBrush = FindResource("GridLineBrush") as SolidColorBrush ?? new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2A, 0x2A, 0x2A));
         var beatLineBrush = FindResource("BeatLineBrush") as SolidColorBrush ?? new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4A, 0x4D, 0x52));
 
         // Draw vertical grid lines (beat divisions)

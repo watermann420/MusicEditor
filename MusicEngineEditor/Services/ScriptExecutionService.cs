@@ -1,3 +1,8 @@
+﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
+// https://github.com/watermann420/MusicEngineEditor
+// Description: Script compilation and execution service.
+
 using System;
 using System.Linq;
 using System.Threading;
@@ -33,7 +38,7 @@ public class ScriptExecutionService : IScriptExecutionService, IDisposable
 
         await Task.Run(() =>
         {
-            _audioEngine = new AudioEngine();
+            _audioEngine = new AudioEngine(sampleRate: null, logger: null);
             _audioEngine.Initialize();
 
             _sequencer = new Sequencer();

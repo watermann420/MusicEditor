@@ -6,6 +6,7 @@
         xmlns:views="clr-namespace:MusicEngineEditor.Views"
         xmlns:controls="clr-namespace:MusicEngineEditor.Controls"
         Title="MusicEngine Editor"
+        Icon="/Resources/Icons/CodeEditorLogo.png"
         Height="800" Width="1200"
         MinHeight="500" MinWidth="800"
         Style="{StaticResource DarkWindowStyle}"
@@ -14,7 +15,7 @@
         WindowStyle="None"
         AllowsTransparency="False"
         ResizeMode="CanResizeWithGrip"
-        Background="#1E1F22">
+        Background="{DynamicResource BackgroundBrush}">
 
     <Window.InputBindings>
         <!-- Run with Ctrl+Enter or F5 -->
@@ -32,6 +33,8 @@
         <KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding FindCommand}"/>
         <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding ReplaceCommand}"/>
         <KeyBinding Key="OemComma" Modifiers="Ctrl" Command="{Binding OpenSettingsCommand}"/>
+        <!-- Command Palette -->
+        <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding ShowCommandPaletteCommand}"/>
     </Window.InputBindings>
 
     <Grid>
@@ -43,7 +46,7 @@
         </Grid.RowDefinitions>
 
         <!-- Custom Title Bar with Menu and Window Controls -->
-        <Border Grid.Row="0" Background="#1E1F22" BorderBrush="#393B40" BorderThickness="0,0,0,1"
+        <Border Grid.Row="0" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
                 MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
                 MouseLeftButtonUp="TitleBar_MouseLeftButtonUp"
                 MouseMove="TitleBar_MouseMove">
@@ -56,24 +59,22 @@
 
                 <!-- Left: App Icon + Menu -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- App Icon -->
-                    <Border Margin="8,0,4,0" VerticalAlignment="Center">
-                        <TextBlock Text="&#x266B;" FontSize="16" Foreground="#4B6EAF" FontWeight="Bold" VerticalAlignment="Center"/>
-                    </Border>
+                    <!-- App Logo -->
+                    <Image Source="/Resources/Icons/CodeEditorLogo.png" Width="50" Height="800" Margin="8,0,8,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Stretch="Uniform"/>
 
                     <!-- Menu Bar (integrated into title bar) -->
                     <Menu Background="Transparent" VerticalAlignment="Center">
                         <Menu.Resources>
                             <Style TargetType="MenuItem">
-                                <Setter Property="Foreground" Value="#BCBEC4"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                                 <Setter Property="Padding" Value="8,6"/>
                                 <Setter Property="FontSize" Value="12"/>
                                 <Style.Triggers>
                                     <Trigger Property="IsHighlighted" Value="True">
-                                        <Setter Property="Background" Value="#3C3F41"/>
+                                        <Setter Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                     </Trigger>
                                     <Trigger Property="IsSubmenuOpen" Value="True">
-                                        <Setter Property="Background" Value="#3C3F41"/>
+                                        <Setter Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -107,10 +108,15 @@
                             <MenuItem Header="Project Explorer" IsCheckable="True" IsChecked="True" x:Name="ProjectExplorerMenuItem" Click="ToggleProjectExplorer_Click"/>
                             <MenuItem Header="Workshop" IsCheckable="True" IsChecked="False" x:Name="WorkshopMenuItem" Click="ToggleWorkshop_Click"/>
                             <MenuItem Header="Output" IsCheckable="True" IsChecked="True" x:Name="OutputMenuItem" Click="ToggleOutput_Click"/>
+                            <MenuItem Header="Undo History" IsCheckable="True" IsChecked="False" x:Name="UndoHistoryMenuItem" Click="ToggleUndoHistory_Click"/>
                             <Separator/>
                             <MenuItem Header="MIDI Devices" IsCheckable="True" IsChecked="False" x:Name="MidiPanelMenuItem" Click="ToggleMidiPanel_Click"/>
                             <MenuItem Header="VST Plugins" IsCheckable="True" IsChecked="False" x:Name="VstPanelMenuItem" Click="ToggleVstPanel_Click"/>
                             <MenuItem Header="Audio Files" IsCheckable="True" IsChecked="False" x:Name="AudioPanelMenuItem" Click="ToggleAudioPanel_Click"/>
+                            <Separator/>
+                            <MenuItem Header="Cloud Storage..." Click="CloudStorage_Click"/>
+                            <MenuItem Header="Collaboration..." Click="Collaboration_Click"/>
+                            <MenuItem Header="Network MIDI..." Click="NetworkMidi_Click"/>
                         </MenuItem>
                         <MenuItem Header="Project">
                             <MenuItem Header="_Add New Script..." Click="AddScript_Click"/>
@@ -133,7 +139,7 @@
 
                 <!-- Center: Window Title -->
                 <TextBlock Grid.Column="1" Text="MusicEngine Editor"
-                           Foreground="#6F737A" FontSize="12" FontWeight="Normal"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}" FontSize="12" FontWeight="Normal"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            IsHitTestVisible="False"/>
 
@@ -149,12 +155,12 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
                                             <Border x:Name="border" Background="Transparent">
-                                                <Path Data="M 0,0 H 10" Stroke="#BCBEC4" StrokeThickness="1"
+                                                <Path Data="M 0,0 H 10" Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -177,19 +183,19 @@
                                                 <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
                                                     <!-- Maximize icon (square) -->
                                                     <Rectangle x:Name="MaximizeIcon" Width="10" Height="10"
-                                                               Stroke="#BCBEC4" StrokeThickness="1" Fill="Transparent"/>
+                                                               Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1" Fill="Transparent"/>
                                                     <!-- Restore icon (two overlapping squares) - hidden by default -->
                                                     <Canvas x:Name="RestoreIcon" Width="10" Height="10" Visibility="Collapsed">
-                                                        <Rectangle Width="8" Height="8" Stroke="#BCBEC4" StrokeThickness="1"
+                                                        <Rectangle Width="8" Height="8" Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
                                                                    Fill="Transparent" Canvas.Left="2" Canvas.Top="0"/>
-                                                        <Rectangle Width="8" Height="8" Stroke="#BCBEC4" StrokeThickness="1"
-                                                                   Fill="#1E1F22" Canvas.Left="0" Canvas.Top="2"/>
+                                                        <Rectangle Width="8" Height="8" Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
+                                                                   Fill="{DynamicResource BackgroundBrush}" Canvas.Left="0" Canvas.Top="2"/>
                                                     </Canvas>
                                                 </Grid>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#3C3F41"/>
+                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -209,12 +215,12 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
                                             <Border x:Name="border" Background="Transparent">
-                                                <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" Stroke="#BCBEC4" StrokeThickness="1"
+                                                <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" Stroke="{DynamicResource ForegroundBrush}" StrokeThickness="1"
                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#E81123"/>
+                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource CloseButtonHoverBrush}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -231,8 +237,8 @@
         <Border Grid.Row="1" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#2B2D30" Offset="0"/>
-                    <GradientStop Color="#27292C" Offset="1"/>
+                    <GradientStop Color="{StaticResource ToolbarGradientTopColor}" Offset="0"/>
+                    <GradientStop Color="{StaticResource EditorBackgroundColor}" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
             <DockPanel Margin="10,8">
@@ -250,17 +256,66 @@
 
                     <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="14,4"/>
 
-                    <!-- Run Controls -->
-                    <Button x:Name="RunButton" Content="Run" Style="{StaticResource RunButtonStyle}" Click="RunScript_Click" ToolTip="Execute Script (Ctrl+Enter)"/>
-                    <Button Content="Stop" Style="{StaticResource StopButtonStyle}" Click="Stop_Click" ToolTip="Stop (Esc)" Margin="8,0,0,0"/>
+                    <!-- Run/Stop Toggle Button -->
+                    <Button x:Name="RunStopButton" Click="RunStopButton_Click" ToolTip="Run/Stop (Ctrl+Enter / Esc)"
+                            Cursor="Hand" MinWidth="70">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="{DynamicResource RunButtonDarkBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="FontSize" Value="12"/>
+                                <Setter Property="Padding" Value="14,6"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border"
+                                                    Background="{TemplateBinding Background}"
+                                                    Padding="{TemplateBinding Padding}"
+                                                    CornerRadius="4">
+                                                <Border.Effect>
+                                                    <DropShadowEffect x:Name="glowEffect" Color="#00CC66" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                                                </Border.Effect>
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="BlurRadius" To="8" Duration="0:0:0.15"/>
+                                                                <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="Opacity" To="0.5" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.15"/>
+                                                                <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.ExitActions>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="RunStopIcon" Text="&#x25B6;" FontSize="10" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="RunStopText" Text="Run" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <!-- Right: Sequencer Status -->
                 <Border DockPanel.Dock="Right" CornerRadius="6" Padding="14,6" Margin="8,0,0,0">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#252628" Offset="0"/>
-                            <GradientStop Color="#1E1F22" Offset="1"/>
+                            <GradientStop Color="{StaticResource ToolbarGradientBottomColor}" Offset="0"/>
+                            <GradientStop Color="{StaticResource BackgroundColor}" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
                     <Border.Effect>
@@ -314,8 +369,8 @@
                         <Border DockPanel.Dock="Top" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Color="#2B2D30" Offset="0"/>
-                                    <GradientStop Color="#252628" Offset="1"/>
+                                    <GradientStop Color="{StaticResource ToolbarGradientTopColor}" Offset="0"/>
+                                    <GradientStop Color="{StaticResource ToolbarGradientBottomColor}" Offset="1"/>
                                 </LinearGradientBrush>
                             </Border.Background>
                             <DockPanel Margin="12,10">
@@ -417,7 +472,7 @@
                                                                 <Condition Property="IsSelected" Value="False"/>
                                                                 <Condition Property="IsMouseOver" Value="True"/>
                                                             </MultiTrigger.Conditions>
-                                                            <Setter TargetName="Border" Property="Background" Value="#3C3F41"/>
+                                                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                                         </MultiTrigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
@@ -576,11 +631,11 @@
                                                         </Border>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="Border" Property="Background" Value="#3C3F41"/>
+                                                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                                                             </Trigger>
                                                             <Trigger Property="IsSelected" Value="True">
-                                                                <Setter TargetName="Border" Property="Background" Value="#4B6EAF"/>
-                                                                <Setter TargetName="Border" Property="BorderBrush" Value="#4B6EAF"/>
+                                                                <Setter TargetName="Border" Property="Background" Value="#00D9FF"/>
+                                                                <Setter TargetName="Border" Property="BorderBrush" Value="#00D9FF"/>
                                                             </Trigger>
                                                         </ControlTemplate.Triggers>
                                                     </ControlTemplate>
@@ -665,6 +720,17 @@
                                 </ListView>
                             </DockPanel>
                         </Border>
+
+                        <!-- Track Properties Panel -->
+                        <controls:TrackPropertiesPanel x:Name="TrackPropertiesPanel" Visibility="Collapsed"
+                                                       CloseRequested="TrackPropertiesPanel_CloseRequested"
+                                                       TrackPropertyChanged="TrackPropertiesPanel_TrackPropertyChanged"
+                                                       TrackDuplicateRequested="TrackPropertiesPanel_TrackDuplicateRequested"
+                                                       TrackDeleteRequested="TrackPropertiesPanel_TrackDeleteRequested"
+                                                       TrackFreezeRequested="TrackPropertiesPanel_TrackFreezeRequested"/>
+
+                        <!-- Undo History Panel -->
+                        <controls:UndoHistoryPanel x:Name="UndoHistoryPanel" Visibility="Collapsed"/>
                     </Grid>
                 </DockPanel>
             </Border>
@@ -688,6 +754,13 @@
 
                     <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>
 
+                    <Button Style="{StaticResource IconButtonStyle}" Click="ToggleTrackPropertiesPanel_Click"
+                            ToolTip="Track Properties" Margin="4" x:Name="TrackPropertiesToolButton">
+                        <TextBlock Text="T" FontWeight="Bold" FontSize="14"/>
+                    </Button>
+
+                    <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>
+
                     <Button Style="{StaticResource IconButtonStyle}" Click="ToggleOutput_Click"
                             ToolTip="Toggle Output" Margin="4" x:Name="OutputToolButton">
                         <TextBlock Text="O" FontWeight="Bold" FontSize="14"/>
@@ -695,9 +768,32 @@
 
                     <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>
 
+                    <Button Style="{StaticResource IconButtonStyle}" Click="ToggleUndoHistory_Click"
+                            ToolTip="Undo History" Margin="4" x:Name="UndoHistoryToolButton">
+                        <TextBlock Text="H" FontWeight="Bold" FontSize="14"/>
+                    </Button>
+
+                    <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>
+
                     <Button Style="{StaticResource IconButtonStyle}" Click="ToggleWorkshop_Click"
                             ToolTip="Workshop Tutorials" Margin="4" x:Name="WorkshopToolButton">
                         <TextBlock Text="W" FontWeight="Bold" FontSize="14"/>
+                    </Button>
+
+                    <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="6,8"/>
+
+                    <!-- Network & Cloud Features -->
+                    <Button Style="{StaticResource IconButtonStyle}" Click="CloudStorage_Click"
+                            ToolTip="Cloud Storage" Margin="4" x:Name="CloudStorageToolButton">
+                        <TextBlock Text="&#x2601;" FontSize="14"/>
+                    </Button>
+                    <Button Style="{StaticResource IconButtonStyle}" Click="Collaboration_Click"
+                            ToolTip="Collaboration" Margin="4" x:Name="CollaborationToolButton">
+                        <TextBlock Text="&#x1F465;" FontSize="12"/>
+                    </Button>
+                    <Button Style="{StaticResource IconButtonStyle}" Click="NetworkMidi_Click"
+                            ToolTip="Network MIDI" Margin="4" x:Name="NetworkMidiToolButton">
+                        <TextBlock Text="&#x1F50C;" FontSize="12"/>
                     </Button>
                 </StackPanel>
             </Border>
@@ -707,8 +803,8 @@
         <StatusBar Grid.Row="3">
             <StatusBar.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#2B2D30" Offset="0"/>
-                    <GradientStop Color="#27292C" Offset="1"/>
+                    <GradientStop Color="{StaticResource ToolbarGradientTopColor}" Offset="0"/>
+                    <GradientStop Color="{StaticResource EditorBackgroundColor}" Offset="1"/>
                 </LinearGradientBrush>
             </StatusBar.Background>
             <StatusBarItem>
@@ -716,12 +812,12 @@
                     <Border Width="8" Height="8" CornerRadius="4" Margin="0,0,8,0">
                         <Border.Background>
                             <RadialGradientBrush>
-                                <GradientStop Color="#6AAB73" Offset="0"/>
-                                <GradientStop Color="#499C54" Offset="1"/>
+                                <GradientStop Color="#00FF88" Offset="0"/>
+                                <GradientStop Color="#00CC66" Offset="1"/>
                             </RadialGradientBrush>
                         </Border.Background>
                         <Border.Effect>
-                            <DropShadowEffect Color="#6AAB73" BlurRadius="4" ShadowDepth="0" Opacity="0.5"/>
+                            <DropShadowEffect Color="#00FF88" BlurRadius="4" ShadowDepth="0" Opacity="0.5"/>
                         </Border.Effect>
                     </Border>
                     <TextBlock x:Name="StatusText" Text="Ready" FontWeight="Medium"/>
@@ -739,12 +835,19 @@
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right">
                 <StackPanel Orientation="Horizontal">
-                    <Border Background="#1E1F22" CornerRadius="3" Padding="8,2" Margin="0,0,12,0">
+                    <!-- Performance Meter -->
+                    <controls:PerformanceMeter x:Name="PerformanceMeterControl"
+                                               Margin="0,0,12,0"
+                                               VerticalAlignment="Center"/>
+
+                    <TextBlock Text="|" Foreground="{StaticResource BorderBrush}" Margin="0,0,8,0" FontSize="11"/>
+
+                    <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="3" Padding="8,2" Margin="0,0,12,0">
                         <TextBlock x:Name="CaretPositionDisplay" Text="Ln 1, Col 1" FontSize="11"/>
                     </Border>
-                  
+
                     <TextBlock Text="|" Foreground="{StaticResource BorderBrush}" Margin="0,0,8,0" FontSize="11"/>
-                  
+
                     <Border Background="{StaticResource AccentBrush}" CornerRadius="3" Padding="6,2">
                         <TextBlock Text="UTF-8" Foreground="White" FontSize="10" FontWeight="SemiBold"/>
                     </Border>

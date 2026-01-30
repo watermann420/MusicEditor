@@ -1,0 +1,239 @@
+<UserControl x:Class="MusicEngineEditor.Controls.TrackLatencyIndicator"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:MusicEngineEditor.ViewModels"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="24" d:DesignWidth="100"
+             d:DataContext="{d:DesignInstance Type=vm:TrackLatencyInfo}"
+             Background="Transparent">
+
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="TrackBackgroundColor">#1A1A1A</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+        <Color x:Key="TextPrimaryColor">#E0E0E0</Color>
+        <Color x:Key="TextSecondaryColor">#808080</Color>
+        <Color x:Key="LowLatencyColor">#00FF88</Color>
+        <Color x:Key="MediumLatencyColor">#E8B339</Color>
+        <Color x:Key="HighLatencyColor">#F75464</Color>
+        <Color x:Key="VeryHighLatencyColor">#FF0000</Color>
+        <Color x:Key="CompensatedColor">#00D9FF</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="TrackBackgroundBrush" Color="{StaticResource TrackBackgroundColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="LowLatencyBrush" Color="{StaticResource LowLatencyColor}"/>
+        <SolidColorBrush x:Key="MediumLatencyBrush" Color="{StaticResource MediumLatencyColor}"/>
+        <SolidColorBrush x:Key="HighLatencyBrush" Color="{StaticResource HighLatencyColor}"/>
+        <SolidColorBrush x:Key="VeryHighLatencyBrush" Color="{StaticResource VeryHighLatencyColor}"/>
+        <SolidColorBrush x:Key="CompensatedBrush" Color="{StaticResource CompensatedColor}"/>
+
+        <!-- Gradient for latency bar -->
+        <LinearGradientBrush x:Key="LatencyGradientBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="{StaticResource LowLatencyColor}" Offset="0"/>
+            <GradientStop Color="{StaticResource LowLatencyColor}" Offset="0.3"/>
+            <GradientStop Color="{StaticResource MediumLatencyColor}" Offset="0.5"/>
+            <GradientStop Color="{StaticResource HighLatencyColor}" Offset="0.8"/>
+            <GradientStop Color="{StaticResource VeryHighLatencyColor}" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <!-- Bool to Visibility Converter -->
+        <local:LatencyBoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource TrackBackgroundBrush}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="3"
+            Padding="4,2">
+
+        <Border.ToolTip>
+            <ToolTip MaxWidth="350">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" FontSize="12">
+                        <Run Text="{Binding TrackName, Mode=OneWay}"/>
+                        <Run Text=" - Latency Details"/>
+                    </TextBlock>
+
+                    <Separator Margin="0,6,0,6" Background="#444"/>
+
+                    <!-- Round-Trip Latency -->
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Round-Trip:" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="1" Text="{Binding RoundTripLatencyMs, StringFormat={}{0:F2} ms, Mode=OneWay, FallbackValue='0.00 ms'}"/>
+                    </Grid>
+
+                    <Separator Margin="0,4,0,4" Background="#333"/>
+
+                    <!-- Latency Breakdown Section -->
+                    <TextBlock Text="Latency Breakdown:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+
+                    <!-- Input Latency -->
+                    <Grid Margin="8,0,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Input:"/>
+                        <TextBlock Grid.Column="1" Text="{Binding InputLatencyMs, StringFormat={}{0:F2} ms, Mode=OneWay, FallbackValue='0.00 ms'}"/>
+                    </Grid>
+
+                    <!-- Plugin Latency -->
+                    <Grid Margin="8,0,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Plugins:"/>
+                        <TextBlock Grid.Column="1">
+                            <Run Text="{Binding PluginLatencyMs, StringFormat={}{0:F2} ms, Mode=OneWay, FallbackValue='0.00 ms'}"/>
+                            <Run Text=" ("/>
+                            <Run Text="{Binding LatencySamples, Mode=OneWay, FallbackValue=0}"/>
+                            <Run Text=" samples)"/>
+                        </TextBlock>
+                    </Grid>
+
+                    <!-- Output Latency -->
+                    <Grid Margin="8,0,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Output:"/>
+                        <TextBlock Grid.Column="1" Text="{Binding OutputLatencyMs, StringFormat={}{0:F2} ms, Mode=OneWay, FallbackValue='0.00 ms'}"/>
+                    </Grid>
+
+                    <Separator Margin="0,6,0,6" Background="#333"/>
+
+                    <!-- PDC Compensation -->
+                    <Grid Margin="0,0,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="PDC Applied:"/>
+                        <TextBlock Grid.Column="1">
+                            <Run Text="{Binding CompensationMs, StringFormat={}{0:F2} ms, Mode=OneWay, FallbackValue='0.00 ms'}"/>
+                            <Run Text=" ("/>
+                            <Run Text="{Binding CompensationSamples, Mode=OneWay, FallbackValue=0}"/>
+                            <Run Text=" samples)"/>
+                        </TextBlock>
+                    </Grid>
+
+                    <!-- Plugin Chain -->
+                    <StackPanel Margin="0,4,0,0"
+                               Visibility="{Binding PluginNames, Converter={StaticResource StringToVisibilityConverter}, FallbackValue=Collapsed}">
+                        <TextBlock Text="Plugin Chain:" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                        <TextBlock Text="{Binding PluginChainDetails, Mode=OneWay, FallbackValue=''}"
+                                   TextWrapping="Wrap"
+                                   Foreground="#AAA"
+                                   FontSize="10"
+                                   Margin="8,0,0,0"/>
+                    </StackPanel>
+
+                    <!-- Warning if latency exceeds threshold -->
+                    <Border Margin="0,6,0,0"
+                            Background="#442222"
+                            CornerRadius="3"
+                            Padding="6,4"
+                            Visibility="{Binding IsLatencyWarning, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+                        <TextBlock Foreground="#F75464" FontSize="10">
+                            <Run FontWeight="SemiBold" Text="Warning:"/>
+                            <Run Text=" Latency exceeds recommended threshold"/>
+                        </TextBlock>
+                    </Border>
+                </StackPanel>
+            </ToolTip>
+        </Border.ToolTip>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Latency Bar -->
+            <Grid Grid.Column="0" Height="8" VerticalAlignment="Center">
+                <!-- Background track -->
+                <Border Background="#0D0D0D"
+                        CornerRadius="2"/>
+
+                <!-- Filled portion -->
+                <Border CornerRadius="2"
+                        HorizontalAlignment="Left">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Width" Value="{Binding LatencyNormalized, Converter={StaticResource PercentageToWidthConverter}, FallbackValue=0}"/>
+                            <Setter Property="Background" Value="{StaticResource LowLatencyBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding LatencyLevel}" Value="Medium">
+                                    <Setter Property="Background" Value="{StaticResource MediumLatencyBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding LatencyLevel}" Value="High">
+                                    <Setter Property="Background" Value="{StaticResource HighLatencyBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding LatencyLevel}" Value="VeryHigh">
+                                    <Setter Property="Background" Value="{StaticResource VeryHighLatencyBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
+            </Grid>
+
+            <!-- Latency Value (Round-Trip) -->
+            <TextBlock Grid.Column="1"
+                       FontSize="9"
+                       FontFamily="Consolas"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"
+                       Margin="6,0,0,0"
+                       MinWidth="42"
+                       TextAlignment="Right"
+                       Text="{Binding RoundTripLatencyMs, StringFormat={}{0:F1}ms, FallbackValue='0.0ms'}"/>
+
+            <!-- Warning Indicator (when latency exceeds threshold) -->
+            <Border Grid.Column="2"
+                    Width="10" Height="10"
+                    CornerRadius="5"
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="#333"/>
+                        <Setter Property="ToolTip" Value="PDC: Not compensated"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCompensated}" Value="True">
+                                <Setter Property="Background" Value="{StaticResource LowLatencyBrush}"/>
+                                <Setter Property="ToolTip" Value="PDC: Compensated"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsLatencyWarning}" Value="True">
+                                <Setter Property="Background" Value="{StaticResource VeryHighLatencyBrush}"/>
+                                <Setter Property="ToolTip" Value="Warning: High latency"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <!-- Warning icon for high latency -->
+                <TextBlock x:Name="WarningIcon"
+                           Text="!"
+                           FontSize="8"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding IsLatencyWarning, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"/>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>
