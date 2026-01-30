@@ -60,7 +60,7 @@
                 <!-- Left: App Icon + Menu -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- App Logo -->
-                    <Image Source="/Resources/Icons/CodeEditorLogo.png" Width="100" Height="28" Margin="8,0,8,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Stretch="Uniform"/>
+                    <Image Source="/Resources/Icons/CodeEditorLogo.png" Width="50" Height="800" Margin="8,0,8,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Stretch="Uniform"/>
 
                     <!-- Menu Bar (integrated into title bar) -->
                     <Menu Background="Transparent" VerticalAlignment="Center">
