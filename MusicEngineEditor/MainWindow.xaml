@@ -565,9 +565,12 @@
                                     <Border x:Name="OutputTabHeader" Background="{StaticResource AccentBrush}" Padding="14,8" Cursor="Hand" MouseDown="OutputTab_Click">
                                         <TextBlock Text="Output" FontWeight="SemiBold" Foreground="White" FontSize="11"/>
                                     </Border>
+                                    <Border x:Name="ConsoleTabHeader" Background="Transparent" Padding="14,8" Cursor="Hand" MouseDown="ConsoleTab_Click">
+                                        <TextBlock Text="Console" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="11"/>
+                                    </Border>
                                     <Border x:Name="ProblemsTabHeader" Background="Transparent" Padding="14,8" Cursor="Hand" MouseDown="ProblemsTab_Click">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="Problems" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="11"/>
+                                            <TextBlock Text="Errors" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="11"/>
                                             <Border x:Name="ErrorCountBadge" Background="{StaticResource ErrorBrush}" CornerRadius="8"
                                                     Padding="6,2" Margin="6,0,0,0" Visibility="Collapsed">
                                                 <TextBlock x:Name="ErrorCountText" Text="0" Foreground="White" FontSize="10" FontWeight="Bold"/>
@@ -586,7 +589,15 @@
                                      TextWrapping="NoWrap"
                                      AcceptsReturn="True"/>
 
-                            <!-- Problems List -->
+                            <!-- User Console -->
+                            <TextBox x:Name="UserConsoleBox"
+                                     Visibility="Collapsed"
+                                     Style="{StaticResource OutputTextBoxStyle}"
+                                     TextWrapping="NoWrap"
+                                     AcceptsReturn="True"
+                                     KeyDown="UserConsoleBox_KeyDown"/>
+
+                            <!-- Errors List -->
                             <ListView x:Name="ProblemsListView" Visibility="Collapsed"
                                       Background="Transparent" BorderThickness="0"
                                       Foreground="{StaticResource ForegroundBrush}"
@@ -600,8 +611,9 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Description" Width="400" DisplayMemberBinding="{Binding Message}"/>
-                                        <GridViewColumn Header="File" Width="150" DisplayMemberBinding="{Binding FileName}"/>
+                                        <GridViewColumn Header="Description" Width="320" DisplayMemberBinding="{Binding Message}"/>
+                                        <GridViewColumn Header="Hint" Width="200" DisplayMemberBinding="{Binding Suggestion}"/>
+                                        <GridViewColumn Header="File" Width="140" DisplayMemberBinding="{Binding FileName}"/>
                                         <GridViewColumn Header="Line" Width="50" DisplayMemberBinding="{Binding Line}"/>
                                         <GridViewColumn Header="Col" Width="50" DisplayMemberBinding="{Binding Column}"/>
                                     </GridView>

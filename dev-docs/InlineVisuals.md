@@ -9,6 +9,8 @@ Location: `MusicEngineEditor/Editor/InlineVisualEngine.cs` + controls under `Con
 - Hosts are overlaid on top of the `TextView` via a named `Canvas` (`InlineVisualOverlay`).
 - Refresh loop runs at 60 FPS using a `DispatcherTimer` (16 ms).
 - Note on/off events are forwarded from the attached `Sequencer` to visuals for glow/animation.
+- **LiveActivityRenderer** adds inline glow for literals: `Note(...)` pitches, pattern steps, and `midi.device(n)` indices (pulses on any MIDI when logging/routing is active).
+- Rendering is limited to visible, non-comment lines for perf.
 
 ## Adding a new visual
 
@@ -34,6 +36,8 @@ Location: `MusicEngineEditor/Editor/InlineVisualEngine.cs` + controls under `Con
 
 - 60 FPS timer; visuals should be lightweight (no heavy layout).
 - Mixer inline control currently simulates meters if engine meters are unavailable. Hook real meters by implementing `TryGetEngineMeters` in `MixerInlineControl`.
+- LiveActivityRenderer keeps a short pulse list (400 ms). Cleanup runs every 80 ms; timer sleeps when no pulses.
+- Visuals only scan the currently visible text range to avoid whole-document regex.
 
 ## Sequencer hookup
 

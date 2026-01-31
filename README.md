@@ -22,7 +22,7 @@ Discord: discord.gg/tWkqHMsB6a
 - Intelligent autocomplete for classes, methods, and parameters (improved synth.* members)
 - Strudel-style inline sliders (drag numbers to change values)
 - **Inline visuals** (punchcard, piano roll glow, mixer meters) at 60 FPS, inserted via code comments
-- Live code visualization (active patterns glow)
+- Live code visualization: active `Note(...)` pitches, pattern steps, and `midi.device(n)` literals glow only while matching MIDI/sequence events are happening (comments ignored; only visible lines render)
 - Dark/Light themes
 
 ### Audio Engine
@@ -65,8 +65,9 @@ Add a command as a comment and the visual appears right under that line:
 ```
 
 - 60 FPS updates
-- Notes glow while playing
+- Notes glow while playing; pattern steps pulse; `midi.device(0)` index glows on any incoming MIDI (notes/CC/clock) when logging or routing is active
 - Mixer meters show per-channel levels
+- Only visible, non-comment lines render for performance
 
 See `docs/InlineVisuals.md` for details.
 
@@ -95,7 +96,7 @@ led.off(36, 9);        // off
 led.cc(1, 80, 9);      // some controllers use CC for lights
 ```
 
-> Tip: choose an output index that corresponds to your controller’s MIDI Out, and a channel that isn’t routed to a synth (e.g., 9/10) to avoid audible notes.
+> Tip: choose an output index that corresponds to your controller’s MIDI Out, and a channel that isn’t routed to a synth (e.g., 9/10) to avoid audible notes. When `log.info(true)` is on, the device index literal (e.g., the `0` in `midi.device(0)`) pulses for any incoming message.
 
 ---
 

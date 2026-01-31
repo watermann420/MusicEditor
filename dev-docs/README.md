@@ -39,6 +39,7 @@ This folder contains technical documentation for developers integrating MusicEng
   - Generative music patches
   - Creating custom nodes
   - Patch save/load system
+- **[WhatsNew-Jan2026.md](WhatsNew-Jan2026.md)** - Summary of the latest editor/engine changes (glow, MIDI logging, shared engine, random helper).
 
 ## Quick Links
 
@@ -56,7 +57,7 @@ This folder contains technical documentation for developers integrating MusicEng
 
 ### MIDI utilities (engine scripting)
 
-- Logging per device: `midi.device(idx).log.info(true/false)`, `log.cc()`, `log.timingClock()`, `log.screenData()`.
+- Logging per device: `midi.device(idx).log.info(true/false)`, `log.cc()`, `log.timingClock()`, `log.screenData()`. Device literal glows on any incoming MIDI when logging/routing is active.
 - Transport via CC: `midi.device(idx).cc(ccNumber).toStart()/toStop()/toRefresh()`.
 - LEDs (paired MIDI out): `midi.device(idx).led.set(note, value, channel)`, `.off(note)`, `.cc(controller, value)`.
 - Pattern with multiple synths: `var pat = CreatePattern(bass, lead, pad);`

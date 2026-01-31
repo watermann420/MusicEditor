@@ -22,6 +22,8 @@ public class VisualizationIntegration : IDisposable
     private VisualizationBridge? _bridge;
     private PlaybackHighlightService? _highlightService;
     private LiveParameterSystem? _liveParameters;
+    private LiveActivityRenderer? _liveActivity;
+    private bool _eventsHooked;
     private bool _isDisposed;
 
     // Connected components
@@ -58,8 +60,14 @@ public class VisualizationIntegration : IDisposable
         // Create live parameter system
         _liveParameters = new LiveParameterSystem(editor);
 
+        // Live activity renderer (MIDI/param pulses)
+        _liveActivity = new LiveActivityRenderer(editor);
+        editor.TextArea.TextView.BackgroundRenderers.Add(_liveActivity);
+
         // Connect to bridge
         _bridge?.ConnectEditor(editor);
+
+        HookEngineEvents();
     }
 
     /// <summary>
@@ -84,6 +92,25 @@ public class VisualizationIntegration : IDisposable
         _bridge?.ConnectSequencer(sequencer);
         _highlightService?.BindToSequencer(sequencer);
         _liveParameters?.BindToSequencer(sequencer);
+        _liveActivity?.ArmDevice(0); // default arm device 0; will light only when MIDI hits that device
+
+        HookEngineEvents();
+
+        // Subscribe to parameter changes from live bindings
+        if (_liveParameters != null)
+        {
+            _liveParameters.ParameterChanged += (s, e) =>
+            {
+                if (_editor == null) return;
+                _editor.Dispatcher.BeginInvoke(() =>
+                {
+                    if (e.SourceInfo != null)
+                    {
+                        _liveActivity?.HighlightRange(e.SourceInfo.StartIndex, e.SourceInfo.EndIndex - e.SourceInfo.StartIndex);
+                    }
+                });
+            };
+        }
     }
 
     /// <summary>
@@ -215,9 +242,24 @@ public class VisualizationIntegration : IDisposable
         if (_isDisposed) return;
         _isDisposed = true;
 
+        if (_editor != null && _liveActivity != null)
+        {
+            _editor.TextArea.TextView.BackgroundRenderers.Remove(_liveActivity);
+        }
         _liveParameters?.Dispose();
         _highlightService?.Dispose();
         _bridge?.Dispose();
+    }
+
+    private void HookEngineEvents()
+    {
+        if (_eventsHooked) return;
+        _eventsHooked = true;
+
+        var aes = AudioEngineService.Instance;
+        aes.MidiNoteActivity += (idx, on) => _editor?.Dispatcher.BeginInvoke(() => _liveActivity?.NoteActivity(idx, on), DispatcherPriority.Background);
+        // Also pulse for any MIDI message (for log.info / non-note events)
+        aes.MidiActivity += idx => _editor?.Dispatcher.BeginInvoke(() => _liveActivity?.PingMidiDevice(idx), DispatcherPriority.Background);
     }
 }
 

@@ -61,6 +61,14 @@ public partial class MainWindow : Window
     // Problems/Errors
     public ObservableCollection<ProblemItem> Problems { get; } = new();
 
+    // State for tabs
+    private enum OutputTab { Output, Console, Errors }
+    private OutputTab _activeTab = OutputTab.Output;
+
+    // Console buffer
+    private readonly List<string> _consoleHistory = new();
+    private int _consoleHistoryIndex = -1;
+
     // Active Instruments Display
     public ObservableCollection<ActiveInstrumentInfo> ActiveInstruments { get; } = new();
     private readonly DispatcherTimer _animationTimer;
@@ -119,6 +127,20 @@ public partial class MainWindow : Window
         VstPluginsPanel.OnPluginDoubleClick += VstPluginsPanel_OnPluginDoubleClick;
         VstPluginsPanel.OnScanCompleted += VstPluginsPanel_OnScanCompleted;
 
+        // Pipe MIDI log to output console (use the script engine's shared engine)
+        _engineService.MidiLog += msg => Dispatcher.BeginInvoke(() => OutputLine(msg));
+        // Also mirror MIDI logs to console tab if active
+        _engineService.MidiLog += msg => Dispatcher.BeginInvoke(() =>
+        {
+            if (_activeTab == OutputTab.Console)
+            {
+                AppendConsole(msg);
+            }
+        });
+
+        // Hook user console keydown
+        UserConsoleBox.KeyDown += UserConsoleBox_KeyDown;
+
         // Attach Find/Replace control to editor
         FindReplaceBar.AttachToEditor(CodeEditor);
 
@@ -128,6 +150,19 @@ public partial class MainWindow : Window
         // Setup inline sliders for numeric literals (like Strudel.cc)
         // Hover over a number to see a slider popup
         _inlineSliderService = EditorSetup.SetupInlineSliders(CodeEditor);
+
+        // Warm up audio engine on startup (non-blocking)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _engineService.InitializeAsync();
+            }
+            catch
+            {
+                // Ignore warmup errors; they will surface on actual run
+            }
+        });
         _inlineSliderService.ValueChanged += InlineSlider_ValueChanged;
         _inlineSliderService.ValueChangeCompleted += InlineSlider_ValueChangeCompleted;
 
@@ -429,6 +464,16 @@ public partial class MainWindow : Window
             OutputLine("Engine initialized successfully!");
             OutputLine("Press Ctrl+Enter to run the script, Escape to stop.");
             OutputLine("");
+
+            // Warm-up compile/run to make first Run snappier
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _engineService.ExecuteScriptAsync("Sequencer.Bpm = 120;");
+                }
+                catch { /* ignore warmup errors */ }
+            });
         }
         catch (Exception ex)
         {
@@ -563,14 +608,36 @@ public partial class MainWindow : Window
 
             if (!result.Success)
             {
-                // Don't interrupt with errors during slider manipulation
-                // Just log to output
-                OutputLine($"[Hot-reload] Error: {result.ErrorMessage}");
+                // Collect errors quietly in Errors tab
+                foreach (var error in result.Errors)
+                {
+                    Problems.Add(new ProblemItem
+                    {
+                        Severity = error.Severity == "Error" ? ProblemSeverity.Error : ProblemSeverity.Warning,
+                        Message = error.Message,
+                        FileName = GetCurrentFileName(),
+                        FilePath = GetCurrentFilePath(),
+                        Line = error.Line,
+                        Column = error.Column,
+                        Suggestion = SuggestFor(error.Message)
+                    });
+                }
+                UpdateErrorBadge();
             }
         }
         catch (Exception ex)
         {
-            OutputLine($"[Hot-reload] Exception: {ex.Message}");
+            Problems.Add(new ProblemItem
+            {
+                Severity = ProblemSeverity.Error,
+                Message = ex.Message,
+                FileName = GetCurrentFileName(),
+                FilePath = GetCurrentFilePath(),
+                Line = 1,
+                Column = 1,
+                Suggestion = SuggestFor(ex.Message)
+            });
+            UpdateErrorBadge();
         }
     }
 
@@ -1049,15 +1116,16 @@ public partial class MainWindow : Window
             var result = await _engineService.ExecuteScriptAsync(code);
             stopwatch.Stop();
 
-            if (result.Success)
-            {
-                StatusText.Text = $"Running ({stopwatch.ElapsedMilliseconds}ms)";
-                OutputLine($"Script executed successfully ({stopwatch.ElapsedMilliseconds}ms)");
+        if (result.Success)
+        {
+            StatusText.Text = $"Running ({stopwatch.ElapsedMilliseconds}ms)";
+            OutputLine($"Script executed successfully ({stopwatch.ElapsedMilliseconds}ms)");
 
-                if (!string.IsNullOrEmpty(result.Output))
-                {
-                    OutputLine(result.Output);
-                }
+            if (!string.IsNullOrEmpty(result.Output))
+            {
+                OutputLine(result.Output);
+                AppendConsole(result.Output);
+            }
 
                 // Notify visualization system after successful execution
                 _visualization?.OnAfterExecute(true);
@@ -1072,12 +1140,9 @@ public partial class MainWindow : Window
                 _isRunning = false;
                 UpdateRunStopButton();
                 StatusText.Text = "Script error";
-                OutputLine($"ERROR: {result.ErrorMessage}");
 
                 foreach (var error in result.Errors)
                 {
-                    OutputLine($"  Line {error.Line}: {error.Message}");
-
                     // Add to Problems panel
                     Problems.Add(new ProblemItem
                     {
@@ -1086,7 +1151,8 @@ public partial class MainWindow : Window
                         FileName = currentFileName,
                         FilePath = GetCurrentFilePath(),
                         Line = error.Line,
-                        Column = error.Column
+                        Column = error.Column,
+                        Suggestion = SuggestFor(error.Message)
                     });
                 }
 
@@ -1104,7 +1170,6 @@ public partial class MainWindow : Window
             stopwatch.Stop();
             _isRunning = false;
             StatusText.Text = "Execution failed";
-            OutputLine($"EXCEPTION: {ex.Message}");
 
             // Add exception to Problems
             Problems.Add(new ProblemItem
@@ -1114,7 +1179,8 @@ public partial class MainWindow : Window
                 FileName = currentFileName,
                 FilePath = GetCurrentFilePath(),
                 Line = 1,
-                Column = 1
+                Column = 1,
+                Suggestion = SuggestFor(ex.Message)
             });
             UpdateErrorBadge();
         }
@@ -1152,6 +1218,17 @@ public partial class MainWindow : Window
         {
             ErrorCountBadge.Visibility = Visibility.Collapsed;
         }
+    }
+
+    // Suggestion helper for error hints
+    private static string SuggestFor(string message)
+    {
+        var msg = message.ToLowerInvariant();
+        if (msg.Contains("synth")) return "Did you mean 'synth' or check routing?";
+        if (msg.Contains("device")) return "Check midi.device(index) and routing.";
+        if (msg.Contains("note") && msg.Contains("range")) return "Verify Note(...) arguments (pitch/beat/duration/velocity).";
+        if (msg.Contains("vst")) return "Is the plugin installed and scanned?";
+        return string.Empty;
     }
 
     private void ExtractInstrumentsFromCode(string code)
@@ -2096,39 +2173,71 @@ public partial class MainWindow : Window
 
     private static string GetDefaultScript()
     {
+        var path = ResolveTestScriptPath();
+        if (!string.IsNullOrEmpty(path) && File.Exists(path))
+        {
+            return File.ReadAllText(path);
+        }
+
+        // Fallback to built-in sample
         return """
-            // MusicEngine Script
-            // Press Ctrl+Enter to execute, Escape to stop
+// MusicEngine Script
+// Press Ctrl+Enter to execute, Escape to stop
 
-            // Set BPM and start the sequencer
-            Sequencer.Bpm = 120;
-            Sequencer.Start();
+// Set BPM and start the sequencer
+Sequencer.Bpm = 120;
+Sequencer.Start();
 
-            // Create a simple synth with sawtooth waveform
-            var synth = CreateSynth();
-            synth.SetParameter("waveform", 2);  // 0=Sine, 1=Square, 2=Sawtooth, 3=Triangle, 4=Noise
-            synth.SetParameter("cutoff", 0.6f);
+// Create a simple synth with sawtooth waveform
+var synth = CreateSynth();
+synth.SetParameter("waveform", 2);  // 0=Sine, 1=Square, 2=Sawtooth, 3=Triangle, 4=Noise
+synth.SetParameter("cutoff", 0.6f);
 
-            // === TEST: Play a chord directly (no MIDI keyboard needed) ===
-            Print("Playing test chord...");
-            synth.NoteOn(60, 100);  // C4 (Middle C)
-            synth.NoteOn(64, 100);  // E4
-            synth.NoteOn(67, 100);  // G4
+// === TEST: Play a chord directly (no MIDI keyboard needed) ===
+Print("Playing test chord...");
+synth.NoteOn(60, 100);  // C4 (Middle C)
+synth.NoteOn(64, 100);  // E4
+synth.NoteOn(67, 100);  // G4
 
-            Print("You should hear a C major chord now!");
-            Print("Press Escape to stop all notes.");
-            Print("");
+Print("You should hear a C major chord now!");
+Print("Press Escape to stop all notes.");
+Print("");
 
-            // === MIDI Setup (only works if you have a MIDI keyboard connected) ===
-            // Check the MIDI panel on the right for available devices
-            // Engine.RouteMidiInput(0, synth);
-            // Engine.MapRange(0, 21, 108, synth, false);
-            // Print("MIDI keyboard routed to synth.");
+// === MIDI Setup (only works if you have a MIDI keyboard connected) ===
+// Check the MIDI panel on the right for available devices
+// Engine.RouteMidiInput(0, synth);
+// Engine.MapRange(0, 21, 108, synth, false);
+// Print("MIDI keyboard routed to synth.");
 
-            // Or load a VST plugin:
-            // var vital = vst.load("Vital");
-            // vital?.from(0);
-            """;
+// Or load a VST plugin:
+// var vital = vst.load("Vital");
+// vital?.from(0);
+""";
+    }
+
+    private static string ResolveTestScriptPath()
+    {
+        // 1) Direct relative to solution layout (MusicEditor/../MusicEngine/test_script.csx)
+        var candidateDirect = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "..", "MusicEngine", "test_script.csx"));
+        if (File.Exists(candidateDirect)) return candidateDirect;
+
+        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        var dir = new DirectoryInfo(baseDir);
+        while (dir != null)
+        {
+            var candidate = Path.Combine(dir.FullName, "MusicEngine", "test_script.csx");
+            if (File.Exists(candidate)) return candidate;
+
+            var sibling = Path.Combine(dir.FullName, "..", "MusicEngine", "test_script.csx");
+            if (File.Exists(sibling)) return Path.GetFullPath(sibling);
+
+            dir = dir.Parent;
+        }
+
+        // fallback: typical dev path
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var fallback = Path.Combine(userProfile, "RiderProjects", "MusicEngine", "test_script.csx");
+        return File.Exists(fallback) ? fallback : string.Empty;
     }
 
     #endregion
@@ -2137,46 +2246,156 @@ public partial class MainWindow : Window
 
     private void OutputTab_Click(object sender, MouseButtonEventArgs e)
     {
-        SwitchOutputTab(true);
+        SetTab(OutputTab.Output);
     }
 
     private void ProblemsTab_Click(object sender, MouseButtonEventArgs e)
     {
-        SwitchOutputTab(false);
+        SetTab(OutputTab.Errors);
+    }
+
+    private void ConsoleTab_Click(object sender, MouseButtonEventArgs e)
+    {
+        SetTab(OutputTab.Console);
+    }
+
+    private async void UserConsoleBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            var text = UserConsoleBox.Text;
+            var lastLine = text.Split('\n').LastOrDefault()?.Trim();
+            if (string.IsNullOrWhiteSpace(lastLine)) return;
+
+            AppendConsole($"> {lastLine}");
+            _consoleHistory.Add(lastLine);
+            _consoleHistoryIndex = _consoleHistory.Count;
+
+            try
+            {
+                var result = await _engineService.ExecuteScriptAsync(lastLine);
+                if (!string.IsNullOrEmpty(result.Output))
+                {
+                    AppendConsole(result.Output.Trim());
+                }
+                if (result.Errors != null && result.Errors.Count > 0)
+                {
+                    foreach (var err in result.Errors)
+                    {
+                        Problems.Add(new ProblemItem
+                        {
+                            Severity = ProblemSeverity.Error,
+                            Message = err.Message,
+                            FileName = "Console",
+                            FilePath = "",
+                            Line = err.Line,
+                            Column = err.Column,
+                            Suggestion = SuggestFor(err.Message)
+                        });
+                    }
+                    UpdateErrorBadge();
+                    SetTab(OutputTab.Errors);
+                }
+            }
+            catch (Exception ex)
+            {
+                Problems.Add(new ProblemItem
+                {
+                    Severity = ProblemSeverity.Error,
+                    Message = ex.Message,
+                    FileName = "Console",
+                    FilePath = "",
+                    Line = 1,
+                    Column = 1,
+                    Suggestion = SuggestFor(ex.Message)
+                });
+                UpdateErrorBadge();
+                SetTab(OutputTab.Errors);
+            }
+
+            UserConsoleBox.AppendText(Environment.NewLine);
+            UserConsoleBox.ScrollToEnd();
+        }
+        else if (e.Key == Key.Up)
+        {
+            if (_consoleHistory.Count == 0) return;
+            _consoleHistoryIndex = Math.Max(0, _consoleHistoryIndex - 1);
+            ReplaceCurrentConsoleLine(_consoleHistory[_consoleHistoryIndex]);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Down)
+        {
+            if (_consoleHistory.Count == 0) return;
+            _consoleHistoryIndex = Math.Min(_consoleHistory.Count, _consoleHistoryIndex + 1);
+            ReplaceCurrentConsoleLine(_consoleHistoryIndex == _consoleHistory.Count ? "" : _consoleHistory[_consoleHistoryIndex]);
+            e.Handled = true;
+        }
+    }
+
+    private void ReplaceCurrentConsoleLine(string newText)
+    {
+        var text = UserConsoleBox.Text;
+        var lines = text.Split('\n').ToList();
+        if (lines.Count == 0) { lines.Add(""); }
+        lines[lines.Count - 1] = newText;
+        UserConsoleBox.Text = string.Join("\n", lines);
+        UserConsoleBox.CaretIndex = UserConsoleBox.Text.Length;
+    }
+
+    private void AppendConsole(string line)
+    {
+        UserConsoleBox.AppendText(line + Environment.NewLine);
+        UserConsoleBox.ScrollToEnd();
+    }
+
+    private void SetTab(OutputTab tab)
+    {
+        _activeTab = tab;
+        // reset styles
+        OutputTabHeader.Background = Brushes.Transparent;
+        ((TextBlock)OutputTabHeader.Child).Foreground = (Brush)FindResource("SecondaryForegroundBrush");
+        ((TextBlock)OutputTabHeader.Child).FontWeight = FontWeights.Normal;
+
+        ConsoleTabHeader.Background = Brushes.Transparent;
+        ((TextBlock)ConsoleTabHeader.Child).Foreground = (Brush)FindResource("SecondaryForegroundBrush");
+        ((TextBlock)ConsoleTabHeader.Child).FontWeight = FontWeights.Normal;
+
+        ProblemsTabHeader.Background = Brushes.Transparent;
+        var problemsStack = (StackPanel)ProblemsTabHeader.Child;
+        ((TextBlock)problemsStack.Children[0]).Foreground = (Brush)FindResource("SecondaryForegroundBrush");
+        ((TextBlock)problemsStack.Children[0]).FontWeight = FontWeights.Normal;
+
+        OutputBox.Visibility = Visibility.Collapsed;
+        UserConsoleBox.Visibility = Visibility.Collapsed;
+        ProblemsListView.Visibility = Visibility.Collapsed;
+
+        switch (tab)
+        {
+            case OutputTab.Output:
+                OutputTabHeader.Background = (Brush)FindResource("AccentBrush");
+                ((TextBlock)OutputTabHeader.Child).Foreground = Brushes.White;
+                ((TextBlock)OutputTabHeader.Child).FontWeight = FontWeights.SemiBold;
+                OutputBox.Visibility = Visibility.Visible;
+                break;
+            case OutputTab.Console:
+                ConsoleTabHeader.Background = (Brush)FindResource("AccentBrush");
+                ((TextBlock)ConsoleTabHeader.Child).Foreground = Brushes.White;
+                ((TextBlock)ConsoleTabHeader.Child).FontWeight = FontWeights.SemiBold;
+                UserConsoleBox.Visibility = Visibility.Visible;
+                break;
+            case OutputTab.Errors:
+                ProblemsTabHeader.Background = (Brush)FindResource("AccentBrush");
+                ((TextBlock)problemsStack.Children[0]).Foreground = Brushes.White;
+                ((TextBlock)problemsStack.Children[0]).FontWeight = FontWeights.SemiBold;
+                ProblemsListView.Visibility = Visibility.Visible;
+                break;
+        }
     }
 
     private void SwitchOutputTab(bool showOutput)
     {
-        _showingOutput = showOutput;
-
-        if (showOutput)
-        {
-            OutputTabHeader.Background = (System.Windows.Media.Brush)FindResource("AccentBrush");
-            ((TextBlock)OutputTabHeader.Child).Foreground = System.Windows.Media.Brushes.White;
-            ((TextBlock)OutputTabHeader.Child).FontWeight = FontWeights.SemiBold;
-
-            ProblemsTabHeader.Background = System.Windows.Media.Brushes.Transparent;
-            var problemsStack = (StackPanel)ProblemsTabHeader.Child;
-            ((TextBlock)problemsStack.Children[0]).Foreground = (System.Windows.Media.Brush)FindResource("SecondaryForegroundBrush");
-            ((TextBlock)problemsStack.Children[0]).FontWeight = FontWeights.Normal;
-
-            OutputBox.Visibility = Visibility.Visible;
-            ProblemsListView.Visibility = Visibility.Collapsed;
-        }
-        else
-        {
-            OutputTabHeader.Background = System.Windows.Media.Brushes.Transparent;
-            ((TextBlock)OutputTabHeader.Child).Foreground = (System.Windows.Media.Brush)FindResource("SecondaryForegroundBrush");
-            ((TextBlock)OutputTabHeader.Child).FontWeight = FontWeights.Normal;
-
-            ProblemsTabHeader.Background = (System.Windows.Media.Brush)FindResource("AccentBrush");
-            var problemsStack = (StackPanel)ProblemsTabHeader.Child;
-            ((TextBlock)problemsStack.Children[0]).Foreground = System.Windows.Media.Brushes.White;
-            ((TextBlock)problemsStack.Children[0]).FontWeight = FontWeights.SemiBold;
-
-            OutputBox.Visibility = Visibility.Collapsed;
-            ProblemsListView.Visibility = Visibility.Visible;
-        }
+        SetTab(showOutput ? OutputTab.Output : OutputTab.Errors);
     }
 
     private void ProblemsListView_DoubleClick(object sender, MouseButtonEventArgs e)
@@ -2398,13 +2617,10 @@ public partial class MainWindow : Window
                 _isRunning = false;
                 UpdateRunStopButton();
                 StatusText.Text = "Workshop example error";
-                OutputLine($"ERROR: {result.ErrorMessage}");
 
                 foreach (var error in result.Errors)
                 {
-                    OutputLine($"  Line {error.Line}: {error.Message}");
-
-                    // Add to Problems panel
+                    // Add to Problems panel (no console spam)
                     Problems.Add(new ProblemItem
                     {
                         Severity = error.Severity == "Error" ? ProblemSeverity.Error : ProblemSeverity.Warning,
@@ -2412,7 +2628,8 @@ public partial class MainWindow : Window
                         FileName = "Workshop Example",
                         FilePath = "",
                         Line = error.Line,
-                        Column = error.Column
+                        Column = error.Column,
+                        Suggestion = SuggestFor(error.Message)
                     });
                 }
 
@@ -2430,7 +2647,6 @@ public partial class MainWindow : Window
             stopwatch.Stop();
             _isRunning = false;
             StatusText.Text = "Workshop execution failed";
-            OutputLine($"EXCEPTION: {ex.Message}");
 
             // Add exception to Problems
             Problems.Add(new ProblemItem
@@ -2440,7 +2656,8 @@ public partial class MainWindow : Window
                 FileName = "Workshop Example",
                 FilePath = "",
                 Line = 1,
-                Column = 1
+                Column = 1,
+                Suggestion = SuggestFor(ex.Message)
             });
             UpdateErrorBadge();
         }
@@ -2732,6 +2949,7 @@ public class ProblemItem
     public string FilePath { get; set; } = "";
     public int Line { get; set; }
     public int Column { get; set; }
+    public string Suggestion { get; set; } = "";
 
     // For display in ListView
     public string Icon => Severity switch

@@ -159,6 +159,18 @@ public sealed class AudioEngineService : IDisposable
     /// </summary>
     public event EventHandler<AudioDeviceErrorEventArgs>? DeviceError;
 
+    /// <summary>Raised when the engine reports MIDI activity (device index).</summary>
+    public event Action<int>? MidiActivity;
+
+    /// <summary>Raised when engine parameters change (from MIDI mapping).</summary>
+    public event Action<string, float>? ParameterChanged;
+
+    /// <summary>Raised when engine emits MIDI log lines.</summary>
+    public event Action<string>? MidiLog;
+
+    /// <summary>Raised on MIDI note on/off activity (device index, isOn).</summary>
+    public event Action<int, bool>? MidiNoteActivity;
+
     #endregion
 
     #region Constructor
@@ -205,6 +217,10 @@ public sealed class AudioEngineService : IDisposable
 
                     // Create and initialize the audio engine
                     _audioEngine = new AudioEngine(sampleRate: _sampleRate, logger: null);
+                    _audioEngine.MidiActivity += idx => MidiActivity?.Invoke(idx);
+                    _audioEngine.MidiNoteActivity += (idx, on) => MidiNoteActivity?.Invoke(idx, on);
+                    _audioEngine.ParameterChanged += (name, val) => ParameterChanged?.Invoke(name, val);
+                    _audioEngine.MidiLog += msg => MidiLog?.Invoke(msg);
                     _audioEngine.Initialize();
 
                     // Create the sequencer

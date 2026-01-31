@@ -26,6 +26,12 @@ public class EngineService : IDisposable
     public int PatternCount { get; private set; }
     public bool IsInitialized { get; private set; }
 
+    // Surface engine events for UI (logs, activity, parameter changes)
+    public event Action<int>? MidiActivity;
+    public event Action<int, bool>? MidiNoteActivity;
+    public event Action<string, float>? ParameterChanged;
+    public event Action<string>? MidiLog;
+
     /// <summary>Gets the sequencer for visualization integration.</summary>
     public Sequencer? Sequencer => _sequencer;
 
@@ -33,32 +39,45 @@ public class EngineService : IDisposable
 
     public async Task InitializeAsync()
     {
-        // Capture console output during initialization to show device info
-        var outputCapture = new StringWriter();
-        var originalOut = Console.Out;
+        if (IsInitialized) return;
 
-        try
+        // Reuse the singleton AudioEngineService so MIDI devices are only opened once
+        var aes = AudioEngineService.Instance;
+
+        if (!aes.IsInitialized)
         {
-            Console.SetOut(outputCapture);
-
-            await Task.Run(() =>
+            // Keep the original console capture behaviour for device listing
+            var outputCapture = new StringWriter();
+            var originalOut = Console.Out;
+            try
             {
-                _engine = new AudioEngine(sampleRate: null, logger: null);
-                _engine.Initialize();
-
-                _sequencer = new Sequencer();
-                _sequencer.Start();
-
-                _scriptHost = new ScriptHost(_engine, _sequencer);
-                IsInitialized = true;
-            });
-
-            InitializationOutput = outputCapture.ToString();
+                Console.SetOut(outputCapture);
+                await aes.InitializeAsync();
+                InitializationOutput = outputCapture.ToString();
+            }
+            finally
+            {
+                Console.SetOut(originalOut);
+            }
         }
-        finally
+
+        _engine = aes.AudioEngine;
+        _sequencer = aes.Sequencer;
+
+        if (_engine == null || _sequencer == null)
         {
-            Console.SetOut(originalOut);
+            throw new InvalidOperationException("AudioEngineService failed to provide engine or sequencer.");
         }
+
+        // Forward engine events so UI can bind to this service uniformly
+        _engine.MidiActivity += idx => MidiActivity?.Invoke(idx);
+        _engine.MidiNoteActivity += (idx, on) => MidiNoteActivity?.Invoke(idx, on);
+        _engine.ParameterChanged += (name, val) => ParameterChanged?.Invoke(name, val);
+        _engine.MidiLog += msg => MidiLog?.Invoke(msg);
+
+        // Script host uses the shared engine/sequencer
+        _scriptHost = new ScriptHost(_engine, _sequencer);
+        IsInitialized = true;
     }
 
     public async Task<ScriptResult> ExecuteScriptAsync(string code)
@@ -127,6 +146,8 @@ public class EngineService : IDisposable
         {
             _scriptHost.ClearState();
         }
+
+        // We deliberately do not dispose the shared AudioEngineService here
     }
 
     public void SetBpm(double bpm)

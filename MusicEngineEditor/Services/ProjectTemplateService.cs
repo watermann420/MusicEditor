@@ -43,25 +43,11 @@ public class ProjectTemplateService : IProjectTemplateService
         var dir = new DirectoryInfo(baseDir);
         while (dir != null && dir.Parent != null)
         {
-            var testScriptPath = Path.Combine(dir.Parent.FullName, "MusicEngine", "test_script.csx");
-            if (File.Exists(testScriptPath))
-            {
-                return testScriptPath;
-            }
+            var candidate = Path.Combine(dir.FullName, "MusicEngine", "test_script.csx");
+            if (File.Exists(candidate)) return candidate;
 
-            // Also check in RiderProjects parent
-            var riderProjectsPath = Path.Combine(dir.FullName, "..", "..", "MusicEngine", "test_script.csx");
-            if (File.Exists(riderProjectsPath))
-            {
-                return Path.GetFullPath(riderProjectsPath);
-            }
-
-            // Explicit fallback: solution-root/MusicEngine/test_script.csx
-            var explicitSolution = Path.GetFullPath(Path.Combine(dir.FullName, "..", "MusicEngine", "test_script.csx"));
-            if (File.Exists(explicitSolution))
-            {
-                return explicitSolution;
-            }
+            var sibling = Path.Combine(dir.FullName, "..", "MusicEngine", "test_script.csx");
+            if (File.Exists(sibling)) return Path.GetFullPath(sibling);
 
             dir = dir.Parent;
         }

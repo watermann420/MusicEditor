@@ -42,25 +42,13 @@ public class ProjectService : IProjectService
         var dir = new DirectoryInfo(baseDir);
         while (dir != null && dir.Parent != null)
         {
-            var testScriptPath = Path.Combine(dir.Parent.FullName, "MusicEngine", "test_script.csx");
-            if (File.Exists(testScriptPath))
-            {
-                return testScriptPath;
-            }
+            // Check sibling MusicEngine under this level
+            var candidate = Path.Combine(dir.FullName, "MusicEngine", "test_script.csx");
+            if (File.Exists(candidate)) return candidate;
 
-            // Also check in RiderProjects parent
-            var riderProjectsPath = Path.Combine(dir.FullName, "..", "..", "MusicEngine", "test_script.csx");
-            if (File.Exists(riderProjectsPath))
-            {
-                return Path.GetFullPath(riderProjectsPath);
-            }
-
-            // Explicit fallback: solution-root/MusicEngine/test_script.csx
-            var explicitSolution = Path.GetFullPath(Path.Combine(dir.FullName, "..", "MusicEngine", "test_script.csx"));
-            if (File.Exists(explicitSolution))
-            {
-                return explicitSolution;
-            }
+            // Check sibling one level up
+            var sibling = Path.Combine(dir.FullName, "..", "MusicEngine", "test_script.csx");
+            if (File.Exists(sibling)) return Path.GetFullPath(sibling);
 
             dir = dir.Parent;
         }
