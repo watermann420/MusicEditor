@@ -175,6 +175,43 @@ dotnet build
 dotnet run --project MusicEngineEditor
 ```
 
+## Build & Test (non-interactive)
+
+- Prereqs: .NET 10.0 SDK (preview) and Git available on PATH.
+- Single command to clean, restore, build, and run tests:
+
+```bash
+pwsh ./build.ps1 -Clean -Release
+```
+
+The script auto-clones the `MusicEngine` dependency if it's not already present next to this repository and writes test results to `MusicEngineEditor.Tests/TestResults.trx`.
+
+### UI smoke tests (optional, visual)
+
+To launch the editor during tests and sanity-check the UI:
+
+```bash
+# option 1: one-off
+pwsh ./build.ps1 -Release -UiSmoke
+
+# option 2: via env var
+$env:ENABLE_UI_TESTS=1; pwsh ./build.ps1 -Release
+```
+
+The UI smoke test starts the built `MusicEngineEditor.exe`, waits for the main window, and then closes it. It produces `MusicEngineEditor.Tests/UITests.trx`. Requires an interactive desktop (not headless).
+
+### Audio smoke tests (optional, analysis)
+
+To verify audio analysis (FFT/RMS/peak) quickly:
+
+```bash
+pwsh ./build.ps1 -Release -AudioSmoke
+# or
+$env:ENABLE_AUDIO_TESTS=1; pwsh ./build.ps1 -Release
+```
+
+This synthesizes a sine tone (and a short note pattern) in tests and asserts dominant frequency, RMS, and peak using FFT (no sound device needed). Results in `MusicEngineEditor.Tests/AudioTests.trx`.
+
 ---
 
 ## Project Structure

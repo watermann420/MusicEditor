@@ -38,6 +38,9 @@ After completing each tier, you MUST:
 3. Update documentation (CLAUDE.md, CLAUDE_CONTEXT.md)
 4. Only then proceed to next tier
 
+### 1a. UI / Visual / Animation work
+- When you touch UI visuals, animations, or anything user-facing in WPF, run the UI smoke test to actually see a window come up: `powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Release -UiSmoke` (or set `ENABLE_UI_TESTS=1`). The smoke test launches `MusicEngineEditor.exe`, waits for the main window, and then closes—use it to catch UI regressions early.
+
 ### 2. THEME REQUIREMENTS
 Use these DarkTheme.xaml resources consistently:
 

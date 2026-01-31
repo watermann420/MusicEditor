@@ -1,12 +1,14 @@
 # MusicEngineEditor Build Script
-# This script automatically restores NuGet packages and builds the project
+# This script automatically restores NuGet packages and builds/tests the project
 
 param(
     [switch]$Release,
     [switch]$Clean,
     [switch]$Run,
     [switch]$Publish,
-    [switch]$Installer
+    [switch]$Installer,
+    [switch]$UiSmoke,
+    [switch]$AudioSmoke
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,31 +19,49 @@ Write-Host "  MusicEngineEditor Build Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+$totalSteps = 7
+
 # Check if dotnet is installed
-Write-Host "[1/5] Checking .NET SDK..." -ForegroundColor Yellow
+Write-Host "[1/$totalSteps] Checking .NET SDK..." -ForegroundColor Yellow
 try {
     $dotnetVersion = dotnet --version
     Write-Host "      .NET SDK $dotnetVersion found" -ForegroundColor Green
 } catch {
     Write-Host "ERROR: .NET SDK not found!" -ForegroundColor Red
-    Write-Host "Please install .NET 8.0 SDK from: https://dotnet.microsoft.com/download/dotnet/8.0" -ForegroundColor Yellow
+    Write-Host "Please install .NET 10.0 SDK (preview) from: https://dotnet.microsoft.com/download/dotnet/10.0" -ForegroundColor Yellow
     exit 1
 }
 
-# Check .NET 8 is available
+# Check .NET 10 is available
 $sdks = dotnet --list-sdks
-if ($sdks -notmatch "8\.0") {
-    Write-Host "WARNING: .NET 8.0 SDK not found. You may need to install it." -ForegroundColor Yellow
-    Write-Host "Download from: https://dotnet.microsoft.com/download/dotnet/8.0" -ForegroundColor Yellow
+if ($sdks -notmatch "10\.0") {
+    Write-Host "WARNING: .NET 10.0 SDK not found. You may need to install it (preview)." -ForegroundColor Yellow
+    Write-Host "Download from: https://dotnet.microsoft.com/download/dotnet/10.0" -ForegroundColor Yellow
 }
 
 $configuration = if ($Release) { "Release" } else { "Debug" }
 Write-Host "      Configuration: $configuration" -ForegroundColor Cyan
 
+# Ensure MusicEngine dependency is present
+$musicEnginePath = Join-Path $scriptDir "..\MusicEngine"
+Write-Host ""
+Write-Host "[2/$totalSteps] Ensuring MusicEngine dependency..." -ForegroundColor Yellow
+if (-not (Test-Path $musicEnginePath)) {
+    Write-Host "      MusicEngine not found next to this repo; cloning from GitHub..." -ForegroundColor Cyan
+    git clone https://github.com/watermann420/MusicEngine.git $musicEnginePath 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Failed to clone MusicEngine dependency" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "      MusicEngine cloned to $musicEnginePath" -ForegroundColor Green
+} else {
+    Write-Host "      MusicEngine already present at $musicEnginePath" -ForegroundColor Green
+}
+
 # Clean if requested
 if ($Clean) {
     Write-Host ""
-    Write-Host "[2/5] Cleaning solution..." -ForegroundColor Yellow
+    Write-Host "[3/$totalSteps] Cleaning solution..." -ForegroundColor Yellow
 
     # Clean MusicEngine
     Push-Location "$scriptDir\..\MusicEngine"
@@ -60,12 +80,12 @@ if ($Clean) {
     Write-Host "      Clean completed" -ForegroundColor Green
 } else {
     Write-Host ""
-    Write-Host "[2/5] Skipping clean (use -Clean to clean)" -ForegroundColor Gray
+    Write-Host "[3/$totalSteps] Skipping clean (use -Clean to clean)" -ForegroundColor Gray
 }
 
 # Restore NuGet packages
 Write-Host ""
-Write-Host "[3/5] Restoring NuGet packages..." -ForegroundColor Yellow
+Write-Host "[4/$totalSteps] Restoring NuGet packages..." -ForegroundColor Yellow
 
 # Restore MusicEngine first
 Write-Host "      Restoring MusicEngine..." -ForegroundColor Cyan
@@ -95,7 +115,7 @@ Write-Host "      MusicEngineEditor packages restored" -ForegroundColor Green
 
 # Build MusicEngine
 Write-Host ""
-Write-Host "[4/5] Building MusicEngine..." -ForegroundColor Yellow
+Write-Host "[5/$totalSteps] Building MusicEngine..." -ForegroundColor Yellow
 Push-Location "$scriptDir\..\MusicEngine"
 $buildResult = dotnet build -c $configuration --no-restore 2>&1
 if ($LASTEXITCODE -ne 0) {
@@ -109,7 +129,7 @@ Write-Host "      MusicEngine built successfully" -ForegroundColor Green
 
 # Build MusicEngineEditor
 Write-Host ""
-Write-Host "[5/5] Building MusicEngineEditor..." -ForegroundColor Yellow
+Write-Host "[6/$totalSteps] Building MusicEngineEditor..." -ForegroundColor Yellow
 Push-Location "$scriptDir\MusicEngineEditor"
 $buildResult = dotnet build -c $configuration --no-restore 2>&1
 if ($LASTEXITCODE -ne 0) {
@@ -121,12 +141,55 @@ if ($LASTEXITCODE -ne 0) {
 Pop-Location
 Write-Host "      MusicEngineEditor built successfully" -ForegroundColor Green
 
+# Run tests
+Write-Host ""
+Write-Host "[7/$totalSteps] Running tests..." -ForegroundColor Yellow
+Push-Location "$scriptDir\MusicEngineEditor.Tests"
+$testResult = dotnet test -c $configuration --logger "trx;LogFileName=TestResults.trx" 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Tests failed" -ForegroundColor Red
+    Write-Host $testResult -ForegroundColor Red
+    Pop-Location
+    exit 1
+}
+Write-Host "      Unit tests completed successfully" -ForegroundColor Green
+
+# Optional UI smoke tests (require interactive session)
+if ($UiSmoke -or $env:ENABLE_UI_TESTS -eq "1" -or $env:ENABLE_UI_TESTS -eq "true") {
+    Write-Host ""
+    Write-Host "      Running UI smoke tests (Category=UI)..." -ForegroundColor Yellow
+    $uiResult = dotnet test -c $configuration --logger "trx;LogFileName=UITests.trx" --filter "Category=UI" 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: UI smoke tests failed" -ForegroundColor Red
+        Write-Host $uiResult -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
+    Write-Host "      UI smoke tests completed successfully" -ForegroundColor Green
+}
+
+# Optional audio analysis smoke (no audio device required; analyzes synthesized sine)
+if ($AudioSmoke -or $env:ENABLE_AUDIO_TESTS -eq "1" -or $env:ENABLE_AUDIO_TESTS -eq "true") {
+    Write-Host ""
+    Write-Host "      Running Audio smoke tests (Category=Audio)..." -ForegroundColor Yellow
+    $audioResult = dotnet test -c $configuration --logger "trx;LogFileName=AudioTests.trx" --filter "Category=Audio" 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Audio smoke tests failed" -ForegroundColor Red
+        Write-Host $audioResult -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
+    Write-Host "      Audio smoke tests completed successfully" -ForegroundColor Green
+}
+Pop-Location
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host "  Build completed successfully!" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "Output: $scriptDir\MusicEngineEditor\bin\$configuration\net10.0-windows\" -ForegroundColor Cyan
+Write-Host "Tests:  $scriptDir\MusicEngineEditor.Tests\TestResults.trx" -ForegroundColor Cyan
 
 # Run if requested
 if ($Run) {

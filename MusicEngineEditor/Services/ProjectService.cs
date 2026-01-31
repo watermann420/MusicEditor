@@ -91,7 +91,11 @@ public class ProjectService : IProjectService
 
     public async Task<MusicProject> CreateProjectAsync(string name, string path)
     {
-        var projectDir = Path.Combine(path, name);
+        // Create an outer project folder and an inner content folder (e.g. path/Name/Name)
+        var projectRootDir = Path.Combine(path, name);
+        var projectDir = Path.Combine(projectRootDir, name);
+
+        Directory.CreateDirectory(projectRootDir);
         Directory.CreateDirectory(projectDir);
         Directory.CreateDirectory(Path.Combine(projectDir, "Scripts"));
         Directory.CreateDirectory(Path.Combine(projectDir, "Audio"));
