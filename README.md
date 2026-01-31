@@ -212,6 +212,18 @@ $env:ENABLE_AUDIO_TESTS=1; pwsh ./build.ps1 -Release
 
 This synthesizes a sine tone (and a short note pattern) in tests and asserts dominant frequency, RMS, and peak using FFT (no sound device needed). Results in `MusicEngineEditor.Tests/AudioTests.trx`.
 
+### Performance smoke tests (optional)
+
+To check timing/memory regressions (project creation + 5s FFT):
+
+```bash
+pwsh ./build.ps1 -Release -PerfSmoke
+# or
+$env:ENABLE_PERF_TESTS=1; pwsh ./build.ps1 -Release
+```
+
+Produces `MusicEngineEditor.Tests/PerfTests.trx` with generous thresholds to flag major slowdowns.
+
 ---
 
 ## Project Structure

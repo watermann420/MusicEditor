@@ -8,7 +8,8 @@ param(
     [switch]$Publish,
     [switch]$Installer,
     [switch]$UiSmoke,
-    [switch]$AudioSmoke
+    [switch]$AudioSmoke,
+    [switch]$PerfSmoke
 )
 
 $ErrorActionPreference = "Stop"
@@ -180,6 +181,20 @@ if ($AudioSmoke -or $env:ENABLE_AUDIO_TESTS -eq "1" -or $env:ENABLE_AUDIO_TESTS 
         exit 1
     }
     Write-Host "      Audio smoke tests completed successfully" -ForegroundColor Green
+}
+
+# Optional performance/timing smoke tests
+if ($PerfSmoke -or $env:ENABLE_PERF_TESTS -eq "1" -or $env:ENABLE_PERF_TESTS -eq "true") {
+    Write-Host ""
+    Write-Host "      Running Performance smoke tests (Category=Perf)..." -ForegroundColor Yellow
+    $perfResult = dotnet test -c $configuration --logger "trx;LogFileName=PerfTests.trx" --filter "Category=Perf" 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Performance smoke tests failed" -ForegroundColor Red
+        Write-Host $perfResult -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
+    Write-Host "      Performance smoke tests completed successfully" -ForegroundColor Green
 }
 Pop-Location
 

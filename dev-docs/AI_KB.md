@@ -13,6 +13,7 @@ Structured cheat-sheet for agents to recall project facts fast. Update this file
 - Build + unit tests: `pwsh ./build.ps1 -Release` (or `-Clean -Release`)
 - UI smoke (visible window): `pwsh ./build.ps1 -Release -UiSmoke` or `SET ENABLE_UI_TESTS=1`
 - Audio/Pattern smoke: `pwsh ./build.ps1 -Release -AudioSmoke` or `SET ENABLE_AUDIO_TESTS=1`
+- Performance smoke: `pwsh ./build.ps1 -Release -PerfSmoke` or `SET ENABLE_PERF_TESTS=1`
 - Combine: `pwsh ./build.ps1 -Release -UiSmoke -AudioSmoke`
 - Run editor: `dotnet run --project MusicEngineEditor/MusicEngineEditor.csproj`
 
@@ -20,6 +21,7 @@ Structured cheat-sheet for agents to recall project facts fast. Update this file
 - Unit: services, viewmodels, scripts (default run)
 - UI smoke (`Category=UI`): launches `MusicEngineEditor.exe`, asserts main window
 - Audio smoke (`Category=Audio`): FFT/RMS/peak on sine + A4→C5→E5→A5 pattern
+- Perf smoke (`Category=Perf`): timing & memory (multi project creation + 5s FFT) with generous thresholds
 - Artifacts: `TestResults.trx`, `UITests.trx`, `AudioTests.trx`
 
 ## 4) Project Creation Defaults (ProjectService)
