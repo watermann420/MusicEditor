@@ -72,13 +72,12 @@ public sealed class InlineVisualEngine : IDisposable
         _noteHighlighter = new NoteHighlightTransformer(_editor);
         _editor.TextArea.TextView.LineTransformers.Add(_noteHighlighter);
 
-        // Timer for 60 FPS refresh (approx 16 ms).
+        // Timer for 60 FPS refresh (approx 16 ms). Started on-demand when visuals exist.
         _timer = new DispatcherTimer(
             TimeSpan.FromMilliseconds(16.0),
             DispatcherPriority.Background,
             (_, _) => RefreshVisuals(),
             Dispatcher.CurrentDispatcher);
-        _timer.Start();
 
         _editor.TextChanged += (_, _) => RebuildHosts();
         _editor.TextArea.TextView.VisualLinesChanged += (_, _) => RefreshPositions();
@@ -149,6 +148,15 @@ public sealed class InlineVisualEngine : IDisposable
         }
 
         RefreshPositions();
+
+        if (_hosts.Count == 0)
+        {
+            _timer.Stop();
+        }
+        else if (!_timer.IsEnabled)
+        {
+            _timer.Start();
+        }
     }
 
     private void RefreshVisuals()
@@ -156,6 +164,10 @@ public sealed class InlineVisualEngine : IDisposable
         foreach (var host in _hosts.Values)
         {
             host.Tick();
+        }
+        if (_hosts.Count == 0 && _timer.IsEnabled)
+        {
+            _timer.Stop();
         }
     }
 

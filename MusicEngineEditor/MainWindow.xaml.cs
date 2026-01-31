@@ -105,7 +105,7 @@ public partial class MainWindow : Window
         // Start status update timer
         _statusTimer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromMilliseconds(50)
+            Interval = TimeSpan.FromMilliseconds(120)
         };
         _statusTimer.Tick += StatusTimer_Tick;
 
@@ -529,6 +529,13 @@ public partial class MainWindow : Window
 
     private void StatusTimer_Tick(object? sender, EventArgs e)
     {
+        // Adapt polling rate: tighter when running, relaxed when idle
+        var targetMs = _isRunning ? 50 : 180;
+        if (Math.Abs(_statusTimer.Interval.TotalMilliseconds - targetMs) > 1)
+        {
+            _statusTimer.Interval = TimeSpan.FromMilliseconds(targetMs);
+        }
+
         // Update Pattern count from engine
         PatternCountDisplay.Text = _engineService.PatternCount.ToString();
 
