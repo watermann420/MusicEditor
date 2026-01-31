@@ -52,6 +52,15 @@ This folder contains technical documentation for developers integrating MusicEng
 | Reference other projects | [ProjectStructure.md](ProjectStructure.md#referencing-other-projects) |
 | Build effect chains | [ModularEffects.md](ModularEffects.md#building-effect-chains) |
 | Control music from game | [GameEngineIntegration.md](GameEngineIntegration.md#quick-start) |
+| MIDI logging & LEDs | See notes below |
+
+### MIDI utilities (engine scripting)
+
+- Logging per device: `midi.device(idx).log.info(true/false)`, `log.cc()`, `log.timingClock()`, `log.screenData()`.
+- Transport via CC: `midi.device(idx).cc(ccNumber).toStart()/toStop()/toRefresh()`.
+- LEDs (paired MIDI out): `midi.device(idx).led.set(note, value, channel)`, `.off(note)`, `.cc(controller, value)`.
+- Pattern with multiple synths: `var pat = CreatePattern(bass, lead, pad);`
+- Step shorthand: `pat.Seq("1010x001", opt => opt.pitch(72).velocity(90).step(0.25).duration(0.25));`
 
 ### API Reference
 

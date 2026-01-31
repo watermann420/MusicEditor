@@ -526,8 +526,7 @@ public class CompletionProvider
                 CompletionItemType.Method,
                 "MidiDevice device(int index)",
                 "Get a MIDI device by index.\n\nParameters:\n  index - Device index (0-based)\n\nReturns: MidiDevice object\n\nExample:\n  midi.device(0).route(synth);",
-                "device()",
-                -1),
+                "device()", -1),
             new MusicEngineCompletionData(
                 "inputs",
                 CompletionItemType.Property,
@@ -538,6 +537,15 @@ public class CompletionProvider
                 CompletionItemType.Property,
                 "int outputs { get; }",
                 "Get the number of MIDI output devices."),
+            new MusicEngineCompletionData(
+                "random",
+                CompletionItemType.Variable,
+                "RandomControl random",
+                "Fluent random helper: random.range(min,max).speed(hz).next(); random.next(); random.intRange(min,max); random.nextBool(prob); random.coin();"),
+            CompletionItems.MidiLogInfo,
+            CompletionItems.MidiLogCc,
+            CompletionItems.MidiLogClock,
+            CompletionItems.MidiLogScreen
         };
     }
 

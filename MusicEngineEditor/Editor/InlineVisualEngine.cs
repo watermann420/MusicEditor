@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
 using MusicEngine.Core;
 using MusicEngineEditor.Controls.InlineVisuals;
@@ -17,6 +18,8 @@ using WpfControl = System.Windows.Controls.Control;
 using WpfLabel = System.Windows.Controls.Label;
 using WpfPanel = System.Windows.Controls.Panel;
 using System.Windows;
+using System.Windows.Documents;
+using System.Windows.Threading;
 
 namespace MusicEngineEditor.Editor;
 
@@ -31,6 +34,7 @@ public sealed class InlineVisualEngine : IDisposable
     private readonly Dictionary<int, InlineVisualHost> _hosts = new();
     private readonly Regex _commandRegex = new(@"^\s*//?\s*\.(?<cmd>[a-zA-Z]+)(?<args>.*)$",
         RegexOptions.Compiled);
+    private readonly NoteHighlightTransformer _noteHighlighter;
     private bool _disposed;
 
     /// <summary>Optional sequencer to feed live note/meter data.</summary>
@@ -65,6 +69,8 @@ public sealed class InlineVisualEngine : IDisposable
     public InlineVisualEngine(TextEditor editor)
     {
         _editor = editor;
+        _noteHighlighter = new NoteHighlightTransformer(_editor);
+        _editor.TextArea.TextView.LineTransformers.Add(_noteHighlighter);
 
         // Timer for 60 FPS refresh (approx 16 ms).
         _timer = new DispatcherTimer(
@@ -85,6 +91,7 @@ public sealed class InlineVisualEngine : IDisposable
     /// </summary>
     public void OnNoteTriggered(MusicalEvent e)
     {
+        _noteHighlighter.HighlightPitch(e.Note);
         foreach (var host in _hosts.Values)
         {
             host.NotifyNoteOn(e);
@@ -93,6 +100,7 @@ public sealed class InlineVisualEngine : IDisposable
 
     public void OnNoteEnded(MusicalEvent e)
     {
+        _noteHighlighter.ClearPitch(e.Note);
         foreach (var host in _hosts.Values)
         {
             host.NotifyNoteOff(e);
@@ -151,8 +159,25 @@ public sealed class InlineVisualEngine : IDisposable
         }
     }
 
-    private void Sequencer_NoteTriggered(object? sender, MusicalEventArgs e) => OnNoteTriggered(e.Event);
-    private void Sequencer_NoteEnded(object? sender, MusicalEventArgs e) => OnNoteEnded(e.Event);
+    private void Sequencer_NoteTriggered(object? sender, MusicalEventArgs e)
+    {
+        if (!_editor.Dispatcher.CheckAccess())
+        {
+            _editor.Dispatcher.BeginInvoke(new Action(() => Sequencer_NoteTriggered(sender, e)), DispatcherPriority.Background);
+            return;
+        }
+        OnNoteTriggered(e.Event);
+    }
+
+    private void Sequencer_NoteEnded(object? sender, MusicalEventArgs e)
+    {
+        if (!_editor.Dispatcher.CheckAccess())
+        {
+            _editor.Dispatcher.BeginInvoke(new Action(() => Sequencer_NoteEnded(sender, e)), DispatcherPriority.Background);
+            return;
+        }
+        OnNoteEnded(e.Event);
+    }
 
     private void RefreshPositions()
     {
@@ -166,9 +191,117 @@ public sealed class InlineVisualEngine : IDisposable
         {
             host.UpdatePosition();
         }
+}
+
+#endregion
+}
+
+internal sealed class NoteHighlightTransformer : DocumentColorizingTransformer
+{
+    private readonly TextEditor _editor;
+    private readonly Regex _noteRegex = new(@"Note\s*\(\s*(?<pitch>\d{1,3})", RegexOptions.Compiled);
+    private readonly Dictionary<int, List<(int offset, int length)>> _activeSpans = new();
+    private readonly Dispatcher _dispatcher;
+
+    public NoteHighlightTransformer(TextEditor editor)
+    {
+        _editor = editor;
+        _dispatcher = editor.Dispatcher;
     }
 
-    #endregion
+    public void HighlightPitch(int pitch)
+    {
+        _dispatcher.InvokeAsync(() =>
+        {
+            var spans = FindPitchSpans(pitch);
+            lock (_activeSpans)
+            {
+                _activeSpans[pitch] = spans;
+            }
+            _editor.TextArea.TextView.Redraw();
+        }, DispatcherPriority.Background);
+    }
+
+    public void ClearPitch(int pitch)
+    {
+        _dispatcher.InvokeAsync(() =>
+        {
+            lock (_activeSpans)
+            {
+                _activeSpans.Remove(pitch);
+            }
+            _editor.TextArea.TextView.Redraw();
+        }, DispatcherPriority.Background);
+    }
+
+    protected override void ColorizeLine(DocumentLine line)
+    {
+        List<(int offset, int length)> spansForLine = new();
+        lock (_activeSpans)
+        {
+            foreach (var kvp in _activeSpans)
+            {
+                foreach (var span in kvp.Value)
+                {
+                    if (span.offset >= line.EndOffset || span.offset + span.length <= line.Offset) continue;
+                    spansForLine.Add(span);
+                }
+            }
+        }
+
+        foreach (var span in spansForLine)
+        {
+            int start = Math.Max(span.offset, line.Offset);
+            int end = Math.Min(span.offset + span.length, line.EndOffset);
+            int length = end - start;
+            if (length <= 0) continue;
+
+            ChangeLinePart(start, end, element =>
+            {
+                if (element.TextRunProperties is not VisualLineElementTextRunProperties props) return;
+
+                // Use current foreground color, add stronger modern glow
+                var fg = (props.ForegroundBrush as SolidColorBrush) ??
+                         new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
+                var c = fg.Color;
+
+                // Gradient glow behind the number (stronger)
+                var glow = new LinearGradientBrush
+                {
+                    StartPoint = new System.Windows.Point(0, 0.5),
+                    EndPoint = new System.Windows.Point(1, 0.5),
+                    Opacity = 1.0,
+                    GradientStops = new GradientStopCollection
+                    {
+                        new GradientStop(Color.FromArgb(0,   c.R, c.G, c.B), 0.0),
+                        new GradientStop(Color.FromArgb(200, c.R, c.G, c.B), 0.5),
+                        new GradientStop(Color.FromArgb(0,   c.R, c.G, c.B), 1.0),
+                    }
+                };
+
+                // Brighter foreground
+                var fgBright = Color.FromArgb(255, (byte)Math.Min(255, c.R + 40),
+                                                   (byte)Math.Min(255, c.G + 40),
+                                                   (byte)Math.Min(255, c.B + 40));
+
+                props.SetBackgroundBrush(glow);
+                props.SetForegroundBrush(new SolidColorBrush(fgBright));
+            });
+        }
+    }
+
+    private List<(int offset, int length)> FindPitchSpans(int pitch)
+    {
+        var text = _editor.Document.Text;
+        var spans = new List<(int offset, int length)>();
+        foreach (Match m in _noteRegex.Matches(text))
+        {
+            if (!int.TryParse(m.Groups["pitch"].Value, out var p)) continue;
+            if (p != pitch) continue;
+            spans.Add((m.Groups["pitch"].Index, m.Groups["pitch"].Length));
+        }
+        return spans;
+    }
 }
 
 /// <summary>Supported visual kinds.</summary>

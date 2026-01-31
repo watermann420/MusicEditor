@@ -56,6 +56,13 @@ public class ProjectTemplateService : IProjectTemplateService
                 return Path.GetFullPath(riderProjectsPath);
             }
 
+            // Explicit fallback: solution-root/MusicEngine/test_script.csx
+            var explicitSolution = Path.GetFullPath(Path.Combine(dir.FullName, "..", "MusicEngine", "test_script.csx"));
+            if (File.Exists(explicitSolution))
+            {
+                return explicitSolution;
+            }
+
             dir = dir.Parent;
         }
 

@@ -29,7 +29,7 @@ Discord: discord.gg/tWkqHMsB6a
 - Real-time audio playback and preview
 - Multiple synthesizer types (Simple, Advanced, Modular)
 - Built-in effects (Reverb, Delay, Filter, etc.)
-- MIDI input/output support
+- MIDI input/output support with per-device logging (`midi.device(0).log.info()`) and LED control (`midi.device(0).led.set(note, val, channel)`)
 - VCV Rack-style modular parameter system
 
 ### Workflow
@@ -72,27 +72,60 @@ See `docs/InlineVisuals.md` for details.
 
 ---
 
+## MIDI logging, transport bindings & LEDs (engine + editor scripting)
+
+```csharp
+// Toggle verbose MIDI logging for device 0 (notes/CC/pitch)
+midi.device(0).log.info();          // on
+midi.device(0).log.info(false);     // off
+
+// Log only CC or clock if needed
+midi.device(0).log.cc();            // CC on
+midi.device(0).log.timingClock();   // clock on
+
+// Map CC to transport
+midi.device(0).cc(20).toStart();    // CC20 > 0.5 starts playback
+midi.device(0).cc(21).toStop();     // CC21 > 0.5 stops playback
+midi.device(0).cc(22).toRefresh();  // CC22 > 0.5 reloads script
+
+// LEDs (send to matching MIDI output index; pick a safe channel to avoid sound)
+var led = midi.device(0).led;
+led.set(36, 100, 9);   // note/pad LED on (brightness/color depends on device)
+led.off(36, 9);        // off
+led.cc(1, 80, 9);      // some controllers use CC for lights
+```
+
+> Tip: choose an output index that corresponds to your controller’s MIDI Out, and a channel that isn’t routed to a synth (e.g., 9/10) to avoid audible notes.
+
+---
+
 ## Code Example
 
 ```csharp
-// Create a sequencer
-var seq = new Sequencer { Bpm = 120 };
-
 // Create instruments
-var synth = new AdvancedSynth();
-synth.FilterType = SynthFilterType.MoogLadder;
-synth.FilterCutoff = 0.6f;
+var bass = new SimpleSynth();
+var lead = new SimpleSynth();
 
-// Create a pattern
-var melody = seq.CreatePattern("melody", synth);
+// Pattern can drive multiple synths
+var pat = CreatePattern(bass, lead);
 
 // Add notes (pitch, beat, duration, velocity)
-melody.Note(60, 0, 0.5, 100);    // C4
-melody.Note(64, 0.5, 0.5, 100);  // E4
-melody.Note(67, 1, 0.5, 100);    // G4
+pat.Note(60, 0,   0.5, 100);
+pat.Note(64, 0.5, 0.5, 100);
+pat.Note(67, 1,   0.5, 100);
+
+// Step-sequencer shorthand (defaults: pitch 60, vel 100, len 0.25 beats)
+pat.Seq("10100101", opt => {
+    opt.pitch(72).velocity(90).step(0.25).duration(0.25);
+});
+
+// Random helper
+var r = random.range(0, 2.5).speed(2); // max 2 updates/sec
+double mod = r.next();                 // reuse across calls
+bool hit = random.nextBool(0.3);       // 30% chance
 
 // Play!
-seq.Play();
+pat.Play();
 ```
 
 ---

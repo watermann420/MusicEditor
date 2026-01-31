@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using System.Xml;
 using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Folding;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
@@ -60,6 +62,15 @@ public static class EditorSetup
 
         // Setup code folding
         SetupFolding(editor);
+
+        // Boolean toggle on double-click
+        editor.TextArea.MouseDown += (s, e) =>
+        {
+            if (e.ClickCount == 2 && e.ChangedButton == System.Windows.Input.MouseButton.Left)
+            {
+                ToggleBooleanAtMouse(editor, e);
+            }
+        };
     }
 
     /// <summary>
@@ -305,5 +316,47 @@ public static class EditorSetup
 
         using var reader = new XmlTextReader(new StringReader(xshd));
         return HighlightingLoader.Load(reader, HighlightingManager.Instance);
+    }
+
+    private static void ToggleBooleanAtMouse(TextEditor editor, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        var textView = editor.TextArea.TextView;
+        var pos = textView.GetPositionFloor(e.GetPosition(textView) + textView.ScrollOffset);
+        if (pos == null) return;
+
+        int offset = editor.Document.GetOffset(pos.Value.Location);
+        if (offset < 0 || offset >= editor.Document.TextLength) return;
+
+        var word = GetWordAt(editor.Document, offset);
+        if (word == null) return;
+
+        var text = editor.Document.GetText(word);
+        string replacement = text switch
+        {
+            "true" => "false",
+            "false" => "true",
+            "True" => "False",
+            "False" => "True",
+            _ => text
+        };
+
+        if (replacement != text)
+        {
+            editor.Document.Replace(word, replacement);
+            e.Handled = true;
+        }
+    }
+
+    private static TextSegment? GetWordAt(TextDocument doc, int offset)
+    {
+        var text = doc.Text;
+        if (offset < 0 || offset >= text.Length) return null;
+
+        int start = offset;
+        while (start > 0 && char.IsLetter(text[start - 1])) start--;
+        int end = offset;
+        while (end < text.Length && char.IsLetter(text[end])) end++;
+        if (end <= start) return null;
+        return new TextSegment { StartOffset = start, Length = end - start };
     }
 }

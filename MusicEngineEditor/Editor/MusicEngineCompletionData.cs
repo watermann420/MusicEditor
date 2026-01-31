@@ -606,6 +606,35 @@ public static class CompletionItems
         "GetMidiInputName()",
         -1);
 
+
+    public static MusicEngineCompletionData MidiLogInfo => new(
+        "log.info",
+        CompletionItemType.Method,
+        "void log.info(bool enabled = true)",
+        "Toggle logging of all MIDI events for this device to the Output window. Default is enabled.\nExamples:\n  midi.device(0).log.info();\n  midi.device(0).log.info(false);",
+        "log.info()", -1);
+
+    public static MusicEngineCompletionData MidiLogCc => new(
+        "log.cc",
+        CompletionItemType.Method,
+        "void log.cc(bool enabled = true)",
+        "Toggle logging of MIDI Control Change messages for this device. Default is enabled when called without args.\nExamples:\n  midi.device(0).log.cc();\n  midi.device(0).log.cc(false);",
+        "log.cc()", -1);
+
+    public static MusicEngineCompletionData MidiLogClock => new(
+        "log.timingClock",
+        CompletionItemType.Method,
+        "void log.timingClock(bool enabled = true)",
+        "Toggle logging of MIDI TimingClock messages for this device. Disabled by default when only log.info is on.\nExamples:\n  midi.device(0).log.timingClock();\n  midi.device(0).log.timingClock(false);",
+        "log.timingClock()", -1);
+
+    public static MusicEngineCompletionData MidiLogScreen => new(
+        "log.screenData",
+        CompletionItemType.Method,
+        "void log.screenData()",
+        "Log a one-time capability line about the device screen (best-effort detection). Example:\n  midi.device(0).log.screenData();",
+        "log.screenData()", -1);
+
     #endregion
 
     #region VST Members
