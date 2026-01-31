@@ -20,6 +20,9 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Load performance profile from environment before services are built
+        PerformanceConfig.LoadFromEnvironment();
+
         // Configure services
         var services = new ServiceCollection();
         ConfigureServices(services);

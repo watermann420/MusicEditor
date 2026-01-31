@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MusicEngine.Core;
+using MusicEngineEditor.Services;
 
 namespace MusicEngineEditor.Services;
 
@@ -209,10 +210,21 @@ public sealed class AudioEngineService : IDisposable
 
                 try
                 {
+                    var perf = PerformanceConfig.Options;
+
                     // Set sample rate if provided
                     if (sampleRate.HasValue)
                     {
                         _sampleRate = sampleRate.Value;
+                    }
+                    else if (perf.SampleRate.HasValue)
+                    {
+                        _sampleRate = perf.SampleRate.Value;
+                    }
+
+                    if (perf.BufferSize.HasValue)
+                    {
+                        _bufferSize = perf.BufferSize.Value;
                     }
 
                     // Create and initialize the audio engine
@@ -225,7 +237,10 @@ public sealed class AudioEngineService : IDisposable
 
                     // Create the sequencer
                     _sequencer = new Sequencer();
-                    _sequencer.Start();
+                    if (perf.StartSequencer)
+                    {
+                        _sequencer.Start();
+                    }
 
                     // Enumerate available devices
                     EnumerateAudioDevices();

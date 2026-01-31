@@ -28,6 +28,7 @@ using MusicEngineEditor.Controls;
 using MusicEngineEditor.ViewModels;
 using MusicEngineEditor.Views;
 using MusicEngineEditor.Views.Dialogs;
+using MusicEngineEditor.Services;
 
 namespace MusicEngineEditor;
 
@@ -47,6 +48,7 @@ public partial class MainWindow : Window
     private InlineSliderService? _inlineSliderService;
     private InlineVisualEngine? _inlineVisuals;
     private VisualizationIntegration? _visualization;
+    private readonly PerformanceOptions _perfOptions = PerformanceConfig.Options;
 
     // VST Plugin Windows
     private readonly Dictionary<string, VstPluginWindow> _vstWindows = new();
@@ -97,7 +99,10 @@ public partial class MainWindow : Window
         _completionProvider = EditorSetup.SetupCompletion(CodeEditor);
 
         // Inline visuals (Strudel-style overlays under code lines)
-        _inlineVisuals = new InlineVisualEngine(CodeEditor);
+        if (_perfOptions.EnableInlineVisuals)
+        {
+            _inlineVisuals = new InlineVisualEngine(CodeEditor);
+        }
 
         // Handle Ctrl+Enter for run and other keyboard shortcuts
         CodeEditor.PreviewKeyDown += CodeEditor_PreviewKeyDown;
@@ -442,7 +447,14 @@ public partial class MainWindow : Window
             }
 
             // Populate MIDI devices list
-            RefreshMidiDevices();
+            if (_perfOptions.EnableMidi)
+            {
+                RefreshMidiDevices();
+            }
+            else
+            {
+                OutputLine("MIDI disabled (ME_PERF_PROFILE/ME_DISABLE_MIDI). Skipping device scan.");
+            }
 
             // Connect visualization and inline visuals to the sequencer
             if (_engineService.Sequencer != null)
@@ -453,12 +465,23 @@ public partial class MainWindow : Window
                     _inlineVisuals.Sequencer = _engineService.Sequencer;
                 }
             }
+            else if (!_perfOptions.StartSequencer)
+            {
+                OutputLine("Sequencer kept idle by performance profile.");
+            }
 
             // Initialize Transport ViewModel
             _transportViewModel = new TransportViewModel();
 
             // Start Performance Monitoring
-            _performanceMonitorService.Start();
+            if (_perfOptions.EnablePerfMonitor)
+            {
+                _performanceMonitorService.Start();
+            }
+            else
+            {
+                StatusText.Text = "Perf monitor disabled for low-power mode";
+            }
 
             StatusText.Text = "Ready";
             OutputLine("Engine initialized successfully!");
@@ -466,14 +489,17 @@ public partial class MainWindow : Window
             OutputLine("");
 
             // Warm-up compile/run to make first Run snappier
-            _ = Task.Run(async () =>
+            if (_perfOptions.StartSequencer)
             {
-                try
+                _ = Task.Run(async () =>
                 {
-                    await _engineService.ExecuteScriptAsync("Sequencer.Bpm = 120;");
-                }
-                catch { /* ignore warmup errors */ }
-            });
+                    try
+                    {
+                        await _engineService.ExecuteScriptAsync("Sequencer.Bpm = 120;");
+                    }
+                    catch { /* ignore warmup errors */ }
+                });
+            }
         }
         catch (Exception ex)
         {
