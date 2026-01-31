@@ -1,6 +1,4 @@
 # MusicEditor Funding Configuration
-# Work in progress – currently only contact email available
 
-custom:
-  - name: "Contact for Funding"
-    url: "mailto:musicenginebusiness@gmail.com"
+
+github: watermann420
