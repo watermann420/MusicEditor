@@ -39,6 +39,23 @@ Discord: discord.gg/tWkqHMsB6a
 - Performance monitoring
 - VST plugin support
 
+### Audio-Reactive UI (NEW)
+- **Audio Reactive Lighting**: UI elements glow and pulse with the music
+  - Run button pulses with bass frequencies and beat transients
+  - Sidebar icons create wave-like effects based on mid frequencies
+  - Status indicator brightness varies with overall audio level
+- **Audio Visualizer Background**: Subtle ambient background effects
+  - Bass glow (bottom, purple/blue gradient)
+  - Mid glow (side edges, cyan)
+  - High sparkle (top, white/cyan)
+  - Center ambient pulse that scales with beat
+  - Configurable intensity (default 12% opacity)
+- **Colored Output Console**: Log levels displayed with colors
+  - Errors: Red (#FF4757)
+  - Warnings: Yellow (#FFB800)
+  - Debug: Gray (#808080)
+  - Info: White (default)
+
 
 ---
 
@@ -70,6 +87,45 @@ Add a command as a comment and the visual appears right under that line:
 - Only visible, non-comment lines render for performance
 
 See `docs/InlineVisuals.md` for details.
+
+---
+
+## Audio-Reactive UI
+
+The editor features professional audio-reactive lighting effects inspired by modern DAWs like FL Studio, Ableton, and Bitwig.
+
+### Audio Reactive Lighting
+When a script is running, UI elements respond to the audio in real-time:
+
+| Element | Frequency Band | Effect |
+|---------|---------------|--------|
+| Run Button | Bass (20-200Hz) + Beat | Glow pulses (BlurRadius 8-24) |
+| Sidebar Icons | Mids (200-2kHz) | Wave-like brightness effect |
+| Status Indicator | Overall RMS | Color brightness varies |
+
+### Audio Visualizer Background
+A subtle ambient background layer reacts to music (default 12% max opacity):
+
+- **Bass Glow**: Purple/blue gradient from bottom edge
+- **Mid Glow**: Cyan gradients on left/right edges
+- **High Glow**: White/cyan sparkle on top edge
+- **Ambient Pulse**: Center radial pulse that scales with beat (600-1000px)
+
+Configuration in code:
+```csharp
+// Toggle visualizer
+SetAudioVisualizerEnabled(true);
+
+// Set intensity (0.0 - 0.3)
+SetAudioVisualizerIntensity(0.12f);
+```
+
+### Technical Details
+- **AudioReactiveService**: Singleton service processing audio data
+- **AnalysisService**: FFT spectrum analysis for frequency bands
+- **60 FPS updates** via DispatcherTimer with smooth interpolation
+- **Beat detection** for pulsing effects on bass transients
+- Zero allocations in render loop for performance
 
 ---
 

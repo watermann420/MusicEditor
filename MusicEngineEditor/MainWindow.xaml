@@ -45,6 +45,88 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Audio Reactive Background Visualizer Layer -->
+        <Canvas x:Name="AudioVisualizerCanvas"
+                Grid.RowSpan="4"
+                IsHitTestVisible="False"
+                Panel.ZIndex="-1">
+
+            <!-- Bass Glow (Bottom - Purple/Blue) -->
+            <Rectangle x:Name="BassGlow"
+                       Canvas.Left="0" Canvas.Bottom="0"
+                       Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}"
+                       Height="300"
+                       IsHitTestVisible="False"
+                       Opacity="0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                        <GradientStop Color="#4400D9FF" Offset="0"/>
+                        <GradientStop Color="#220066FF" Offset="0.3"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+
+            <!-- Mid Glow (Sides - Cyan/Turquoise) -->
+            <Rectangle x:Name="MidGlowLeft"
+                       Canvas.Left="0" Canvas.Top="0"
+                       Width="150"
+                       Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}"
+                       IsHitTestVisible="False"
+                       Opacity="0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                        <GradientStop Color="#3300D9FF" Offset="0"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+
+            <Rectangle x:Name="MidGlowRight"
+                       Canvas.Right="0" Canvas.Top="0"
+                       Width="150"
+                       Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}"
+                       IsHitTestVisible="False"
+                       Opacity="0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="1,0.5" EndPoint="0,0.5">
+                        <GradientStop Color="#3300D9FF" Offset="0"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+
+            <!-- High Glow (Top - White/Cyan sparkle) -->
+            <Rectangle x:Name="HighGlow"
+                       Canvas.Left="0" Canvas.Top="0"
+                       Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}"
+                       Height="200"
+                       IsHitTestVisible="False"
+                       Opacity="0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#22FFFFFF" Offset="0"/>
+                        <GradientStop Color="#1100D9FF" Offset="0.2"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+
+            <!-- Center Ambient Pulse -->
+            <Ellipse x:Name="AmbientPulse"
+                     Width="800" Height="800"
+                     IsHitTestVisible="False"
+                     Opacity="0">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#1500D9FF" Offset="0"/>
+                        <GradientStop Color="#0800D9FF" Offset="0.5"/>
+                        <GradientStop Color="#00000000" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Canvas>
+
         <!-- Custom Title Bar with Menu and Window Controls -->
         <Border Grid.Row="0" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
                 MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"

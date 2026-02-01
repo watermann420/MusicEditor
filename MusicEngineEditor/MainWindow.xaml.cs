@@ -76,6 +76,15 @@ public partial class MainWindow : Window
     public ObservableCollection<ActiveInstrumentInfo> ActiveInstruments { get; } = new();
     private readonly DispatcherTimer _animationTimer;
 
+    // Audio Reactive Lighting
+    private AudioReactiveService? _audioReactiveService;
+    private DropShadowEffect? _runButtonGlow;
+    private readonly List<DropShadowEffect?> _sidebarGlows = new();
+
+    // Audio Visualizer Background Settings
+    private bool _audioVisualizerEnabled = true;
+    private float _audioVisualizerIntensity = 0.12f; // 12% max opacity (subtle)
+
     // Data for right panel lists
     public ObservableCollection<MidiDeviceInfo> MidiDevices { get; } = new();
     public ObservableCollection<AudioFileInfo> AudioFiles { get; } = new();
@@ -483,6 +492,9 @@ public partial class MainWindow : Window
             {
                 StatusText.Text = "Perf monitor disabled for low-power mode";
             }
+
+            // Initialize Audio Reactive Lighting
+            InitializeAudioReactiveLighting();
 
             StatusText.Text = "Ready";
             OutputLine("Engine initialized successfully!");
@@ -1156,6 +1168,9 @@ public partial class MainWindow : Window
                 _visualization?.OnAfterExecute(true);
                 _visualization?.OnPlaybackStarted();
 
+                // Start audio reactive lighting
+                StartAudioReactiveLighting();
+
                 // Parse code to extract instruments and start animation
                 ExtractInstrumentsFromCode(code);
                 _animationTimer.Start();
@@ -1293,6 +1308,9 @@ public partial class MainWindow : Window
         _isRunning = false;
         _animationTimer.Stop();
 
+        // Stop audio reactive lighting
+        StopAudioReactiveLighting();
+
         // Notify visualization system that playback stopped
         _visualization?.OnPlaybackStopped();
 
@@ -1334,6 +1352,233 @@ public partial class MainWindow : Window
         }
     }
 
+    #endregion
+
+    #region Audio Reactive Lighting
+
+    private void InitializeAudioReactiveLighting()
+    {
+        try
+        {
+            _audioReactiveService = AudioReactiveService.Instance;
+            _audioReactiveService.ValuesUpdated += OnAudioReactiveValuesUpdated;
+
+            // Cache the RunStopButton glow effect for fast access
+            if (RunStopButton.Template.FindName("glowEffect", RunStopButton) is DropShadowEffect runGlow)
+            {
+                _runButtonGlow = runGlow;
+            }
+
+            // Cache sidebar button glow effects
+            CacheSidebarGlowEffects();
+
+            OutputLine("[Audio Reactive] Lighting system initialized");
+        }
+        catch (Exception ex)
+        {
+            OutputLine($"[Audio Reactive] Failed to initialize: {ex.Message}");
+        }
+    }
+
+    private void CacheSidebarGlowEffects()
+    {
+        // List of sidebar buttons to make reactive
+        var sidebarButtons = new Button[]
+        {
+            MidiToolButton, VstToolButton, AudioToolButton,
+            TrackPropertiesToolButton, OutputToolButton
+        };
+
+        _sidebarGlows.Clear();
+        foreach (var button in sidebarButtons)
+        {
+            if (button?.Template?.FindName("glowEffect", button) is DropShadowEffect glow)
+            {
+                _sidebarGlows.Add(glow);
+            }
+            else
+            {
+                _sidebarGlows.Add(null);
+            }
+        }
+    }
+
+    private void StartAudioReactiveLighting()
+    {
+        try
+        {
+            // Start analysis service if not already running
+            AnalysisService.Instance.Start();
+            _audioReactiveService?.Start();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Audio Reactive] Start failed: {ex.Message}");
+        }
+    }
+
+    private void StopAudioReactiveLighting()
+    {
+        try
+        {
+            _audioReactiveService?.Stop();
+
+            // Reset glow effects to default state
+            ResetGlowEffectsToDefault();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Audio Reactive] Stop failed: {ex.Message}");
+        }
+    }
+
+    private void ResetGlowEffectsToDefault()
+    {
+        // Reset run button glow
+        if (_runButtonGlow != null)
+        {
+            _runButtonGlow.BlurRadius = 8;
+            _runButtonGlow.Opacity = 0.35;
+        }
+
+        // Reset sidebar glows
+        foreach (var glow in _sidebarGlows)
+        {
+            if (glow != null)
+            {
+                glow.BlurRadius = 0;
+                glow.Opacity = 0;
+            }
+        }
+
+        // Reset visualizer background
+        ResetAudioVisualizerBackground();
+    }
+
+    private void ResetAudioVisualizerBackground()
+    {
+        if (BassGlow != null) BassGlow.Opacity = 0;
+        if (MidGlowLeft != null) MidGlowLeft.Opacity = 0;
+        if (MidGlowRight != null) MidGlowRight.Opacity = 0;
+        if (HighGlow != null) HighGlow.Opacity = 0;
+        if (AmbientPulse != null) AmbientPulse.Opacity = 0;
+    }
+
+    /// <summary>
+    /// Enables or disables the audio visualizer background.
+    /// </summary>
+    public void SetAudioVisualizerEnabled(bool enabled)
+    {
+        _audioVisualizerEnabled = enabled;
+        if (!enabled)
+        {
+            ResetAudioVisualizerBackground();
+        }
+    }
+
+    /// <summary>
+    /// Sets the intensity of the audio visualizer (0.0 - 1.0).
+    /// </summary>
+    public void SetAudioVisualizerIntensity(float intensity)
+    {
+        _audioVisualizerIntensity = Math.Clamp(intensity, 0f, 0.3f); // Max 30% to keep it subtle
+    }
+
+    private void OnAudioReactiveValuesUpdated(object? sender, AudioReactiveEventArgs e)
+    {
+        if (!_isRunning) return;
+
+        // Update Run Button glow based on bass + beat (pulsing effect)
+        if (_runButtonGlow != null)
+        {
+            // Combine bass level with beat transients for punchy effect
+            float intensity = Math.Max(e.Bass, e.Beat);
+            _runButtonGlow.BlurRadius = 8 + (intensity * 16); // 8-24 range
+            _runButtonGlow.Opacity = 0.35 + (intensity * 0.55); // 0.35-0.9 range
+        }
+
+        // Update sidebar button glows based on mid frequencies
+        for (int i = 0; i < _sidebarGlows.Count; i++)
+        {
+            var glow = _sidebarGlows[i];
+            if (glow == null) continue;
+
+            // Stagger the sidebar buttons for wave-like effect
+            float offset = i * 0.1f;
+            float level = Math.Max(0, e.Mid - offset);
+            level = Math.Min(1f, level * 1.5f); // Amplify slightly
+
+            glow.BlurRadius = level * 10; // 0-10 range
+            glow.Opacity = level * 0.6; // 0-0.6 range
+        }
+
+        // Update status indicator brightness based on overall level
+        if (StatusIndicator != null)
+        {
+            var baseColor = _isRunning
+                ? Color.FromRgb(0x00, 0xFF, 0x88)
+                : Color.FromRgb(0x6F, 0x73, 0x7A);
+
+            // Brighten color based on audio level
+            byte r = (byte)Math.Min(255, baseColor.R + (int)(e.Overall * 50));
+            byte g = (byte)Math.Min(255, baseColor.G + (int)(e.Overall * 30));
+            byte b = (byte)Math.Min(255, baseColor.B + (int)(e.Overall * 30));
+
+            StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(r, g, b));
+        }
+
+        // Update Audio Visualizer Background
+        UpdateAudioVisualizerBackground(e);
+    }
+
+    private void UpdateAudioVisualizerBackground(AudioReactiveEventArgs e)
+    {
+        if (!_audioVisualizerEnabled) return;
+
+        float maxOpacity = _audioVisualizerIntensity;
+
+        // Bass Glow (Bottom) - Purple/Blue, reacts to bass frequencies
+        if (BassGlow != null)
+        {
+            float bassIntensity = Math.Max(e.Bass, e.Beat * 0.8f);
+            BassGlow.Opacity = bassIntensity * maxOpacity;
+        }
+
+        // Mid Glow (Left/Right edges) - Cyan, reacts to mid frequencies
+        if (MidGlowLeft != null)
+        {
+            MidGlowLeft.Opacity = e.Mid * maxOpacity * 0.8f;
+        }
+        if (MidGlowRight != null)
+        {
+            MidGlowRight.Opacity = e.Mid * maxOpacity * 0.8f;
+        }
+
+        // High Glow (Top) - White/Cyan sparkle, reacts to high frequencies
+        if (HighGlow != null)
+        {
+            HighGlow.Opacity = e.High * maxOpacity * 0.6f;
+        }
+
+        // Ambient Pulse (Center) - Overall level pulse
+        if (AmbientPulse != null)
+        {
+            float pulseIntensity = Math.Max(e.Overall, e.Beat * 0.5f);
+            AmbientPulse.Opacity = pulseIntensity * maxOpacity;
+
+            // Scale pulse size based on beat
+            double baseSize = 600;
+            double pulseSize = baseSize + (e.Beat * 400);
+            AmbientPulse.Width = pulseSize;
+            AmbientPulse.Height = pulseSize;
+
+            // Center the pulse
+            double canvasWidth = AudioVisualizerCanvas.ActualWidth;
+            double canvasHeight = AudioVisualizerCanvas.ActualHeight;
+            Canvas.SetLeft(AmbientPulse, (canvasWidth - pulseSize) / 2);
+            Canvas.SetTop(AmbientPulse, (canvasHeight - pulseSize) / 2);
+        }
+    }
 
     #endregion
 

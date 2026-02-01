@@ -115,6 +115,64 @@ SetTabHeaderInactive(MyTabHeader);  // Deactivates tab (gray text/icon)
 </Border.Effect>
 ```
 
+## Audio Reactive Lighting
+
+The application features audio-reactive UI effects that respond to music playback:
+
+### AudioReactiveService (Services/AudioReactiveService.cs)
+- Subscribes to AnalysisService for spectrum and peak data
+- Processes audio into frequency bands: Bass (20-200Hz), Mid (200-2000Hz), High (2000Hz+)
+- Provides smoothed values with attack/release envelope
+- Beat detection for pulsing effects
+
+### Reactive UI Elements
+- **Run Button Glow**: Pulses with bass + beat intensity (BlurRadius 8-24, Opacity 0.35-0.9)
+- **Sidebar Buttons**: Wave-like effect based on mid frequencies
+- **Status Indicator**: Brightness varies with overall level
+
+### Usage in Code-Behind
+```csharp
+// Start/stop with playback
+StartAudioReactiveLighting();
+StopAudioReactiveLighting();
+
+// Access reactive values
+float bass = AudioReactiveService.Instance.BassLevel;
+float beat = AudioReactiveService.Instance.BeatIntensity;
+```
+
+### Configuration
+```csharp
+AudioReactiveService.Instance.Sensitivity = 1.5f;      // Level amplification
+AudioReactiveService.Instance.MinGlowOpacity = 0.1f;   // Minimum glow
+AudioReactiveService.Instance.MaxGlowOpacity = 0.9f;   // Maximum glow
+```
+
+## Audio Visualizer Background
+
+The editor features a subtle audio-reactive background that responds to music playback.
+
+### Visualizer Elements (MainWindow.xaml)
+- **BassGlow**: Bottom gradient (Purple/Blue), reacts to bass (20-200Hz)
+- **MidGlowLeft/Right**: Side edge gradients (Cyan), react to mids (200-2kHz)
+- **HighGlow**: Top gradient (White/Cyan), reacts to highs (2kHz+)
+- **AmbientPulse**: Center radial pulse, reacts to overall level + beat
+
+### Configuration in MainWindow.xaml.cs
+```csharp
+// Enable/disable visualizer
+SetAudioVisualizerEnabled(true);
+
+// Set intensity (0.0 - 0.3 max to keep it subtle)
+SetAudioVisualizerIntensity(0.12f);  // 12% opacity
+```
+
+### Design Principles
+- **Subtil**: Max 12% opacity, nicht ablenkend
+- **Professionell**: Wie FL Studio, Ableton, Bitwig
+- **Deaktivierbar**: Kann ausgeschaltet werden
+- **Performant**: Nur UI-Updates bei Änderungen
+
 ## Important Notes
 
 1. **DropShadowEffect Targeting**: Cannot use `Setter TargetName` to target effects directly. Instead, replace the entire Effect property:
