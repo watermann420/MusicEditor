@@ -1236,3 +1236,9 @@ C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-win
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PianoRollInlineControl.g.cs
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PunchcardInlineControl.g.cs
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PunchcardInlineControl.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\MixerInlineControl.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PianoRollInlineControl.baml
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\MixerInlineControl.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PianoRollInlineControl.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PunchcardInlineControl.g.cs
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\InlineVisuals\PunchcardInlineControl.baml

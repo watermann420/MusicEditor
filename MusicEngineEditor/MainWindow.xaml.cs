@@ -15,6 +15,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Documents;
 using System.Windows.Media.Effects;
 using System.Windows.Threading;
 using System.Xml;
@@ -562,15 +563,6 @@ public partial class MainWindow : Window
             _statusTimer.Interval = TimeSpan.FromMilliseconds(targetMs);
         }
 
-        // Update Pattern count from engine
-        PatternCountDisplay.Text = _engineService.PatternCount.ToString();
-
-        // Sync BPM display with engine (in case script changed it)
-        var engineBpm = _engineService.Bpm;
-        if (Math.Abs(engineBpm - double.Parse(BpmBox.Text)) > 0.1)
-        {
-            BpmBox.Text = engineBpm.ToString("F0");
-        }
 
         // Update status indicator based on running state
         if (_isRunning)
@@ -1342,17 +1334,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void BpmBox_KeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.Enter)
-        {
-            if (double.TryParse(BpmBox.Text, out var bpm) && bpm > 0 && bpm < 999)
-            {
-                _engineService.SetBpm(bpm);
-                StatusText.Text = $"BPM set to {bpm}";
-            }
-        }
-    }
 
     #endregion
 
@@ -1466,15 +1447,59 @@ public partial class MainWindow : Window
         UndoHistoryMenuItem.IsChecked = false;
     }
 
+    private static TextBlock? GetTextBlockFromTabHeader(Border header)
+    {
+        if (header.Child is TextBlock tb) return tb;
+        if (header.Child is StackPanel sp)
+        {
+            foreach (var child in sp.Children)
+            {
+                if (child is TextBlock textBlock) return textBlock;
+            }
+        }
+        return null;
+    }
+
+    private static System.Windows.Shapes.Path? GetPathFromTabHeader(Border header)
+    {
+        if (header.Child is StackPanel sp)
+        {
+            foreach (var child in sp.Children)
+            {
+                if (child is System.Windows.Shapes.Path path) return path;
+            }
+        }
+        return null;
+    }
+
+    private void SetTabHeaderInactive(Border header)
+    {
+        header.Background = System.Windows.Media.Brushes.Transparent;
+        var tb = GetTextBlockFromTabHeader(header);
+        var path = GetPathFromTabHeader(header);
+        if (tb != null) tb.Foreground = (System.Windows.Media.Brush)FindResource("SecondaryForegroundBrush");
+        if (path != null) path.Stroke = (System.Windows.Media.Brush)FindResource("SecondaryForegroundBrush");
+    }
+
+    private void SetTabHeaderActive(Border header)
+    {
+        header.Background = (System.Windows.Media.Brush)FindResource("AccentBrush");
+        var tb = GetTextBlockFromTabHeader(header);
+        var path = GetPathFromTabHeader(header);
+        if (tb != null)
+        {
+            tb.Foreground = System.Windows.Media.Brushes.White;
+            tb.FontWeight = FontWeights.SemiBold;
+        }
+        if (path != null) path.Stroke = System.Windows.Media.Brushes.White;
+    }
+
     private void SwitchRightPanelTab(string tab)
     {
         // Reset all tab headers
-        MidiTabHeader.Background = System.Windows.Media.Brushes.Transparent;
-        VstTabHeader.Background = System.Windows.Media.Brushes.Transparent;
-        AudioTabHeader.Background = System.Windows.Media.Brushes.Transparent;
-        ((TextBlock)MidiTabHeader.Child).Foreground = (System.Windows.Media.Brush)FindResource("SecondaryForegroundBrush");
-        ((TextBlock)VstTabHeader.Child).Foreground = (System.Windows.Media.Brush)FindResource("SecondaryForegroundBrush");
-        ((TextBlock)AudioTabHeader.Child).Foreground = (System.Windows.Media.Brush)FindResource("SecondaryForegroundBrush");
+        SetTabHeaderInactive(MidiTabHeader);
+        SetTabHeaderInactive(VstTabHeader);
+        SetTabHeaderInactive(AudioTabHeader);
 
         // Hide all panels
         MidiDevicesPanel.Visibility = Visibility.Collapsed;
@@ -1487,21 +1512,15 @@ public partial class MainWindow : Window
         switch (tab)
         {
             case "midi":
-                MidiTabHeader.Background = (System.Windows.Media.Brush)FindResource("AccentBrush");
-                ((TextBlock)MidiTabHeader.Child).Foreground = System.Windows.Media.Brushes.White;
-                ((TextBlock)MidiTabHeader.Child).FontWeight = FontWeights.SemiBold;
+                SetTabHeaderActive(MidiTabHeader);
                 MidiDevicesPanel.Visibility = Visibility.Visible;
                 break;
             case "vst":
-                VstTabHeader.Background = (System.Windows.Media.Brush)FindResource("AccentBrush");
-                ((TextBlock)VstTabHeader.Child).Foreground = System.Windows.Media.Brushes.White;
-                ((TextBlock)VstTabHeader.Child).FontWeight = FontWeights.SemiBold;
+                SetTabHeaderActive(VstTabHeader);
                 VstPluginsPanel.Visibility = Visibility.Visible;
                 break;
             case "audio":
-                AudioTabHeader.Background = (System.Windows.Media.Brush)FindResource("AccentBrush");
-                ((TextBlock)AudioTabHeader.Child).Foreground = System.Windows.Media.Brushes.White;
-                ((TextBlock)AudioTabHeader.Child).FontWeight = FontWeights.SemiBold;
+                SetTabHeaderActive(AudioTabHeader);
                 AudioFilesPanel.Visibility = Visibility.Visible;
                 break;
             case "trackproperties":
@@ -2058,7 +2077,7 @@ public partial class MainWindow : Window
 
     private void ClearOutput_Click(object sender, RoutedEventArgs e)
     {
-        OutputBox.Clear();
+        OutputBox.Document.Blocks.Clear();
     }
 
     private void Exit_Click(object sender, RoutedEventArgs e)
@@ -2199,9 +2218,70 @@ public partial class MainWindow : Window
     {
         Dispatcher.Invoke(() =>
         {
-            OutputBox.AppendText(text + Environment.NewLine);
-            OutputBox.ScrollToEnd();
+            AppendColoredOutput(text);
         });
+    }
+
+    /// <summary>
+    /// Determines the log level from the text and returns the appropriate brush.
+    /// </summary>
+    private SolidColorBrush GetLogLevelBrush(string text)
+    {
+        var lowerText = text.ToLowerInvariant();
+
+        // Check for error indicators
+        if (lowerText.Contains("[error]") ||
+            lowerText.Contains("error:") ||
+            lowerText.Contains("exception") ||
+            lowerText.Contains("failed") ||
+            lowerText.StartsWith("error"))
+        {
+            return new SolidColorBrush(Color.FromRgb(0xFF, 0x47, 0x57)); // #FF4757 - Red
+        }
+
+        // Check for warning indicators
+        if (lowerText.Contains("[warning]") ||
+            lowerText.Contains("[warn]") ||
+            lowerText.Contains("warning:") ||
+            lowerText.Contains("warn:"))
+        {
+            return new SolidColorBrush(Color.FromRgb(0xFF, 0xB8, 0x00)); // #FFB800 - Yellow
+        }
+
+        // Check for debug/trace indicators
+        if (lowerText.Contains("[debug]") ||
+            lowerText.Contains("[trace]") ||
+            lowerText.Contains("debug:") ||
+            lowerText.Contains("trace:"))
+        {
+            return new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)); // #808080 - Gray
+        }
+
+        // Default to white/info color
+        return new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)); // #E0E0E0 - White/Light gray
+    }
+
+    /// <summary>
+    /// Appends colored text to the output RichTextBox based on log level.
+    /// </summary>
+    private void AppendColoredOutput(string text)
+    {
+        var brush = GetLogLevelBrush(text);
+
+        var paragraph = new Paragraph
+        {
+            Margin = new Thickness(0),
+            LineHeight = 1
+        };
+
+        var run = new Run(text)
+        {
+            Foreground = brush
+        };
+
+        paragraph.Inlines.Add(run);
+        OutputBox.Document.Blocks.Add(paragraph);
+        OutputBox.ScrollToEnd();
     }
 
     private static string GetDefaultScript()
@@ -2386,18 +2466,9 @@ Print("");
     {
         _activeTab = tab;
         // reset styles
-        OutputTabHeader.Background = Brushes.Transparent;
-        ((TextBlock)OutputTabHeader.Child).Foreground = (Brush)FindResource("SecondaryForegroundBrush");
-        ((TextBlock)OutputTabHeader.Child).FontWeight = FontWeights.Normal;
-
-        ConsoleTabHeader.Background = Brushes.Transparent;
-        ((TextBlock)ConsoleTabHeader.Child).Foreground = (Brush)FindResource("SecondaryForegroundBrush");
-        ((TextBlock)ConsoleTabHeader.Child).FontWeight = FontWeights.Normal;
-
-        ProblemsTabHeader.Background = Brushes.Transparent;
-        var problemsStack = (StackPanel)ProblemsTabHeader.Child;
-        ((TextBlock)problemsStack.Children[0]).Foreground = (Brush)FindResource("SecondaryForegroundBrush");
-        ((TextBlock)problemsStack.Children[0]).FontWeight = FontWeights.Normal;
+        SetTabHeaderInactive(OutputTabHeader);
+        SetTabHeaderInactive(ConsoleTabHeader);
+        SetTabHeaderInactive(ProblemsTabHeader);
 
         OutputBox.Visibility = Visibility.Collapsed;
         UserConsoleBox.Visibility = Visibility.Collapsed;
@@ -2406,21 +2477,15 @@ Print("");
         switch (tab)
         {
             case OutputTab.Output:
-                OutputTabHeader.Background = (Brush)FindResource("AccentBrush");
-                ((TextBlock)OutputTabHeader.Child).Foreground = Brushes.White;
-                ((TextBlock)OutputTabHeader.Child).FontWeight = FontWeights.SemiBold;
+                SetTabHeaderActive(OutputTabHeader);
                 OutputBox.Visibility = Visibility.Visible;
                 break;
             case OutputTab.Console:
-                ConsoleTabHeader.Background = (Brush)FindResource("AccentBrush");
-                ((TextBlock)ConsoleTabHeader.Child).Foreground = Brushes.White;
-                ((TextBlock)ConsoleTabHeader.Child).FontWeight = FontWeights.SemiBold;
+                SetTabHeaderActive(ConsoleTabHeader);
                 UserConsoleBox.Visibility = Visibility.Visible;
                 break;
             case OutputTab.Errors:
-                ProblemsTabHeader.Background = (Brush)FindResource("AccentBrush");
-                ((TextBlock)problemsStack.Children[0]).Foreground = Brushes.White;
-                ((TextBlock)problemsStack.Children[0]).FontWeight = FontWeights.SemiBold;
+                SetTabHeaderActive(ProblemsTabHeader);
                 ProblemsListView.Visibility = Visibility.Visible;
                 break;
         }
@@ -2865,7 +2930,7 @@ Print("");
             }
         }, null, "Toggle output panel visibility");
 
-        service.RegisterCommand("Clear Output", "View", () => OutputBox.Clear(), null, "Clear the output panel");
+        service.RegisterCommand("Clear Output", "View", () => OutputBox.Document.Blocks.Clear(), null, "Clear the output panel");
 
         // Help commands
         service.RegisterCommand("About", "Help", () =>

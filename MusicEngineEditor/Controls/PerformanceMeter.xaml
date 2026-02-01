@@ -60,12 +60,14 @@
                           ShadowDepth="0"
                           Opacity="0.6"/>
 
-        <!-- ASIO Status indicator style -->
+        <!-- ASIO Status indicator style - Enhanced with glow -->
         <Style x:Key="AsioStatusStyle" TargetType="Border">
-            <Setter Property="Width" Value="8"/>
-            <Setter Property="Height" Value="8"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#404040"/>
         </Style>
     </UserControl.Resources>
 
@@ -77,11 +79,23 @@
         </ToolTip>
     </UserControl.ToolTip>
 
-    <Border Background="{StaticResource MeterBackgroundBrush}"
-            BorderBrush="{StaticResource MeterBorderBrush}"
-            BorderThickness="1"
-            CornerRadius="3"
-            Padding="6,3">
+    <Border CornerRadius="4" Padding="8,4">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#1A1A1A" Offset="0"/>
+                <GradientStop Color="#0D0D0D" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        <Border.BorderBrush>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#3A3A3A" Offset="0"/>
+                <GradientStop Color="#252525" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.BorderBrush>
+        <Border.BorderThickness>1</Border.BorderThickness>
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" BlurRadius="4" ShadowDepth="1" Opacity="0.3"/>
+        </Border.Effect>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -108,26 +122,34 @@
                        VerticalAlignment="Center"
                        Margin="0,0,4,0"/>
 
-            <!-- CPU Bar Container -->
+            <!-- CPU Bar Container - Enhanced DAW Style -->
             <Border Grid.Column="1"
-                    Width="60"
-                    Height="10"
-                    Background="#0D0D0D"
-                    BorderBrush="{StaticResource MeterBorderBrush}"
+                    Width="65"
+                    Height="12"
+                    Background="#080808"
+                    BorderBrush="#2A2A2A"
                     BorderThickness="1"
-                    CornerRadius="2"
+                    CornerRadius="3"
                     VerticalAlignment="Center">
-                <Grid ClipToBounds="True">
-                    <!-- CPU Level Bar -->
+                <Grid ClipToBounds="True" Margin="1">
+                    <!-- CPU Level Bar with Gradient -->
                     <Border x:Name="CpuBar"
                             HorizontalAlignment="Left"
                             Width="0"
-                            CornerRadius="1"
-                            Margin="1">
+                            CornerRadius="2">
                         <Border.Background>
                             <SolidColorBrush x:Name="CpuBarBrush" Color="{StaticResource CpuLowColor}"/>
                         </Border.Background>
+                        <Border.Effect>
+                            <DropShadowEffect x:Name="CpuGlowEffect" Color="{StaticResource CpuLowColor}" BlurRadius="3" ShadowDepth="0" Opacity="0.4"/>
+                        </Border.Effect>
                     </Border>
+                    <!-- Tick marks for meter -->
+                    <Canvas IsHitTestVisible="False" Opacity="0.3">
+                        <Rectangle Canvas.Left="15" Width="1" Height="10" Fill="#404040"/>
+                        <Rectangle Canvas.Left="31" Width="1" Height="10" Fill="#404040"/>
+                        <Rectangle Canvas.Left="47" Width="1" Height="10" Fill="#404040"/>
+                    </Canvas>
                 </Grid>
             </Border>
 
@@ -160,26 +182,34 @@
                        VerticalAlignment="Center"
                        Margin="0,0,4,0"/>
 
-            <!-- RAM Bar Container -->
+            <!-- RAM Bar Container - Enhanced DAW Style -->
             <Border Grid.Column="5"
-                    Width="50"
-                    Height="10"
-                    Background="#0D0D0D"
-                    BorderBrush="{StaticResource MeterBorderBrush}"
+                    Width="55"
+                    Height="12"
+                    Background="#080808"
+                    BorderBrush="#2A2A2A"
                     BorderThickness="1"
-                    CornerRadius="2"
+                    CornerRadius="3"
                     VerticalAlignment="Center">
-                <Grid ClipToBounds="True">
-                    <!-- RAM Level Bar -->
+                <Grid ClipToBounds="True" Margin="1">
+                    <!-- RAM Level Bar with Glow -->
                     <Border x:Name="RamBar"
                             HorizontalAlignment="Left"
                             Width="0"
-                            CornerRadius="1"
-                            Margin="1">
+                            CornerRadius="2">
                         <Border.Background>
                             <SolidColorBrush x:Name="RamBarBrush" Color="{StaticResource RamLowColor}"/>
                         </Border.Background>
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource RamLowColor}" BlurRadius="3" ShadowDepth="0" Opacity="0.4"/>
+                        </Border.Effect>
                     </Border>
+                    <!-- Tick marks -->
+                    <Canvas IsHitTestVisible="False" Opacity="0.3">
+                        <Rectangle Canvas.Left="13" Width="1" Height="10" Fill="#404040"/>
+                        <Rectangle Canvas.Left="26" Width="1" Height="10" Fill="#404040"/>
+                        <Rectangle Canvas.Left="39" Width="1" Height="10" Fill="#404040"/>
+                    </Canvas>
                 </Grid>
             </Border>
 
@@ -212,25 +242,27 @@
                        VerticalAlignment="Center"
                        Margin="0,0,4,0"/>
 
-            <!-- Buffer Bar Container -->
+            <!-- Buffer Bar Container - Enhanced DAW Style -->
             <Border Grid.Column="9"
-                    Width="30"
-                    Height="10"
-                    Background="#0D0D0D"
-                    BorderBrush="{StaticResource MeterBorderBrush}"
+                    Width="35"
+                    Height="12"
+                    Background="#080808"
+                    BorderBrush="#2A2A2A"
                     BorderThickness="1"
-                    CornerRadius="2"
+                    CornerRadius="3"
                     VerticalAlignment="Center">
-                <Grid ClipToBounds="True">
-                    <!-- Buffer Level Bar -->
+                <Grid ClipToBounds="True" Margin="1">
+                    <!-- Buffer Level Bar with Glow -->
                     <Border x:Name="BufferBar"
                             HorizontalAlignment="Left"
                             Width="0"
-                            CornerRadius="1"
-                            Margin="1">
+                            CornerRadius="2">
                         <Border.Background>
                             <SolidColorBrush x:Name="BufferBarBrush" Color="{StaticResource BufferOkColor}"/>
                         </Border.Background>
+                        <Border.Effect>
+                            <DropShadowEffect Color="{StaticResource BufferOkColor}" BlurRadius="3" ShadowDepth="0" Opacity="0.4"/>
+                        </Border.Effect>
                     </Border>
                 </Grid>
             </Border>

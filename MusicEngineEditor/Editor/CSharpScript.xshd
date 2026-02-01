@@ -2,37 +2,37 @@
 <SyntaxDefinition name="CSharpScript" extensions=".csx;.cs"
     xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
 
-    <!-- Rider Dark Theme Colors -->
+    <!-- Modern DAW-Inspired Theme Colors (Ableton/FL Studio/Bitwig style) -->
 
-    <!-- Comments: Muted Gray-Green (like Rider - less bright) -->
-    <Color name="Comment" foreground="#7A8A7A" fontStyle="italic" />
+    <!-- Comments: Subtle Gray (non-intrusive) -->
+    <Color name="Comment" foreground="#6A737D" fontStyle="italic" />
 
-    <!-- Strings: Orange/Salmon -->
-    <Color name="String" foreground="#6A8759" />
+    <!-- Strings: Vibrant Orange -->
+    <Color name="String" foreground="#FFAB40" />
 
-    <!-- Characters -->
-    <Color name="Char" foreground="#6A8759" />
+    <!-- Characters: Same as strings -->
+    <Color name="Char" foreground="#FFAB40" />
 
-    <!-- Numbers: Light Blue -->
-    <Color name="Number" foreground="#6897BB" />
+    <!-- Numbers: Soft Purple -->
+    <Color name="Number" foreground="#D19AFF" />
 
-    <!-- Preprocessor -->
-    <Color name="Preprocessor" foreground="#BBB529" />
+    <!-- Preprocessor: Golden Yellow -->
+    <Color name="Preprocessor" foreground="#FFD740" />
 
-    <!-- Keywords: Orange (like Rider) -->
-    <Color name="Keyword" foreground="#CC7832" />
+    <!-- Keywords: Vibrant Cyan (DAW accent color) -->
+    <Color name="Keyword" foreground="#00D9FF" fontWeight="bold" />
 
-    <!-- Types: Light Purple/Lavender (like Rider for classes) -->
-    <Color name="Type" foreground="#A9B7C6" />
+    <!-- Types: Light Cyan -->
+    <Color name="Type" foreground="#4FC3F7" />
 
-    <!-- Class names: Beige/Tan -->
-    <Color name="ClassName" foreground="#A9B7C6" fontWeight="bold" />
+    <!-- Class names: Bright Cyan -->
+    <Color name="ClassName" foreground="#4FC3F7" fontWeight="bold" />
 
-    <!-- Method calls: Yellow-ish -->
-    <Color name="MethodCall" foreground="#FFC66D" />
+    <!-- Method calls: Mint Green -->
+    <Color name="MethodCall" foreground="#B9F6CA" />
 
     <!-- Parameters and variables -->
-    <Color name="Parameter" foreground="#A9B7C6" />
+    <Color name="Parameter" foreground="#E0E0E0" />
 
     <RuleSet ignoreCase="false">
 

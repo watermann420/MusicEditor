@@ -450,14 +450,14 @@
         </Setter>
     </Style>
 
-    <!-- Icon Button Style (for toolbar icons) -->
+    <!-- Icon Button Style (for toolbar icons) - Enhanced with better hover -->
     <Style x:Key="IconButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="6"/>
-        <Setter Property="Width" Value="28"/>
-        <Setter Property="Height" Value="28"/>
+        <Setter Property="Padding" Value="8"/>
+        <Setter Property="Width" Value="34"/>
+        <Setter Property="Height" Value="34"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -465,16 +465,20 @@
                     <Border x:Name="border"
                             Background="{TemplateBinding Background}"
                             Padding="{TemplateBinding Padding}"
-                            CornerRadius="4">
+                            CornerRadius="6"
+                            BorderThickness="1"
+                            BorderBrush="Transparent">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#252525"/>
-                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+                            <Setter TargetName="border" Property="Background" Value="#2A2A2A"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="#3A3A3A"/>
+                            <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#00D9FF"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -706,6 +710,19 @@
         <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}"/>
     </Style>
 
+    <!-- RichTextBox Style (for Output with colored log levels) -->
+    <Style x:Key="OutputRichTextBoxStyle" TargetType="RichTextBox">
+        <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="10"/>
+        <Setter Property="FontFamily" Value="JetBrains Mono, Cascadia Code, Consolas, Courier New"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="IsDocumentEnabled" Value="True"/>
+    </Style>
+
     <!-- StatusBar Style -->
     <Style TargetType="StatusBar">
         <Setter Property="Background" Value="{DynamicResource StatusBarBackgroundBrush}"/>
@@ -735,14 +752,86 @@
         </Style.Triggers>
     </Style>
 
-    <!-- ScrollBar Style (Rider style thin scrollbars) -->
+    <!-- ScrollBar Style - More visible with accent on hover -->
     <Style TargetType="ScrollBar">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Width" Value="10"/>
+        <Setter Property="Background" Value="#1A1A1A"/>
+        <Setter Property="Width" Value="12"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Track x:Name="PART_Track" IsDirectionReversed="True">
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Style>
+                                        <Style TargetType="Thumb">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Thumb">
+                                                        <Border x:Name="thumbBorder"
+                                                                Background="#404040"
+                                                                CornerRadius="4"
+                                                                Margin="2"/>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="thumbBorder" Property="Background" Value="#00D9FF"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsDragging" Value="True">
+                                                                <Setter TargetName="thumbBorder" Property="Background" Value="#00A8CC"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Thumb.Style>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
         <Style.Triggers>
             <Trigger Property="Orientation" Value="Horizontal">
                 <Setter Property="Width" Value="Auto"/>
-                <Setter Property="Height" Value="10"/>
+                <Setter Property="Height" Value="12"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                            <Grid Background="{TemplateBinding Background}">
+                                <Track x:Name="PART_Track" IsDirectionReversed="False">
+                                    <Track.Thumb>
+                                        <Thumb>
+                                            <Thumb.Style>
+                                                <Style TargetType="Thumb">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Thumb">
+                                                                <Border x:Name="thumbBorder"
+                                                                        Background="#404040"
+                                                                        CornerRadius="4"
+                                                                        Margin="2"/>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter TargetName="thumbBorder" Property="Background" Value="#00D9FF"/>
+                                                                    </Trigger>
+                                                                    <Trigger Property="IsDragging" Value="True">
+                                                                        <Setter TargetName="thumbBorder" Property="Background" Value="#00A8CC"/>
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </Thumb.Style>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -792,19 +881,46 @@
         </Setter>
     </Style>
 
-    <!-- Modern Panel Header Style -->
+    <!-- Modern Panel Header Style - Enhanced with more visual weight -->
     <Style x:Key="PanelHeaderStyle" TargetType="Border">
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#181818" Offset="0"/>
-                    <GradientStop Color="#141414" Offset="1"/>
+                    <GradientStop Color="#222222" Offset="0"/>
+                    <GradientStop Color="#1A1A1A" Offset="0.5"/>
+                    <GradientStop Color="#161616" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#00D9FF" Offset="0"/>
+                    <GradientStop Color="#00D9FF40" Offset="0.3"/>
+                    <GradientStop Color="#2A2A2A" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderThickness" Value="0,0,0,2"/>
+        <Setter Property="Padding" Value="14,12"/>
+    </Style>
+
+    <!-- Panel Header Text Style - Bolder and more prominent -->
+    <Style x:Key="PanelHeaderTextStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+    </Style>
+
+    <!-- Panel Header Icon Style -->
+    <Style x:Key="PanelHeaderIconStyle" TargetType="Path">
+        <Setter Property="Stroke" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="StrokeThickness" Value="1.5"/>
+        <Setter Property="Fill" Value="Transparent"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,0,10,0"/>
     </Style>
 
     <!-- Accent Gradient Brush -->
@@ -1544,6 +1660,346 @@
                 <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <!-- ============================================== -->
+    <!-- DAW-INSPIRED MODERN ENHANCEMENTS             -->
+    <!-- ============================================== -->
+
+    <!-- Modern Panel Style with Shadow -->
+    <Style x:Key="ModernPanelStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="2" Opacity="0.3" Direction="270"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Sidebar Tool Button Style (DAW-style with glow) - Enhanced size and visibility -->
+    <Style x:Key="SidebarToolButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#909090"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Width" Value="36"/>
+        <Setter Property="Height" Value="36"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="ToolTipService.InitialShowDelay" Value="300"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="6"
+                            Padding="6"
+                            BorderThickness="1"
+                            BorderBrush="Transparent">
+                        <Border.Effect>
+                            <DropShadowEffect x:Name="glowEffect" Color="#00D9FF" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                        </Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="BlurRadius" To="10" Duration="0:0:0.12"/>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="Opacity" To="0.6" Duration="0:0:0.12"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                            <Setter TargetName="border" Property="Background" Value="#2A2A2A"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="#3A3A3A"/>
+                            <Setter Property="Foreground" Value="#E0E0E0"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Active Sidebar Tool Button (when panel is open) -->
+    <!-- Active Sidebar Tool Button (when panel is open) -->
+    <Style x:Key="SidebarToolButtonActiveStyle" TargetType="Button" BasedOn="{StaticResource SidebarToolButtonStyle}">
+        <Setter Property="Background" Value="#1A3A4A"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+
+    <!-- Transport Play Button (prominent green glow) - Enhanced with idle glow -->
+    <Style x:Key="TransportPlayButtonStyle" TargetType="Button">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#00E673" Offset="0"/>
+                    <GradientStop Color="#00994D" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Padding" Value="18,10"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="6"
+                            BorderThickness="1"
+                            BorderBrush="#00FF88">
+                        <Border.Effect>
+                            <!-- Subtle idle glow - always visible -->
+                            <DropShadowEffect x:Name="glowEffect" Color="#00FF88" BlurRadius="8" ShadowDepth="0" Opacity="0.35"/>
+                        </Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="BlurRadius" To="20" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="Opacity" To="0.8" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="BlurRadius" To="8" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="Opacity" To="0.35" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                            <Setter TargetName="border" Property="Background">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#00FF88" Offset="0"/>
+                                        <GradientStop Color="#00CC66" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#00994D" Offset="0"/>
+                                        <GradientStop Color="#007A3D" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="#1A3320"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="#2A4A30"/>
+                            <Setter Property="Foreground" Value="#606060"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FF88" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Transport Stop Button -->
+    <Style x:Key="TransportStopButtonStyle" TargetType="Button">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#FF6B7A" Offset="0"/>
+                    <GradientStop Color="#CC3945" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="6"
+                            BorderThickness="1"
+                            BorderBrush="#FF4757">
+                        <Border.Effect>
+                            <DropShadowEffect x:Name="glowEffect" Color="#FF4757" BlurRadius="8" ShadowDepth="0" Opacity="0.3"/>
+                        </Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="BlurRadius" To="12" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="Opacity" To="0.5" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="BlurRadius" To="8" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="glowEffect" Storyboard.TargetProperty="Opacity" To="0.3" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- BPM Display Style (prominent DAW-style) -->
+    <Style x:Key="BpmDisplayStyle" TargetType="Border">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#1E1E1E" Offset="0"/>
+                    <GradientStop Color="#141414" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderBrush" Value="#00D9FF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00D9FF" BlurRadius="4" ShadowDepth="0" Opacity="0.2"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Output Console Log Level Colors -->
+    <SolidColorBrush x:Key="LogInfoBrush" Color="#E0E0E0"/>
+    <SolidColorBrush x:Key="LogWarningBrush" Color="#FFB800"/>
+    <SolidColorBrush x:Key="LogErrorBrush" Color="#FF4757"/>
+    <SolidColorBrush x:Key="LogDebugBrush" Color="#808080"/>
+    <SolidColorBrush x:Key="LogSuccessBrush" Color="#00FF88"/>
+    <SolidColorBrush x:Key="LogTimestampBrush" Color="#6A737D"/>
+
+    <!-- Output Tab Header Style -->
+    <Style x:Key="OutputTabHeaderStyle" TargetType="Border">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="14,8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#252525"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Active Output Tab Header -->
+    <Style x:Key="OutputTabHeaderActiveStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="Padding" Value="14,8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+
+    <!-- Section Header Style - Enhanced with more visual presence -->
+    <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Margin" Value="0,10,0,10"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+    </Style>
+
+    <!-- Subsection Header Style -->
+    <Style x:Key="SubsectionHeaderStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="Margin" Value="0,4,0,4"/>
+        <Setter Property="Typography.Capitals" Value="AllSmallCaps"/>
+    </Style>
+
+    <!-- DAW Meter Bar Background -->
+    <Style x:Key="MeterBarBackgroundStyle" TargetType="Border">
+        <Setter Property="Background" Value="#0D0D0D"/>
+        <Setter Property="BorderBrush" Value="#2A2A2A"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="2"/>
+        <Setter Property="Height" Value="12"/>
+    </Style>
+
+    <!-- Glowing Status Indicator -->
+    <Style x:Key="GlowingStatusIndicatorStyle" TargetType="Ellipse">
+        <Setter Property="Width" Value="8"/>
+        <Setter Property="Height" Value="8"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{Binding Fill.Color, RelativeSource={RelativeSource Self}}" BlurRadius="4" ShadowDepth="0" Opacity="0.5"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Floating Panel Style (for popups/modals) -->
+    <Style x:Key="FloatingPanelStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#000000" BlurRadius="20" ShadowDepth="4" Opacity="0.5"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Subtle Divider -->
+    <Style x:Key="SubtleDividerStyle" TargetType="Rectangle">
+        <Setter Property="Fill" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Margin" Value="0,8"/>
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <!-- Vertical Divider -->
+    <Style x:Key="VerticalDividerStyle" TargetType="Rectangle">
+        <Setter Property="Fill" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="Width" Value="1"/>
+        <Setter Property="Margin" Value="8,4"/>
+    </Style>
+
+    <!-- Icon Text Style (for sidebar icons with labels) -->
+    <Style x:Key="IconLabelStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="FontSize" Value="9"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,2,0,0"/>
     </Style>
 
 </ResourceDictionary>
