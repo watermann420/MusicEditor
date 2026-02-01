@@ -274,6 +274,171 @@ public partial class MainWindow : Window
             e.Handled = true;
             MoveSelectedLinesDown();
         }
+        // Handle Ctrl+/ to toggle comment
+        else if (e.Key == Key.Oem2 && Keyboard.Modifiers == ModifierKeys.Control) // Oem2 is /
+        {
+            e.Handled = true;
+            ToggleLineComment();
+        }
+        // Handle Ctrl+Shift+D to duplicate line
+        else if (e.Key == Key.D && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            DuplicateLine();
+        }
+        // Handle Ctrl+G to goto line
+        else if (e.Key == Key.G && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            e.Handled = true;
+            ShowGotoLineDialog();
+        }
+        // Handle Ctrl+L to select current line
+        else if (e.Key == Key.L && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            e.Handled = true;
+            SelectCurrentLine();
+        }
+    }
+
+    private void ToggleLineComment()
+    {
+        var document = CodeEditor.Document;
+        var textArea = CodeEditor.TextArea;
+        var selection = textArea.Selection;
+
+        int startLine, endLine;
+        if (selection.IsEmpty)
+        {
+            startLine = endLine = textArea.Caret.Line;
+        }
+        else
+        {
+            startLine = document.GetLineByOffset(selection.SurroundingSegment.Offset).LineNumber;
+            endLine = document.GetLineByOffset(selection.SurroundingSegment.EndOffset).LineNumber;
+            // If selection ends at start of line, don't include that line
+            if (selection.SurroundingSegment.EndOffset == document.GetLineByNumber(endLine).Offset && endLine > startLine)
+                endLine--;
+        }
+
+        document.BeginUpdate();
+        try
+        {
+            // Check if all lines are already commented
+            bool allCommented = true;
+            for (int i = startLine; i <= endLine; i++)
+            {
+                var line = document.GetLineByNumber(i);
+                var lineText = document.GetText(line.Offset, line.Length).TrimStart();
+                if (!lineText.StartsWith("//"))
+                {
+                    allCommented = false;
+                    break;
+                }
+            }
+
+            // Toggle comments
+            for (int i = startLine; i <= endLine; i++)
+            {
+                var line = document.GetLineByNumber(i);
+                var lineText = document.GetText(line.Offset, line.Length);
+
+                if (allCommented)
+                {
+                    // Remove comment
+                    int commentIndex = lineText.IndexOf("//");
+                    if (commentIndex >= 0)
+                    {
+                        // Remove "// " or "//"
+                        int removeLength = (commentIndex + 2 < lineText.Length && lineText[commentIndex + 2] == ' ') ? 3 : 2;
+                        document.Remove(line.Offset + commentIndex, removeLength);
+                    }
+                }
+                else
+                {
+                    // Add comment at start of line (after leading whitespace)
+                    int insertPos = 0;
+                    while (insertPos < lineText.Length && char.IsWhiteSpace(lineText[insertPos]))
+                        insertPos++;
+                    document.Insert(line.Offset + insertPos, "// ");
+                }
+            }
+        }
+        finally
+        {
+            document.EndUpdate();
+        }
+    }
+
+    private void DuplicateLine()
+    {
+        var document = CodeEditor.Document;
+        var caret = CodeEditor.TextArea.Caret;
+        var line = document.GetLineByNumber(caret.Line);
+        var lineText = document.GetText(line.Offset, line.Length);
+
+        document.Insert(line.EndOffset, Environment.NewLine + lineText);
+        caret.Line = caret.Line + 1;
+    }
+
+    private void ShowGotoLineDialog()
+    {
+        var dialog = new System.Windows.Window
+        {
+            Title = "Go to Line",
+            Width = 280,
+            Height = 120,
+            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
+            Owner = this,
+            ResizeMode = ResizeMode.NoResize,
+            WindowStyle = WindowStyle.ToolWindow,
+            Background = new SolidColorBrush(Color.FromRgb(0x18, 0x18, 0x18))
+        };
+
+        var stack = new StackPanel { Margin = new Thickness(16) };
+        var label = new TextBlock
+        {
+            Text = $"Line number (1-{CodeEditor.Document.LineCount}):",
+            Foreground = new SolidColorBrush(Colors.White),
+            Margin = new Thickness(0, 0, 0, 8)
+        };
+        var textBox = new TextBox
+        {
+            Background = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A)),
+            Foreground = new SolidColorBrush(Colors.White),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)),
+            Padding = new Thickness(8, 4, 8, 4)
+        };
+        textBox.KeyDown += (s, e) =>
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (int.TryParse(textBox.Text, out int lineNum) && lineNum >= 1 && lineNum <= CodeEditor.Document.LineCount)
+                {
+                    var targetLine = CodeEditor.Document.GetLineByNumber(lineNum);
+                    CodeEditor.CaretOffset = targetLine.Offset;
+                    CodeEditor.ScrollToLine(lineNum);
+                    dialog.Close();
+                }
+            }
+            else if (e.Key == Key.Escape)
+            {
+                dialog.Close();
+            }
+        };
+
+        stack.Children.Add(label);
+        stack.Children.Add(textBox);
+        dialog.Content = stack;
+        dialog.Loaded += (s, e) => textBox.Focus();
+        dialog.ShowDialog();
+    }
+
+    private void SelectCurrentLine()
+    {
+        var document = CodeEditor.Document;
+        var caret = CodeEditor.TextArea.Caret;
+        var line = document.GetLineByNumber(caret.Line);
+        CodeEditor.Select(line.Offset, line.TotalLength);
     }
 
     /// <summary>

@@ -357,6 +357,15 @@ public class CompletionProvider
     {
         return new List<MusicEngineCompletionData>
         {
+            // Quick Tab snippets
+            CompletionItems.SnippetSyn,
+            CompletionItems.SnippetPat,
+            CompletionItems.SnippetNote,
+            CompletionItems.SnippetGm,
+            CompletionItems.SnippetMidi,
+            CompletionItems.SnippetBpm,
+            CompletionItems.SnippetSeq,
+            // Full snippets
             CompletionItems.SnippetBasicSetup,
             CompletionItems.SnippetPattern,
             CompletionItems.SnippetVst,

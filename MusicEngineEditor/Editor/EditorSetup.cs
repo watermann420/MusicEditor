@@ -17,6 +17,7 @@ using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Folding;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using ICSharpCode.AvalonEdit.Rendering;
 
 namespace MusicEngineEditor.Editor;
 
@@ -63,6 +64,15 @@ public static class EditorSetup
         // Setup code folding
         SetupFolding(editor);
 
+        // Setup bracket highlighting
+        SetupBracketHighlighting(editor);
+
+        // Setup selection occurrence highlighting
+        SetupSelectionHighlighting(editor);
+
+        // Setup auto-indent
+        SetupAutoIndent(editor);
+
         // Boolean toggle on double-click
         editor.TextArea.MouseDown += (s, e) =>
         {
@@ -71,6 +81,79 @@ public static class EditorSetup
                 ToggleBooleanAtMouse(editor, e);
             }
         };
+    }
+
+    /// <summary>
+    /// Setup bracket highlighting for matching brackets
+    /// </summary>
+    private static void SetupBracketHighlighting(TextEditor editor)
+    {
+        var renderer = new BracketHighlightRenderer(editor.TextArea.TextView);
+        editor.TextArea.TextView.BackgroundRenderers.Add(renderer);
+        editor.TextArea.Caret.PositionChanged += (s, e) => renderer.UpdateBrackets(editor);
+    }
+
+    /// <summary>
+    /// Setup selection occurrence highlighting
+    /// </summary>
+    private static void SetupSelectionHighlighting(TextEditor editor)
+    {
+        var renderer = new SelectionOccurrenceRenderer(editor);
+        editor.TextArea.TextView.BackgroundRenderers.Add(renderer);
+        editor.TextArea.SelectionChanged += (s, e) => renderer.UpdateSelection();
+    }
+
+    /// <summary>
+    /// Setup auto-indent after { and dedent after }
+    /// </summary>
+    private static void SetupAutoIndent(TextEditor editor)
+    {
+        editor.TextArea.TextEntering += (s, e) =>
+        {
+            if (e.Text == "}")
+            {
+                // Check if we should dedent
+                var line = editor.Document.GetLineByOffset(editor.CaretOffset);
+                var lineText = editor.Document.GetText(line.Offset, editor.CaretOffset - line.Offset);
+                if (string.IsNullOrWhiteSpace(lineText) && lineText.Length >= 4)
+                {
+                    // Remove one level of indentation
+                    editor.Document.Remove(line.Offset, Math.Min(4, lineText.Length));
+                }
+            }
+        };
+
+        editor.TextArea.TextEntered += (s, e) =>
+        {
+            if (e.Text == "\n" || e.Text == "\r\n")
+            {
+                var line = editor.Document.GetLineByNumber(editor.TextArea.Caret.Line - 1);
+                if (line.LineNumber > 0)
+                {
+                    var prevLineText = editor.Document.GetText(line.Offset, line.Length).TrimEnd();
+                    if (prevLineText.EndsWith("{"))
+                    {
+                        // Get current indentation
+                        var indent = GetIndentation(editor.Document.GetText(line.Offset, line.Length));
+                        // Add one more level
+                        editor.Document.Insert(editor.CaretOffset, indent + "    ");
+                        editor.CaretOffset = editor.CaretOffset + indent.Length + 4;
+                    }
+                }
+            }
+        };
+    }
+
+    private static string GetIndentation(string line)
+    {
+        int count = 0;
+        foreach (char c in line)
+        {
+            if (c == ' ') count++;
+            else if (c == '\t') count += 4;
+            else break;
+        }
+        return new string(' ', count);
     }
 
     /// <summary>
@@ -535,5 +618,175 @@ public static class EditorSetup
         while (end < text.Length && char.IsLetter(text[end])) end++;
         if (end <= start) return null;
         return new TextSegment { StartOffset = start, Length = end - start };
+    }
+}
+
+/// <summary>
+/// Highlights matching brackets when cursor is next to one
+/// </summary>
+public class BracketHighlightRenderer : IBackgroundRenderer
+{
+    private static readonly Color BracketHighlightColor = Color.FromArgb(60, 0, 217, 255); // #00D9FF with alpha
+    private readonly TextView _textView;
+    private int _openBracketOffset = -1;
+    private int _closeBracketOffset = -1;
+
+    private static readonly Dictionary<char, char> BracketPairs = new()
+    {
+        { '(', ')' }, { ')', '(' },
+        { '{', '}' }, { '}', '{' },
+        { '[', ']' }, { ']', '[' }
+    };
+
+    public BracketHighlightRenderer(TextView textView)
+    {
+        _textView = textView;
+    }
+
+    public KnownLayer Layer => KnownLayer.Selection;
+
+    public void UpdateBrackets(TextEditor editor)
+    {
+        _openBracketOffset = -1;
+        _closeBracketOffset = -1;
+
+        var offset = editor.CaretOffset;
+        var document = editor.Document;
+        if (document == null || offset < 0 || offset > document.TextLength) return;
+
+        // Check character at cursor and before cursor
+        char? charAtCursor = offset < document.TextLength ? document.GetCharAt(offset) : null;
+        char? charBefore = offset > 0 ? document.GetCharAt(offset - 1) : null;
+
+        int bracketOffset = -1;
+        char bracket = '\0';
+
+        if (charAtCursor.HasValue && BracketPairs.ContainsKey(charAtCursor.Value))
+        {
+            bracketOffset = offset;
+            bracket = charAtCursor.Value;
+        }
+        else if (charBefore.HasValue && BracketPairs.ContainsKey(charBefore.Value))
+        {
+            bracketOffset = offset - 1;
+            bracket = charBefore.Value;
+        }
+
+        if (bracketOffset >= 0)
+        {
+            var matchingOffset = FindMatchingBracket(document, bracketOffset, bracket);
+            if (matchingOffset >= 0)
+            {
+                _openBracketOffset = bracketOffset;
+                _closeBracketOffset = matchingOffset;
+            }
+        }
+
+        _textView.InvalidateLayer(Layer);
+    }
+
+    private int FindMatchingBracket(IDocument document, int offset, char bracket)
+    {
+        char matchingBracket = BracketPairs[bracket];
+        bool isOpening = bracket == '(' || bracket == '{' || bracket == '[';
+        int direction = isOpening ? 1 : -1;
+        int depth = 1;
+        int pos = offset + direction;
+
+        while (pos >= 0 && pos < document.TextLength)
+        {
+            char c = document.GetCharAt(pos);
+            if (c == bracket) depth++;
+            else if (c == matchingBracket) depth--;
+
+            if (depth == 0) return pos;
+            pos += direction;
+        }
+
+        return -1;
+    }
+
+    public void Draw(TextView textView, DrawingContext drawingContext)
+    {
+        if (_openBracketOffset < 0 || _closeBracketOffset < 0) return;
+
+        var builder = new BackgroundGeometryBuilder { CornerRadius = 2 };
+
+        foreach (var offset in new[] { _openBracketOffset, _closeBracketOffset })
+        {
+            var segment = new TextSegment { StartOffset = offset, Length = 1 };
+            builder.AddSegment(textView, segment);
+        }
+
+        var geometry = builder.CreateGeometry();
+        if (geometry != null)
+        {
+            drawingContext.DrawGeometry(new SolidColorBrush(BracketHighlightColor), null, geometry);
+        }
+    }
+}
+
+/// <summary>
+/// Highlights all occurrences of selected text
+/// </summary>
+public class SelectionOccurrenceRenderer : IBackgroundRenderer
+{
+    private static readonly Color OccurrenceHighlightColor = Color.FromArgb(40, 0, 217, 255); // Subtle cyan
+    private readonly TextEditor _editor;
+    private readonly List<TextSegment> _occurrences = new();
+
+    public SelectionOccurrenceRenderer(TextEditor editor)
+    {
+        _editor = editor;
+    }
+
+    public KnownLayer Layer => KnownLayer.Selection;
+
+    public void UpdateSelection()
+    {
+        _occurrences.Clear();
+
+        var selection = _editor.TextArea.Selection;
+        if (selection.IsEmpty)
+        {
+            _editor.TextArea.TextView.InvalidateLayer(Layer);
+            return;
+        }
+
+        var selectedText = _editor.SelectedText;
+        if (string.IsNullOrWhiteSpace(selectedText) || selectedText.Length < 2)
+        {
+            _editor.TextArea.TextView.InvalidateLayer(Layer);
+            return;
+        }
+
+        // Find all occurrences
+        var text = _editor.Text;
+        int index = 0;
+        while ((index = text.IndexOf(selectedText, index, StringComparison.Ordinal)) >= 0)
+        {
+            _occurrences.Add(new TextSegment { StartOffset = index, Length = selectedText.Length });
+            index += selectedText.Length;
+        }
+
+        _editor.TextArea.TextView.InvalidateLayer(Layer);
+    }
+
+    public void Draw(TextView textView, DrawingContext drawingContext)
+    {
+        if (_occurrences.Count <= 1) return; // Don't highlight if only the selection itself
+
+        var builder = new BackgroundGeometryBuilder { CornerRadius = 2 };
+
+        foreach (var segment in _occurrences)
+        {
+            builder.AddSegment(textView, segment);
+        }
+
+        var geometry = builder.CreateGeometry();
+        if (geometry != null)
+        {
+            drawingContext.DrawGeometry(new SolidColorBrush(OccurrenceHighlightColor), null, geometry);
+        }
     }
 }

@@ -891,4 +891,76 @@ Sequencer.Start();
         0);
 
     #endregion
+
+    #region Quick Snippets (Tab-triggered)
+
+    /// <summary>syn -> var synth = CreateSynth();</summary>
+    public static MusicEngineCompletionData SnippetSyn => new(
+        "syn",
+        CompletionItemType.Snippet,
+        "Quick Synth",
+        "Create a synth: var synth = CreateSynth();",
+        "var synth = CreateSynth();",
+        0);
+
+    /// <summary>pat -> Create pattern template</summary>
+    public static MusicEngineCompletionData SnippetPat => new(
+        "pat",
+        CompletionItemType.Snippet,
+        "Quick Pattern",
+        "Create a pattern with notes",
+        @"var pattern = CreatePattern(synth);
+pattern.Note(60, 0, 0.5, 100);
+pattern.Loop = true;
+pattern.Play();",
+        0);
+
+    /// <summary>note -> pattern.Note()</summary>
+    public static MusicEngineCompletionData SnippetNote => new(
+        "note",
+        CompletionItemType.Snippet,
+        "Quick Note",
+        "Add a note to pattern: pattern.Note(pitch, beat, duration, velocity)",
+        "pattern.Note(60, 0, 0.5, 100);",
+        -2);
+
+    /// <summary>gm -> var gm = CreateGeneralMidi();</summary>
+    public static MusicEngineCompletionData SnippetGm => new(
+        "gm",
+        CompletionItemType.Snippet,
+        "Quick General MIDI",
+        "Create General MIDI synth",
+        "var gm = CreateGeneralMidi();",
+        0);
+
+    /// <summary>midi -> midi.device(0).to()</summary>
+    public static MusicEngineCompletionData SnippetMidi => new(
+        "midi",
+        CompletionItemType.Snippet,
+        "Quick MIDI Route",
+        "Route MIDI device to synth",
+        "midi.device(0).to(synth);",
+        -7);
+
+    /// <summary>bpm -> SetBpm(120)</summary>
+    public static MusicEngineCompletionData SnippetBpm => new(
+        "bpm",
+        CompletionItemType.Snippet,
+        "Set BPM",
+        "Set sequencer BPM",
+        "Sequencer.Bpm = 120;",
+        -4);
+
+    /// <summary>seq -> Sequencer pattern</summary>
+    public static MusicEngineCompletionData SnippetSeq => new(
+        "seq",
+        CompletionItemType.Snippet,
+        "Quick Seq Pattern",
+        "Create step sequencer pattern",
+        @"pattern.Seq(""10101010"", opt => {
+    opt.pitch(60).velocity(100).step(0.25);
+});",
+        0);
+
+    #endregion
 }
