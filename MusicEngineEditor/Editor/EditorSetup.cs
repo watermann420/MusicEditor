@@ -51,11 +51,11 @@ public static class EditorSetup
         editor.ShowLineNumbers = true;
         editor.LineNumbersForeground = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80));
 
-        // Current line highlight
+        // Current line highlight - subtle but visible (#1E1E1E)
         editor.TextArea.TextView.CurrentLineBackground = new SolidColorBrush(
-            Color.FromArgb(30, 255, 255, 255));
+            Color.FromRgb(0x1E, 0x1E, 0x1E));
         editor.TextArea.TextView.CurrentLineBorder = new Pen(
-            new SolidColorBrush(Color.FromArgb(50, 255, 255, 255)), 1);
+            new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A)), 1);
 
         // Load custom syntax highlighting
         LoadSyntaxHighlighting(editor);

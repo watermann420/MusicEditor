@@ -262,6 +262,266 @@ public partial class MainWindow : Window
             e.Handled = true;
             ShowCommandPalette();
         }
+        // Handle Alt+Up to move line(s) up
+        else if (e.Key == Key.Up && Keyboard.Modifiers == ModifierKeys.Alt)
+        {
+            e.Handled = true;
+            MoveSelectedLinesUp();
+        }
+        // Handle Alt+Down to move line(s) down
+        else if (e.Key == Key.Down && Keyboard.Modifiers == ModifierKeys.Alt)
+        {
+            e.Handled = true;
+            MoveSelectedLinesDown();
+        }
+    }
+
+    /// <summary>
+    /// Window-level keyboard handler for global shortcuts like Panic (Alt+Space).
+    /// This works regardless of which control has focus - critical for live performance.
+    /// </summary>
+    private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        // Handle Alt+Space for Panic (All Notes Off) - critical for live performance
+        // This silences all audio immediately without stopping the script
+        if (e.Key == Key.Space && Keyboard.Modifiers == ModifierKeys.Alt)
+        {
+            e.Handled = true;
+            _engineService.AllNotesOff();
+            StatusText.Text = "Panic! All Notes Off";
+            OutputLine("Panic! All Notes Off (Alt+Space)");
+
+            // Reset status text after a brief delay
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+            timer.Tick += (s, args) =>
+            {
+                timer.Stop();
+                if (StatusText.Text == "Panic! All Notes Off")
+                {
+                    SetStatusText(_isRunning ? "Running" : "Ready");
+                }
+            };
+            timer.Start();
+        }
+    }
+
+    private void MoveSelectedLinesUp()
+    {
+        var document = CodeEditor.Document;
+        var textArea = CodeEditor.TextArea;
+        var selection = textArea.Selection;
+
+        // Determine the range of lines to move
+        int startLine, endLine;
+        if (selection.IsEmpty)
+        {
+            // No selection - move current line
+            startLine = endLine = textArea.Caret.Line;
+        }
+        else
+        {
+            // Selection exists - get the line range
+            var startOffset = selection.SurroundingSegment.Offset;
+            var endOffset = selection.SurroundingSegment.EndOffset;
+            startLine = document.GetLineByOffset(startOffset).LineNumber;
+            endLine = document.GetLineByOffset(endOffset).LineNumber;
+
+            // If selection ends at start of a line, don't include that line
+            var endLineObj = document.GetLineByOffset(endOffset);
+            if (endOffset == endLineObj.Offset && endLine > startLine)
+            {
+                endLine--;
+            }
+        }
+
+        // Can't move up if already at first line
+        if (startLine <= 1)
+            return;
+
+        // Get the line above (the one we'll swap with)
+        var lineAbove = document.GetLineByNumber(startLine - 1);
+        var lineAboveText = document.GetText(lineAbove.Offset, lineAbove.Length);
+
+        // Get the lines to move
+        var firstLine = document.GetLineByNumber(startLine);
+        var lastLine = document.GetLineByNumber(endLine);
+        var movingLinesStart = firstLine.Offset;
+        var movingLinesEnd = lastLine.EndOffset;
+        var movingLinesText = document.GetText(movingLinesStart, movingLinesEnd - movingLinesStart);
+
+        // Calculate cursor/selection positions relative to the moving text
+        var caretOffsetInMovingText = textArea.Caret.Offset - movingLinesStart;
+        var selectionStartOffset = selection.IsEmpty ? -1 : selection.SurroundingSegment.Offset - movingLinesStart;
+        var selectionLength = selection.IsEmpty ? 0 : selection.SurroundingSegment.Length;
+
+        // Perform the swap using a single document update
+        document.BeginUpdate();
+        try
+        {
+            // Remove the line above and moving lines, then insert in swapped order
+            var fullStart = lineAbove.Offset;
+            var fullEnd = lastLine.EndOffset;
+            var fullLength = fullEnd - fullStart;
+
+            // Build the new text: moving lines first, then line above
+            string newText;
+            if (lastLine.DelimiterLength > 0)
+            {
+                // Moving lines have a line ending
+                newText = movingLinesText + lineAboveText;
+            }
+            else
+            {
+                // Last line has no line ending (end of document) - add one after moving text
+                var lineEnding = document.GetText(lineAbove.EndOffset, lineAbove.DelimiterLength);
+                if (string.IsNullOrEmpty(lineEnding))
+                    lineEnding = "\n";
+                newText = movingLinesText + lineEnding + lineAboveText;
+            }
+
+            document.Replace(fullStart, fullLength, newText);
+
+            // Restore caret position (moved up by the length of the line above + its delimiter)
+            var newCaretOffset = fullStart + caretOffsetInMovingText;
+            textArea.Caret.Offset = Math.Max(0, Math.Min(newCaretOffset, document.TextLength));
+
+            // Restore selection if there was one
+            if (!selection.IsEmpty && selectionStartOffset >= 0)
+            {
+                var newSelectionStart = fullStart + selectionStartOffset;
+                textArea.Selection = ICSharpCode.AvalonEdit.Editing.Selection.Create(
+                    textArea,
+                    newSelectionStart,
+                    newSelectionStart + selectionLength);
+            }
+        }
+        finally
+        {
+            document.EndUpdate();
+        }
+    }
+
+    private void MoveSelectedLinesDown()
+    {
+        var document = CodeEditor.Document;
+        var textArea = CodeEditor.TextArea;
+        var selection = textArea.Selection;
+
+        // Determine the range of lines to move
+        int startLine, endLine;
+        if (selection.IsEmpty)
+        {
+            // No selection - move current line
+            startLine = endLine = textArea.Caret.Line;
+        }
+        else
+        {
+            // Selection exists - get the line range
+            var startOffset = selection.SurroundingSegment.Offset;
+            var endOffset = selection.SurroundingSegment.EndOffset;
+            startLine = document.GetLineByOffset(startOffset).LineNumber;
+            endLine = document.GetLineByOffset(endOffset).LineNumber;
+
+            // If selection ends at start of a line, don't include that line
+            var endLineObj = document.GetLineByOffset(endOffset);
+            if (endOffset == endLineObj.Offset && endLine > startLine)
+            {
+                endLine--;
+            }
+        }
+
+        // Can't move down if already at last line
+        if (endLine >= document.LineCount)
+            return;
+
+        // Get the line below (the one we'll swap with)
+        var lineBelow = document.GetLineByNumber(endLine + 1);
+        var lineBelowText = document.GetText(lineBelow.Offset, lineBelow.Length);
+
+        // Get the lines to move
+        var firstLine = document.GetLineByNumber(startLine);
+        var lastLine = document.GetLineByNumber(endLine);
+        var movingLinesStart = firstLine.Offset;
+        var movingLinesEnd = lastLine.EndOffset;
+        var movingLinesText = document.GetText(movingLinesStart, movingLinesEnd - movingLinesStart);
+
+        // Calculate cursor/selection positions relative to the moving text
+        var caretOffsetInMovingText = textArea.Caret.Offset - movingLinesStart;
+        var selectionStartOffset = selection.IsEmpty ? -1 : selection.SurroundingSegment.Offset - movingLinesStart;
+        var selectionLength = selection.IsEmpty ? 0 : selection.SurroundingSegment.Length;
+
+        // Calculate how far down the text will move
+        var lineBelowLength = lineBelow.Length + lineBelow.DelimiterLength;
+
+        // Perform the swap using a single document update
+        document.BeginUpdate();
+        try
+        {
+            // Remove moving lines and line below, then insert in swapped order
+            var fullStart = firstLine.Offset;
+            var fullEnd = lineBelow.EndOffset;
+            var fullLength = fullEnd - fullStart;
+
+            // Build the new text: line below first, then moving lines
+            string newText;
+            if (lineBelow.DelimiterLength > 0)
+            {
+                // Line below has a line ending - use it after line below text
+                var lineEnding = document.GetText(lastLine.EndOffset, lastLine.DelimiterLength);
+                if (string.IsNullOrEmpty(lineEnding))
+                    lineEnding = "\n";
+                newText = lineBelowText + lineEnding + movingLinesText;
+            }
+            else
+            {
+                // Line below is last line (no line ending) - add ending after line below, remove from moving text
+                var lineEnding = document.GetText(lastLine.EndOffset, lastLine.DelimiterLength);
+                if (string.IsNullOrEmpty(lineEnding))
+                    lineEnding = "\n";
+                // Remove trailing line ending from moving text if present
+                var trimmedMovingText = movingLinesText;
+                if (trimmedMovingText.EndsWith("\r\n"))
+                    trimmedMovingText = trimmedMovingText.Substring(0, trimmedMovingText.Length - 2);
+                else if (trimmedMovingText.EndsWith("\n") || trimmedMovingText.EndsWith("\r"))
+                    trimmedMovingText = trimmedMovingText.Substring(0, trimmedMovingText.Length - 1);
+                newText = lineBelowText + lineEnding + trimmedMovingText;
+            }
+
+            document.Replace(fullStart, fullLength, newText);
+
+            // Restore caret position (moved down by the length of the line below)
+            var newCaretOffset = fullStart + lineBelowLength + caretOffsetInMovingText;
+            // Adjust if we're at end of document
+            if (lineBelow.DelimiterLength == 0)
+            {
+                // Line below had no delimiter, we added one
+                newCaretOffset = fullStart + lineBelow.Length + 1 + caretOffsetInMovingText;
+                // Account for removed delimiter from moving text
+                if (movingLinesText.EndsWith("\r\n"))
+                    newCaretOffset = Math.Min(newCaretOffset, document.TextLength);
+            }
+            textArea.Caret.Offset = Math.Max(0, Math.Min(newCaretOffset, document.TextLength));
+
+            // Restore selection if there was one
+            if (!selection.IsEmpty && selectionStartOffset >= 0)
+            {
+                var newSelectionStart = fullStart + lineBelowLength + selectionStartOffset;
+                if (lineBelow.DelimiterLength == 0)
+                {
+                    newSelectionStart = fullStart + lineBelow.Length + 1 + selectionStartOffset;
+                }
+                newSelectionStart = Math.Max(0, Math.Min(newSelectionStart, document.TextLength));
+                var newSelectionEnd = Math.Min(newSelectionStart + selectionLength, document.TextLength);
+                textArea.Selection = ICSharpCode.AvalonEdit.Editing.Selection.Create(
+                    textArea,
+                    newSelectionStart,
+                    newSelectionEnd);
+            }
+        }
+        finally
+        {
+            document.EndUpdate();
+        }
     }
 
     #region Context Menu
@@ -496,7 +756,7 @@ public partial class MainWindow : Window
             // Initialize Audio Reactive Lighting
             InitializeAudioReactiveLighting();
 
-            StatusText.Text = "Ready";
+            SetStatusText("Ready");
             OutputLine("Engine initialized successfully!");
             OutputLine("Press Ctrl+Enter to run the script, Escape to stop.");
             OutputLine("");
@@ -1155,7 +1415,7 @@ public partial class MainWindow : Window
 
         if (result.Success)
         {
-            StatusText.Text = $"Running ({stopwatch.ElapsedMilliseconds}ms)";
+            SetStatusText($"Running ({stopwatch.ElapsedMilliseconds}ms)");
             OutputLine($"Script executed successfully ({stopwatch.ElapsedMilliseconds}ms)");
 
             if (!string.IsNullOrEmpty(result.Output))
@@ -1170,6 +1430,9 @@ public partial class MainWindow : Window
 
                 // Start audio reactive lighting
                 StartAudioReactiveLighting();
+
+                // Start playback time tracking
+                StartPlaybackTimeTracking();
 
                 // Parse code to extract instruments and start animation
                 ExtractInstrumentsFromCode(code);
@@ -1311,6 +1574,9 @@ public partial class MainWindow : Window
         // Stop audio reactive lighting
         StopAudioReactiveLighting();
 
+        // Stop playback time tracking
+        StopPlaybackTimeTracking();
+
         // Notify visualization system that playback stopped
         _visualization?.OnPlaybackStopped();
 
@@ -1318,7 +1584,7 @@ public partial class MainWindow : Window
         UpdateRunStopButton();
 
         ClearActiveInstruments();
-        StatusText.Text = "Stopped";
+        SetStatusText("Stopped");
         OutputLine("Stopped");
     }
 
@@ -2358,6 +2624,251 @@ public partial class MainWindow : Window
 
     #endregion
 
+    #region Toolbar Handlers
+
+    // Undo/Redo
+    private void Undo_Click(object sender, RoutedEventArgs e)
+    {
+        if (CodeEditor.CanUndo)
+            CodeEditor.Undo();
+    }
+
+    private void Redo_Click(object sender, RoutedEventArgs e)
+    {
+        if (CodeEditor.CanRedo)
+            CodeEditor.Redo();
+    }
+
+    // Transport Controls
+    private void Transport_Stop_Click(object sender, RoutedEventArgs e)
+    {
+        StopExecution();
+    }
+
+    #endregion
+
+    #region Project Browser Tabs
+
+    private enum ProjectBrowserTab { Files, Presets, Samples }
+    private ProjectBrowserTab _activeBrowserTab = ProjectBrowserTab.Files;
+
+    private void FilesTab_Click(object sender, MouseButtonEventArgs e)
+    {
+        SetProjectBrowserTab(ProjectBrowserTab.Files);
+    }
+
+    private void PresetsTab_Click(object sender, MouseButtonEventArgs e)
+    {
+        SetProjectBrowserTab(ProjectBrowserTab.Presets);
+    }
+
+    private void SamplesTab_Click(object sender, MouseButtonEventArgs e)
+    {
+        SetProjectBrowserTab(ProjectBrowserTab.Samples);
+    }
+
+    private void SetProjectBrowserTab(ProjectBrowserTab tab)
+    {
+        _activeBrowserTab = tab;
+
+        // Update tab visuals
+        SetBrowserTabActive(FilesTabHeader, tab == ProjectBrowserTab.Files);
+        SetBrowserTabActive(PresetsTabHeader, tab == ProjectBrowserTab.Presets);
+        SetBrowserTabActive(SamplesTabHeader, tab == ProjectBrowserTab.Samples);
+
+        // Update panel visibility
+        FilesPanel.Visibility = tab == ProjectBrowserTab.Files ? Visibility.Visible : Visibility.Collapsed;
+        PresetsPanel.Visibility = tab == ProjectBrowserTab.Presets ? Visibility.Visible : Visibility.Collapsed;
+        SamplesPanel.Visibility = tab == ProjectBrowserTab.Samples ? Visibility.Visible : Visibility.Collapsed;
+
+        // Load content if needed
+        if (tab == ProjectBrowserTab.Presets && PresetsTree.Items.Count == 0)
+            LoadPresetsTree();
+        else if (tab == ProjectBrowserTab.Samples && SamplesTree.Items.Count == 0)
+            LoadSamplesTree();
+    }
+
+    private void SetBrowserTabActive(Border header, bool active)
+    {
+        header.BorderBrush = active ? (Brush)FindResource("AccentBrush") : Brushes.Transparent;
+        var stack = header.Child as StackPanel;
+        if (stack != null)
+        {
+            foreach (var child in stack.Children)
+            {
+                if (child is System.Windows.Shapes.Path path)
+                    path.Stroke = active ? (Brush)FindResource("AccentBrush") : (Brush)FindResource("SecondaryForegroundBrush");
+                else if (child is TextBlock text)
+                    text.Foreground = active ? (Brush)FindResource("BrightForegroundBrush") : (Brush)FindResource("SecondaryForegroundBrush");
+            }
+        }
+    }
+
+    private void LoadPresetsTree()
+    {
+        PresetsTree.Items.Clear();
+        var root = new TreeViewItem { Header = "Presets", IsExpanded = true };
+
+        var synths = new TreeViewItem { Header = "Synths", IsExpanded = true };
+        synths.Items.Add(new TreeViewItem { Header = "Bass Synth.preset" });
+        synths.Items.Add(new TreeViewItem { Header = "Lead Pad.preset" });
+        synths.Items.Add(new TreeViewItem { Header = "Pluck.preset" });
+        root.Items.Add(synths);
+
+        var effects = new TreeViewItem { Header = "Effects", IsExpanded = true };
+        effects.Items.Add(new TreeViewItem { Header = "Reverb Hall.preset" });
+        effects.Items.Add(new TreeViewItem { Header = "Delay Ping Pong.preset" });
+        root.Items.Add(effects);
+
+        PresetsTree.Items.Add(root);
+    }
+
+    private void LoadSamplesTree()
+    {
+        SamplesTree.Items.Clear();
+        var root = new TreeViewItem { Header = "Samples", IsExpanded = true };
+
+        var drums = new TreeViewItem { Header = "Drums", IsExpanded = true };
+        drums.Items.Add(new TreeViewItem { Header = "kick_808.wav" });
+        drums.Items.Add(new TreeViewItem { Header = "snare_punchy.wav" });
+        drums.Items.Add(new TreeViewItem { Header = "hihat_closed.wav" });
+        root.Items.Add(drums);
+
+        var loops = new TreeViewItem { Header = "Loops", IsExpanded = true };
+        loops.Items.Add(new TreeViewItem { Header = "bass_loop_120bpm.wav" });
+        loops.Items.Add(new TreeViewItem { Header = "pad_ambient.wav" });
+        root.Items.Add(loops);
+
+        SamplesTree.Items.Add(root);
+    }
+
+    private void PresetsTree_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (PresetsTree.SelectedItem is TreeViewItem item && item.Items.Count == 0)
+        {
+            OutputLine($"[Preset] Loading: {item.Header}");
+        }
+    }
+
+    private void SamplesTree_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (SamplesTree.SelectedItem is TreeViewItem item && item.Items.Count == 0)
+        {
+            OutputLine($"[Sample] Loading: {item.Header}");
+        }
+    }
+
+    private void RefreshProjectTree_Click(object sender, RoutedEventArgs e)
+    {
+        UpdateProjectExplorer();
+        OutputLine("[Project] Refreshed");
+    }
+
+    #endregion
+
+    #region Output Filters
+
+    private bool _filterInfo = true;
+    private bool _filterWarning = true;
+    private bool _filterError = true;
+    private string _outputSearchText = "";
+
+    private void FilterInfo_Click(object sender, RoutedEventArgs e)
+    {
+        _filterInfo = FilterInfoButton.IsChecked == true;
+        ApplyOutputFilters();
+    }
+
+    private void FilterWarning_Click(object sender, RoutedEventArgs e)
+    {
+        _filterWarning = FilterWarningButton.IsChecked == true;
+        ApplyOutputFilters();
+    }
+
+    private void FilterError_Click(object sender, RoutedEventArgs e)
+    {
+        _filterError = FilterErrorButton.IsChecked == true;
+        ApplyOutputFilters();
+    }
+
+    private void OutputSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        _outputSearchText = OutputSearchBox.Text;
+        ApplyOutputFilters();
+    }
+
+    private void ApplyOutputFilters()
+    {
+        // Note: Full filter implementation would require storing messages in a list
+        // and re-rendering. For now, this logs the filter state.
+        var filters = new List<string>();
+        if (_filterInfo) filters.Add("Info");
+        if (_filterWarning) filters.Add("Warning");
+        if (_filterError) filters.Add("Error");
+
+        // Apply search filter visual feedback
+        if (!string.IsNullOrEmpty(_outputSearchText))
+        {
+            StatusText.Text = $"Filtering: {_outputSearchText}";
+        }
+    }
+
+    #endregion
+
+    #region Playback Time and MIDI Activity
+
+    private DateTime _playbackStartTime;
+    private DispatcherTimer? _playbackTimeTimer;
+
+    private void StartPlaybackTimeTracking()
+    {
+        _playbackStartTime = DateTime.Now;
+        _playbackTimeTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(50)
+        };
+        _playbackTimeTimer.Tick += PlaybackTimeTimer_Tick;
+        _playbackTimeTimer.Start();
+    }
+
+    private void StopPlaybackTimeTracking()
+    {
+        _playbackTimeTimer?.Stop();
+        _playbackTimeTimer = null;
+    }
+
+    private void PlaybackTimeTimer_Tick(object? sender, EventArgs e)
+    {
+        var elapsed = DateTime.Now - _playbackStartTime;
+        PlaybackTimeDisplay.Text = $"{elapsed.Minutes:D2}:{elapsed.Seconds:D2}.{elapsed.Milliseconds:D3}";
+    }
+
+    private DateTime _lastMidiActivity = DateTime.MinValue;
+
+    public void FlashMidiActivity()
+    {
+        _lastMidiActivity = DateTime.Now;
+        Dispatcher.BeginInvoke(() =>
+        {
+            MidiActivityIndicator.Background = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF));
+            MidiActivityGlow.BlurRadius = 6;
+            MidiActivityGlow.Opacity = 0.8;
+
+            // Reset after 100ms
+            Task.Delay(100).ContinueWith(_ =>
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    MidiActivityIndicator.Background = new SolidColorBrush(Color.FromRgb(0x40, 0x40, 0x40));
+                    MidiActivityGlow.BlurRadius = 0;
+                    MidiActivityGlow.Opacity = 0;
+                });
+            });
+        });
+    }
+
+    #endregion
+
     #region Custom Title Bar
 
     private bool _isMaximized = true; // Start maximized
@@ -2468,6 +2979,32 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Sets the status text with appropriate color based on state.
+    /// Running = green (#00CC66), Stopped = gray (#808080), Ready = default
+    /// </summary>
+    private void SetStatusText(string text)
+    {
+        StatusText.Text = text;
+
+        if (text == "Running" || text.StartsWith("Running ("))
+        {
+            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66)); // Green
+        }
+        else if (text == "Stopped")
+        {
+            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)); // Gray
+        }
+        else if (text == "Ready")
+        {
+            StatusText.Foreground = (Brush)FindResource("ForegroundBrush"); // Default
+        }
+        else
+        {
+            StatusText.Foreground = (Brush)FindResource("ForegroundBrush"); // Default for other messages
+        }
+    }
+
+    /// <summary>
     /// Determines the log level from the text and returns the appropriate brush.
     /// </summary>
     private SolidColorBrush GetLogLevelBrush(string text)
@@ -2512,6 +3049,7 @@ public partial class MainWindow : Window
     private void AppendColoredOutput(string text)
     {
         var brush = GetLogLevelBrush(text);
+        var timestamp = DateTime.Now.ToString("[HH:mm:ss] ");
 
         var paragraph = new Paragraph
         {
@@ -2519,12 +3057,20 @@ public partial class MainWindow : Window
             LineHeight = 1
         };
 
+        // Add timestamp in gray
+        var timestampRun = new Run(timestamp)
+        {
+            Foreground = new SolidColorBrush(Color.FromRgb(0x60, 0x60, 0x60)) // Dark gray timestamp
+        };
+        paragraph.Inlines.Add(timestampRun);
+
+        // Add main message with appropriate color
         var run = new Run(text)
         {
             Foreground = brush
         };
-
         paragraph.Inlines.Add(run);
+
         OutputBox.Document.Blocks.Add(paragraph);
         OutputBox.ScrollToEnd();
     }
@@ -3154,9 +3700,27 @@ Print("");
             _engineService.AllNotesOff();
             _isRunning = false;
             _visualization?.OnPlaybackStopped();
-            StatusText.Text = "Stopped";
+            SetStatusText("Stopped");
             OutputLine("Stopped");
         }, "Escape", "Stop playback", ["pause", "halt"]);
+        service.RegisterCommand("Panic (All Notes Off)", "Transport", () =>
+        {
+            _engineService.AllNotesOff();
+            StatusText.Text = "Panic! All Notes Off";
+            OutputLine("Panic! All Notes Off");
+
+            // Reset status text after a brief delay
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+            timer.Tick += (s, args) =>
+            {
+                timer.Stop();
+                if (StatusText.Text == "Panic! All Notes Off")
+                {
+                    SetStatusText(_isRunning ? "Running" : "Ready");
+                }
+            };
+            timer.Start();
+        }, "Alt+Space", "Emergency stop - silence all audio without stopping the script", ["panic", "silence", "mute", "emergency", "all notes off"]);
 
         // View commands
         service.RegisterCommand("Toggle Output", "View", () =>
