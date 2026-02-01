@@ -56,3 +56,93 @@ Set environment variables before starting the editor to trim unused systems (han
 - `Services/AudioReactiveService.cs` - Audio processing for UI
 - `MainWindow.xaml` - AudioVisualizerCanvas background layer
 - `MainWindow.xaml.cs` - UpdateAudioVisualizerBackground()
+
+## Synthesizer Editor
+
+Visual synth editing panel with support for 12 synthesizer types:
+
+### Synth Types
+| Type | Description |
+|------|-------------|
+| Simple | Basic waveform, filter, ADSR |
+| Poly | Polyphonic with voice management |
+| FM | Frequency modulation synthesis |
+| Supersaw | Unison detuned oscillators |
+| Advanced | Multi-oscillator with per-osc controls |
+| Granular | Grain-based synthesis |
+| Sample | Sample playback with zones |
+| Speech | Vowel/formant synthesis |
+| Physical | Physical modeling (string, wind, bell) |
+| Noise | White/pink/brown noise generation |
+| Wavetable | Wavetable position morphing |
+| Vector | X/Y vector synthesis |
+
+### Opening the Synth Editor
+- **F4**: Toggle synth editor panel
+- **View menu**: Synth Editor (checkable)
+- **Right sidebar**: Synth icon button
+- **Right panel**: SYNTH tab
+- **Automatic**: Opens when `CreateSynth()` is called in a script
+
+### Synth Dropdown
+The synth editor header includes a dropdown to select from all synths created in the current script session. This allows switching between multiple synths for editing.
+
+### Key Files
+- `Controls/SynthEditorPanel.xaml` - Main synth editor container
+- `Controls/SynthEditorPanel.xaml.cs` - Synth registry and selection logic
+- `Controls/Synths/*.xaml` - Individual synth type controls
+
+## DAW Core Features
+
+### Effects Editor (F5)
+Visual effect editing panel with support for 8 effect types across 6 categories:
+
+| Category | Effects |
+|----------|---------|
+| Dynamics | Compressor, Limiter, Gate, Expander |
+| Time-Based | Reverb, Delay, Echo |
+| Modulation | Chorus, Flanger, Phaser |
+| Distortion | Overdrive, Distortion, Fuzz, Bitcrusher |
+| Filters | Low Pass, High Pass, Band Pass, Parametric EQ |
+| Special | Vocoder, Pitch Shifter, Stereo Widener |
+
+Features:
+- Category and effect type dropdowns
+- Wet/Dry mix slider
+- Bypass toggle
+- Effect chain list
+
+### Pattern Editor / Piano Roll (F6)
+MIDI pattern editing with full piano roll interface:
+- Piano keyboard (C0-B8)
+- Grid-based note editing
+- Velocity-colored notes (blue=soft, red=loud)
+- Grid resolution: 1/4, 1/8, 1/16, 1/32
+- Quantize and snap tools
+- Click to add, right-click to delete notes
+
+### Mixer Panel (F7)
+Professional mixing console:
+- Channel strips with volume fader (-60 to +6 dB)
+- Stereo VU meters with peak hold
+- Pan control (-100L to +100R)
+- Solo/Mute buttons
+- 4 effect sends (A/B/C/D)
+- Master channel with LUFS metering
+
+### Arrangement View (F8)
+Timeline-based arrangement editing:
+- Track headers with mute/solo
+- MIDI and audio clip visualization
+- Timeline ruler with bar/beat display
+- Playhead and loop region
+- Drag to move/resize clips
+
+### Keyboard Shortcuts
+| Key | Action |
+|-----|--------|
+| F4 | Synth Editor |
+| F5 | Effects Editor |
+| F6 | Pattern Editor |
+| F7 | Mixer |
+| F8 | Arrangement |

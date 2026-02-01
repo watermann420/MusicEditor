@@ -44,15 +44,21 @@ public partial class MainWindow : Window
     private bool _hasUnsavedChanges;
     private bool _outputVisible = true;
     private bool _isRunning = false;
+    private bool _isLiveMode = false;
     private bool _showingOutput = true;
     private CompletionProvider? _completionProvider;
     private InlineSliderService? _inlineSliderService;
+    private MinimapControl? _minimap;
     private InlineVisualEngine? _inlineVisuals;
     private VisualizationIntegration? _visualization;
     private readonly PerformanceOptions _perfOptions = PerformanceConfig.Options;
 
     // VST Plugin Windows
     private readonly Dictionary<string, VstPluginWindow> _vstWindows = new();
+
+    // DAW Windows
+    private Views.PatternEditorWindow? _patternEditorWindow;
+    private Views.ArrangementWindow? _arrangementWindow;
 
     // Transport ViewModel
     private TransportViewModel? _transportViewModel;
@@ -153,6 +159,13 @@ public partial class MainWindow : Window
             }
         });
 
+        // Open synth editor when a synth is created via script
+        _engineService.SynthCreated += (synth, name, typeName) => Dispatcher.BeginInvoke(() =>
+        {
+            SynthEditorPanel.RegisterSynth(synth, name, typeName);
+            OpenSynthEditor(synth, name, typeName);
+        });
+
         // Hook user console keydown
         UserConsoleBox.KeyDown += UserConsoleBox_KeyDown;
 
@@ -165,6 +178,16 @@ public partial class MainWindow : Window
         // Setup inline sliders for numeric literals (like Strudel.cc)
         // Hover over a number to see a slider popup
         _inlineSliderService = EditorSetup.SetupInlineSliders(CodeEditor);
+
+        // Setup parameter tooltips for function calls
+        EditorSetup.SetupParameterTooltips(CodeEditor);
+
+        // Setup color picker (Ctrl+Click on color values)
+        EditorSetup.SetupColorPicker(CodeEditor);
+
+        // Setup minimap (VS Code-style code overview)
+        _minimap = MinimapHelper.CreateMinimap(CodeEditor);
+        MinimapContainer.Child = _minimap;
 
         // Warm up audio engine on startup (non-blocking)
         _ = Task.Run(async () =>
@@ -467,6 +490,41 @@ public partial class MainWindow : Window
                 }
             };
             timer.Start();
+        }
+
+        // Handle F4 for Synth Editor toggle
+        if (e.Key == Key.F4 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            ToggleSynthEditor_Click(this, new RoutedEventArgs());
+        }
+
+        // F5: Toggle Effects Editor
+        if (e.Key == Key.F5 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            ToggleEffectsEditor_Click(this, new RoutedEventArgs());
+        }
+
+        // F6: Open Pattern Editor
+        if (e.Key == Key.F6 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            OpenPatternEditor_Click(this, new RoutedEventArgs());
+        }
+
+        // F7: Toggle Mixer
+        if (e.Key == Key.F7 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            ToggleMixer_Click(this, new RoutedEventArgs());
+        }
+
+        // F8: Open Arrangement
+        if (e.Key == Key.F8 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            OpenArrangement_Click(this, new RoutedEventArgs());
         }
     }
 
@@ -1482,7 +1540,7 @@ public partial class MainWindow : Window
         if (EditorTabs.SelectedItem is TabItem tab && _tabScripts.TryGetValue(tab, out var script))
         {
             await _projectService.SaveScriptAsync(script);
-            StatusText.Text = $"Saved: {script.FileName}";
+            SetStatusText($"Saved: {script.FileName}");
         }
         else if (_currentProject == null)
         {
@@ -1496,11 +1554,34 @@ public partial class MainWindow : Window
             if (dialog.ShowDialog() == true)
             {
                 File.WriteAllText(dialog.FileName, CodeEditor.Text);
-                StatusText.Text = $"Saved: {Path.GetFileName(dialog.FileName)}";
+                SetStatusText($"Saved: {Path.GetFileName(dialog.FileName)}");
             }
         }
 
         _hasUnsavedChanges = false;
+
+        // Live Mode: Auto-reload script on save
+        if (_isLiveMode && _isRunning)
+        {
+            await TriggerHotReload();
+            SetStatusText("Live reload complete");
+        }
+    }
+
+    private void LiveModeToggle_Click(object sender, RoutedEventArgs e)
+    {
+        _isLiveMode = LiveModeToggle.IsChecked == true;
+
+        if (_isLiveMode)
+        {
+            LiveModeIndicator.Fill = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66)); // Green
+            OutputLine("[Live Mode] Enabled - Ctrl+S will auto-reload the script");
+        }
+        else
+        {
+            LiveModeIndicator.Fill = new SolidColorBrush(Color.FromRgb(0x60, 0x60, 0x60)); // Gray
+            OutputLine("[Live Mode] Disabled");
+        }
     }
 
     private async void SaveAll_Click(object sender, RoutedEventArgs e)
@@ -1572,6 +1653,9 @@ public partial class MainWindow : Window
 
         var stopwatch = Stopwatch.StartNew();
         var currentFileName = GetCurrentFileName();
+
+        // Clear synth registry before new script execution
+        SynthEditorPanel.ClearRegisteredSynths();
 
         try
         {
@@ -2065,6 +2149,23 @@ public partial class MainWindow : Window
         OutputSplitter.Visibility = _outputVisible ? Visibility.Visible : Visibility.Collapsed;
     }
 
+    private void FoldAll_Click(object sender, RoutedEventArgs e)
+    {
+        EditorSetup.FoldAll();
+    }
+
+    private void UnfoldAll_Click(object sender, RoutedEventArgs e)
+    {
+        EditorSetup.UnfoldAll();
+    }
+
+    private void ToggleMinimap_Click(object sender, RoutedEventArgs e)
+    {
+        MinimapContainer.Visibility = MinimapMenuItem.IsChecked
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
     private void ToggleMidiPanel_Click(object sender, RoutedEventArgs e)
     {
         ShowRightPanel("midi");
@@ -2121,6 +2222,8 @@ public partial class MainWindow : Window
         VstPanelMenuItem.IsChecked = false;
         AudioPanelMenuItem.IsChecked = false;
         UndoHistoryMenuItem.IsChecked = false;
+        SynthEditorMenuItem.IsChecked = false;
+        EffectsEditorMenuItem.IsChecked = false;
     }
 
     private static TextBlock? GetTextBlockFromTabHeader(Border header)
@@ -2176,6 +2279,8 @@ public partial class MainWindow : Window
         SetTabHeaderInactive(MidiTabHeader);
         SetTabHeaderInactive(VstTabHeader);
         SetTabHeaderInactive(AudioTabHeader);
+        SetTabHeaderInactive(SynthTabHeader);
+        SetTabHeaderInactive(EffectsTabHeader);
 
         // Hide all panels
         MidiDevicesPanel.Visibility = Visibility.Collapsed;
@@ -2183,6 +2288,8 @@ public partial class MainWindow : Window
         AudioFilesPanel.Visibility = Visibility.Collapsed;
         TrackPropertiesPanel.Visibility = Visibility.Collapsed;
         UndoHistoryPanel.Visibility = Visibility.Collapsed;
+        SynthEditorPanel.Visibility = Visibility.Collapsed;
+        EffectsEditorPanel.Visibility = Visibility.Collapsed;
 
         // Show selected tab
         switch (tab)
@@ -2207,6 +2314,14 @@ public partial class MainWindow : Window
                 // Undo history panel is standalone (no tab header in the tabbed area)
                 UndoHistoryPanel.Visibility = Visibility.Visible;
                 break;
+            case "synth":
+                SetTabHeaderActive(SynthTabHeader);
+                SynthEditorPanel.Visibility = Visibility.Visible;
+                break;
+            case "effects":
+                SetTabHeaderActive(EffectsTabHeader);
+                EffectsEditorPanel.Visibility = Visibility.Visible;
+                break;
         }
     }
 
@@ -2220,6 +2335,8 @@ public partial class MainWindow : Window
         MidiPanelMenuItem.IsChecked = false;
         VstPanelMenuItem.IsChecked = false;
         AudioPanelMenuItem.IsChecked = false;
+        SynthEditorMenuItem.IsChecked = false;
+        EffectsEditorMenuItem.IsChecked = false;
     }
 
     private void MidiTab_Click(object sender, MouseButtonEventArgs e)
@@ -2235,6 +2352,93 @@ public partial class MainWindow : Window
     private void AudioTab_Click(object sender, MouseButtonEventArgs e)
     {
         SwitchRightPanelTab("audio");
+    }
+
+    private void SynthTab_Click(object sender, MouseButtonEventArgs e)
+    {
+        SwitchRightPanelTab("synth");
+    }
+
+    private void ToggleSynthEditor_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("synth");
+        SynthEditorMenuItem.IsChecked = RightPanel.Visibility == Visibility.Visible && _currentRightPanelTab == "synth";
+    }
+
+    private void SynthEditorPanel_CloseRequested(object? sender, EventArgs e)
+    {
+        HideRightPanel();
+    }
+
+    private void EffectsTab_Click(object sender, MouseButtonEventArgs e)
+    {
+        SwitchRightPanelTab("effects");
+    }
+
+    private void ToggleEffectsEditor_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("effects");
+        EffectsEditorMenuItem.IsChecked = RightPanel.Visibility == Visibility.Visible && _currentRightPanelTab == "effects";
+    }
+
+    private void EffectsEditorPanel_CloseRequested(object? sender, EventArgs e)
+    {
+        HideRightPanel();
+    }
+
+    private void OpenPatternEditor_Click(object sender, RoutedEventArgs e)
+    {
+        if (_patternEditorWindow == null || !_patternEditorWindow.IsLoaded)
+        {
+            _patternEditorWindow = new Views.PatternEditorWindow();
+            _patternEditorWindow.Owner = this;
+            _patternEditorWindow.Closed += (s, args) => _patternEditorWindow = null;
+        }
+        _patternEditorWindow.Show();
+        _patternEditorWindow.Activate();
+    }
+
+    private void ToggleMixer_Click(object sender, RoutedEventArgs e)
+    {
+        // TODO: Implement mixer panel/window
+        MessageBox.Show("Mixer feature coming soon!", "Mixer", MessageBoxButton.OK, MessageBoxImage.Information);
+        MixerMenuItem.IsChecked = false;
+    }
+
+    private void OpenArrangement_Click(object sender, RoutedEventArgs e)
+    {
+        if (_arrangementWindow == null || !_arrangementWindow.IsLoaded)
+        {
+            _arrangementWindow = new Views.ArrangementWindow();
+            _arrangementWindow.Owner = this;
+            _arrangementWindow.Closed += (s, args) => _arrangementWindow = null;
+        }
+        _arrangementWindow.Show();
+        _arrangementWindow.Activate();
+    }
+
+    /// <summary>
+    /// Opens the synth editor panel for a specific synth instance.
+    /// </summary>
+    /// <param name="synth">The synth object to edit</param>
+    /// <param name="synthName">Display name of the synth</param>
+    /// <param name="synthType">Type identifier (Simple, Poly, FM, etc.)</param>
+    public void OpenSynthEditor(object? synth, string synthName, string synthType)
+    {
+        ShowRightPanel("synth");
+        SynthEditorPanel.OpenSynth(synth, synthName, synthType);
+        SynthEditorMenuItem.IsChecked = true;
+    }
+
+    /// <summary>
+    /// Opens the synth editor panel for a synth type without a specific instance.
+    /// </summary>
+    /// <param name="synthType">Type identifier (Simple, Poly, FM, etc.)</param>
+    public void OpenSynthEditorByType(string synthType)
+    {
+        ShowRightPanel("synth");
+        SynthEditorPanel.OpenSynthByType(synthType);
+        SynthEditorMenuItem.IsChecked = true;
     }
 
     private void ToggleTrackPropertiesPanel_Click(object sender, RoutedEventArgs e)

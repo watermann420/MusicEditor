@@ -1,0 +1,173 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Mixer.MixerPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls.Mixer"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="600"
+             Background="#0D0D0D">
+    <UserControl.Resources>
+        <!-- ScrollBar Styling -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#181818"/>
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Height" Value="10"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>           <!-- Channel Strips -->
+            <ColumnDefinition Width="2"/>           <!-- Separator -->
+            <ColumnDefinition Width="Auto"/>        <!-- Master Channel -->
+        </Grid.ColumnDefinitions>
+
+        <!-- Channel Strips ScrollViewer -->
+        <ScrollViewer Grid.Column="0"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled"
+                      Background="#0D0D0D">
+            <StackPanel x:Name="ChannelStripContainer"
+                        Orientation="Horizontal"
+                        Margin="4"/>
+        </ScrollViewer>
+
+        <!-- Separator -->
+        <Rectangle Grid.Column="1" Fill="#2A2A2A"/>
+
+        <!-- Master Channel -->
+        <Border Grid.Column="2" Background="#181818" Padding="4" Margin="2">
+            <Grid Width="100">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>   <!-- Master Label -->
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>   <!-- Pan -->
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="*"/>      <!-- Fader + LUFS Meter -->
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>   <!-- dB Display -->
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>   <!-- Mute -->
+                </Grid.RowDefinitions>
+
+                <!-- Master Label -->
+                <Border Grid.Row="0" Background="#00D9FF" CornerRadius="2" Padding="4,2">
+                    <TextBlock Text="MASTER" FontSize="11" Foreground="#0D0D0D"
+                               FontFamily="Segoe UI" FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Master Pan Control -->
+                <StackPanel Grid.Row="2">
+                    <TextBlock Text="PAN" FontSize="8" Foreground="#606060"
+                               HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                    <Slider x:Name="MasterPanSlider" Orientation="Horizontal"
+                            Minimum="-100" Maximum="100" Value="0"
+                            ValueChanged="MasterPanSlider_ValueChanged">
+                        <Slider.Template>
+                            <ControlTemplate TargetType="Slider">
+                                <Grid Height="20">
+                                    <Border Height="4" Background="#0D0D0D" CornerRadius="2"
+                                            VerticalAlignment="Center"/>
+                                    <Border Width="2" Height="8" Background="#606060"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Track x:Name="PART_Track">
+                                        <Track.Thumb>
+                                            <Thumb Width="10" Height="16">
+                                                <Thumb.Template>
+                                                    <ControlTemplate TargetType="Thumb">
+                                                        <Border Background="#00D9FF" CornerRadius="2"
+                                                                BorderBrush="#2A2A2A" BorderThickness="1"/>
+                                                    </ControlTemplate>
+                                                </Thumb.Template>
+                                            </Thumb>
+                                        </Track.Thumb>
+                                    </Track>
+                                </Grid>
+                            </ControlTemplate>
+                        </Slider.Template>
+                    </Slider>
+                    <TextBlock x:Name="MasterPanValueText" Text="C" FontSize="8" Foreground="#808080"
+                               HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Master Fader and LUFS Meter -->
+                <Grid Grid.Row="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="4"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Master Volume Fader -->
+                    <Slider x:Name="MasterVolumeFader" Grid.Column="0"
+                            Orientation="Vertical" Minimum="-60" Maximum="6" Value="0"
+                            ValueChanged="MasterVolumeFader_ValueChanged">
+                        <Slider.Template>
+                            <ControlTemplate TargetType="Slider">
+                                <Grid>
+                                    <Border Width="6" Background="#0D0D0D" CornerRadius="3"
+                                            HorizontalAlignment="Center"/>
+                                    <Track x:Name="PART_Track">
+                                        <Track.Thumb>
+                                            <Thumb Width="28" Height="14">
+                                                <Thumb.Template>
+                                                    <ControlTemplate TargetType="Thumb">
+                                                        <Border Background="#00D9FF" CornerRadius="2"
+                                                                BorderBrush="#2A2A2A" BorderThickness="1">
+                                                            <Rectangle Width="20" Height="2" Fill="#0D0D0D"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Thumb.Template>
+                                            </Thumb>
+                                        </Track.Thumb>
+                                    </Track>
+                                </Grid>
+                            </ControlTemplate>
+                        </Slider.Template>
+                    </Slider>
+
+                    <!-- LUFS Meter -->
+                    <local:LUFSMeterControl x:Name="MasterLUFSMeter" Grid.Column="2" Width="70"/>
+                </Grid>
+
+                <!-- Master dB Display -->
+                <Border Grid.Row="6" Background="#0D0D0D" BorderBrush="#2A2A2A" BorderThickness="1"
+                        CornerRadius="2" Padding="4,2">
+                    <TextBlock x:Name="MasterVolumeDisplay" Text="0.0 dB" FontSize="10"
+                               Foreground="#00D9FF" FontFamily="Consolas" FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Master Mute Button -->
+                <ToggleButton x:Name="MasterMuteButton" Grid.Row="8"
+                              Width="60" Height="24" HorizontalAlignment="Center"
+                              Checked="MasterMuteButton_Changed" Unchecked="MasterMuteButton_Changed"
+                              ToolTip="Mute Master">
+                    <ToggleButton.Template>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="border" Background="#0D0D0D"
+                                    BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="2">
+                                <TextBlock Text="MUTE" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Foreground="#E0E0E0" FontSize="10" FontWeight="Bold"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#FF4040"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#00D9FF"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </ToggleButton.Template>
+                </ToggleButton>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

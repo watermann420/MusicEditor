@@ -36,6 +36,7 @@
         <KeyBinding Key="OemComma" Modifiers="Ctrl" Command="{Binding OpenSettingsCommand}"/>
         <!-- Command Palette -->
         <KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding ShowCommandPaletteCommand}"/>
+        <!-- Synth Editor toggle is handled in PreviewKeyDown for F4 -->
     </Window.InputBindings>
 
     <Grid>
@@ -234,6 +235,15 @@
                             <MenuItem Header="Output" IsCheckable="True" IsChecked="True" x:Name="OutputMenuItem" Click="ToggleOutput_Click"/>
                             <MenuItem Header="Undo History" IsCheckable="True" IsChecked="False" x:Name="UndoHistoryMenuItem" Click="ToggleUndoHistory_Click"/>
                             <Separator/>
+                            <MenuItem Header="Fold All" Click="FoldAll_Click" InputGestureText="Ctrl+Shift+["/>
+                            <MenuItem Header="Unfold All" Click="UnfoldAll_Click" InputGestureText="Ctrl+Shift+]"/>
+                            <MenuItem Header="Minimap" IsCheckable="True" IsChecked="True" x:Name="MinimapMenuItem" Click="ToggleMinimap_Click"/>
+                            <MenuItem Header="Synth Editor" IsCheckable="True" IsChecked="False" x:Name="SynthEditorMenuItem" Click="ToggleSynthEditor_Click" InputGestureText="F4"/>
+                            <MenuItem Header="Effects Editor" IsCheckable="True" IsChecked="False" x:Name="EffectsEditorMenuItem" Click="ToggleEffectsEditor_Click" InputGestureText="F5"/>
+                            <MenuItem Header="Pattern Editor" x:Name="PatternEditorMenuItem" Click="OpenPatternEditor_Click" InputGestureText="F6"/>
+                            <MenuItem Header="Mixer" IsCheckable="True" IsChecked="False" x:Name="MixerMenuItem" Click="ToggleMixer_Click" InputGestureText="F7"/>
+                            <MenuItem Header="Arrangement" x:Name="ArrangementMenuItem" Click="OpenArrangement_Click" InputGestureText="F8"/>
+                            <Separator/>
                             <MenuItem Header="MIDI Devices" IsCheckable="True" IsChecked="False" x:Name="MidiPanelMenuItem" Click="ToggleMidiPanel_Click"/>
                             <MenuItem Header="VST Plugins" IsCheckable="True" IsChecked="False" x:Name="VstPanelMenuItem" Click="ToggleVstPanel_Click"/>
                             <MenuItem Header="Audio Files" IsCheckable="True" IsChecked="False" x:Name="AudioPanelMenuItem" Click="ToggleAudioPanel_Click"/>
@@ -416,6 +426,19 @@
                             ToolTip="Stop (Escape)" Margin="4,0,0,0">
                         <Rectangle Width="12" Height="12" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" RadiusX="1" RadiusY="1"/>
                     </Button>
+
+                    <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="10,4"/>
+
+                    <!-- Live Mode Toggle -->
+                    <ToggleButton x:Name="LiveModeToggle" Click="LiveModeToggle_Click"
+                                  ToolTip="Live Mode (Ctrl+S auto-reloads script)"
+                                  Background="Transparent" BorderThickness="0" Padding="8,4" Margin="4,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="LiveModeIndicator" Width="8" Height="8" Fill="#606060" Margin="0,0,6,0"/>
+                            <TextBlock Text="LIVE" FontSize="10" FontWeight="Bold"
+                                       Foreground="{StaticResource SecondaryForegroundBrush}"/>
+                        </StackPanel>
+                    </ToggleButton>
                 </StackPanel>
 
                 <!-- Center: Spacer -->
@@ -652,18 +675,33 @@
                         <!-- Find/Replace Control -->
                         <controls:FindReplaceControl x:Name="FindReplaceBar" DockPanel.Dock="Top"/>
 
-                        <!-- Code Editor -->
-                        <avalonedit:TextEditor
-                            x:Name="CodeEditor"
-                            FontFamily="JetBrains Mono, Cascadia Code, Consolas, Courier New"
-                            FontSize="13"
-                            ShowLineNumbers="True"
-                            Background="{StaticResource EditorBackgroundBrush}"
-                            Foreground="{StaticResource ForegroundBrush}"
-                            LineNumbersForeground="{StaticResource SecondaryForegroundBrush}"
-                            Padding="8,4"
-                            VerticalScrollBarVisibility="Auto"
-                            HorizontalScrollBarVisibility="Auto"/>
+                        <!-- Code Editor with Minimap -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <avalonedit:TextEditor
+                                Grid.Column="0"
+                                x:Name="CodeEditor"
+                                FontFamily="JetBrains Mono, Cascadia Code, Consolas, Courier New"
+                                FontSize="13"
+                                ShowLineNumbers="True"
+                                Background="{StaticResource EditorBackgroundBrush}"
+                                Foreground="{StaticResource ForegroundBrush}"
+                                LineNumbersForeground="{StaticResource SecondaryForegroundBrush}"
+                                Padding="8,4"
+                                VerticalScrollBarVisibility="Auto"
+                                HorizontalScrollBarVisibility="Auto"/>
+
+                            <!-- Minimap Container -->
+                            <Border Grid.Column="1" x:Name="MinimapContainer"
+                                    Width="80"
+                                    Background="{StaticResource PanelBackgroundBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1,0,0,0"/>
+                        </Grid>
                     </DockPanel>
                 </Border>
 
@@ -893,6 +931,26 @@
                                         <TextBlock Text="AUDIO" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="12" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </Border>
+                                <!-- Synth Tab -->
+                                <Border x:Name="SynthTabHeader" Background="Transparent" Padding="14,10" Cursor="Hand" MouseDown="SynthTab_Click"
+                                        CornerRadius="4,4,0,0" Margin="2,4,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="M 4,8 L 8,4 L 12,8 L 16,4 M 4,12 L 8,8 L 12,12 L 16,8"
+                                              Stroke="{StaticResource SecondaryForegroundBrush}" StrokeThickness="1.5" Fill="Transparent"
+                                              Width="12" Height="12" Margin="0,0,8,0"/>
+                                        <TextBlock Text="SYNTH" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Border>
+                                <!-- Effects Tab -->
+                                <Border x:Name="EffectsTabHeader" Background="Transparent" Padding="14,10" Cursor="Hand" MouseDown="EffectsTab_Click"
+                                        CornerRadius="4,4,0,0" Margin="2,4,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="M 8,2 L 14,8 L 8,14 L 2,8 Z"
+                                              Stroke="{StaticResource SecondaryForegroundBrush}" StrokeThickness="1.5" Fill="Transparent"
+                                              Width="12" Height="12" Margin="0,0,8,0"/>
+                                        <TextBlock Text="EFFECTS" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </DockPanel>
                     </Border>
@@ -1029,6 +1087,14 @@
 
                         <!-- Undo History Panel -->
                         <controls:UndoHistoryPanel x:Name="UndoHistoryPanel" Visibility="Collapsed"/>
+
+                        <!-- Synth Editor Panel -->
+                        <controls:SynthEditorPanel x:Name="SynthEditorPanel" Visibility="Collapsed"
+                                                   CloseRequested="SynthEditorPanel_CloseRequested"/>
+
+                        <!-- Effects Editor Panel -->
+                        <controls:EffectsEditorPanel x:Name="EffectsEditorPanel" Visibility="Collapsed"
+                                                      CloseRequested="EffectsEditorPanel_CloseRequested"/>
                     </Grid>
                 </DockPanel>
             </Border>
@@ -1077,6 +1143,24 @@
                             ToolTip="Track Properties" Margin="4,2" x:Name="TrackPropertiesToolButton">
                         <StackPanel>
                             <Path Data="M 4,3 H 12 M 4,6 H 10 M 4,9 H 14 M 4,12 H 8"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1.5" Width="16" Height="16"/>
+                        </StackPanel>
+                    </Button>
+                    <!-- Synth Editor -->
+                    <Button Style="{StaticResource SidebarToolButtonStyle}" Click="ToggleSynthEditor_Click"
+                            ToolTip="Synth Editor (F4)" Margin="4,2" x:Name="SynthEditorToolButton">
+                        <StackPanel>
+                            <Path Data="M 4,8 L 8,4 L 12,8 L 16,4 M 4,12 L 8,8 L 12,12 L 16,8"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1.5" Width="16" Height="16"/>
+                        </StackPanel>
+                    </Button>
+                    <!-- Effects Editor -->
+                    <Button Style="{StaticResource SidebarToolButtonStyle}" Click="ToggleEffectsEditor_Click"
+                            ToolTip="Effects Editor (F5)" Margin="4,2" x:Name="EffectsEditorToolButton">
+                        <StackPanel>
+                            <Path Data="M 8,2 L 14,8 L 8,14 L 2,8 Z"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   StrokeThickness="1.5" Width="16" Height="16"/>
                         </StackPanel>

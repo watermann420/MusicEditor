@@ -724,7 +724,7 @@ public partial class ArrangementView : UserControl
 
         if (result == MessageBoxResult.Yes && _viewModel != null)
         {
-            _viewModel.Arrangement = Arrangement.CreateStandardStructure();
+            _viewModel.Arrangement = MusicEngine.Core.Arrangement.CreateStandardStructure();
             MarkerTrackControl.MarkerTrack = _viewModel.Arrangement.MarkerTrack;
             RefreshSections();
         }
