@@ -7,6 +7,35 @@ See the root `README.md` for full usage. Highlights of the current editor build:
 - **Audio-reactive UI**: Run button, sidebar, and background pulse with the music.
 - **Colored console output**: Errors (red), warnings (yellow), debug (gray), info (white).
 
+## New in Feb 2026
+
+### AI Assistant Panel (F3)
+Four AI-powered tools in one tabbed panel:
+- **Auto-Master**: One-click mastering with LUFS targeting, A/B comparison
+- **Auto-Mix**: Frequency collision detection, EQ/compression suggestions
+- **Melody Generator**: Scale-aware melody generation with style presets
+- **Chord Suggester**: Context-aware suggestions with Roman numeral notation
+
+### Session View & Clip Launcher
+- 8x8 grid for Ableton-style clip launching
+- Scene triggers for row-based launching
+- Visual clip states (empty, loaded, playing, queued)
+
+### Master Channel & Returns
+- Master channel strip with LUFS/VU meters
+- 4 return tracks (A-D) for auxiliary effects
+- Send knobs routing to returns
+
+### Workflow Features
+- **Welcome Screen**: Recent projects list with pinning
+- **Preset Browser**: Unified browser with search, favorites, tags
+- **Undo History**: Visual timeline with jump-to-state
+- **Workspace Presets**: Ctrl+1-5 for quick layout switching
+- **Track Colors**: 16-color picker with custom palettes
+- **Quick Actions**: Customizable toolbar for common tasks
+- **Zoom Presets**: 50%-200% quick access
+- **Keyboard Shortcuts Editor**: Visual editor with conflict detection
+
 ## Audio-Reactive Features
 
 ### Audio Reactive Lighting
@@ -143,6 +172,7 @@ Timeline-based arrangement editing:
 #### Quick Access (Function Keys)
 | Key | Action |
 |-----|--------|
+| F3 | AI Assistant Panel |
 | F4 | Synth Editor |
 | F5 | Effects Editor |
 | F6 | Pattern Editor |
@@ -152,6 +182,15 @@ Timeline-based arrangement editing:
 | F10 | Audio Statistics |
 | F11 | Toggle Fullscreen |
 | F12 | Plugin Manager (via command palette) |
+
+#### Workspace Presets
+| Key | Workspace |
+|-----|-----------|
+| Ctrl+1 | Recording |
+| Ctrl+2 | Mixing |
+| Ctrl+3 | Mastering |
+| Ctrl+4 | Editing |
+| Ctrl+5 | Performance |
 
 #### Editor Shortcuts (Ctrl+Shift)
 | Shortcut | Action |

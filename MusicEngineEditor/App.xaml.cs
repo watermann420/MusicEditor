@@ -36,56 +36,43 @@ public partial class App : Application
         var recentProjectsService = Services.GetRequiredService<IRecentProjectsService>();
         await recentProjectsService.LoadAsync();
 
-        // Show welcome screen if enabled
-        string? projectToOpen = null;
-        bool createNewProject = false;
-        bool openProjectDialog = false;
-
-        if (recentProjectsService.ShowWelcomeOnStartup)
-        {
-            var welcomeScreen = new WelcomeScreen(recentProjectsService);
-            var result = welcomeScreen.ShowDialog();
-
-            if (result == true)
-            {
-                switch (welcomeScreen.Result.Action)
-                {
-                    case WelcomeScreenAction.NewProject:
-                        createNewProject = true;
-                        break;
-                    case WelcomeScreenAction.OpenProject:
-                        openProjectDialog = true;
-                        break;
-                    case WelcomeScreenAction.OpenRecentProject:
-                        projectToOpen = welcomeScreen.Result.SelectedProjectPath;
-                        break;
-                    case WelcomeScreenAction.Skip:
-                    case WelcomeScreenAction.Close:
-                        // Just continue to main window
-                        break;
-                }
-            }
-        }
-
-        // Create and show main window
+        // Create and show main window first (prevents app shutdown issues)
         var mainWindow = new MainWindow();
         mainWindow.Show();
 
-        // Handle welcome screen result
-        if (createNewProject)
+        // Show welcome screen if enabled (after main window exists)
+        if (recentProjectsService.ShowWelcomeOnStartup)
         {
-            // Trigger new project action via reflection or command
-            mainWindow.TriggerNewProject();
-        }
-        else if (openProjectDialog)
-        {
-            // Trigger open project action
-            mainWindow.TriggerOpenProject();
-        }
-        else if (!string.IsNullOrEmpty(projectToOpen))
-        {
-            // Open the selected recent project
-            await mainWindow.OpenProjectFileAsync(projectToOpen);
+            // Defer welcome screen to after main window is fully loaded
+            mainWindow.Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                var welcomeScreen = new WelcomeScreen(recentProjectsService);
+                welcomeScreen.Owner = mainWindow;
+                var result = welcomeScreen.ShowDialog();
+
+                if (result == true)
+                {
+                    switch (welcomeScreen.Result.Action)
+                    {
+                        case WelcomeScreenAction.NewProject:
+                            mainWindow.TriggerNewProject();
+                            break;
+                        case WelcomeScreenAction.OpenProject:
+                            mainWindow.TriggerOpenProject();
+                            break;
+                        case WelcomeScreenAction.OpenRecentProject:
+                            if (!string.IsNullOrEmpty(welcomeScreen.Result.SelectedProjectPath))
+                            {
+                                await mainWindow.OpenProjectFileAsync(welcomeScreen.Result.SelectedProjectPath);
+                            }
+                            break;
+                        case WelcomeScreenAction.Skip:
+                        case WelcomeScreenAction.Close:
+                            // Just continue
+                            break;
+                    }
+                }
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         // Check for crash recovery after main window is shown
