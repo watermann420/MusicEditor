@@ -279,11 +279,7 @@ public partial class MainWindow : Window
             {
                 // Find next is handled inside the control
             }
-            else
-            {
-                // Toggle AI Assistant panel
-                ToggleAIAssistant_Click(this, new RoutedEventArgs());
-            }
+          
         }
         // Handle Ctrl+P for command palette
         else if (e.Key == Key.P && Keyboard.Modifiers == ModifierKeys.Control)
@@ -499,11 +495,7 @@ public partial class MainWindow : Window
         }
 
         // F3: AI Assistant Panel
-        if (e.Key == Key.F3 && Keyboard.Modifiers == ModifierKeys.None)
-        {
-            e.Handled = true;
-            ToggleAIAssistant_Click(this, new RoutedEventArgs());
-        }
+      
 
         // Handle F4 for Synth Editor toggle
         if (e.Key == Key.F4 && Keyboard.Modifiers == ModifierKeys.None)
@@ -2423,7 +2415,6 @@ public partial class MainWindow : Window
         UndoHistoryMenuItem.IsChecked = false;
         SynthEditorMenuItem.IsChecked = false;
         EffectsEditorMenuItem.IsChecked = false;
-        AIAssistantMenuItem.IsChecked = false;
     }
 
     private static TextBlock? GetTextBlockFromTabHeader(Border header)
@@ -2482,7 +2473,7 @@ public partial class MainWindow : Window
         SetTabHeaderInactive(SynthTabHeader);
         SetTabHeaderInactive(EffectsTabHeader);
         SetTabHeaderInactive(PresetsTabHeader);
-        SetTabHeaderInactive(SpatialTabHeader);
+      
 
         // Hide all panels
         MidiDevicesPanel.Visibility = Visibility.Collapsed;
@@ -2492,11 +2483,9 @@ public partial class MainWindow : Window
         UndoHistoryPanel.Visibility = Visibility.Collapsed;
         SynthEditorPanel.Visibility = Visibility.Collapsed;
         EffectsEditorPanel.Visibility = Visibility.Collapsed;
-        PresetBrowserPanel.Visibility = Visibility.Collapsed;
-        AIAssistantPanel.Visibility = Visibility.Collapsed;
-        SpatialAudioPanel.Visibility = Visibility.Collapsed;
-        AnalysisPanel.Visibility = Visibility.Collapsed;
-        NetworkSyncPanel.Visibility = Visibility.Collapsed;
+      
+    
+       
 
         // Show selected tab
         switch (tab)
@@ -2529,26 +2518,8 @@ public partial class MainWindow : Window
                 SetTabHeaderActive(EffectsTabHeader);
                 EffectsEditorPanel.Visibility = Visibility.Visible;
                 break;
-            case "presets":
-                SetTabHeaderActive(PresetsTabHeader);
-                PresetBrowserPanel.Visibility = Visibility.Visible;
-                break;
-            case "aiassistant":
-                // AI Assistant panel is standalone (no tab header in the tabbed area)
-                AIAssistantPanel.Visibility = Visibility.Visible;
-                break;
-            case "spatial":
-                SetTabHeaderActive(SpatialTabHeader);
-                SpatialAudioPanel.Visibility = Visibility.Visible;
-                break;
-            case "analysis":
-                // Analysis panel is standalone
-                AnalysisPanel.Visibility = Visibility.Visible;
-                break;
-            case "network":
-                // Network sync panel is standalone
-                NetworkSyncPanel.Visibility = Visibility.Visible;
-                break;
+           
+           
         }
     }
 
@@ -2564,7 +2535,7 @@ public partial class MainWindow : Window
         AudioPanelMenuItem.IsChecked = false;
         SynthEditorMenuItem.IsChecked = false;
         EffectsEditorMenuItem.IsChecked = false;
-        AIAssistantMenuItem.IsChecked = false;
+      
     }
 
     private void MidiTab_Click(object sender, MouseButtonEventArgs e)
@@ -2646,11 +2617,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ToggleAIAssistant_Click(object sender, RoutedEventArgs e)
-    {
-        ShowRightPanel("aiassistant");
-        AIAssistantMenuItem.IsChecked = RightPanel.Visibility == Visibility.Visible && _currentRightPanelTab == "aiassistant";
-    }
+
 
     private void AIAssistantPanel_CloseRequested(object? sender, EventArgs e)
     {
@@ -2834,103 +2801,9 @@ public partial class MainWindow : Window
         UndoHistoryMenuItem.IsChecked = RightPanel.Visibility == Visibility.Visible && _currentRightPanelTab == "undohistory";
     }
 
-    private void ToggleQuickActions_Click(object sender, RoutedEventArgs e)
-    {
-        QuickActionsToolbar.Visibility = QuickActionsMenuItem.IsChecked
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-    }
 
-    #region Quick Actions Toolbar Handlers
 
-    private void QuickActionsToolbar_AIMasterRequested(object? sender, EventArgs e)
-    {
-        // Open AI Features panel and scroll to mastering section
-        ShowRightPanel("aiassistant");
-        AIAssistantMenuItem.IsChecked = true;
-        OutputLine("[Quick Action] Opening AI Mastering Assistant...");
-    }
-
-    private void QuickActionsToolbar_StemSplitRequested(object? sender, EventArgs e)
-    {
-        // Open stem separation via AI Features panel
-        ShowRightPanel("aiassistant");
-        AIAssistantMenuItem.IsChecked = true;
-        OutputLine("[Quick Action] Opening Stem Separation in AI Features panel...");
-    }
-
-    private void QuickActionsToolbar_QuantizeRequested(object? sender, double strength)
-    {
-        // Apply quantize with specified strength to current selection
-        OutputLine($"[Quick Action] Applying quantize at {strength:P0} strength...");
-
-        // TODO: Apply to selected MIDI notes in pattern editor
-        // For now, just show a message
-        MessageBox.Show(
-            $"Quantize will be applied at {strength:P0} strength to selected notes.\n\nNote: Select MIDI notes in the Pattern Editor first.",
-            "Quantize",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
-    }
-
-    private void QuickActionsToolbar_QuantizeDialogRequested(object? sender, EventArgs e)
-    {
-        var dialog = new QuantizeDialog
-        {
-            Owner = this
-        };
-
-        if (dialog.ShowDialog() == true)
-        {
-            OutputLine($"[Quick Action] Quantize dialog completed.");
-        }
-    }
-
-    private void QuickActionsToolbar_TransposeRequested(object? sender, int semitones)
-    {
-        OutputLine($"[Quick Action] Transposing selection by {semitones:+#;-#;0} semitones...");
-
-        // TODO: Apply to selected MIDI notes
-        MessageBox.Show(
-            $"Selection will be transposed by {semitones:+#;-#;0} semitones.\n\nNote: Select MIDI notes in the Pattern Editor first.",
-            "Transpose",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
-    }
-
-    private void QuickActionsToolbar_DuplicateRequested(object? sender, EventArgs e)
-    {
-        OutputLine("[Quick Action] Duplicating selection...");
-
-        // This could duplicate selected clips or notes
-        // For now, show info message
-        MessageBox.Show(
-            "Duplicate will copy the current selection.\n\nTip: Use Ctrl+D in the Pattern Editor or Arrangement view.",
-            "Duplicate",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
-    }
-
-    private void QuickActionsToolbar_SplitRequested(object? sender, EventArgs e)
-    {
-        OutputLine("[Quick Action] Splitting at playhead position...");
-
-        // TODO: Get playhead position and split selected clip
-        MessageBox.Show(
-            "Split will divide the selected clip at the current playhead position.\n\nTip: Use 'S' key in the Arrangement view.",
-            "Split at Playhead",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
-    }
-
-    private void QuickActionsToolbar_HideRequested(object? sender, EventArgs e)
-    {
-        QuickActionsToolbar.Visibility = Visibility.Collapsed;
-        QuickActionsMenuItem.IsChecked = false;
-        OutputLine("[Quick Actions] Toolbar hidden. Re-enable from View > Quick Actions Toolbar.");
-    }
-
-    #endregion
+   
 
     private void TrackPropertiesPanel_CloseRequested(object? sender, EventArgs e)
     {
@@ -3522,7 +3395,6 @@ public partial class MainWindow : Window
 
         // Update tab visuals
         SetBrowserTabActive(FilesTabHeader, tab == ProjectBrowserTab.Files);
-        SetBrowserTabActive(LeftPresetsTabHeader, tab == ProjectBrowserTab.Presets);
         SetBrowserTabActive(SamplesTabHeader, tab == ProjectBrowserTab.Samples);
 
         // Update panel visibility
@@ -4598,7 +4470,7 @@ Print("");
         service.RegisterCommand("Toggle Undo History", "View", () => ToggleUndoHistory_Click(this, new RoutedEventArgs()), null, "Show/hide undo history panel", ["history", "changes"]);
 
         // View - Editors & Windows
-        service.RegisterCommand("Toggle AI Assistant", "View", () => ToggleAIAssistant_Click(this, new RoutedEventArgs()), "F3", "Open AI-powered assistant for mastering, mixing, melody generation, and chord suggestions", ["ai", "assistant", "mastering", "mixing", "melody", "chord", "auto"]);
+
         service.RegisterCommand("Toggle Synth Editor", "View", () => ToggleSynthEditor_Click(this, new RoutedEventArgs()), "F4 / Ctrl+Shift+Y", "Open synthesizer parameter editor", ["synth", "instrument", "parameters"]);
         service.RegisterCommand("Toggle Effects Editor", "View", () => ToggleEffectsEditor_Click(this, new RoutedEventArgs()), "F5 / Ctrl+Shift+E", "Open audio effects editor", ["effects", "fx", "processing"]);
         service.RegisterCommand("Open Pattern Editor", "View", () => OpenPatternEditor_Click(this, new RoutedEventArgs()), "F6 / Ctrl+Shift+P", "Open piano roll pattern editor", ["piano roll", "notes", "midi", "sequence"]);
@@ -5029,8 +4901,7 @@ Print("");
             StatusText.Text = $"Workspace preset '{preset.Name}' applied";
             OutputLine($"Applied workspace preset: {preset.Name}");
 
-            // Update the combo box selection
-            UpdateWorkspacePresetCombo(preset);
+          
         }
         catch (Exception ex)
         {
@@ -5085,20 +4956,7 @@ Print("");
         }
     }
 
-    /// <summary>
-    /// Handles quick workspace selection from toolbar combo box.
-    /// </summary>
-    private void WorkspacePresetCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (WorkspacePresetCombo.SelectedItem is ComboBoxItem item)
-        {
-            var presetName = item.Content?.ToString();
-            if (!string.IsNullOrEmpty(presetName))
-            {
-                SwitchToWorkspacePreset(presetName);
-            }
-        }
-    }
+
 
     /// <summary>
     /// Switches to a workspace preset by name.
@@ -5116,21 +4974,7 @@ Print("");
         }
     }
 
-    /// <summary>
-    /// Updates the workspace preset combo box to reflect the current preset.
-    /// </summary>
-    private void UpdateWorkspacePresetCombo(WorkspacePresetData preset)
-    {
-        for (int i = 0; i < WorkspacePresetCombo.Items.Count; i++)
-        {
-            if (WorkspacePresetCombo.Items[i] is ComboBoxItem item &&
-                string.Equals(item.Content?.ToString(), preset.Name, StringComparison.OrdinalIgnoreCase))
-            {
-                WorkspacePresetCombo.SelectedIndex = i;
-                break;
-            }
-        }
-    }
+   
 
     // Quick workspace menu item handlers
     private void WorkspaceRecording_Click(object sender, RoutedEventArgs e) => SwitchToWorkspacePreset("Recording");
