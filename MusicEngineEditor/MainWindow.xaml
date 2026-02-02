@@ -433,23 +433,11 @@
                         </StackPanel>
                     </Button>
                     <!-- Stop Button -->
-                    <Button x:Name="StopButton" Style="{StaticResource IconButtonStyle}" Click="Transport_Stop_Click"
-                            ToolTip="Stop (Escape)" Margin="4,0,0,0">
-                        <Rectangle Width="12" Height="12" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" RadiusX="1" RadiusY="1"/>
-                    </Button>
+                  
 
                     <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="10,4"/>
 
-                    <!-- Live Mode Toggle -->
-                    <ToggleButton x:Name="LiveModeToggle" Click="LiveModeToggle_Click"
-                                  ToolTip="Live Mode (Ctrl+S auto-reloads script)"
-                                  Background="Transparent" BorderThickness="0" Padding="8,4" Margin="4,0,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <Ellipse x:Name="LiveModeIndicator" Width="8" Height="8" Fill="#606060" Margin="0,0,6,0"/>
-                            <TextBlock Text="LIVE" FontSize="10" FontWeight="Bold"
-                                       Foreground="{StaticResource SecondaryForegroundBrush}"/>
-                        </StackPanel>
-                    </ToggleButton>
+                   
                 </StackPanel>
 
                 <!-- Center: Spacer -->
@@ -537,11 +525,7 @@
                                       MouseDoubleClick="ProjectTree_MouseDoubleClick"
                                       VirtualizingPanel.IsVirtualizing="True"/>
                             <!-- Placeholder when empty -->
-                            <TextBlock x:Name="FilesPlaceholder" Text="No project loaded"
-                                       Foreground="{StaticResource SecondaryForegroundBrush}"
-                                       FontSize="11" FontStyle="Italic"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       Margin="0,40,0,0"/>
+                           
                         </Grid>
 
                         <!-- Presets Panel (hidden by default) -->
@@ -758,21 +742,8 @@
                                     <Rectangle Width="1" Height="20" Fill="{StaticResource BorderBrush}" Margin="4,0"/>
 
                                     <!-- Log Level Filters -->
-                                    <ToggleButton x:Name="FilterInfoButton" IsChecked="True" Click="FilterInfo_Click"
-                                                  ToolTip="Show Info" Background="Transparent" BorderThickness="0"
-                                                  Width="26" Height="26" Margin="2">
-                                        <Ellipse Width="8" Height="8" Fill="#00D9FF"/>
-                                    </ToggleButton>
-                                    <ToggleButton x:Name="FilterWarningButton" IsChecked="True" Click="FilterWarning_Click"
-                                                  ToolTip="Show Warnings" Background="Transparent" BorderThickness="0"
-                                                  Width="26" Height="26" Margin="2">
-                                        <Ellipse Width="8" Height="8" Fill="#FFB800"/>
-                                    </ToggleButton>
-                                    <ToggleButton x:Name="FilterErrorButton" IsChecked="True" Click="FilterError_Click"
-                                                  ToolTip="Show Errors" Background="Transparent" BorderThickness="0"
-                                                  Width="26" Height="26" Margin="2">
-                                        <Ellipse Width="8" Height="8" Fill="#FF4757"/>
-                                    </ToggleButton>
+                                  
+                                   
 
                                     <Rectangle Width="1" Height="20" Fill="{StaticResource BorderBrush}" Margin="4,0"/>
 
@@ -1216,30 +1187,14 @@
                     <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="8,6" Opacity="0.5"/>
 
                     <!-- Network & Cloud Features -->
-                    <Button Style="{StaticResource SidebarToolButtonStyle}" Click="CloudStorage_Click"
-                            ToolTip="Cloud Storage" Margin="4,2" x:Name="CloudStorageToolButton">
-                        <StackPanel>
-                            <Path Data="M 4,10 A 3,3 0 1 1 4,9.9 M 4,10 H 12 A 2,2 0 1 0 12,6 A 4,4 0 0 0 4,6"
-                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                  StrokeThickness="1.5" Fill="Transparent" Width="16" Height="16"/>
-                        </StackPanel>
-                    </Button>
+                   
                     <!-- Collaboration -->
-                    <Button Style="{StaticResource SidebarToolButtonStyle}" Click="Collaboration_Click"
-                            ToolTip="Collaboration" Margin="4,2" x:Name="CollaborationToolButton">
-                        <StackPanel>
-                            <Path Data="M 5,5 A 2,2 0 1 1 5,4.9 M 11,5 A 2,2 0 1 1 11,4.9 M 3,14 V 12 A 3,3 0 0 1 7,12 M 9,14 V 12 A 3,3 0 0 1 13,12"
-                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                  StrokeThickness="1" Fill="Transparent" Width="16" Height="16"/>
-                        </StackPanel>
-                    </Button>
+                   
                     <!-- Network MIDI -->
                     <Button Style="{StaticResource SidebarToolButtonStyle}" Click="NetworkMidi_Click"
                             ToolTip="Network MIDI" Margin="4,2,4,6" x:Name="NetworkMidiToolButton">
                         <StackPanel>
-                            <Path Data="M 8,2 V 8 M 4,4 H 12 M 2,8 H 6 V 14 H 2 Z M 10,8 H 14 V 14 H 10 Z"
-                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                  StrokeThickness="1" Fill="Transparent" Width="16" Height="16"/>
+                           
                         </StackPanel>
                     </Button>
                 </StackPanel>

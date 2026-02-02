@@ -1684,18 +1684,7 @@ public partial class MainWindow : Window
 
     private void LiveModeToggle_Click(object sender, RoutedEventArgs e)
     {
-        _isLiveMode = LiveModeToggle.IsChecked == true;
-
-        if (_isLiveMode)
-        {
-            LiveModeIndicator.Fill = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66)); // Green
-            OutputLine("[Live Mode] Enabled - Ctrl+S will auto-reload the script");
-        }
-        else
-        {
-            LiveModeIndicator.Fill = new SolidColorBrush(Color.FromRgb(0x60, 0x60, 0x60)); // Gray
-            OutputLine("[Live Mode] Disabled");
-        }
+       
     }
 
     private async void SaveAll_Click(object sender, RoutedEventArgs e)
@@ -3258,20 +3247,17 @@ public partial class MainWindow : Window
 
     private void FilterInfo_Click(object sender, RoutedEventArgs e)
     {
-        _filterInfo = FilterInfoButton.IsChecked == true;
-        ApplyOutputFilters();
+    
     }
 
     private void FilterWarning_Click(object sender, RoutedEventArgs e)
     {
-        _filterWarning = FilterWarningButton.IsChecked == true;
-        ApplyOutputFilters();
+        
     }
 
     private void FilterError_Click(object sender, RoutedEventArgs e)
     {
-        _filterError = FilterErrorButton.IsChecked == true;
-        ApplyOutputFilters();
+        
     }
 
     private void OutputSearchBox_TextChanged(object sender, TextChangedEventArgs e)
