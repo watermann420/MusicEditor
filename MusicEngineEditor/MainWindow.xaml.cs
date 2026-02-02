@@ -59,6 +59,7 @@ public partial class MainWindow : Window
     // DAW Windows
     private Views.PatternEditorWindow? _patternEditorWindow;
     private Views.ArrangementWindow? _arrangementWindow;
+    private SessionViewWindow? _sessionViewWindow;
 
     // Transport ViewModel
     private TransportViewModel? _transportViewModel;
@@ -270,13 +271,18 @@ public partial class MainWindow : Window
             e.Handled = true;
             FindReplaceBar.ShowReplace();
         }
-        // Handle F3 for find next
+        // Handle F3 for AI Assistant toggle (or find next if FindReplaceBar is visible)
         else if (e.Key == Key.F3 && Keyboard.Modifiers == ModifierKeys.None)
         {
             e.Handled = true;
             if (FindReplaceBar.Visibility == Visibility.Visible)
             {
                 // Find next is handled inside the control
+            }
+            else
+            {
+                // Toggle AI Assistant panel
+                ToggleAIAssistant_Click(this, new RoutedEventArgs());
             }
         }
         // Handle Ctrl+P for command palette
@@ -527,6 +533,19 @@ public partial class MainWindow : Window
             OpenArrangement_Click(this, new RoutedEventArgs());
         }
 
+        // Ctrl+1 through Ctrl+5: Quick workspace presets
+        if (HandleWorkspacePresetShortcut(e))
+        {
+            return;
+        }
+
+        // Ctrl+Shift+W: Open workspace presets dialog
+        if (e.Key == Key.W && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            WorkspacePresets_Click(this, new RoutedEventArgs());
+        }
+
         // F9: Performance Monitor
         if (e.Key == Key.F9 && Keyboard.Modifiers == ModifierKeys.None)
         {
@@ -585,6 +604,13 @@ public partial class MainWindow : Window
         {
             e.Handled = true;
             OpenArrangement_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Alt+S: Open Session View
+        if (e.Key == Key.S && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+        {
+            e.Handled = true;
+            OpenSessionView_Click(this, new RoutedEventArgs());
         }
 
         // Ctrl+Shift+E: Toggle Effects Editor
@@ -1281,7 +1307,8 @@ public partial class MainWindow : Window
 
     private async void NewProject_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new NewProjectDialog { Owner = this };
+        var dialog = new NewProjectDialog();
+        if (IsLoaded) dialog.Owner = this;
 
         if (dialog.ShowDialog() == true)
         {
@@ -1326,6 +1353,13 @@ public partial class MainWindow : Window
 
                 // Initialize auto-save for this project
                 AutoSaveService.Instance.Initialize(_projectService);
+
+                // Add to recent projects
+                var recentProjectsService = App.Services.GetService<IRecentProjectsService>();
+                if (recentProjectsService != null && !string.IsNullOrEmpty(_currentProject.FilePath))
+                {
+                    await recentProjectsService.AddProjectAsync(_currentProject.FilePath, _currentProject.Name);
+                }
 
                 // Open entry point script (with null checks)
                 if (_currentProject.Scripts != null && _currentProject.Scripts.Count > 0)
@@ -1391,6 +1425,13 @@ public partial class MainWindow : Window
 
                 // Initialize auto-save for this project
                 AutoSaveService.Instance.Initialize(_projectService);
+
+                // Add to recent projects
+                var recentProjectsService = App.Services.GetService<IRecentProjectsService>();
+                if (recentProjectsService != null)
+                {
+                    await recentProjectsService.AddProjectAsync(dialog.FileName, _currentProject.Name);
+                }
 
                 // Open entry point script (with null checks)
                 if (_currentProject.Scripts != null && _currentProject.Scripts.Count > 0)
@@ -2338,6 +2379,7 @@ public partial class MainWindow : Window
         UndoHistoryMenuItem.IsChecked = false;
         SynthEditorMenuItem.IsChecked = false;
         EffectsEditorMenuItem.IsChecked = false;
+        AIAssistantMenuItem.IsChecked = false;
     }
 
     private static TextBlock? GetTextBlockFromTabHeader(Border header)
@@ -2395,6 +2437,7 @@ public partial class MainWindow : Window
         SetTabHeaderInactive(AudioTabHeader);
         SetTabHeaderInactive(SynthTabHeader);
         SetTabHeaderInactive(EffectsTabHeader);
+        SetTabHeaderInactive(PresetsTabHeader);
 
         // Hide all panels
         MidiDevicesPanel.Visibility = Visibility.Collapsed;
@@ -2404,6 +2447,8 @@ public partial class MainWindow : Window
         UndoHistoryPanel.Visibility = Visibility.Collapsed;
         SynthEditorPanel.Visibility = Visibility.Collapsed;
         EffectsEditorPanel.Visibility = Visibility.Collapsed;
+        PresetBrowserPanel.Visibility = Visibility.Collapsed;
+        AIAssistantPanel.Visibility = Visibility.Collapsed;
 
         // Show selected tab
         switch (tab)
@@ -2436,6 +2481,14 @@ public partial class MainWindow : Window
                 SetTabHeaderActive(EffectsTabHeader);
                 EffectsEditorPanel.Visibility = Visibility.Visible;
                 break;
+            case "presets":
+                SetTabHeaderActive(PresetsTabHeader);
+                PresetBrowserPanel.Visibility = Visibility.Visible;
+                break;
+            case "aiassistant":
+                // AI Assistant panel is standalone (no tab header in the tabbed area)
+                AIAssistantPanel.Visibility = Visibility.Visible;
+                break;
         }
     }
 
@@ -2451,6 +2504,7 @@ public partial class MainWindow : Window
         AudioPanelMenuItem.IsChecked = false;
         SynthEditorMenuItem.IsChecked = false;
         EffectsEditorMenuItem.IsChecked = false;
+        AIAssistantMenuItem.IsChecked = false;
     }
 
     private void MidiTab_Click(object sender, MouseButtonEventArgs e)
@@ -2500,6 +2554,44 @@ public partial class MainWindow : Window
         HideRightPanel();
     }
 
+    private void PresetsTab_Click(object sender, MouseButtonEventArgs e)
+    {
+        SwitchRightPanelTab("presets");
+    }
+
+    private void TogglePresetsPanel_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("presets");
+    }
+
+    private void PresetBrowserPanel_PresetLoadRequested(object? sender, Models.PresetInfo preset)
+    {
+        // Handle preset loading - open the appropriate editor for the preset type
+        if (preset.TargetType == MusicEngine.Core.PresetTargetType.Synth)
+        {
+            // Open synth editor and load the preset
+            ShowRightPanel("synth");
+            OutputLine($"Loading synth preset: {preset.Name}");
+        }
+        else if (preset.TargetType == MusicEngine.Core.PresetTargetType.Effect)
+        {
+            // Open effects editor and load the preset
+            ShowRightPanel("effects");
+            OutputLine($"Loading effect preset: {preset.Name}");
+        }
+    }
+
+    private void ToggleAIAssistant_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("aiassistant");
+        AIAssistantMenuItem.IsChecked = RightPanel.Visibility == Visibility.Visible && _currentRightPanelTab == "aiassistant";
+    }
+
+    private void AIAssistantPanel_CloseRequested(object? sender, EventArgs e)
+    {
+        HideRightPanel();
+    }
+
     private void OpenPatternEditor_Click(object sender, RoutedEventArgs e)
     {
         if (_patternEditorWindow == null || !_patternEditorWindow.IsLoaded)
@@ -2529,6 +2621,18 @@ public partial class MainWindow : Window
         }
         _arrangementWindow.Show();
         _arrangementWindow.Activate();
+    }
+
+    private void OpenSessionView_Click(object sender, RoutedEventArgs e)
+    {
+        if (_sessionViewWindow == null || !_sessionViewWindow.IsLoaded)
+        {
+            _sessionViewWindow = new SessionViewWindow();
+            _sessionViewWindow.Owner = this;
+            _sessionViewWindow.Closed += (s, args) => _sessionViewWindow = null;
+        }
+        _sessionViewWindow.Show();
+        _sessionViewWindow.Activate();
     }
 
     /// <summary>
@@ -2565,6 +2669,104 @@ public partial class MainWindow : Window
         ShowRightPanel("undohistory");
         UndoHistoryMenuItem.IsChecked = RightPanel.Visibility == Visibility.Visible && _currentRightPanelTab == "undohistory";
     }
+
+    private void ToggleQuickActions_Click(object sender, RoutedEventArgs e)
+    {
+        QuickActionsToolbar.Visibility = QuickActionsMenuItem.IsChecked
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    #region Quick Actions Toolbar Handlers
+
+    private void QuickActionsToolbar_AIMasterRequested(object? sender, EventArgs e)
+    {
+        // Open AI Features panel and scroll to mastering section
+        ShowRightPanel("aiassistant");
+        AIAssistantMenuItem.IsChecked = true;
+        OutputLine("[Quick Action] Opening AI Mastering Assistant...");
+    }
+
+    private void QuickActionsToolbar_StemSplitRequested(object? sender, EventArgs e)
+    {
+        // Open stem separation via AI Features panel
+        ShowRightPanel("aiassistant");
+        AIAssistantMenuItem.IsChecked = true;
+        OutputLine("[Quick Action] Opening Stem Separation in AI Features panel...");
+    }
+
+    private void QuickActionsToolbar_QuantizeRequested(object? sender, double strength)
+    {
+        // Apply quantize with specified strength to current selection
+        OutputLine($"[Quick Action] Applying quantize at {strength:P0} strength...");
+
+        // TODO: Apply to selected MIDI notes in pattern editor
+        // For now, just show a message
+        MessageBox.Show(
+            $"Quantize will be applied at {strength:P0} strength to selected notes.\n\nNote: Select MIDI notes in the Pattern Editor first.",
+            "Quantize",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    private void QuickActionsToolbar_QuantizeDialogRequested(object? sender, EventArgs e)
+    {
+        var dialog = new QuantizeDialog
+        {
+            Owner = this
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            OutputLine($"[Quick Action] Quantize dialog completed.");
+        }
+    }
+
+    private void QuickActionsToolbar_TransposeRequested(object? sender, int semitones)
+    {
+        OutputLine($"[Quick Action] Transposing selection by {semitones:+#;-#;0} semitones...");
+
+        // TODO: Apply to selected MIDI notes
+        MessageBox.Show(
+            $"Selection will be transposed by {semitones:+#;-#;0} semitones.\n\nNote: Select MIDI notes in the Pattern Editor first.",
+            "Transpose",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    private void QuickActionsToolbar_DuplicateRequested(object? sender, EventArgs e)
+    {
+        OutputLine("[Quick Action] Duplicating selection...");
+
+        // This could duplicate selected clips or notes
+        // For now, show info message
+        MessageBox.Show(
+            "Duplicate will copy the current selection.\n\nTip: Use Ctrl+D in the Pattern Editor or Arrangement view.",
+            "Duplicate",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    private void QuickActionsToolbar_SplitRequested(object? sender, EventArgs e)
+    {
+        OutputLine("[Quick Action] Splitting at playhead position...");
+
+        // TODO: Get playhead position and split selected clip
+        MessageBox.Show(
+            "Split will divide the selected clip at the current playhead position.\n\nTip: Use 'S' key in the Arrangement view.",
+            "Split at Playhead",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    private void QuickActionsToolbar_HideRequested(object? sender, EventArgs e)
+    {
+        QuickActionsToolbar.Visibility = Visibility.Collapsed;
+        QuickActionsMenuItem.IsChecked = false;
+        OutputLine("[Quick Actions] Toolbar hidden. Re-enable from View > Quick Actions Toolbar.");
+    }
+
+    #endregion
 
     private void TrackPropertiesPanel_CloseRequested(object? sender, EventArgs e)
     {
@@ -3140,7 +3342,7 @@ public partial class MainWindow : Window
         SetProjectBrowserTab(ProjectBrowserTab.Files);
     }
 
-    private void PresetsTab_Click(object sender, MouseButtonEventArgs e)
+    private void LeftPresetsTab_Click(object sender, MouseButtonEventArgs e)
     {
         SetProjectBrowserTab(ProjectBrowserTab.Presets);
     }
@@ -3156,7 +3358,7 @@ public partial class MainWindow : Window
 
         // Update tab visuals
         SetBrowserTabActive(FilesTabHeader, tab == ProjectBrowserTab.Files);
-        SetBrowserTabActive(PresetsTabHeader, tab == ProjectBrowserTab.Presets);
+        SetBrowserTabActive(LeftPresetsTabHeader, tab == ProjectBrowserTab.Presets);
         SetBrowserTabActive(SamplesTabHeader, tab == ProjectBrowserTab.Samples);
 
         // Update panel visibility
@@ -4235,11 +4437,13 @@ Print("");
         service.RegisterCommand("Toggle Undo History", "View", () => ToggleUndoHistory_Click(this, new RoutedEventArgs()), null, "Show/hide undo history panel", ["history", "changes"]);
 
         // View - Editors & Windows
+        service.RegisterCommand("Toggle AI Assistant", "View", () => ToggleAIAssistant_Click(this, new RoutedEventArgs()), "F3", "Open AI-powered assistant for mastering, mixing, melody generation, and chord suggestions", ["ai", "assistant", "mastering", "mixing", "melody", "chord", "auto"]);
         service.RegisterCommand("Toggle Synth Editor", "View", () => ToggleSynthEditor_Click(this, new RoutedEventArgs()), "F4 / Ctrl+Shift+Y", "Open synthesizer parameter editor", ["synth", "instrument", "parameters"]);
         service.RegisterCommand("Toggle Effects Editor", "View", () => ToggleEffectsEditor_Click(this, new RoutedEventArgs()), "F5 / Ctrl+Shift+E", "Open audio effects editor", ["effects", "fx", "processing"]);
         service.RegisterCommand("Open Pattern Editor", "View", () => OpenPatternEditor_Click(this, new RoutedEventArgs()), "F6 / Ctrl+Shift+P", "Open piano roll pattern editor", ["piano roll", "notes", "midi", "sequence"]);
         service.RegisterCommand("Toggle Mixer", "View", () => ToggleMixer_Click(this, new RoutedEventArgs()), "F7 / Ctrl+Shift+M", "Open mixing console", ["mix", "fader", "channel", "levels"]);
         service.RegisterCommand("Open Arrangement", "View", () => OpenArrangement_Click(this, new RoutedEventArgs()), "F8 / Ctrl+Shift+A", "Open arrangement timeline view", ["timeline", "arrangement", "structure", "song"]);
+        service.RegisterCommand("Open Session View", "View", () => OpenSessionView_Click(this, new RoutedEventArgs()), "Ctrl+Alt+S", "Open session view with clip launcher grid", ["session", "clips", "launcher", "live", "ableton"]);
 
         // View - Code folding
         service.RegisterCommand("Fold All", "View", () => FoldAll_Click(this, new RoutedEventArgs()), null, "Collapse all code regions", ["collapse", "fold", "regions"]);
@@ -4503,6 +4707,302 @@ Print("");
         {
             NetworkMidiDialog.ShowDialog(this);
         }, null, "Configure network MIDI (RTP-MIDI)", ["rtpmidi", "network", "remote"]);
+    }
+
+    #endregion
+
+    #region Welcome Screen Integration
+
+    /// <summary>
+    /// Triggers the new project dialog (for welcome screen integration).
+    /// </summary>
+    public void TriggerNewProject()
+    {
+        // Defer until window is fully rendered
+        Dispatcher.BeginInvoke(new Action(() => NewProject_Click(this, new RoutedEventArgs())),
+            System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    /// <summary>
+    /// Triggers the open project dialog (for welcome screen integration).
+    /// </summary>
+    public void TriggerOpenProject()
+    {
+        // Defer until window is fully rendered
+        Dispatcher.BeginInvoke(new Action(() => OpenProject_Click(this, new RoutedEventArgs())),
+            System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    /// <summary>
+    /// Opens a project file directly (for welcome screen integration).
+    /// </summary>
+    /// <param name="filePath">The full path to the project file.</param>
+    public async System.Threading.Tasks.Task OpenProjectFileAsync(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
+        {
+            OutputLine($"ERROR: Project file not found: {filePath}");
+            return;
+        }
+
+        try
+        {
+            StatusText.Text = "Loading project...";
+            _currentProject = await _projectService.OpenProjectAsync(filePath);
+
+            // Verify project was loaded successfully
+            if (_currentProject == null)
+            {
+                StatusText.Text = "Failed to load project";
+                OutputLine("ERROR: Project loading returned null");
+                MessageBox.Show("Failed to load project: Project file could not be parsed.", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            UpdateProjectExplorer();
+            UpdateAudioFilesList();
+            ProjectNameDisplay.Text = _currentProject.Name;
+            StatusText.Text = $"Loaded: {_currentProject.Name}";
+            OutputLine($"Loaded project: {_currentProject.Name}");
+
+            // Mark session as active for crash recovery
+            RecoveryService.Instance.MarkSessionActive(_currentProject);
+
+            // Initialize auto-save for this project
+            AutoSaveService.Instance.Initialize(_projectService);
+
+            // Add to recent projects
+            var recentProjectsService = App.Services.GetService<IRecentProjectsService>();
+            if (recentProjectsService != null)
+            {
+                await recentProjectsService.AddProjectAsync(filePath, _currentProject.Name);
+            }
+
+            // Open entry point script (with null checks)
+            if (_currentProject.Scripts != null && _currentProject.Scripts.Count > 0)
+            {
+                foreach (var script in _currentProject.Scripts)
+                {
+                    if (script != null && script.IsEntryPoint)
+                    {
+                        OpenScriptInTab(script);
+                        break;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = "Project loading failed";
+            OutputLine($"ERROR: Failed to open project: {ex.Message}");
+            MessageBox.Show($"Failed to open project: {ex.Message}", "Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
+
+    #region Workspace Presets
+
+    private WorkspacePresetService? _workspacePresetService;
+
+    /// <summary>
+    /// Opens the workspace presets dialog.
+    /// </summary>
+    private void WorkspacePresets_Click(object sender, RoutedEventArgs e)
+    {
+        EnsureWorkspacePresetServiceInitialized();
+
+        var dialog = new WorkspacePresetDialog(_workspacePresetService!, CaptureCurrentLayout)
+        {
+            Owner = this
+        };
+
+        if (dialog.ShowDialog() == true && dialog.PresetApplied && dialog.SelectedPreset != null)
+        {
+            ApplyWorkspacePreset(dialog.SelectedPreset);
+        }
+    }
+
+    /// <summary>
+    /// Applies a workspace preset to the current window layout.
+    /// </summary>
+    private void ApplyWorkspacePreset(WorkspacePresetData preset)
+    {
+        try
+        {
+            // Apply window state
+            if (preset.MainWindow.WindowState == "Maximized")
+            {
+                WindowState = System.Windows.WindowState.Maximized;
+            }
+            else if (preset.MainWindow.WindowState == "Normal")
+            {
+                WindowState = System.Windows.WindowState.Normal;
+                Left = preset.MainWindow.Left;
+                Top = preset.MainWindow.Top;
+                Width = preset.MainWindow.Width;
+                Height = preset.MainWindow.Height;
+            }
+
+            // Apply panel visibility
+            ProjectExplorerMenuItem.IsChecked = preset.Panels.ProjectExplorerVisible;
+            ProjectExplorerPanel.Visibility = preset.Panels.ProjectExplorerVisible ? Visibility.Visible : Visibility.Collapsed;
+            LeftPanelColumn.Width = preset.Panels.ProjectExplorerVisible ? new GridLength(preset.PanelSizes.LeftPanelWidth) : new GridLength(0);
+
+            OutputMenuItem.IsChecked = preset.Panels.OutputVisible;
+            OutputPanel.Visibility = preset.Panels.OutputVisible ? Visibility.Visible : Visibility.Collapsed;
+            _outputVisible = preset.Panels.OutputVisible;
+
+            // Apply mixer visibility if applicable
+            MixerMenuItem.IsChecked = preset.Panels.MixerVisible;
+
+            // Apply synth editor visibility
+            SynthEditorMenuItem.IsChecked = preset.Panels.SynthEditorVisible;
+
+            // Apply effects editor visibility
+            EffectsEditorMenuItem.IsChecked = preset.Panels.EffectsEditorVisible;
+
+            // Update status
+            StatusText.Text = $"Workspace preset '{preset.Name}' applied";
+            OutputLine($"Applied workspace preset: {preset.Name}");
+
+            // Update the combo box selection
+            UpdateWorkspacePresetCombo(preset);
+        }
+        catch (Exception ex)
+        {
+            OutputLine($"Error applying workspace preset: {ex.Message}");
+            StatusText.Text = "Failed to apply workspace preset";
+        }
+    }
+
+    /// <summary>
+    /// Captures the current window layout for saving to a preset.
+    /// </summary>
+    private WorkspaceLayoutCapture CaptureCurrentLayout()
+    {
+        return new WorkspaceLayoutCapture
+        {
+            MainWindow = new WindowLayoutState
+            {
+                Left = Left,
+                Top = Top,
+                Width = Width,
+                Height = Height,
+                WindowState = WindowState == System.Windows.WindowState.Maximized ? "Maximized" : "Normal"
+            },
+            Panels = new PanelVisibilityState
+            {
+                ProjectExplorerVisible = ProjectExplorerMenuItem.IsChecked,
+                OutputVisible = _outputVisible,
+                MixerVisible = MixerMenuItem.IsChecked,
+                SynthEditorVisible = SynthEditorMenuItem.IsChecked,
+                EffectsEditorVisible = EffectsEditorMenuItem.IsChecked,
+                TransportVisible = true // Always visible
+            },
+            PanelSizes = new PanelSizeState
+            {
+                LeftPanelWidth = LeftPanelColumn.Width.Value,
+                RightPanelWidth = RightPanelColumn.Width.Value,
+                OutputHeight = OutputPanel.ActualHeight
+            }
+        };
+    }
+
+    /// <summary>
+    /// Ensures the workspace preset service is initialized.
+    /// </summary>
+    private void EnsureWorkspacePresetServiceInitialized()
+    {
+        if (_workspacePresetService == null)
+        {
+            _workspacePresetService = new WorkspacePresetService();
+            _ = _workspacePresetService.InitializeAsync();
+            _workspacePresetService.PresetLoaded += (s, preset) => ApplyWorkspacePreset(preset);
+        }
+    }
+
+    /// <summary>
+    /// Handles quick workspace selection from toolbar combo box.
+    /// </summary>
+    private void WorkspacePresetCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (WorkspacePresetCombo.SelectedItem is ComboBoxItem item)
+        {
+            var presetName = item.Content?.ToString();
+            if (!string.IsNullOrEmpty(presetName))
+            {
+                SwitchToWorkspacePreset(presetName);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Switches to a workspace preset by name.
+    /// </summary>
+    private void SwitchToWorkspacePreset(string presetName)
+    {
+        EnsureWorkspacePresetServiceInitialized();
+
+        var preset = _workspacePresetService!.Presets.FirstOrDefault(p =>
+            string.Equals(p.Name, presetName, StringComparison.OrdinalIgnoreCase));
+
+        if (preset != null)
+        {
+            ApplyWorkspacePreset(preset);
+        }
+    }
+
+    /// <summary>
+    /// Updates the workspace preset combo box to reflect the current preset.
+    /// </summary>
+    private void UpdateWorkspacePresetCombo(WorkspacePresetData preset)
+    {
+        for (int i = 0; i < WorkspacePresetCombo.Items.Count; i++)
+        {
+            if (WorkspacePresetCombo.Items[i] is ComboBoxItem item &&
+                string.Equals(item.Content?.ToString(), preset.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                WorkspacePresetCombo.SelectedIndex = i;
+                break;
+            }
+        }
+    }
+
+    // Quick workspace menu item handlers
+    private void WorkspaceRecording_Click(object sender, RoutedEventArgs e) => SwitchToWorkspacePreset("Recording");
+    private void WorkspaceMixing_Click(object sender, RoutedEventArgs e) => SwitchToWorkspacePreset("Mixing");
+    private void WorkspaceMastering_Click(object sender, RoutedEventArgs e) => SwitchToWorkspacePreset("Mastering");
+    private void WorkspaceEditing_Click(object sender, RoutedEventArgs e) => SwitchToWorkspacePreset("Editing");
+    private void WorkspacePerformance_Click(object sender, RoutedEventArgs e) => SwitchToWorkspacePreset("Performance");
+
+    /// <summary>
+    /// Handles workspace preset shortcuts (Ctrl+1 through Ctrl+5).
+    /// </summary>
+    private bool HandleWorkspacePresetShortcut(KeyEventArgs e)
+    {
+        if (Keyboard.Modifiers != ModifierKeys.Control) return false;
+
+        string? presetName = e.Key switch
+        {
+            Key.D1 => "Recording",
+            Key.D2 => "Mixing",
+            Key.D3 => "Mastering",
+            Key.D4 => "Editing",
+            Key.D5 => "Performance",
+            _ => null
+        };
+
+        if (presetName != null)
+        {
+            SwitchToWorkspacePreset(presetName);
+            e.Handled = true;
+            return true;
+        }
+
+        return false;
     }
 
     #endregion

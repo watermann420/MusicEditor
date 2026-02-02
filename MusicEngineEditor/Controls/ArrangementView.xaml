@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls"
              xmlns:viewmodels="clr-namespace:MusicEngineEditor.ViewModels"
              mc:Ignorable="d"
-             d:DesignHeight="200" d:DesignWidth="1000"
+             d:DesignHeight="250" d:DesignWidth="1000"
              Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
@@ -106,7 +106,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -162,28 +164,27 @@
                                Margin="12,0,0,0"/>
                 </StackPanel>
 
-                <!-- Zoom Control -->
-                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Zoom:"
-                               FontSize="11"
-                               Foreground="{DynamicResource SecondaryForegroundBrush}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,8,0"/>
-                    <Slider x:Name="ZoomSlider"
-                            Style="{StaticResource ZoomSliderStyle}"
-                            Value="{Binding VisibleBeats, Mode=TwoWay}"/>
-                    <TextBlock Text="{Binding VisibleBeats, StringFormat={}{0:F0} beats}"
-                               FontSize="10"
-                               Foreground="{DynamicResource SecondaryForegroundBrush}"
-                               VerticalAlignment="Center"
-                               Margin="8,0,0,0"
-                               Width="60"/>
-                </StackPanel>
             </Grid>
         </Border>
 
+        <!-- Zoom Toolbar -->
+        <local:ZoomToolbar x:Name="ArrangementZoomToolbar"
+                           Grid.Row="1"
+                           HorizontalZoom="{Binding HorizontalZoom, Mode=TwoWay}"
+                           VerticalZoom="{Binding VerticalZoom, Mode=TwoWay}"
+                           ScrollOffset="{Binding ScrollOffset, Mode=TwoWay}"
+                           VisibleBeats="{Binding VisibleBeats, Mode=TwoWay}"
+                           TotalProjectLength="{Binding TotalLength}"
+                           PlayheadPosition="{Binding PlaybackPosition}"
+                           BeatsPerBar="4"
+                           HorizontalZoomChanged="ArrangementZoomToolbar_HorizontalZoomChanged"
+                           VerticalZoomChanged="ArrangementZoomToolbar_VerticalZoomChanged"
+                           ScrollOffsetChanged="ArrangementZoomToolbar_ScrollOffsetChanged"
+                           VisibleBeatsChanged="ArrangementZoomToolbar_VisibleBeatsChanged"
+                           GoToPlayheadRequested="ArrangementZoomToolbar_GoToPlayheadRequested"/>
+
         <!-- Section Type Quick-Add Buttons -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 Background="{DynamicResource ToolbarBackgroundBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,0,1"
@@ -215,7 +216,7 @@
         </Border>
 
         <!-- Main Arrangement Canvas -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -356,7 +357,7 @@
         </Grid>
 
         <!-- Audio Track with Waveform Display -->
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 x:Name="AudioTrackBorder"
                 Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
@@ -420,14 +421,14 @@
         </Border>
 
         <!-- Marker Track -->
-        <local:MarkerTrackControl Grid.Row="4"
+        <local:MarkerTrackControl Grid.Row="5"
                                    x:Name="MarkerTrackControl"
                                    Height="60"
                                    MarkerSelected="MarkerTrackControl_MarkerSelected"
                                    JumpRequested="MarkerTrackControl_JumpRequested"/>
 
         <!-- Status Bar -->
-        <Border Grid.Row="5"
+        <Border Grid.Row="6"
                 Background="{DynamicResource StatusBarBackgroundBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,1,0,0"

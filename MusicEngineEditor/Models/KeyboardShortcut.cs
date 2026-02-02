@@ -21,6 +21,7 @@ public enum ShortcutCategory
     Transport,
     Tools,
     Navigation,
+    Window,
     Debug,
     Help
 }

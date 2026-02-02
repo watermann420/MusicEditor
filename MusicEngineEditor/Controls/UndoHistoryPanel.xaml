@@ -6,8 +6,8 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls"
              xmlns:vm="clr-namespace:MusicEngineEditor.ViewModels"
              mc:Ignorable="d"
-             d:DesignHeight="400" d:DesignWidth="280"
-             Background="{DynamicResource PanelBackgroundBrush}">
+             d:DesignHeight="500" d:DesignWidth="320"
+             Background="#0D0D0D">
 
     <UserControl.Resources>
         <!-- Bool to Visibility Converter -->
@@ -22,15 +22,36 @@
         <!-- Int to Bool Converter -->
         <local:IntToBoolConverter x:Key="IntToBoolConverter"/>
 
-        <!-- Bool to Color Converter -->
+        <!-- Action Type to Icon Converter -->
+        <local:ActionTypeToIconConverter x:Key="ActionTypeToIconConverter"/>
+
+        <!-- Action Type to Color Converter -->
+        <local:ActionTypeToColorConverter x:Key="ActionTypeToColorConverter"/>
+
+        <!-- Bool to Color Converter for border highlighting -->
         <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
 
-        <!-- History Item Style -->
-        <Style x:Key="HistoryItemStyle" TargetType="ListBoxItem">
+        <!-- Timeline Node Colors -->
+        <SolidColorBrush x:Key="AccentCyanBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="PastNodeBrush" Color="#4A4A4A"/>
+        <SolidColorBrush x:Key="FutureNodeBrush" Color="#6A6A6A"/>
+        <SolidColorBrush x:Key="CurrentNodeBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="TimelineLineBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="BranchIndicatorBrush" Color="#E8A73C"/>
+
+        <!-- Action Type Colors -->
+        <SolidColorBrush x:Key="EditActionBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="AddActionBrush" Color="#00FF88"/>
+        <SolidColorBrush x:Key="DeleteActionBrush" Color="#FF4757"/>
+        <SolidColorBrush x:Key="MoveActionBrush" Color="#9C7CE8"/>
+        <SolidColorBrush x:Key="ParameterActionBrush" Color="#E8A73C"/>
+
+        <!-- Timeline Item Style -->
+        <Style x:Key="TimelineItemStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="Margin" Value="2,1"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
@@ -38,29 +59,15 @@
                     <ControlTemplate TargetType="ListBoxItem">
                         <Border x:Name="Border"
                                 Background="{TemplateBinding Background}"
-                                Padding="{TemplateBinding Padding}"
-                                CornerRadius="4"
-                                BorderThickness="1"
-                                BorderBrush="Transparent">
+                                Padding="{TemplateBinding Padding}">
                             <ContentPresenter/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <!-- Undo items have full opacity, redo items are dimmed -->
-                            <DataTrigger Binding="{Binding IsUndoItem}" Value="False">
-                                <Setter Property="Opacity" Value="0.6"/>
-                            </DataTrigger>
-                            <!-- Current position marker -->
-                            <DataTrigger Binding="{Binding IsCurrentPosition}" Value="True">
-                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-                                <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
-                                <Setter TargetName="Border" Property="Background" Value="#33448AFF"/>
-                            </DataTrigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#252525"/>
+                                <Setter TargetName="Border" Property="Background" Value="#1A1A1A"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="Border" Property="Background" Value="#252525"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -68,239 +75,456 @@
             </Setter>
         </Style>
 
+        <!-- Control Button Style -->
+        <Style x:Key="ControlButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#252525"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1A1A1A"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Accent Button Style -->
+        <Style x:Key="AccentButtonStyle" TargetType="Button" BasedOn="{StaticResource ControlButtonStyle}">
+            <Setter Property="Background" Value="#00D9FF"/>
+            <Setter Property="Foreground" Value="#0D0D0D"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#33E1FF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Danger Button Style -->
+        <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource ControlButtonStyle}">
+            <Setter Property="Background" Value="#3A2020"/>
+            <Setter Property="Foreground" Value="#FF6B6B"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4A2525"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- Context Menu -->
-        <ContextMenu x:Key="HistoryContextMenu">
+        <ContextMenu x:Key="HistoryContextMenu"
+                     Background="#181818"
+                     BorderBrush="#333333"
+                     Foreground="#E0E0E0">
             <MenuItem Header="Jump to This State"
                       Command="{Binding DataContext.JumpToSelectedStateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                       InputGestureText="Enter"/>
-            <Separator/>
+            <Separator Background="#333333"/>
             <MenuItem Header="Branch from Here"
                       Command="{Binding DataContext.BranchFromHereCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                       ToolTip="Create a new branch from this point, discarding redo history"/>
-            <Separator/>
+            <Separator Background="#333333"/>
             <MenuItem Header="Clear All History"
                       Command="{Binding DataContext.ClearHistoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                      Foreground="{DynamicResource ErrorBrush}"/>
+                      Foreground="#FF6B6B"/>
         </ContextMenu>
     </UserControl.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Border BorderBrush="#252525"
+            BorderThickness="1"
+            CornerRadius="6">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Border Grid.Row="0"
-                Background="{DynamicResource HeaderBackgroundBrush}"
-                BorderBrush="{DynamicResource BorderBrush}"
-                BorderThickness="0,0,0,1"
-                Padding="12,10">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Background="#181818"
+                    BorderBrush="#252525"
+                    BorderThickness="0,0,0,1"
+                    Padding="12,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Undo History"
-                               FontWeight="SemiBold"
-                               FontSize="12"
-                               Foreground="{DynamicResource BrightForegroundBrush}"
-                               VerticalAlignment="Center"/>
-                    <Border Background="{DynamicResource AccentBrush}"
-                            CornerRadius="8"
-                            Padding="6,2"
-                            Margin="8,0,0,0">
-                        <TextBlock Text="{Binding TotalItems}"
-                                   FontSize="10"
-                                   FontWeight="Bold"
-                                   Foreground="White"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Undo History"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="White"
+                                   VerticalAlignment="Center"/>
+                        <Border Background="#00D9FF"
+                                CornerRadius="8"
+                                Padding="6,2"
+                                Margin="8,0,0,0">
+                            <TextBlock Text="{Binding TotalItems}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="#0D0D0D"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Refresh Button -->
+                    <Button Grid.Column="1"
+                            Style="{StaticResource ControlButtonStyle}"
+                            Command="{Binding RefreshHistoryCommand}"
+                            ToolTip="Refresh History"
+                            Width="28" Height="28"
+                            Padding="0">
+                        <Path Data="M12,4C7.6,4,4,7.6,4,12s3.6,8,8,8s8-3.6,8-8h-2c0,3.3-2.7,6-6,6s-6-2.7-6-6s2.7-6,6-6c1.7,0,3.2,0.7,4.2,1.8L13,11h7V4l-2.4,2.4C16.1,5.1,14.2,4,12,4z"
+                              Fill="#808080"
+                              Width="14" Height="14"
+                              Stretch="Uniform"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Undo/Redo Control Buttons -->
+            <Border Grid.Row="1"
+                    Background="#181818"
+                    BorderBrush="#252525"
+                    BorderThickness="0,0,0,1"
+                    Padding="12,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Undo Button with Icon -->
+                    <Button Grid.Column="0"
+                            Command="{Binding UndoLastCommand}"
+                            Style="{StaticResource ControlButtonStyle}"
+                            IsEnabled="{Binding UndoCount, Converter={StaticResource IntToBoolConverter}}"
+                            ToolTip="Undo (Ctrl+Z)">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M12.5,8C9.85,8,7.45,9,5.6,10.6L2,7v9h9l-3.62-3.62c1.39-1.16,3.16-1.88,5.12-1.88c3.54,0,6.55,2.31,7.6,5.5l2.37-.78C21.08,11.03,17.15,8,12.5,8z"
+                                  Fill="#808080"
+                                  Width="12" Height="12"
+                                  Stretch="Uniform"
+                                  Margin="0,0,6,0"/>
+                            <TextBlock Text="Undo" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Position Indicator -->
+                    <Border Grid.Column="1"
+                            Background="#252525"
+                            CornerRadius="4"
+                            Padding="12,4"
+                            Margin="8,0">
+                        <TextBlock HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontSize="11"
+                                   Foreground="#808080"
+                                   FontFamily="Consolas">
+                            <Run Text="{Binding UndoCount, Mode=OneWay}"/>
+                            <Run Text=" / "/>
+                            <Run Text="{Binding TotalItems, Mode=OneWay}"/>
+                        </TextBlock>
                     </Border>
-                </StackPanel>
 
-                <!-- Refresh Button -->
-                <Button Grid.Column="1"
-                        Style="{StaticResource IconButtonStyle}"
-                        Command="{Binding RefreshHistoryCommand}"
-                        ToolTip="Refresh History"
-                        Width="24" Height="24">
-                    <TextBlock Text="&#x21BB;" FontSize="12"/>
-                </Button>
-            </Grid>
-        </Border>
+                    <!-- Redo Button with Icon -->
+                    <Button Grid.Column="2"
+                            Command="{Binding RedoLastCommand}"
+                            Style="{StaticResource ControlButtonStyle}"
+                            IsEnabled="{Binding RedoCount, Converter={StaticResource IntToBoolConverter}}"
+                            ToolTip="Redo (Ctrl+Y)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Redo" FontSize="11"/>
+                            <Path Data="M18.4,10.6C16.55,9,14.15,8,11.5,8c-4.65,0-8.58,3.03-9.96,7.22l2.36,0.78C4.95,12.81,7.96,10.5,11.5,10.5c1.95,0,3.72,0.72,5.12,1.88L13,16h9V7L18.4,10.6z"
+                                  Fill="#808080"
+                                  Width="12" Height="12"
+                                  Stretch="Uniform"
+                                  Margin="6,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
 
-        <!-- Undo/Redo Quick Actions -->
-        <Border Grid.Row="1"
-                Background="{DynamicResource BackgroundBrush}"
-                Padding="8,6">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+            <!-- Timeline History List -->
+            <Border Grid.Row="2" Margin="0">
+                <Grid>
+                    <!-- Empty State -->
+                    <StackPanel VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisConverter}}">
+                        <Path Data="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12.5,10.5C13.33,10.5 14,11.17 14,12C14,12.83 13.33,13.5 12.5,13.5C11.67,13.5 11,12.83 11,12C11,11.17 11.67,10.5 12.5,10.5M16.5,17.5V16.5C16.5,15.12 14.38,14 12,14C9.62,14 7.5,15.12 7.5,16.5V17.5H16.5Z"
+                              Fill="#4A4A4A"
+                              Width="48" Height="48"
+                              Stretch="Uniform"
+                              HorizontalAlignment="Center"/>
+                        <TextBlock Text="No History Yet"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#808080"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,12,0,4"/>
+                        <TextBlock Text="Your undo/redo history&#x0a;will appear here as a timeline"
+                                   FontSize="11"
+                                   Foreground="#606060"
+                                   HorizontalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"
+                                   MaxWidth="200"/>
+                    </StackPanel>
 
-                <!-- Undo Button -->
-                <Button Grid.Column="0"
-                        Content="Undo"
-                        Command="{Binding UndoLastCommand}"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        Padding="8,4"
-                        FontSize="11"
-                        IsEnabled="{Binding UndoCount, Converter={StaticResource IntToBoolConverter}}"/>
+                    <!-- Timeline ListBox -->
+                    <ListBox x:Name="HistoryListBox"
+                             ItemsSource="{Binding HistoryItems}"
+                             SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                             ItemContainerStyle="{StaticResource TimelineItemStyle}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.VirtualizationMode="Recycling"
+                             MouseDoubleClick="HistoryList_MouseDoubleClick"
+                             ContextMenu="{StaticResource HistoryContextMenu}"
+                             Visibility="{Binding IsEmpty, Converter={StaticResource InverseBoolToVisConverter}}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,0" MinHeight="52">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="48"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                <!-- Position Indicator -->
-                <TextBlock Grid.Column="1"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Margin="8,0"
-                           FontSize="11"
-                           Foreground="{DynamicResource SecondaryForegroundBrush}">
-                    <Run Text="{Binding UndoCount, Mode=OneWay}"/>
-                    <Run Text="/"/>
-                    <Run Text="{Binding TotalItems, Mode=OneWay}"/>
-                </TextBlock>
+                                    <!-- Timeline Column (Line + Node) -->
+                                    <Grid Grid.Column="0">
+                                        <!-- Timeline Vertical Line -->
+                                        <Border Width="2"
+                                                Background="#2A2A2A"
+                                                HorizontalAlignment="Center"
+                                                Margin="0,-1,0,-1"/>
 
-                <!-- Redo Button -->
-                <Button Grid.Column="2"
-                        Content="Redo"
-                        Command="{Binding RedoLastCommand}"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        Padding="8,4"
-                        FontSize="11"
-                        IsEnabled="{Binding RedoCount, Converter={StaticResource IntToBoolConverter}}"/>
-            </Grid>
-        </Border>
+                                        <!-- Timeline Node -->
+                                        <Grid HorizontalAlignment="Center"
+                                              VerticalAlignment="Center">
+                                            <!-- Outer Glow for Current -->
+                                            <Ellipse Width="24" Height="24"
+                                                     Visibility="{Binding IsCurrentPosition, Converter={StaticResource BoolToVisConverter}}">
+                                                <Ellipse.Fill>
+                                                    <RadialGradientBrush>
+                                                        <GradientStop Color="#4000D9FF" Offset="0"/>
+                                                        <GradientStop Color="#0000D9FF" Offset="1"/>
+                                                    </RadialGradientBrush>
+                                                </Ellipse.Fill>
+                                            </Ellipse>
 
-        <!-- History List -->
-        <Border Grid.Row="2" Margin="4">
-            <!-- Empty State -->
-            <Grid>
-                <!-- Empty Message -->
-                <StackPanel VerticalAlignment="Center"
-                            HorizontalAlignment="Center"
-                            Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisConverter}}">
-                    <TextBlock Text="&#x1F4DD;"
-                               FontSize="32"
-                               HorizontalAlignment="Center"
-                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                    <TextBlock Text="No History Yet"
-                               FontSize="12"
-                               FontWeight="SemiBold"
-                               Foreground="{DynamicResource SecondaryForegroundBrush}"
-                               HorizontalAlignment="Center"
-                               Margin="0,8,0,4"/>
-                    <TextBlock Text="Your undo/redo history will appear here"
-                               FontSize="11"
-                               Foreground="{DynamicResource SecondaryForegroundBrush}"
-                               HorizontalAlignment="Center"
-                               TextWrapping="Wrap"
-                               MaxWidth="200"
-                               TextAlignment="Center"/>
-                </StackPanel>
+                                            <!-- Node Circle -->
+                                            <Border x:Name="NodeCircle"
+                                                    Width="18" Height="18"
+                                                    CornerRadius="9"
+                                                    Background="{Binding ActionType, Converter={StaticResource ActionTypeToColorConverter}}"
+                                                    BorderThickness="2">
+                                                <Border.BorderBrush>
+                                                    <SolidColorBrush Color="{Binding IsCurrentPosition, Converter={StaticResource BoolToColorConverter}}"/>
+                                                </Border.BorderBrush>
+                                                <!-- Action Icon -->
+                                                <TextBlock Text="{Binding ActionType, Converter={StaticResource ActionTypeToIconConverter}}"
+                                                           FontSize="9"
+                                                           FontWeight="Bold"
+                                                           Foreground="White"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
 
-                <!-- History ListBox -->
-                <ListBox ItemsSource="{Binding HistoryItems}"
-                         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                         ItemContainerStyle="{StaticResource HistoryItemStyle}"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         VirtualizingPanel.IsVirtualizing="True"
-                         VirtualizingPanel.VirtualizationMode="Recycling"
-                         MouseDoubleClick="HistoryList_MouseDoubleClick"
-                         ContextMenu="{StaticResource HistoryContextMenu}"
-                         Visibility="{Binding IsEmpty, Converter={StaticResource InverseBoolToVisConverter}}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="24"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                                            <!-- Branch Indicator -->
+                                            <Path Data="M9,12L11,10V14L9,12M15,12L13,10V14L15,12M5,12L7,10V14L5,12"
+                                                  Fill="#E8A73C"
+                                                  Width="12" Height="8"
+                                                  Stretch="Uniform"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Bottom"
+                                                  Margin="0,0,0,-8"
+                                                  Visibility="{Binding HasBranch, Converter={StaticResource BoolToVisConverter}}"
+                                                  ToolTip="History branch point"/>
+                                        </Grid>
 
-                                <!-- Icon -->
-                                <Border Width="20" Height="20"
-                                        CornerRadius="10"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center">
-                                    <Border.Background>
-                                        <SolidColorBrush Color="{Binding IsUndoItem, Converter={StaticResource BoolToColorConverter}}"/>
-                                    </Border.Background>
-                                    <TextBlock Text="{Binding Icon}"
-                                               FontSize="10"
-                                               FontWeight="Bold"
-                                               Foreground="White"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"/>
-                                </Border>
+                                        <!-- Current Position Arrow -->
+                                        <Path Data="M0,0 L8,6 L0,12 Z"
+                                              Fill="#00D9FF"
+                                              Width="6" Height="10"
+                                              Stretch="Uniform"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Margin="2,0,0,0"
+                                              Visibility="{Binding IsCurrentPosition, Converter={StaticResource BoolToVisConverter}}"/>
+                                    </Grid>
 
-                                <!-- Description -->
-                                <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Description}"
-                                               FontSize="11"
-                                               TextTrimming="CharacterEllipsis"
-                                               ToolTip="{Binding Description}"/>
-                                    <TextBlock Text="{Binding Category}"
-                                               FontSize="9"
-                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                               Visibility="{Binding Category, Converter={StaticResource StringToVisConverter}}"/>
-                                </StackPanel>
+                                    <!-- Content Column -->
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Margin="8,8,8,8">
+                                        <!-- Description -->
+                                        <TextBlock Text="{Binding Description}"
+                                                   FontSize="12"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding Description}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#E0E0E0"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsUndoItem}" Value="False">
+                                                            <Setter Property="Foreground" Value="#808080"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsCurrentPosition}" Value="True">
+                                                            <Setter Property="Foreground" Value="#00D9FF"/>
+                                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
 
-                                <!-- Timestamp -->
-                                <TextBlock Grid.Column="2"
-                                           Text="{Binding RelativeTime}"
-                                           FontSize="10"
-                                           Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                           VerticalAlignment="Center"
-                                           Margin="8,0,0,0"/>
+                                        <!-- Category Badge -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <Border CornerRadius="2"
+                                                    Padding="4,1"
+                                                    Margin="0,0,6,0"
+                                                    Visibility="{Binding Category, Converter={StaticResource StringToVisConverter}}">
+                                                <Border.Background>
+                                                    <SolidColorBrush Color="{Binding ActionType, Converter={StaticResource ActionTypeToColorConverter}, ConverterParameter=background}"/>
+                                                </Border.Background>
+                                                <TextBlock Text="{Binding Category}"
+                                                           FontSize="9"
+                                                           Foreground="White"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
 
-                                <!-- Current Position Indicator -->
-                                <Border Grid.Column="0" Grid.ColumnSpan="3"
-                                        Height="2"
-                                        Background="{DynamicResource AccentBrush}"
-                                        VerticalAlignment="Bottom"
-                                        Margin="-8,-2,-8,0"
-                                        Visibility="{Binding IsCurrentPosition, Converter={StaticResource BoolToVisConverter}}"/>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
-        </Border>
+                                    <!-- Timestamp Column -->
+                                    <StackPanel Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Margin="0,0,12,0">
+                                        <TextBlock Text="{Binding RelativeTime}"
+                                                   FontSize="10"
+                                                   Foreground="#606060"
+                                                   HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding FormattedTime}"
+                                                   FontSize="9"
+                                                   Foreground="#404040"
+                                                   HorizontalAlignment="Right"
+                                                   Margin="0,2,0,0"/>
+                                    </StackPanel>
 
-        <!-- Footer with Info -->
-        <Border Grid.Row="3"
-                Background="{DynamicResource BackgroundBrush}"
-                BorderBrush="{DynamicResource BorderBrush}"
-                BorderThickness="0,1,0,0"
-                Padding="10,6">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                                    <!-- Current Position Highlight Bar -->
+                                    <Border Grid.Column="0" Grid.ColumnSpan="3"
+                                            Height="2"
+                                            Background="#00D9FF"
+                                            VerticalAlignment="Bottom"
+                                            Visibility="{Binding IsCurrentPosition, Converter={StaticResource BoolToVisConverter}}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
 
-                <TextBlock FontSize="10"
-                           Foreground="{DynamicResource SecondaryForegroundBrush}"
-                           VerticalAlignment="Center">
-                    <Run Text="{Binding UndoCount, Mode=OneWay, StringFormat='Undo: {0}'}"/>
-                    <Run Text=" | "/>
-                    <Run Text="{Binding RedoCount, Mode=OneWay, StringFormat='Redo: {0}'}"/>
-                </TextBlock>
+            <!-- Footer Control Panel -->
+            <Border Grid.Row="3"
+                    Background="#181818"
+                    BorderBrush="#252525"
+                    BorderThickness="0,1,0,0"
+                    Padding="12,10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                <Button Grid.Column="1"
-                        Content="Clear"
-                        Command="{Binding ClearHistoryCommand}"
-                        Style="{StaticResource ToolbarButtonStyle}"
-                        FontSize="10"
-                        Padding="8,2"
-                        Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-            </Grid>
-        </Border>
-    </Grid>
+                    <!-- Status Info -->
+                    <StackPanel Grid.Row="0"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,8">
+                        <Border Background="#1A3A1A"
+                                CornerRadius="3"
+                                Padding="6,2"
+                                Margin="0,0,6,0">
+                            <TextBlock FontSize="10" Foreground="#00FF88">
+                                <Run Text="Undo:"/>
+                                <Run Text="{Binding UndoCount, Mode=OneWay}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                        </Border>
+                        <Border Background="#1A2A3A"
+                                CornerRadius="3"
+                                Padding="6,2">
+                            <TextBlock FontSize="10" Foreground="#00D9FF">
+                                <Run Text="Redo:"/>
+                                <Run Text="{Binding RedoCount, Mode=OneWay}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Action Buttons -->
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Compact History Button -->
+                        <Button Grid.Column="0"
+                                Command="{Binding CompactHistoryCommand}"
+                                Style="{StaticResource ControlButtonStyle}"
+                                ToolTip="Merge similar consecutive actions to reduce history size">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M4,5V7H21V5H4M4,11H21V9H4V11M4,19H10V17H4V19M4,15H21V13H4V15M14,17V23L18,19L14,17Z"
+                                      Fill="#808080"
+                                      Width="12" Height="12"
+                                      Stretch="Uniform"
+                                      Margin="0,0,6,0"/>
+                                <TextBlock Text="Compact"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Clear History Button -->
+                        <Button Grid.Column="2"
+                                Command="{Binding ClearHistoryCommand}"
+                                Style="{StaticResource DangerButtonStyle}"
+                                ToolTip="Clear all undo/redo history">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                                      Fill="#FF6B6B"
+                                      Width="12" Height="12"
+                                      Stretch="Uniform"
+                                      Margin="0,0,6,0"/>
+                                <TextBlock Text="Clear"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
 </UserControl>

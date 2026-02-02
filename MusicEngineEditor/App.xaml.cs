@@ -8,6 +8,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using MusicEngineEditor.Services;
 using MusicEngineEditor.ViewModels;
+using MusicEngineEditor.Views;
 using MusicEngineEditor.Views.Dialogs;
 
 namespace MusicEngineEditor;
@@ -31,9 +32,61 @@ public partial class App : Application
         // Load settings and apply saved theme
         await ApplyStartupThemeAsync();
 
+        // Load recent projects service
+        var recentProjectsService = Services.GetRequiredService<IRecentProjectsService>();
+        await recentProjectsService.LoadAsync();
+
+        // Show welcome screen if enabled
+        string? projectToOpen = null;
+        bool createNewProject = false;
+        bool openProjectDialog = false;
+
+        if (recentProjectsService.ShowWelcomeOnStartup)
+        {
+            var welcomeScreen = new WelcomeScreen(recentProjectsService);
+            var result = welcomeScreen.ShowDialog();
+
+            if (result == true)
+            {
+                switch (welcomeScreen.Result.Action)
+                {
+                    case WelcomeScreenAction.NewProject:
+                        createNewProject = true;
+                        break;
+                    case WelcomeScreenAction.OpenProject:
+                        openProjectDialog = true;
+                        break;
+                    case WelcomeScreenAction.OpenRecentProject:
+                        projectToOpen = welcomeScreen.Result.SelectedProjectPath;
+                        break;
+                    case WelcomeScreenAction.Skip:
+                    case WelcomeScreenAction.Close:
+                        // Just continue to main window
+                        break;
+                }
+            }
+        }
+
         // Create and show main window
         var mainWindow = new MainWindow();
         mainWindow.Show();
+
+        // Handle welcome screen result
+        if (createNewProject)
+        {
+            // Trigger new project action via reflection or command
+            mainWindow.TriggerNewProject();
+        }
+        else if (openProjectDialog)
+        {
+            // Trigger open project action
+            mainWindow.TriggerOpenProject();
+        }
+        else if (!string.IsNullOrEmpty(projectToOpen))
+        {
+            // Open the selected recent project
+            await mainWindow.OpenProjectFileAsync(projectToOpen);
+        }
 
         // Check for crash recovery after main window is shown
         CheckForCrashRecovery(mainWindow);
@@ -94,6 +147,7 @@ public partial class App : Application
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<ISoundPackService, SoundPackService>();
+        services.AddSingleton<PresetBrowserService>();
         services.AddSingleton<EngineService>();
 
         // Playback services (singletons accessed via Instance property)
@@ -103,6 +157,9 @@ public partial class App : Application
         // Auto-save and recovery services
         services.AddSingleton(_ => AutoSaveService.Instance);
         services.AddSingleton(_ => RecoveryService.Instance);
+
+        // Recent projects service
+        services.AddSingleton<IRecentProjectsService, RecentProjectsService>();
 
         // ViewModels
         services.AddTransient<MainViewModel>();

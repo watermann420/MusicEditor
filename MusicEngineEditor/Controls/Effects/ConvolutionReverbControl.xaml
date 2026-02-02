@@ -227,6 +227,7 @@
                               x:Name="BypassToggle"
                               Content="Bypass"
                               Style="{StaticResource ConvReverbBypassToggleStyle}"
+                              ToolTip="Bypass: Disable reverb and pass audio unchanged"
                               Click="BypassToggle_Click"/>
             </Grid>
 
@@ -310,6 +311,7 @@
                         x:Name="BrowseIRButton"
                         Content="Browse..."
                         Style="{StaticResource ConvReverbButtonStyle}"
+                        ToolTip="Browse: Load impulse response file (.wav, .aiff)"
                         Click="BrowseIRButton_Click"
                         Margin="0,0,8,0"/>
 
@@ -317,6 +319,7 @@
                         x:Name="PreviewIRButton"
                         Content="Preview"
                         Style="{StaticResource ConvReverbButtonStyle}"
+                        ToolTip="Preview: Listen to the impulse response"
                         Click="PreviewIRButton_Click"
                         IsEnabled="False"/>
             </Grid>
@@ -342,6 +345,7 @@
                         Minimum="0"
                         Maximum="200"
                         Value="0"
+                        ToolTip="Pre-delay: Time before reverb starts (Range: 0-200ms, Default: 0ms)"
                         ValueChanged="PreDelaySlider_ValueChanged"/>
             </StackPanel>
 
@@ -366,6 +370,7 @@
                         Minimum="0"
                         Maximum="100"
                         Value="33.33"
+                        ToolTip="Decay Time: Reverb tail length multiplier (Range: 0.5x-3x, Default: 1x)"
                         ValueChanged="DecaySlider_ValueChanged"/>
             </StackPanel>
 
@@ -410,6 +415,7 @@
                                 Minimum="0"
                                 Maximum="100"
                                 Value="0"
+                                ToolTip="Lo-Cut: Remove low frequencies from reverb (Range: 20Hz-2kHz, Default: 20Hz)"
                                 ValueChanged="LoCutSlider_ValueChanged"/>
                     </StackPanel>
 
@@ -434,6 +440,7 @@
                                 Minimum="0"
                                 Maximum="100"
                                 Value="100"
+                                ToolTip="Hi-Cut: Remove high frequencies from reverb (Range: 1kHz-20kHz, Default: 20kHz)"
                                 ValueChanged="HiCutSlider_ValueChanged"/>
                     </StackPanel>
                 </Grid>
@@ -468,6 +475,7 @@
                             Minimum="0"
                             Maximum="100"
                             Value="30"
+                            ToolTip="Dry/Wet: Balance between original and reverb signal (Range: 0-100%, Default: 30%)"
                             ValueChanged="DryWetSlider_ValueChanged"/>
                 </StackPanel>
 
@@ -492,6 +500,7 @@
                             Minimum="0"
                             Maximum="100"
                             Value="100"
+                            ToolTip="Stereo Width: Reverb stereo spread (Range: 0-100%, Default: 100%)"
                             ValueChanged="StereoWidthSlider_ValueChanged"/>
                 </StackPanel>
             </Grid>

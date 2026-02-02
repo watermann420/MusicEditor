@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Keyboard Shortcuts Editor"
-        Width="1000" Height="700"
-        MinWidth="800" MinHeight="550"
+        Width="1100" Height="750"
+        MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
         Background="{DynamicResource BackgroundBrush}"
@@ -74,6 +74,40 @@
             <Setter Property="Padding" Value="6,2"/>
         </Style>
 
+        <!-- Set Button Style (for recording shortcuts) -->
+        <Style x:Key="SetButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Edit Button Style -->
         <Style x:Key="EditButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -137,10 +171,48 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Toolbar Button Style -->
+        <Style x:Key="ToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#3E3E42"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -165,7 +237,7 @@
                                FontSize="18"
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource BrightForegroundBrush}"/>
-                    <TextBlock Text="Click 'Edit' on any shortcut to change its key binding. Press the new key combination and click 'Apply'."
+                    <TextBlock Text="Customize keyboard shortcuts for commands. Click 'Set' to record a new shortcut, then press your desired key combination."
                                FontSize="12"
                                Foreground="{DynamicResource SecondaryForegroundBrush}"
                                Margin="0,4,0,0"
@@ -189,27 +261,46 @@
                         <ComboBoxItem Content="Ableton Live"/>
                         <ComboBoxItem Content="Custom"/>
                     </ComboBox>
-                    <Button Content="Import..."
-                            Margin="8,0,0,0"
-                            Padding="10,4"
-                            Click="ImportButton_Click"
-                            ToolTip="Import shortcuts from a JSON file"/>
-                    <Button Content="Export..."
-                            Margin="4,0,0,0"
-                            Padding="10,4"
-                            Click="ExportButton_Click"
-                            ToolTip="Export shortcuts to a JSON file"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Search and Filter Bar -->
+        <!-- Toolbar with Import/Export/Print/Reset buttons -->
         <Border Grid.Row="1"
+                Background="#1E1E1E"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16,8">
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{StaticResource ToolbarButtonStyle}"
+                        Content="Import..."
+                        Click="ImportButton_Click"
+                        ToolTip="Import shortcuts from a JSON file"/>
+                <Button Style="{StaticResource ToolbarButtonStyle}"
+                        Content="Export..."
+                        Margin="8,0,0,0"
+                        Click="ExportButton_Click"
+                        ToolTip="Export shortcuts to a JSON file"/>
+                <Button Style="{StaticResource ToolbarButtonStyle}"
+                        Content="Print..."
+                        Margin="8,0,0,0"
+                        Click="PrintButton_Click"
+                        ToolTip="Generate a printable list of all shortcuts (Markdown/Text)"/>
+                <Rectangle Width="1" Fill="{DynamicResource BorderBrush}" Margin="16,0"/>
+                <Button Style="{StaticResource ToolbarButtonStyle}"
+                        Content="Reset to Defaults"
+                        Click="ResetAllButton_Click"
+                        ToolTip="Reset all shortcuts to their original default bindings"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Search and Filter Bar -->
+        <Border Grid.Row="2"
                 Background="{DynamicResource BackgroundBrush}"
                 Padding="16,12">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*" MaxWidth="400"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
@@ -221,8 +312,7 @@
                          Foreground="{DynamicResource ForegroundBrush}"
                          BorderBrush="{DynamicResource BorderBrush}"
                          Padding="8,6"
-                         MaxWidth="400"
-                         HorizontalAlignment="Left"
+                         HorizontalAlignment="Stretch"
                          TextChanged="SearchTextBox_TextChanged">
                     <TextBox.Style>
                         <Style TargetType="TextBox">
@@ -251,7 +341,7 @@
                                                               VerticalAlignment="Center"/>
                                                 <TextBlock x:Name="Placeholder"
                                                            Grid.Column="1"
-                                                           Text="Search by command name, description, or shortcut..."
+                                                           Text="Search by command, description, or shortcut..."
                                                            Foreground="{DynamicResource SecondaryForegroundBrush}"
                                                            VerticalAlignment="Center"
                                                            Margin="8,0,0,0"
@@ -277,7 +367,7 @@
                 <!-- Category Filter -->
                 <ComboBox x:Name="CategoryFilterCombo"
                           Grid.Column="1"
-                          Width="150"
+                          Width="160"
                           Margin="16,0,0,0"
                           SelectedIndex="0"
                           SelectionChanged="CategoryFilterCombo_SelectionChanged">
@@ -288,6 +378,7 @@
                     <ComboBoxItem Content="Transport" Tag="Transport"/>
                     <ComboBoxItem Content="Tools" Tag="Tools"/>
                     <ComboBoxItem Content="Navigation" Tag="Navigation"/>
+                    <ComboBoxItem Content="Window" Tag="Window"/>
                     <ComboBoxItem Content="Debug" Tag="Debug"/>
                     <ComboBoxItem Content="Help" Tag="Help"/>
                 </ComboBox>
@@ -305,7 +396,7 @@
         </Border>
 
         <!-- Shortcuts List -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1"
@@ -319,20 +410,22 @@
                 <!-- Column Headers -->
                 <Border Grid.Row="0"
                         Background="#2D2D30"
-                        Padding="12,8"
+                        Padding="12,10"
                         BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="0,0,0,1">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="*" MinWidth="200"/>
                             <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="130"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Command" FontWeight="SemiBold" FontSize="11" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Grid.Column="1" Text="Shortcut" FontWeight="SemiBold" FontSize="11" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Grid.Column="2" Text="Status" FontWeight="SemiBold" FontSize="11" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Grid.Column="3" Text="Actions" FontWeight="SemiBold" FontSize="11" Foreground="{DynamicResource SecondaryForegroundBrush}" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Column="0" Text="Command" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource BrightForegroundBrush}"/>
+                        <TextBlock Grid.Column="1" Text="Category" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource BrightForegroundBrush}"/>
+                        <TextBlock Grid.Column="2" Text="Shortcut" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource BrightForegroundBrush}"/>
+                        <TextBlock Grid.Column="3" Text="Status" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource BrightForegroundBrush}"/>
+                        <TextBlock Grid.Column="4" Text="Actions" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource BrightForegroundBrush}" HorizontalAlignment="Center"/>
                     </Grid>
                 </Border>
 
@@ -371,25 +464,42 @@
                                             Tag="{Binding}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="200"/>
+                                                <ColumnDefinition Width="*" MinWidth="200"/>
                                                 <ColumnDefinition Width="100"/>
-                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="180"/>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="130"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- Action Name and Description -->
+                                            <!-- Command Name and Description -->
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding CommandName}"
                                                            FontWeight="SemiBold"
+                                                           FontSize="13"
                                                            Foreground="{DynamicResource ForegroundBrush}"/>
                                                 <TextBlock Text="{Binding Description}"
                                                            FontSize="11"
                                                            Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                                           TextTrimming="CharacterEllipsis"/>
+                                                           TextTrimming="CharacterEllipsis"
+                                                           ToolTip="{Binding Description}"/>
                                             </StackPanel>
 
+                                            <!-- Category Badge -->
+                                            <Border Grid.Column="1"
+                                                    Background="#2A2A2E"
+                                                    BorderBrush="#3A3A3E"
+                                                    BorderThickness="1"
+                                                    CornerRadius="3"
+                                                    Padding="6,2"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Shortcut.Category}"
+                                                           FontSize="10"
+                                                           Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                            </Border>
+
                                             <!-- Current Shortcut -->
-                                            <StackPanel Grid.Column="1"
+                                            <StackPanel Grid.Column="2"
                                                         Orientation="Horizontal"
                                                         VerticalAlignment="Center">
                                                 <!-- Key Badges -->
@@ -413,7 +523,7 @@
                                                 </ItemsControl>
 
                                                 <!-- Not Set indicator -->
-                                                <TextBlock Text="Not Set"
+                                                <TextBlock Text="None"
                                                            FontSize="11"
                                                            FontStyle="Italic"
                                                            Foreground="{DynamicResource SecondaryForegroundBrush}"
@@ -422,7 +532,7 @@
                                             </StackPanel>
 
                                             <!-- Status Badges -->
-                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                                                 <!-- Conflict Badge -->
                                                 <Border Style="{StaticResource ConflictBadgeStyle}"
                                                         Visibility="{Binding HasConflict, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -453,18 +563,19 @@
                                             </StackPanel>
 
                                             <!-- Action Buttons -->
-                                            <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <Button Style="{StaticResource SetButtonStyle}"
+                                                        Content="Set"
+                                                        Tag="{Binding}"
+                                                        Click="EditShortcutButton_Click"
+                                                        IsEnabled="{Binding IsCustomizable}"
+                                                        ToolTip="Click to record a new shortcut"/>
                                                 <Button Style="{StaticResource ResetButtonStyle}"
                                                         Content="Reset"
                                                         Tag="{Binding}"
                                                         Click="ResetShortcutButton_Click"
                                                         Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                        ToolTip="Reset this shortcut to its default binding"/>
-                                                <Button Style="{StaticResource EditButtonStyle}"
-                                                        Content="Edit"
-                                                        Tag="{Binding}"
-                                                        Click="EditShortcutButton_Click"
-                                                        IsEnabled="{Binding IsCustomizable}"
+                                                        ToolTip="Reset this shortcut to its default binding"
                                                         Margin="4,0,0,0"/>
                                             </StackPanel>
                                         </Grid>
@@ -477,9 +588,9 @@
             </Grid>
         </Border>
 
-        <!-- Shortcut Editor Panel (shown when editing) -->
+        <!-- Shortcut Editor Panel (shown when editing/recording) -->
         <Border x:Name="ShortcutEditorPanel"
-                Grid.Row="3"
+                Grid.Row="4"
                 Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="{DynamicResource AccentBrush}"
                 BorderThickness="2"
@@ -491,8 +602,10 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
+                <!-- Recording Header -->
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -501,12 +614,13 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                        <TextBlock Text="Editing:"
+                        <TextBlock Text="Recording shortcut for:"
                                    FontSize="11"
                                    Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock x:Name="EditingCommandName"
                                    Text="Command Name"
                                    FontWeight="SemiBold"
+                                   FontSize="14"
                                    Foreground="{DynamicResource BrightForegroundBrush}"/>
                     </StackPanel>
 
@@ -548,9 +662,16 @@
                     </StackPanel>
                 </Grid>
 
+                <!-- Recording Instructions -->
+                <TextBlock Grid.Row="1"
+                           Text="Press any key combination (Ctrl, Alt, Shift + Key). Press Escape to cancel."
+                           FontSize="11"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           Margin="0,8,0,0"/>
+
                 <!-- Conflict Warning -->
                 <Border x:Name="ConflictWarningPanel"
-                        Grid.Row="1"
+                        Grid.Row="2"
                         Background="#3F2020"
                         BorderBrush="#FF4757"
                         BorderThickness="1"
@@ -575,7 +696,7 @@
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock x:Name="ConflictWarningText"
-                                       Text="This shortcut conflicts with: "
+                                       Text="This shortcut is already assigned to:"
                                        Foreground="#FFCDD2"
                                        TextWrapping="Wrap"/>
                             <TextBlock x:Name="ConflictCommandText"
@@ -601,7 +722,7 @@
         </Border>
 
         <!-- Footer -->
-        <Border Grid.Row="4"
+        <Border Grid.Row="5"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,1,0,0"
                 Margin="0,12,0,0"
@@ -636,11 +757,6 @@
 
                 <!-- Action Buttons -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Content="Reset All to Defaults"
-                            Padding="12,8"
-                            Margin="0,0,8,0"
-                            Click="ResetAllButton_Click"
-                            ToolTip="Reset all shortcuts to their original default bindings"/>
                     <Button Content="Save"
                             Padding="16,8"
                             Margin="0,0,8,0"

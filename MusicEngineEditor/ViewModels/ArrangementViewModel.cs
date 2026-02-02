@@ -107,6 +107,24 @@ public partial class ArrangementViewModel : ViewModelBase, IDisposable
     private double _scrollOffset;
 
     /// <summary>
+    /// Gets or sets the horizontal zoom level (1.0 = 100%).
+    /// </summary>
+    [ObservableProperty]
+    private double _horizontalZoom = 1.0;
+
+    /// <summary>
+    /// Gets or sets the vertical zoom level (1.0 = 100%).
+    /// </summary>
+    [ObservableProperty]
+    private double _verticalZoom = 1.0;
+
+    /// <summary>
+    /// Gets or sets whether the view follows the playhead during playback.
+    /// </summary>
+    [ObservableProperty]
+    private bool _followPlayhead;
+
+    /// <summary>
     /// Gets or sets the currently selected section.
     /// </summary>
     [ObservableProperty]

@@ -43,13 +43,14 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Audio Reactive Background Visualizer Layer -->
         <Canvas x:Name="AudioVisualizerCanvas"
-                Grid.RowSpan="4"
+                Grid.RowSpan="5"
                 IsHitTestVisible="False"
                 Panel.ZIndex="-1">
 
@@ -245,11 +246,13 @@
                             </MenuItem>
                             <!-- Editors Submenu -->
                             <MenuItem Header="_Editors">
+                                <MenuItem Header="AI Assistant" IsCheckable="True" IsChecked="False" x:Name="AIAssistantMenuItem" Click="ToggleAIAssistant_Click" InputGestureText="F3"/>
                                 <MenuItem Header="Synth Editor" IsCheckable="True" IsChecked="False" x:Name="SynthEditorMenuItem" Click="ToggleSynthEditor_Click" InputGestureText="F4"/>
                                 <MenuItem Header="Effects Editor" IsCheckable="True" IsChecked="False" x:Name="EffectsEditorMenuItem" Click="ToggleEffectsEditor_Click" InputGestureText="F5"/>
                                 <MenuItem Header="Pattern Editor" x:Name="PatternEditorMenuItem" Click="OpenPatternEditor_Click" InputGestureText="F6"/>
                                 <MenuItem Header="Mixer" IsCheckable="True" IsChecked="False" x:Name="MixerMenuItem" Click="ToggleMixer_Click" InputGestureText="F7"/>
                                 <MenuItem Header="Arrangement" x:Name="ArrangementMenuItem" Click="OpenArrangement_Click" InputGestureText="F8"/>
+                                <MenuItem Header="Session View" x:Name="SessionViewMenuItem" Click="OpenSessionView_Click" InputGestureText="Ctrl+Alt+S"/>
                             </MenuItem>
                             <!-- Code View Submenu -->
                             <MenuItem Header="_Code View">
@@ -257,6 +260,19 @@
                                 <MenuItem Header="Unfold All" Click="UnfoldAll_Click" InputGestureText="Ctrl+Shift+]"/>
                                 <Separator/>
                                 <MenuItem Header="Toggle Minimap" IsCheckable="True" IsChecked="True" x:Name="MinimapMenuItem" Click="ToggleMinimap_Click"/>
+                            </MenuItem>
+                            <Separator/>
+                            <!-- Quick Actions Toolbar -->
+                            <MenuItem Header="Quick Actions Toolbar" IsCheckable="True" IsChecked="True" x:Name="QuickActionsMenuItem" Click="ToggleQuickActions_Click"/>
+                            <Separator/>
+                            <!-- Workspace Presets -->
+                            <MenuItem Header="_Workspace Presets..." Click="WorkspacePresets_Click" InputGestureText="Ctrl+Shift+W"/>
+                            <MenuItem Header="Quick Workspace">
+                                <MenuItem Header="Recording" Click="WorkspaceRecording_Click" InputGestureText="Ctrl+1"/>
+                                <MenuItem Header="Mixing" Click="WorkspaceMixing_Click" InputGestureText="Ctrl+2"/>
+                                <MenuItem Header="Mastering" Click="WorkspaceMastering_Click" InputGestureText="Ctrl+3"/>
+                                <MenuItem Header="Editing" Click="WorkspaceEditing_Click" InputGestureText="Ctrl+4"/>
+                                <MenuItem Header="Performance" Click="WorkspacePerformance_Click" InputGestureText="Ctrl+5"/>
                             </MenuItem>
                             <Separator/>
                             <MenuItem Header="Cloud Storage..." Click="CloudStorage_Click"/>
@@ -450,6 +466,24 @@
                                        Foreground="{StaticResource SecondaryForegroundBrush}"/>
                         </StackPanel>
                     </ToggleButton>
+
+                    <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="10,4"/>
+
+                    <!-- Workspace Preset Quick Switcher -->
+                    <ComboBox x:Name="WorkspacePresetCombo"
+                              Width="140"
+                              ToolTip="Quick switch workspace preset (Ctrl+1 to Ctrl+5)"
+                              Background="{StaticResource EditorBackgroundBrush}"
+                              Foreground="{StaticResource ForegroundBrush}"
+                              BorderBrush="{StaticResource BorderBrush}"
+                              Padding="8,4"
+                              SelectionChanged="WorkspacePresetCombo_SelectionChanged">
+                        <ComboBoxItem Content="Recording" Tag="Ctrl+1"/>
+                        <ComboBoxItem Content="Mixing" Tag="Ctrl+2"/>
+                        <ComboBoxItem Content="Mastering" Tag="Ctrl+3"/>
+                        <ComboBoxItem Content="Editing" Tag="Ctrl+4"/>
+                        <ComboBoxItem Content="Performance" Tag="Ctrl+5"/>
+                    </ComboBox>
                 </StackPanel>
 
                 <!-- Center: Spacer -->
@@ -457,8 +491,21 @@
             </DockPanel>
         </Border>
 
+        <!-- Quick Actions Toolbar (Collapsible) -->
+        <controls:QuickActionsToolbar x:Name="QuickActionsToolbar"
+                                      Grid.Row="2"
+                                      Visibility="Visible"
+                                      AIMasterRequested="QuickActionsToolbar_AIMasterRequested"
+                                      StemSplitRequested="QuickActionsToolbar_StemSplitRequested"
+                                      QuantizeRequested="QuickActionsToolbar_QuantizeRequested"
+                                      QuantizeDialogRequested="QuickActionsToolbar_QuantizeDialogRequested"
+                                      TransposeRequested="QuickActionsToolbar_TransposeRequested"
+                                      DuplicateRequested="QuickActionsToolbar_DuplicateRequested"
+                                      SplitRequested="QuickActionsToolbar_SplitRequested"
+                                      HideRequested="QuickActionsToolbar_HideRequested"/>
+
         <!-- Main Content Area -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="240" MinWidth="180" x:Name="LeftPanelColumn"/>
                 <ColumnDefinition Width="1"/>
@@ -498,8 +545,8 @@
                                                    Foreground="{StaticResource BrightForegroundBrush}"/>
                                     </StackPanel>
                                 </Border>
-                                <!-- Presets Tab -->
-                                <Border x:Name="PresetsTabHeader" Padding="12,8" Cursor="Hand" MouseDown="PresetsTab_Click"
+                                <!-- Presets Tab (Left Panel) -->
+                                <Border x:Name="LeftPresetsTabHeader" Padding="12,8" Cursor="Hand" MouseDown="LeftPresetsTab_Click"
                                         Background="Transparent" BorderThickness="0,0,0,2" BorderBrush="Transparent">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Data="M 2,2 H 12 V 4 H 2 Z M 3,4 V 11 H 11 V 4" Stroke="{StaticResource SecondaryForegroundBrush}"
@@ -962,6 +1009,16 @@
                                         <TextBlock Text="EFFECTS" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="12" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </Border>
+                                <!-- Presets Tab -->
+                                <Border x:Name="PresetsTabHeader" Background="Transparent" Padding="14,10" Cursor="Hand" MouseDown="PresetsTab_Click"
+                                        CornerRadius="4,4,0,0" Margin="2,4,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="M 2,2 H 12 V 4 H 2 Z M 2,6 H 10 V 8 H 2 Z M 2,10 H 14 V 12 H 2 Z"
+                                              Stroke="{StaticResource SecondaryForegroundBrush}" StrokeThickness="1.2" Fill="Transparent"
+                                              Width="12" Height="12" Margin="0,0,8,0"/>
+                                        <TextBlock Text="PRESETS" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </DockPanel>
                     </Border>
@@ -1106,6 +1163,14 @@
                         <!-- Effects Editor Panel -->
                         <controls:EffectsEditorPanel x:Name="EffectsEditorPanel" Visibility="Collapsed"
                                                       CloseRequested="EffectsEditorPanel_CloseRequested"/>
+
+                        <!-- Preset Browser Panel -->
+                        <controls:PresetBrowserPanel x:Name="PresetBrowserPanel" Visibility="Collapsed"
+                                                      PresetLoadRequested="PresetBrowserPanel_PresetLoadRequested"/>
+
+                        <!-- AI Assistant Panel -->
+                        <controls:AIAssistantPanel x:Name="AIAssistantPanel" Visibility="Collapsed"
+                                                   CloseRequested="AIAssistantPanel_CloseRequested"/>
                     </Grid>
                 </DockPanel>
             </Border>
@@ -1174,6 +1239,15 @@
                             <Path Data="M 8,2 L 14,8 L 8,14 L 2,8 Z"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   StrokeThickness="1.5" Width="16" Height="16"/>
+                        </StackPanel>
+                    </Button>
+                    <!-- Preset Browser -->
+                    <Button Style="{StaticResource SidebarToolButtonStyle}" Click="TogglePresetsPanel_Click"
+                            ToolTip="Preset Browser" Margin="4,2" x:Name="PresetBrowserToolButton">
+                        <StackPanel>
+                            <Path Data="M 2,2 H 12 V 4 H 2 Z M 2,6 H 10 V 8 H 2 Z M 2,10 H 14 V 12 H 2 Z"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1.2" Width="16" Height="16"/>
                         </StackPanel>
                     </Button>
 
@@ -1247,7 +1321,7 @@
         </Grid>
 
         <!-- Status Bar - Modern DAW Style -->
-        <StatusBar Grid.Row="3" Padding="4,0">
+        <StatusBar Grid.Row="4" Padding="4,0">
             <StatusBar.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                     <GradientStop Color="#1A1A1A" Offset="0"/>

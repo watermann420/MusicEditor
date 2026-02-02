@@ -63,6 +63,7 @@ public partial class TrackInfo : ObservableObject
     /// Gets or sets the track color (hex string).
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ColorBrush))]
     private string _color = "#4A9EFF";
 
     /// <summary>

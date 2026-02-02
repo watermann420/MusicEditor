@@ -7,23 +7,29 @@ using System.Windows.Controls;
 namespace MusicEngineEditor.Controls.Mixer
 {
     /// <summary>
-    /// Mixer panel with scrollable channel strips and a fixed master channel.
+    /// Mixer panel with scrollable channel strips, return tracks, and a fixed master channel.
     /// </summary>
     public partial class MixerPanel : UserControl
     {
+        #region Constants
+
+        private const int DefaultReturnCount = 4;
+
+        #endregion
+
         #region Dependency Properties
 
         public static readonly DependencyProperty MasterVolumeProperty =
             DependencyProperty.Register(nameof(MasterVolume), typeof(double), typeof(MixerPanel),
                 new PropertyMetadata(0.0, OnMasterVolumeChanged, CoerceVolume));
 
-        public static readonly DependencyProperty MasterPanProperty =
-            DependencyProperty.Register(nameof(MasterPan), typeof(double), typeof(MixerPanel),
-                new PropertyMetadata(0.0, OnMasterPanChanged, CoercePan));
-
         public static readonly DependencyProperty IsMasterMutedProperty =
             DependencyProperty.Register(nameof(IsMasterMuted), typeof(bool), typeof(MixerPanel),
                 new PropertyMetadata(false, OnIsMasterMutedChanged));
+
+        public static readonly DependencyProperty IsMasterSoloProperty =
+            DependencyProperty.Register(nameof(IsMasterSolo), typeof(bool), typeof(MixerPanel),
+                new PropertyMetadata(false, OnIsMasterSoloChanged));
 
         #endregion
 
@@ -35,21 +41,17 @@ namespace MusicEngineEditor.Controls.Mixer
         public ObservableCollection<ChannelStripControl> Channels { get; } = new();
 
         /// <summary>
+        /// The collection of return tracks in the mixer.
+        /// </summary>
+        public ObservableCollection<ReturnTrackControl> Returns { get; } = new();
+
+        /// <summary>
         /// Master volume in dB (-60 to +6).
         /// </summary>
         public double MasterVolume
         {
             get => (double)GetValue(MasterVolumeProperty);
             set => SetValue(MasterVolumeProperty, value);
-        }
-
-        /// <summary>
-        /// Master pan position (-100 to +100).
-        /// </summary>
-        public double MasterPan
-        {
-            get => (double)GetValue(MasterPanProperty);
-            set => SetValue(MasterPanProperty, value);
         }
 
         /// <summary>
@@ -61,18 +63,37 @@ namespace MusicEngineEditor.Controls.Mixer
             set => SetValue(IsMasterMutedProperty, value);
         }
 
+        /// <summary>
+        /// Whether the master channel is soloed.
+        /// </summary>
+        public bool IsMasterSolo
+        {
+            get => (bool)GetValue(IsMasterSoloProperty);
+            set => SetValue(IsMasterSoloProperty, value);
+        }
+
         #endregion
 
         #region Events
 
         public event EventHandler<double>? MasterVolumeChanged;
-        public event EventHandler<double>? MasterPanChanged;
         public event EventHandler<bool>? MasterMuteChanged;
+        public event EventHandler<bool>? MasterSoloChanged;
+        public event EventHandler? MasterEffectsChainRequested;
         public event EventHandler<(int ChannelIndex, double Volume)>? ChannelVolumeChanged;
         public event EventHandler<(int ChannelIndex, double Pan)>? ChannelPanChanged;
         public event EventHandler<(int ChannelIndex, bool IsSolo)>? ChannelSoloChanged;
         public event EventHandler<(int ChannelIndex, bool IsMuted)>? ChannelMuteChanged;
         public event EventHandler<(int ChannelIndex, string Name)>? ChannelNameChanged;
+        public event EventHandler<(int ChannelIndex, int SendIndex, double Value)>? ChannelSendChanged;
+
+        // Return track events
+        public event EventHandler<(int ReturnIndex, double Volume)>? ReturnVolumeChanged;
+        public event EventHandler<(int ReturnIndex, double Pan)>? ReturnPanChanged;
+        public event EventHandler<(int ReturnIndex, bool IsMuted)>? ReturnMuteChanged;
+        public event EventHandler<int>? ReturnEffectsChainRequested;
+        public event EventHandler<int>? ReturnAdded;
+        public event EventHandler<int>? ReturnRemoved;
 
         #endregion
 
@@ -82,8 +103,22 @@ namespace MusicEngineEditor.Controls.Mixer
         {
             InitializeComponent();
             Channels.CollectionChanged += Channels_CollectionChanged;
-            UpdateMasterVolumeDisplay();
-            UpdateMasterPanDisplay();
+            Returns.CollectionChanged += Returns_CollectionChanged;
+
+            // Initialize default return tracks
+            InitializeDefaultReturns();
+        }
+
+        #endregion
+
+        #region Initialization
+
+        private void InitializeDefaultReturns()
+        {
+            for (int i = 0; i < DefaultReturnCount; i++)
+            {
+                AddReturnTrack();
+            }
         }
 
         #endregion
@@ -96,27 +131,11 @@ namespace MusicEngineEditor.Controls.Mixer
             return Math.Max(-60.0, Math.Min(6.0, value));
         }
 
-        private static object CoercePan(DependencyObject d, object baseValue)
-        {
-            var value = (double)baseValue;
-            return Math.Max(-100.0, Math.Min(100.0, value));
-        }
-
         private static void OnMasterVolumeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is MixerPanel panel)
             {
-                panel.MasterVolumeFader.Value = (double)e.NewValue;
-                panel.UpdateMasterVolumeDisplay();
-            }
-        }
-
-        private static void OnMasterPanChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is MixerPanel panel)
-            {
-                panel.MasterPanSlider.Value = (double)e.NewValue;
-                panel.UpdateMasterPanDisplay();
+                panel.MasterChannel.Volume = (double)e.NewValue;
             }
         }
 
@@ -124,7 +143,15 @@ namespace MusicEngineEditor.Controls.Mixer
         {
             if (d is MixerPanel panel)
             {
-                panel.MasterMuteButton.IsChecked = (bool)e.NewValue;
+                panel.MasterChannel.IsMuted = (bool)e.NewValue;
+            }
+        }
+
+        private static void OnIsMasterSoloChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is MixerPanel panel)
+            {
+                panel.MasterChannel.IsSolo = (bool)e.NewValue;
             }
         }
 
@@ -164,34 +191,74 @@ namespace MusicEngineEditor.Controls.Mixer
             UpdateChannelIndices();
         }
 
-        private void MasterVolumeFader_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void Returns_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (Math.Abs(MasterVolume - e.NewValue) > 0.001)
+            switch (e.Action)
             {
-                MasterVolume = e.NewValue;
-                UpdateMasterVolumeDisplay();
-                MasterVolumeChanged?.Invoke(this, e.NewValue);
+                case NotifyCollectionChangedAction.Add:
+                    if (e.NewItems != null)
+                    {
+                        foreach (ReturnTrackControl returnTrack in e.NewItems)
+                        {
+                            AddReturnToContainer(returnTrack);
+                        }
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    if (e.OldItems != null)
+                    {
+                        foreach (ReturnTrackControl returnTrack in e.OldItems)
+                        {
+                            RemoveReturnFromContainer(returnTrack);
+                        }
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    ReturnTrackContainer.Children.Clear();
+                    break;
+            }
+
+            UpdateReturnIndices();
+        }
+
+        private void MasterChannel_VolumeChanged(object? sender, double volume)
+        {
+            if (Math.Abs(MasterVolume - volume) > 0.001)
+            {
+                MasterVolume = volume;
+                MasterVolumeChanged?.Invoke(this, volume);
             }
         }
 
-        private void MasterPanSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void MasterChannel_SoloChanged(object? sender, bool isSolo)
         {
-            if (Math.Abs(MasterPan - e.NewValue) > 0.001)
+            if (IsMasterSolo != isSolo)
             {
-                MasterPan = e.NewValue;
-                UpdateMasterPanDisplay();
-                MasterPanChanged?.Invoke(this, e.NewValue);
+                IsMasterSolo = isSolo;
+                MasterSoloChanged?.Invoke(this, isSolo);
             }
         }
 
-        private void MasterMuteButton_Changed(object sender, RoutedEventArgs e)
+        private void MasterChannel_MuteChanged(object? sender, bool isMuted)
         {
-            var isChecked = MasterMuteButton.IsChecked ?? false;
-            if (IsMasterMuted != isChecked)
+            if (IsMasterMuted != isMuted)
             {
-                IsMasterMuted = isChecked;
-                MasterMuteChanged?.Invoke(this, isChecked);
+                IsMasterMuted = isMuted;
+                MasterMuteChanged?.Invoke(this, isMuted);
             }
+        }
+
+        private void MasterChannel_EffectsChainRequested(object? sender, EventArgs e)
+        {
+            MasterEffectsChainRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void AddReturnButton_Click(object sender, RoutedEventArgs e)
+        {
+            var returnTrack = AddReturnTrack();
+            ReturnAdded?.Invoke(this, returnTrack.ReturnIndex);
         }
 
         private void Channel_VolumeChanged(object? sender, double volume)
@@ -234,6 +301,43 @@ namespace MusicEngineEditor.Controls.Mixer
             }
         }
 
+        private void Channel_SendChanged(object? sender, (int SendIndex, double Value) sendData)
+        {
+            if (sender is ChannelStripControl channel)
+            {
+                ChannelSendChanged?.Invoke(this, (channel.ChannelIndex, sendData.SendIndex, sendData.Value));
+            }
+        }
+
+        private void Return_VolumeChanged(object? sender, double volume)
+        {
+            if (sender is ReturnTrackControl returnTrack)
+            {
+                ReturnVolumeChanged?.Invoke(this, (returnTrack.ReturnIndex, volume));
+            }
+        }
+
+        private void Return_PanChanged(object? sender, double pan)
+        {
+            if (sender is ReturnTrackControl returnTrack)
+            {
+                ReturnPanChanged?.Invoke(this, (returnTrack.ReturnIndex, pan));
+            }
+        }
+
+        private void Return_MuteChanged(object? sender, bool isMuted)
+        {
+            if (sender is ReturnTrackControl returnTrack)
+            {
+                ReturnMuteChanged?.Invoke(this, (returnTrack.ReturnIndex, isMuted));
+            }
+        }
+
+        private void Return_EffectsChainRequested(object? sender, int returnIndex)
+        {
+            ReturnEffectsChainRequested?.Invoke(this, returnIndex);
+        }
+
         #endregion
 
         #region Private Methods
@@ -245,6 +349,7 @@ namespace MusicEngineEditor.Controls.Mixer
             channel.SoloChanged += Channel_SoloChanged;
             channel.MuteChanged += Channel_MuteChanged;
             channel.TrackNameEdited += Channel_NameChanged;
+            channel.SendChanged += Channel_SendChanged;
             channel.Margin = new Thickness(2);
             ChannelStripContainer.Children.Add(channel);
         }
@@ -256,7 +361,27 @@ namespace MusicEngineEditor.Controls.Mixer
             channel.SoloChanged -= Channel_SoloChanged;
             channel.MuteChanged -= Channel_MuteChanged;
             channel.TrackNameEdited -= Channel_NameChanged;
+            channel.SendChanged -= Channel_SendChanged;
             ChannelStripContainer.Children.Remove(channel);
+        }
+
+        private void AddReturnToContainer(ReturnTrackControl returnTrack)
+        {
+            returnTrack.VolumeChanged += Return_VolumeChanged;
+            returnTrack.PanChanged += Return_PanChanged;
+            returnTrack.MuteChanged += Return_MuteChanged;
+            returnTrack.EffectsChainRequested += Return_EffectsChainRequested;
+            returnTrack.Margin = new Thickness(2);
+            ReturnTrackContainer.Children.Add(returnTrack);
+        }
+
+        private void RemoveReturnFromContainer(ReturnTrackControl returnTrack)
+        {
+            returnTrack.VolumeChanged -= Return_VolumeChanged;
+            returnTrack.PanChanged -= Return_PanChanged;
+            returnTrack.MuteChanged -= Return_MuteChanged;
+            returnTrack.EffectsChainRequested -= Return_EffectsChainRequested;
+            ReturnTrackContainer.Children.Remove(returnTrack);
         }
 
         private void UpdateChannelIndices()
@@ -267,32 +392,12 @@ namespace MusicEngineEditor.Controls.Mixer
             }
         }
 
-        private void UpdateMasterVolumeDisplay()
+        private void UpdateReturnIndices()
         {
-            if (MasterVolume <= -60)
+            for (int i = 0; i < Returns.Count; i++)
             {
-                MasterVolumeDisplay.Text = "-inf dB";
-            }
-            else
-            {
-                MasterVolumeDisplay.Text = $"{MasterVolume:F1} dB";
-            }
-        }
-
-        private void UpdateMasterPanDisplay()
-        {
-            var pan = (int)Math.Round(MasterPan);
-            if (pan == 0)
-            {
-                MasterPanValueText.Text = "C";
-            }
-            else if (pan < 0)
-            {
-                MasterPanValueText.Text = $"L{Math.Abs(pan)}";
-            }
-            else
-            {
-                MasterPanValueText.Text = $"R{pan}";
+                Returns[i].ReturnIndex = i;
+                Returns[i].ReturnLabel = ReturnTrackControl.GetLabelForIndex(i);
             }
         }
 
@@ -369,19 +474,119 @@ namespace MusicEngineEditor.Controls.Mixer
         }
 
         /// <summary>
-        /// Updates the master LUFS meter values.
+        /// Adds a new return track to the mixer.
         /// </summary>
-        public void UpdateMasterLUFS(double integrated, double shortTerm, double momentary, double truePeak)
+        /// <returns>The created return track control.</returns>
+        public ReturnTrackControl AddReturnTrack()
         {
-            MasterLUFSMeter.UpdateValues(integrated, shortTerm, momentary, truePeak);
+            var returnTrack = new ReturnTrackControl
+            {
+                ReturnIndex = Returns.Count,
+                ReturnLabel = ReturnTrackControl.GetLabelForIndex(Returns.Count)
+            };
+            Returns.Add(returnTrack);
+            return returnTrack;
         }
 
         /// <summary>
-        /// Resets the master LUFS meter.
+        /// Adds a new return track with specific settings.
         /// </summary>
-        public void ResetMasterLUFS()
+        public ReturnTrackControl AddReturnTrack(double volume, double pan)
         {
-            MasterLUFSMeter.Reset();
+            var returnTrack = AddReturnTrack();
+            returnTrack.Volume = volume;
+            returnTrack.Pan = pan;
+            return returnTrack;
+        }
+
+        /// <summary>
+        /// Removes a return track from the mixer.
+        /// </summary>
+        public bool RemoveReturn(ReturnTrackControl returnTrack)
+        {
+            var result = Returns.Remove(returnTrack);
+            if (result)
+            {
+                ReturnRemoved?.Invoke(this, returnTrack.ReturnIndex);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Removes a return track by index.
+        /// </summary>
+        public bool RemoveReturnAt(int index)
+        {
+            if (index >= 0 && index < Returns.Count)
+            {
+                var returnIndex = Returns[index].ReturnIndex;
+                Returns.RemoveAt(index);
+                ReturnRemoved?.Invoke(this, returnIndex);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets a return track by index.
+        /// </summary>
+        public ReturnTrackControl? GetReturn(int index)
+        {
+            if (index >= 0 && index < Returns.Count)
+            {
+                return Returns[index];
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Clears all return tracks and re-creates the default 4.
+        /// </summary>
+        public void ResetReturns()
+        {
+            Returns.Clear();
+            InitializeDefaultReturns();
+        }
+
+        /// <summary>
+        /// Updates the master metering values (LUFS and VU levels).
+        /// </summary>
+        public void UpdateMasterMetering(double leftLevel, double rightLevel,
+            double integratedLUFS, double shortTermLUFS, double truePeak)
+        {
+            MasterChannel.UpdateAllMetering(leftLevel, rightLevel, integratedLUFS, shortTermLUFS, truePeak);
+        }
+
+        /// <summary>
+        /// Updates the master VU meter levels.
+        /// </summary>
+        public void UpdateMasterLevels(double left, double right)
+        {
+            MasterChannel.SetLevels(left, right);
+        }
+
+        /// <summary>
+        /// Updates the master LUFS values.
+        /// </summary>
+        public void UpdateMasterLUFS(double integrated, double shortTerm, double truePeak)
+        {
+            MasterChannel.UpdateMetering(integrated, shortTerm, truePeak);
+        }
+
+        /// <summary>
+        /// Resets the master metering.
+        /// </summary>
+        public void ResetMasterMetering()
+        {
+            MasterChannel.ResetMetering();
+        }
+
+        /// <summary>
+        /// Resets the master peak indicators.
+        /// </summary>
+        public void ResetMasterPeaks()
+        {
+            MasterChannel.ResetPeaks();
         }
 
         /// <summary>
@@ -393,7 +598,22 @@ namespace MusicEngineEditor.Controls.Mixer
             {
                 channel.ResetPeaks();
             }
+            foreach (var returnTrack in Returns)
+            {
+                returnTrack.ResetPeaks();
+            }
+            MasterChannel.ResetPeaks();
         }
+
+        /// <summary>
+        /// Gets the number of return tracks.
+        /// </summary>
+        public int ReturnCount => Returns.Count;
+
+        /// <summary>
+        /// Gets the master channel strip control for direct access.
+        /// </summary>
+        public MasterChannelStrip MasterChannelStrip => MasterChannel;
 
         #endregion
     }

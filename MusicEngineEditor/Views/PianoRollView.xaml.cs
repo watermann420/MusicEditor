@@ -1471,5 +1471,80 @@ public partial class PianoRollView : UserControl
     }
 
     #endregion
+
+    #region Zoom Toolbar Integration
+
+    private void PianoRollZoomToolbar_HorizontalZoomChanged(object? sender, double e)
+    {
+        // Update the ViewModel's ZoomX
+        _viewModel.ZoomX = e;
+        DrawRuler();
+
+        // Refresh NoteCanvas
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        noteCanvas?.Refresh();
+    }
+
+    private void PianoRollZoomToolbar_VerticalZoomChanged(object? sender, double e)
+    {
+        // Update the ViewModel's ZoomY (affects note height)
+        _viewModel.ZoomY = e;
+
+        // Refresh NoteCanvas and PianoKeyboard
+        var noteCanvas = FindChild<NoteCanvas>(this, "NoteCanvas");
+        noteCanvas?.Refresh();
+
+        var pianoKeyboard = FindChild<PianoKeyboard>(this, "PianoKeyboard");
+        pianoKeyboard?.Refresh();
+    }
+
+    private void PianoRollZoomToolbar_ScrollOffsetChanged(object? sender, double e)
+    {
+        // Update the ViewModel's ScrollX
+        _viewModel.ScrollX = e;
+
+        // Update the scroll viewer if available
+        if (_canvasScrollViewer != null)
+        {
+            var effectiveBeatWidth = DefaultBeatWidth * _viewModel.ZoomX;
+            _canvasScrollViewer.ScrollToHorizontalOffset(e * effectiveBeatWidth);
+        }
+    }
+
+    private void PianoRollZoomToolbar_GoToPlayheadRequested(object? sender, EventArgs e)
+    {
+        // Scroll to playhead position
+        var effectiveBeatWidth = DefaultBeatWidth * _viewModel.ZoomX;
+        var playheadPixel = _viewModel.PlayheadPosition * effectiveBeatWidth;
+
+        if (_canvasScrollViewer != null)
+        {
+            // Center the playhead in view
+            var viewportWidth = _canvasScrollViewer.ViewportWidth;
+            var newOffset = Math.Max(0, playheadPixel - viewportWidth / 2);
+            _canvasScrollViewer.ScrollToHorizontalOffset(newOffset);
+        }
+    }
+
+    /// <summary>
+    /// Sets the selection range in the zoom toolbar for Fit Selection preset.
+    /// </summary>
+    /// <param name="start">Selection start in beats.</param>
+    /// <param name="end">Selection end in beats.</param>
+    public void SetZoomToolbarSelection(double start, double end)
+    {
+        PianoRollZoomToolbar?.SetSelection(start, end);
+    }
+
+    /// <summary>
+    /// Clears the zoom toolbar selection.
+    /// </summary>
+    public void ClearZoomToolbarSelection()
+    {
+        PianoRollZoomToolbar?.ClearSelection();
+    }
+
+    #endregion
 }
+
 
