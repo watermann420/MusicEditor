@@ -526,6 +526,120 @@ public partial class MainWindow : Window
             e.Handled = true;
             OpenArrangement_Click(this, new RoutedEventArgs());
         }
+
+        // F9: Performance Monitor
+        if (e.Key == Key.F9 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            var dialog = new PerformanceDialog { Owner = this };
+            dialog.ShowDialog();
+        }
+
+        // F10: Audio Statistics
+        if (e.Key == Key.F10 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            var dialog = new AudioStatisticsDialog { Owner = this };
+            dialog.ShowDialog();
+        }
+
+        // F11: Toggle Fullscreen (maximize/restore)
+        if (e.Key == Key.F11 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            if (WindowState == System.Windows.WindowState.Maximized)
+            {
+                WindowState = System.Windows.WindowState.Normal;
+                WindowStyle = WindowStyle.SingleBorderWindow;
+            }
+            else
+            {
+                WindowStyle = WindowStyle.None;
+                WindowState = System.Windows.WindowState.Maximized;
+            }
+        }
+
+        // F12: Plugin Manager - open via command palette (requires VstHost service)
+        if (e.Key == Key.F12 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            ShowCommandPalette(); // Opens command palette where user can search for plugin manager
+        }
+
+        // Ctrl+Shift+M: Toggle Mixer
+        if (e.Key == Key.M && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            ToggleMixer_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Shift+P: Toggle Pattern Editor (piano roll)
+        if (e.Key == Key.P && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            OpenPatternEditor_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Shift+A: Toggle Arrangement
+        if (e.Key == Key.A && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            OpenArrangement_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Shift+E: Toggle Effects Editor
+        if (e.Key == Key.E && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            ToggleEffectsEditor_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Shift+Y: Toggle Synth Editor
+        if (e.Key == Key.Y && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            ToggleSynthEditor_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Shift+W: Workspace Manager
+        if (e.Key == Key.W && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            var dialog = new WorkspaceDialog(App.Services.GetRequiredService<WorkspaceService>()) { Owner = this };
+            dialog.ShowDialog();
+        }
+
+        // Ctrl+Shift+T: Track Template
+        if (e.Key == Key.T && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            var dialog = new TrackTemplateDialog { Owner = this };
+            dialog.ShowDialog();
+        }
+
+        // Ctrl+Shift+R: Render Queue
+        if (e.Key == Key.R && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            var dialog = new RenderQueueDialog { Owner = this };
+            dialog.ShowDialog();
+        }
+
+        // Ctrl+Shift+L: Loudness Report
+        if (e.Key == Key.L && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            var dialog = new LoudnessReportDialog { Owner = this };
+            dialog.ShowDialog();
+        }
+
+        // Ctrl+Shift+G: Groove Template
+        if (e.Key == Key.G && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            e.Handled = true;
+            var dialog = new GrooveTemplateDialog { Owner = this };
+            dialog.ShowDialog();
+        }
     }
 
     private void MoveSelectedLinesUp()
@@ -4110,6 +4224,42 @@ Print("");
 
         service.RegisterCommand("Clear Output", "View", () => OutputBox.Document.Blocks.Clear(), null, "Clear the output panel");
 
+        // View - Panels
+        service.RegisterCommand("Toggle Project Explorer", "View", () => ToggleProjectExplorer_Click(this, new RoutedEventArgs()), null, "Show/hide project explorer", ["sidebar", "files", "tree"]);
+        service.RegisterCommand("Toggle Workshop", "View", () => ToggleWorkshop_Click(this, new RoutedEventArgs()), null, "Show/hide workshop panel", ["examples", "snippets", "templates"]);
+        service.RegisterCommand("Toggle Minimap", "View", () => ToggleMinimap_Click(this, new RoutedEventArgs()), null, "Show/hide code minimap", ["overview", "scroll"]);
+        service.RegisterCommand("Toggle MIDI Panel", "View", () => ToggleMidiPanel_Click(this, new RoutedEventArgs()), null, "Show/hide MIDI devices panel", ["devices", "controller"]);
+        service.RegisterCommand("Toggle VST Panel", "View", () => ToggleVstPanel_Click(this, new RoutedEventArgs()), null, "Show/hide VST plugins panel", ["plugins", "instruments", "effects"]);
+        service.RegisterCommand("Toggle Audio Panel", "View", () => ToggleAudioPanel_Click(this, new RoutedEventArgs()), null, "Show/hide audio files panel", ["samples", "wav", "files"]);
+        service.RegisterCommand("Toggle Track Properties", "View", () => ToggleTrackPropertiesPanel_Click(this, new RoutedEventArgs()), null, "Show/hide track properties", ["track", "properties", "inspector"]);
+        service.RegisterCommand("Toggle Undo History", "View", () => ToggleUndoHistory_Click(this, new RoutedEventArgs()), null, "Show/hide undo history panel", ["history", "changes"]);
+
+        // View - Editors & Windows
+        service.RegisterCommand("Toggle Synth Editor", "View", () => ToggleSynthEditor_Click(this, new RoutedEventArgs()), "F4 / Ctrl+Shift+Y", "Open synthesizer parameter editor", ["synth", "instrument", "parameters"]);
+        service.RegisterCommand("Toggle Effects Editor", "View", () => ToggleEffectsEditor_Click(this, new RoutedEventArgs()), "F5 / Ctrl+Shift+E", "Open audio effects editor", ["effects", "fx", "processing"]);
+        service.RegisterCommand("Open Pattern Editor", "View", () => OpenPatternEditor_Click(this, new RoutedEventArgs()), "F6 / Ctrl+Shift+P", "Open piano roll pattern editor", ["piano roll", "notes", "midi", "sequence"]);
+        service.RegisterCommand("Toggle Mixer", "View", () => ToggleMixer_Click(this, new RoutedEventArgs()), "F7 / Ctrl+Shift+M", "Open mixing console", ["mix", "fader", "channel", "levels"]);
+        service.RegisterCommand("Open Arrangement", "View", () => OpenArrangement_Click(this, new RoutedEventArgs()), "F8 / Ctrl+Shift+A", "Open arrangement timeline view", ["timeline", "arrangement", "structure", "song"]);
+
+        // View - Code folding
+        service.RegisterCommand("Fold All", "View", () => FoldAll_Click(this, new RoutedEventArgs()), null, "Collapse all code regions", ["collapse", "fold", "regions"]);
+        service.RegisterCommand("Unfold All", "View", () => UnfoldAll_Click(this, new RoutedEventArgs()), null, "Expand all code regions", ["expand", "unfold", "regions"]);
+
+        // Additional Edit commands
+        service.RegisterCommand("Toggle Comment", "Edit", () => ToggleLineComment(), "Ctrl+/", "Comment or uncomment selected lines", ["comment", "uncomment"]);
+        service.RegisterCommand("Duplicate Line", "Edit", () => DuplicateLine(), "Ctrl+Shift+D", "Duplicate current line", ["copy line", "clone"]);
+        service.RegisterCommand("Move Line Up", "Edit", () => MoveSelectedLinesUp(), "Alt+Up", "Move selected lines up", ["swap", "reorder"]);
+        service.RegisterCommand("Move Line Down", "Edit", () => MoveSelectedLinesDown(), "Alt+Down", "Move selected lines down", ["swap", "reorder"]);
+        service.RegisterCommand("Go to Line", "Edit", () => ShowGotoLineDialog(), "Ctrl+G", "Jump to a specific line number", ["goto", "jump", "line number"]);
+        service.RegisterCommand("Select Line", "Edit", () => SelectCurrentLine(), "Ctrl+L", "Select entire current line", ["selection"]);
+
+        // Project commands
+        service.RegisterCommand("Add Script", "Project", () => AddScript_Click(this, new RoutedEventArgs()), null, "Add a new script to the project", ["new", "create"]);
+        service.RegisterCommand("Import Audio", "Project", () => ImportAudio_Click(this, new RoutedEventArgs()), null, "Import audio file into project", ["sample", "wav", "mp3", "audio"]);
+        service.RegisterCommand("Add Reference", "Project", () => AddReference_Click(this, new RoutedEventArgs()), null, "Add external reference", ["reference", "library"]);
+        service.RegisterCommand("Project Settings", "Project", () => ProjectSettings_Click(this, new RoutedEventArgs()), null, "Open project settings dialog", ["settings", "config"]);
+        service.RegisterCommand("Refresh Project Tree", "Project", () => RefreshProjectTree_Click(this, new RoutedEventArgs()), null, "Refresh the project file tree", ["reload", "update"]);
+
         // Help commands
         service.RegisterCommand("About", "Help", () =>
         {
@@ -4153,6 +4303,190 @@ Print("");
             var dialog = new StemExportDialog { Owner = this };
             dialog.ShowDialog();
         }, null, "Export individual stems");
+
+        service.RegisterCommand("Render Queue", "Tools", () =>
+        {
+            var dialog = new RenderQueueDialog { Owner = this };
+            dialog.ShowDialog();
+        }, "Ctrl+Shift+R", "Manage render queue for batch exports", ["batch", "export", "queue"]);
+
+        service.RegisterCommand("Groove Template", "Tools", () =>
+        {
+            var dialog = new GrooveTemplateDialog { Owner = this };
+            dialog.ShowDialog();
+        }, "Ctrl+Shift+G", "Apply groove templates to timing", ["swing", "feel", "humanize"]);
+
+        service.RegisterCommand("MIDI Transform", "Tools", () =>
+        {
+            var dialog = new MIDITransformDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Transform MIDI data with operations", ["transpose", "velocity", "length"]);
+
+        service.RegisterCommand("Logical Editor", "Tools", () =>
+        {
+            var dialog = new LogicalEditorDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Advanced MIDI editing with logic conditions", ["filter", "select", "process"]);
+
+        service.RegisterCommand("Batch Processor", "Tools", () =>
+        {
+            var dialog = new BatchProcessorDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Process multiple files at once", ["batch", "convert", "process"]);
+
+        service.RegisterCommand("Batch Fade", "Tools", () =>
+        {
+            var dialog = new BatchFadeDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Apply fades to multiple clips", ["fade in", "fade out", "crossfade"]);
+
+        service.RegisterCommand("Macro Recorder", "Tools", () =>
+        {
+            var dialog = new MacroRecorderDialog(App.Services.GetRequiredService<MacroRecorderService>()) { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Record and playback macros", ["automate", "repeat", "script"]);
+
+        service.RegisterCommand("Crossfade Editor", "Tools", () =>
+        {
+            var dialog = new CrossfadeEditorDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Edit crossfade curves between clips", ["transition", "blend"]);
+
+        // Analysis commands
+        service.RegisterCommand("Audio Statistics", "Analysis", () =>
+        {
+            var dialog = new AudioStatisticsDialog { Owner = this };
+            dialog.ShowDialog();
+        }, "F10", "View audio file statistics", ["peak", "rms", "loudness", "dynamic range"]);
+
+        service.RegisterCommand("Loudness Report", "Analysis", () =>
+        {
+            var dialog = new LoudnessReportDialog { Owner = this };
+            dialog.ShowDialog();
+        }, "Ctrl+Shift+L", "Generate loudness analysis report", ["lufs", "true peak", "mastering"]);
+
+        service.RegisterCommand("Audio Suite", "Analysis", () =>
+        {
+            var dialog = new AudioSuiteDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Advanced audio analysis suite", ["spectrum", "phase", "correlation"]);
+
+        service.RegisterCommand("Project Statistics", "Analysis", () =>
+        {
+            var dialog = new ProjectStatisticsDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "View project statistics and metrics", ["info", "summary"]);
+
+        service.RegisterCommand("Project Compare", "Analysis", () =>
+        {
+            var dialog = new ProjectCompareDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Compare two project versions", ["diff", "changes"]);
+
+        // Note: Track Version Compare requires a specific track to be selected first
+        // It's available through the track context menu when a track is selected
+
+        // Plugin commands
+        service.RegisterCommand("Plugin Manager", "Plugins", () =>
+        {
+            // Plugin Manager is accessible via the VST panel - select a plugin and right-click
+            OutputLine("Open the VST panel (View > VST Panel) to manage plugins.");
+        }, "F12", "Manage VST plugins - opens VST panel", ["vst", "organize", "scan"]);
+
+        service.RegisterCommand("Plugin Blacklist", "Plugins", () =>
+        {
+            var dialog = new PluginBlacklistDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Manage blacklisted plugins", ["disable", "block"]);
+
+        service.RegisterCommand("Plugin Preset Browser", "Plugins", () =>
+        {
+            var dialog = new PluginPresetBrowserDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Browse plugin presets", ["presets", "sounds"]);
+
+        service.RegisterCommand("VST Effect Selector", "Plugins", () =>
+        {
+            var dialog = new VstEffectSelectorDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Select VST effect to add", ["insert", "add"]);
+
+        // Note: VST Preset Browser requires a specific plugin to be selected first
+        // It's available through the VST panel when a plugin is selected
+
+        // Track commands
+        service.RegisterCommand("Track Template", "Tracks", () =>
+        {
+            var dialog = new TrackTemplateDialog { Owner = this };
+            dialog.ShowDialog();
+        }, "Ctrl+Shift+T", "Create or apply track templates", ["preset", "save", "load"]);
+
+        service.RegisterCommand("Track Import", "Tracks", () =>
+        {
+            var dialog = new TrackImportDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Import tracks from another project", ["copy", "move"]);
+
+        service.RegisterCommand("Channel Settings", "Tracks", () =>
+        {
+            var dialog = new ChannelSettingsDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Configure channel strip settings", ["routing", "sends", "inserts"]);
+
+        // Note: Marker Editor requires a specific marker to be selected first
+        // It's available through the timeline when a marker is selected
+
+        // Workspace & Settings
+        service.RegisterCommand("Workspace Manager", "Window", () =>
+        {
+            var dialog = new WorkspaceDialog(App.Services.GetRequiredService<WorkspaceService>()) { Owner = this };
+            dialog.ShowDialog();
+        }, "Ctrl+Shift+W", "Manage window layouts", ["layout", "save", "restore"]);
+
+        service.RegisterCommand("Theme Settings", "Window", () =>
+        {
+            var dialog = new ThemeSettingsDialog(App.Services.GetRequiredService<IThemeService>()) { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Customize application theme", ["dark", "colors", "appearance"]);
+
+        service.RegisterCommand("Color Palette", "Window", () =>
+        {
+            var dialog = new ColorPaletteDialog(App.Services.GetRequiredService<ColorPaletteService>()) { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Customize color palette", ["colors", "scheme"]);
+
+        service.RegisterCommand("Performance Monitor", "Window", () =>
+        {
+            var dialog = new PerformanceDialog { Owner = this };
+            dialog.ShowDialog();
+        }, "F9", "Open performance monitoring window", ["cpu", "memory", "disk", "latency"]);
+
+        service.RegisterCommand("Toggle Fullscreen", "Window", () =>
+        {
+            if (WindowState == System.Windows.WindowState.Maximized && WindowStyle == WindowStyle.None)
+            {
+                WindowState = System.Windows.WindowState.Normal;
+                WindowStyle = WindowStyle.SingleBorderWindow;
+            }
+            else
+            {
+                WindowStyle = WindowStyle.None;
+                WindowState = System.Windows.WindowState.Maximized;
+            }
+        }, "F11", "Toggle fullscreen mode", ["maximize", "full screen"]);
+
+        // Recording commands
+        service.RegisterCommand("Recording Dialog", "Recording", () =>
+        {
+            var dialog = new RecordingDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Open recording panel", ["arm", "input"]);
+
+        service.RegisterCommand("Recovery Manager", "File", () =>
+        {
+            var dialog = new RecoveryDialog { Owner = this };
+            dialog.ShowDialog();
+        }, null, "Recover unsaved projects", ["backup", "restore", "crash"]);
 
         // Cloud & Collaboration commands
         service.RegisterCommand("Cloud Storage", "Cloud", () =>

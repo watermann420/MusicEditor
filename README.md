@@ -323,6 +323,71 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ---
 
+## Keyboard Shortcuts
+
+### Quick Access (Function Keys)
+| Key | Action |
+|-----|--------|
+| F4 | Synth Editor |
+| F5 | Effects Editor |
+| F6 | Pattern Editor |
+| F7 | Mixer |
+| F8 | Arrangement |
+| F9 | Performance Monitor |
+| F10 | Audio Statistics |
+| F11 | Toggle Fullscreen |
+| F12 | Plugin Manager (via command palette) |
+
+### Editor Shortcuts (Ctrl+Shift)
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+Shift+M | Mixer |
+| Ctrl+Shift+P | Pattern Editor |
+| Ctrl+Shift+A | Arrangement |
+| Ctrl+Shift+E | Effects Editor |
+| Ctrl+Shift+Y | Synth Editor |
+| Ctrl+Shift+W | Workspace Manager |
+| Ctrl+Shift+T | Track Template |
+| Ctrl+Shift+R | Render Queue |
+| Ctrl+Shift+L | Loudness Report |
+| Ctrl+Shift+G | Groove Template |
+
+### Command Palette & Transport
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+P | Command Palette (fuzzy search for all commands) |
+| Ctrl+Enter | Run Script |
+| Alt+Space | Panic (All Notes Off) |
+| Escape | Stop |
+
+---
+
+## Analysis Tools
+
+- **Audio Statistics (F10)**: Real-time audio analysis including RMS, peak levels, and frequency spectrum
+- **Loudness Report (Ctrl+Shift+L)**: Generate LUFS-compliant loudness reports for mastering
+- **Audio Suite**: Comprehensive audio analysis toolkit
+- **Project Statistics**: Overview of project resources, track count, and memory usage
+
+---
+
+## Plugin Management
+
+- **Plugin Manager (F12)**: Browse, install, and manage VST plugins via command palette
+- Automatic plugin scanning and validation
+- Plugin preset management
+- VST2/VST3 support
+
+---
+
+## Track Templates & Workspace
+
+- **Track Templates (Ctrl+Shift+T)**: Save and recall track configurations with effects chains
+- **Track Import**: Import tracks from other projects with all settings
+- **Workspace Manager (Ctrl+Shift+W)**: Save and restore window layouts and panel configurations
+
+---
+
 ## Documentation
 
 - [Modulation System](docs/MODULATION_SYSTEM.md) - VCV Rack-style parameter modulation
