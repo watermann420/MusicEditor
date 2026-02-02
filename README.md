@@ -21,8 +21,6 @@
 ### Code Editor
 - Syntax highlighting optimized for MusicEngine scripts
 - Intelligent autocomplete for classes, methods, and parameters
-- Strudel-style inline sliders (drag numbers to change values)
-- **Inline visuals** (punchcard, piano roll, mixer meters) at 60 FPS
 - Live code visualization with note and pattern highlighting
 - Dark/Light themes
 
