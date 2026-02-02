@@ -243,26 +243,31 @@
                                      Content="Sawtooth"
                                      GroupName="CarrierType"
                                      IsChecked="True"
+                                     ToolTip="Sawtooth: Classic vocoder sound with bright harmonics"
                                      Checked="CarrierType_Changed"
                                      Margin="0,0,12,0"/>
                         <RadioButton x:Name="CarrierSquare"
                                      Content="Square"
                                      GroupName="CarrierType"
+                                     ToolTip="Square: Hollow, organ-like vocoder tone"
                                      Checked="CarrierType_Changed"
                                      Margin="0,0,12,0"/>
                         <RadioButton x:Name="CarrierNoise"
                                      Content="Noise"
                                      GroupName="CarrierType"
+                                     ToolTip="Noise: Whispered, breathy vocoder effect"
                                      Checked="CarrierType_Changed"
                                      Margin="0,0,12,0"/>
                         <RadioButton x:Name="CarrierMixed"
                                      Content="Mixed"
                                      GroupName="CarrierType"
+                                     ToolTip="Mixed: Blend of oscillator and noise for natural sound"
                                      Checked="CarrierType_Changed"
                                      Margin="0,0,12,0"/>
                         <RadioButton x:Name="CarrierExternal"
                                      Content="External"
                                      GroupName="CarrierType"
+                                     ToolTip="External: Use external audio as carrier signal"
                                      Checked="CarrierType_Changed"/>
                     </StackPanel>
 
@@ -287,6 +292,7 @@
                                 Maximum="2000"
                                 Value="110"
                                 TickFrequency="10"
+                                ToolTip="Carrier Frequency: Base pitch of internal synthesizer (Range: 20-2000Hz, Default: 110Hz)"
                                 ValueChanged="CarrierFrequencySlider_ValueChanged"/>
                     </StackPanel>
                 </Grid>
@@ -314,6 +320,7 @@
                         Value="0"
                         TickFrequency="1"
                         IsSnapToTickEnabled="True"
+                        ToolTip="Formant Shift: Shift vocal character up/down (Range: -12 to +12 semitones, Default: 0)"
                         ValueChanged="FormantShiftSlider_ValueChanged"/>
             </StackPanel>
 
@@ -412,6 +419,7 @@
                 <Slider x:Name="SibilanceSlider"
                         Style="{StaticResource VocoderParameterSliderStyle}"
                         Value="50"
+                        ToolTip="Sibilance Preservation: Keep consonants clear (Range: 0-100%, Default: 50%)"
                         ValueChanged="SibilanceSlider_ValueChanged"/>
             </StackPanel>
 

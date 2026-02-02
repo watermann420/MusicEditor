@@ -8,6 +8,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using MusicEngineEditor.Services;
 using MusicEngineEditor.ViewModels;
+using MusicEngineEditor.Views;
 using MusicEngineEditor.Views.Dialogs;
 
 namespace MusicEngineEditor;
@@ -31,9 +32,48 @@ public partial class App : Application
         // Load settings and apply saved theme
         await ApplyStartupThemeAsync();
 
-        // Create and show main window
+        // Load recent projects service
+        var recentProjectsService = Services.GetRequiredService<IRecentProjectsService>();
+        await recentProjectsService.LoadAsync();
+
+        // Create and show main window first (prevents app shutdown issues)
         var mainWindow = new MainWindow();
         mainWindow.Show();
+
+        // Show welcome screen if enabled (after main window exists)
+        if (recentProjectsService.ShowWelcomeOnStartup)
+        {
+            // Defer welcome screen to after main window is fully loaded
+            mainWindow.Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                var welcomeScreen = new WelcomeScreen(recentProjectsService);
+                welcomeScreen.Owner = mainWindow;
+                var result = welcomeScreen.ShowDialog();
+
+                if (result == true)
+                {
+                    switch (welcomeScreen.Result.Action)
+                    {
+                        case WelcomeScreenAction.NewProject:
+                            mainWindow.TriggerNewProject();
+                            break;
+                        case WelcomeScreenAction.OpenProject:
+                            mainWindow.TriggerOpenProject();
+                            break;
+                        case WelcomeScreenAction.OpenRecentProject:
+                            if (!string.IsNullOrEmpty(welcomeScreen.Result.SelectedProjectPath))
+                            {
+                                await mainWindow.OpenProjectFileAsync(welcomeScreen.Result.SelectedProjectPath);
+                            }
+                            break;
+                        case WelcomeScreenAction.Skip:
+                        case WelcomeScreenAction.Close:
+                            // Just continue
+                            break;
+                    }
+                }
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
 
         // Check for crash recovery after main window is shown
         CheckForCrashRecovery(mainWindow);
@@ -94,6 +134,7 @@ public partial class App : Application
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<ISoundPackService, SoundPackService>();
+        services.AddSingleton<PresetBrowserService>();
         services.AddSingleton<EngineService>();
 
         // Playback services (singletons accessed via Instance property)
@@ -103,6 +144,9 @@ public partial class App : Application
         // Auto-save and recovery services
         services.AddSingleton(_ => AutoSaveService.Instance);
         services.AddSingleton(_ => RecoveryService.Instance);
+
+        // Recent projects service
+        services.AddSingleton<IRecentProjectsService, RecentProjectsService>();
 
         // ViewModels
         services.AddTransient<MainViewModel>();

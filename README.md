@@ -7,6 +7,7 @@
 ![C#](https://img.shields.io/badge/language-C%23-blue)
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple)
 ![Status](https://img.shields.io/badge/status-Work_in_Progress-orange)
+[![Join Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?logo=discord&logoColor=white)](https://discord.gg/tWkqHMsB6a)
 
 **MusicEngineEditor** is a professional code editor for the **MusicEngine** audio scripting system. Create music through code with real-time visualization, inline parameter controls, and VCV Rack-style modulation.
 
@@ -38,6 +39,21 @@ Discord: discord.gg/tWkqHMsB6a
 - Waveform visualization
 - Performance monitoring
 - VST plugin support
+
+### Professional DAW Features (NEW - Feb 2026)
+- **Master Channel Strip**: LUFS/VU meters, master fader, master effects
+- **Return/Bus Tracks**: 4 auxiliary returns (A-D) with send routing
+- **AI Assistant Panel (F3)**: Auto-Master, Auto-Mix, Melody Generator, Chord Suggester
+- **Session View**: 8x8 clip launcher grid with scene triggers
+- **Unified Preset Browser**: Tree view, search, favorites, tags
+- **Visual Undo History**: Timeline visualization with jump-to-state
+- **Workspace Presets**: Ctrl+1-5 quick layout switching
+- **Track Color Picker**: 16-color palette with customization
+- **Modulation Matrix Editor**: Visual drag-drop routing
+- **Keyboard Shortcuts Editor**: Search, conflict detection, import/export
+- **Welcome Screen**: Recent projects with pinning
+- **Quick Actions Toolbar**: Customizable common actions
+- **Zoom Presets**: 50%-200% quick access buttons
 
 ### Audio-Reactive UI (NEW)
 - **Audio Reactive Lighting**: UI elements glow and pulse with the music
@@ -328,6 +344,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 ### Quick Access (Function Keys)
 | Key | Action |
 |-----|--------|
+| F3 | AI Assistant Panel |
 | F4 | Synth Editor |
 | F5 | Effects Editor |
 | F6 | Pattern Editor |
@@ -337,6 +354,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 | F10 | Audio Statistics |
 | F11 | Toggle Fullscreen |
 | F12 | Plugin Manager (via command palette) |
+
+### Workspace Presets
+| Key | Workspace |
+|-----|-----------|
+| Ctrl+1 | Recording |
+| Ctrl+2 | Mixing |
+| Ctrl+3 | Mastering |
+| Ctrl+4 | Editing |
+| Ctrl+5 | Performance |
 
 ### Editor Shortcuts (Ctrl+Shift)
 | Shortcut | Action |

@@ -3,11 +3,121 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:MusicEngineEditor.Controls"
              mc:Ignorable="d"
              d:DesignHeight="60" d:DesignWidth="150"
              Height="60"
              Background="#181818"
              ClipToBounds="True">
+
+    <!-- Context Menu -->
+    <UserControl.ContextMenu>
+        <ContextMenu x:Name="TrackContextMenu" Background="#1A1A1A" BorderBrush="#3A3A3A">
+            <MenuItem Header="Rename Track" Click="RenameMenuItem_Click">
+                <MenuItem.Icon>
+                    <TextBlock Text="R" FontSize="10" FontWeight="Bold" Foreground="#E0E0E0"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Set Color" x:Name="SetColorMenuItem">
+                <MenuItem.Icon>
+                    <Border Width="12" Height="12" CornerRadius="2" x:Name="ColorMenuIcon" Background="#00D9FF"/>
+                </MenuItem.Icon>
+                <!-- Color Swatches Submenu - populated dynamically -->
+                <MenuItem Header="Red" Tag="#FF4444" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#FF4444"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Orange" Tag="#FF8C42" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#FF8C42"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Yellow" Tag="#FFD93D" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#FFD93D"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Lime" Tag="#A8E06C" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#A8E06C"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Green" Tag="#4CAF50" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#4CAF50"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Teal" Tag="#26A69A" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#26A69A"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Cyan" Tag="#00BCD4" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#00BCD4"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Blue" Tag="#4A9EFF" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#4A9EFF"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Indigo" Tag="#5C6BC0" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#5C6BC0"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Purple" Tag="#9C27B0" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#9C27B0"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Magenta" Tag="#E91E8C" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#E91E8C"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Pink" Tag="#FF6B9D" Click="ColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2" Background="#FF6B9D"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Auto (by track type)" Tag="Auto" Click="AutoColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Border Width="12" Height="12" CornerRadius="2">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#FF6B6B" Offset="0"/>
+                                    <GradientStop Color="#4ECDC4" Offset="0.5"/>
+                                    <GradientStop Color="#A78BFA" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Custom Color..." Click="CustomColorMenuItem_Click">
+                    <MenuItem.Icon>
+                        <TextBlock Text="..." FontSize="10" FontWeight="Bold" Foreground="#E0E0E0"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Duplicate Track" Click="DuplicateMenuItem_Click">
+                <MenuItem.Icon>
+                    <TextBlock Text="D" FontSize="10" FontWeight="Bold" Foreground="#E0E0E0"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Delete Track" Click="DeleteMenuItem_Click">
+                <MenuItem.Icon>
+                    <TextBlock Text="X" FontSize="10" FontWeight="Bold" Foreground="#FF4757"/>
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+    </UserControl.ContextMenu>
 
     <UserControl.Resources>
         <!-- Theme Colors -->

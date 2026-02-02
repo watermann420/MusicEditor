@@ -39,7 +39,8 @@ This folder contains technical documentation for developers integrating MusicEng
   - Generative music patches
   - Creating custom nodes
   - Patch save/load system
-- **[WhatsNew-Jan2026.md](WhatsNew-Jan2026.md)** - Summary of the latest editor/engine changes (glow, MIDI logging, shared engine, random helper).
+- **[WhatsNew-Jan2026.md](WhatsNew-Jan2026.md)** - January 2026 changes (glow, MIDI logging, shared engine, random helper).
+- **[WhatsNew-Feb2026.md](WhatsNew-Feb2026.md)** - February 2026 UI/UX completion (AI Assistant, Session View, Master Channel, 14 features total).
 
 ## Quick Links
 

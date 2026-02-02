@@ -371,6 +371,42 @@ namespace MusicEngineEditor.Controls.Mixer
             }
         }
 
+        private void SendASlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (Math.Abs(SendA - e.NewValue) > 0.001)
+            {
+                SendA = e.NewValue;
+                SendChanged?.Invoke(this, (0, e.NewValue));
+            }
+        }
+
+        private void SendBSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (Math.Abs(SendB - e.NewValue) > 0.001)
+            {
+                SendB = e.NewValue;
+                SendChanged?.Invoke(this, (1, e.NewValue));
+            }
+        }
+
+        private void SendCSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (Math.Abs(SendC - e.NewValue) > 0.001)
+            {
+                SendC = e.NewValue;
+                SendChanged?.Invoke(this, (2, e.NewValue));
+            }
+        }
+
+        private void SendDSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (Math.Abs(SendD - e.NewValue) > 0.001)
+            {
+                SendD = e.NewValue;
+                SendChanged?.Invoke(this, (3, e.NewValue));
+            }
+        }
+
         #endregion
 
         #region Private Methods

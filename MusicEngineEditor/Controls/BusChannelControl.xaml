@@ -238,7 +238,7 @@
                               Style="{StaticResource BusToggleButtonStyle}"
                               Content="M"
                               IsChecked="{Binding IsMuted, Mode=TwoWay}"
-                              ToolTip="Mute Bus"
+                              ToolTip="Mute: Silence this bus and all routed tracks"
                               Margin="0,0,4,0">
                     <ToggleButton.Triggers>
                         <EventTrigger RoutedEvent="ToggleButton.Checked">
@@ -265,7 +265,7 @@
                               Style="{StaticResource BusToggleButtonStyle}"
                               Content="S"
                               IsChecked="{Binding IsSoloed, Mode=TwoWay}"
-                              ToolTip="Solo Bus">
+                              ToolTip="Solo: Listen to only this bus">
                     <ToggleButton.Triggers>
                         <EventTrigger RoutedEvent="ToggleButton.Checked">
                             <BeginStoryboard>
@@ -321,6 +321,7 @@
                         VerticalAlignment="Stretch"
                         HorizontalAlignment="Center"
                         Margin="0,10"
+                        ToolTip="Volume: Bus output level (-inf to +6dB, Default: 0dB). Double-click to reset."
                         MouseDoubleClick="VolumeFader_MouseDoubleClick"/>
 
                 <!-- Level Meter -->
@@ -345,6 +346,7 @@
                         Style="{StaticResource BusPanSliderStyle}"
                         Value="{Binding Pan, Mode=TwoWay, FallbackValue=0}"
                         Margin="2"
+                        ToolTip="Pan: Bus stereo position (L100 to R100, Default: Center). Double-click to reset."
                         MouseDoubleClick="PanSlider_MouseDoubleClick"/>
             </StackPanel>
 

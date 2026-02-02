@@ -230,6 +230,8 @@
         <Grid.RowDefinitions>
             <!-- Toolbar -->
             <RowDefinition Height="Auto"/>
+            <!-- Zoom Toolbar -->
+            <RowDefinition Height="Auto"/>
             <!-- Main Content -->
             <RowDefinition Height="*"/>
             <!-- Horizontal ScrollBar -->
@@ -489,8 +491,23 @@
             </DockPanel>
         </Border>
 
+        <!-- Zoom Toolbar -->
+        <controls:ZoomToolbar x:Name="PianoRollZoomToolbar"
+                              Grid.Row="1"
+                              HorizontalZoom="{Binding ZoomX, Mode=TwoWay}"
+                              VerticalZoom="{Binding ZoomY, Mode=TwoWay}"
+                              ScrollOffset="{Binding ScrollX, Mode=TwoWay}"
+                              VisibleBeats="{Binding TotalBeats}"
+                              TotalProjectLength="{Binding TotalBeats}"
+                              PlayheadPosition="{Binding PlayheadPosition}"
+                              BeatsPerBar="4"
+                              HorizontalZoomChanged="PianoRollZoomToolbar_HorizontalZoomChanged"
+                              VerticalZoomChanged="PianoRollZoomToolbar_VerticalZoomChanged"
+                              ScrollOffsetChanged="PianoRollZoomToolbar_ScrollOffsetChanged"
+                              GoToPlayheadRequested="PianoRollZoomToolbar_GoToPlayheadRequested"/>
+
         <!-- Main Content Area -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <!-- Piano Keyboard -->
                 <ColumnDefinition Width="60"/>
@@ -741,7 +758,7 @@
         </Grid>
 
         <!-- Horizontal ScrollBar (for beats) -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <!-- Spacer for piano keyboard area -->
                 <ColumnDefinition Width="60"/>

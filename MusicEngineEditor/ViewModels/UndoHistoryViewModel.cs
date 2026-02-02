@@ -1,7 +1,7 @@
-﻿// MusicEngine License (MEL) - Honor-Based Commercial Support
+// MusicEngine License (MEL) - Honor-Based Commercial Support
 // Copyright (c) 2025-2026 Yannis Watermann (watermann420, nullonebinary)
 // https://github.com/watermann420/MusicEngineEditor
-// Description: ViewModel implementation.
+// Description: ViewModel implementation for Undo History Panel with visual timeline.
 
 using System;
 using System.Collections.ObjectModel;
@@ -16,7 +16,36 @@ using MusicEngineEditor.Services;
 namespace MusicEngineEditor.ViewModels;
 
 /// <summary>
-/// Represents a single item in the undo/redo history.
+/// Enum representing different types of undo actions for visual differentiation.
+/// </summary>
+public enum UndoActionType
+{
+    /// <summary>General edit action (pencil icon)</summary>
+    Edit,
+    /// <summary>Add/create action (plus icon)</summary>
+    Add,
+    /// <summary>Delete/remove action (trash icon)</summary>
+    Delete,
+    /// <summary>Move/drag action (arrows icon)</summary>
+    Move,
+    /// <summary>Parameter change action (slider icon)</summary>
+    Parameter,
+    /// <summary>Note-related action (music note icon)</summary>
+    Note,
+    /// <summary>Mixer-related action</summary>
+    Mixer,
+    /// <summary>Effect-related action</summary>
+    Effect,
+    /// <summary>Automation-related action</summary>
+    Automation,
+    /// <summary>Arrangement-related action</summary>
+    Arrangement,
+    /// <summary>Unknown/general action</summary>
+    Unknown
+}
+
+/// <summary>
+/// Represents a single item in the undo/redo history with timeline visualization support.
 /// </summary>
 public partial class UndoHistoryItem : ObservableObject
 {
@@ -69,6 +98,18 @@ public partial class UndoHistoryItem : ObservableObject
     private string _category = string.Empty;
 
     /// <summary>
+    /// Gets or sets the action type for visual styling.
+    /// </summary>
+    [ObservableProperty]
+    private UndoActionType _actionType = UndoActionType.Unknown;
+
+    /// <summary>
+    /// Gets or sets whether this item represents a branch point (fork in history).
+    /// </summary>
+    [ObservableProperty]
+    private bool _hasBranch;
+
+    /// <summary>
     /// Gets the formatted timestamp string.
     /// </summary>
     public string FormattedTime => Timestamp.ToString("HH:mm:ss");
@@ -90,7 +131,7 @@ public partial class UndoHistoryItem : ObservableObject
 }
 
 /// <summary>
-/// ViewModel for the Undo History Panel.
+/// ViewModel for the Undo History Panel with visual timeline support.
 /// Displays all undo/redo items with the ability to jump to any state.
 /// </summary>
 public partial class UndoHistoryViewModel : ObservableObject, IDisposable
@@ -182,6 +223,7 @@ public partial class UndoHistoryViewModel : ObservableObject, IDisposable
             // Add undo items (oldest to newest)
             foreach (var desc in undoDescriptions)
             {
+                var actionType = GetActionTypeForDescription(desc);
                 var item = new UndoHistoryItem
                 {
                     Index = index,
@@ -189,7 +231,9 @@ public partial class UndoHistoryViewModel : ObservableObject, IDisposable
                     Timestamp = now.AddSeconds(-((undoDescriptions.Count - index) * 5)), // Approximate timestamps
                     IsUndoItem = true,
                     Icon = GetIconForAction(desc),
-                    Category = GetCategoryForAction(desc)
+                    Category = GetCategoryForAction(desc),
+                    ActionType = actionType,
+                    HasBranch = false
                 };
                 HistoryItems.Add(item);
                 index++;
@@ -198,9 +242,20 @@ public partial class UndoHistoryViewModel : ObservableObject, IDisposable
             // The current position is after all undo items
             CurrentIndex = index - 1;
 
+            // Mark the last undo item as potential branch point if there are redo items
+            if (redoDescriptions.Count > 0 && HistoryItems.Count > 0)
+            {
+                var lastUndoItem = HistoryItems.LastOrDefault(x => x.IsUndoItem);
+                if (lastUndoItem != null)
+                {
+                    lastUndoItem.HasBranch = true;
+                }
+            }
+
             // Add redo items (newest to oldest = what will be redone first to last)
             foreach (var desc in redoDescriptions)
             {
+                var actionType = GetActionTypeForDescription(desc);
                 var item = new UndoHistoryItem
                 {
                     Index = index,
@@ -208,7 +263,9 @@ public partial class UndoHistoryViewModel : ObservableObject, IDisposable
                     Timestamp = now.AddSeconds(index), // Future timestamps for redo items
                     IsUndoItem = false,
                     Icon = GetIconForAction(desc),
-                    Category = GetCategoryForAction(desc)
+                    Category = GetCategoryForAction(desc),
+                    ActionType = actionType,
+                    HasBranch = false
                 };
                 HistoryItems.Add(item);
                 index++;
@@ -269,13 +326,13 @@ public partial class UndoHistoryViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Clears all undo/redo history.
+    /// Clears all undo/redo history with confirmation dialog.
     /// </summary>
     [RelayCommand]
     public void ClearHistory()
     {
         var result = MessageBox.Show(
-            "Are you sure you want to clear all undo history? This action cannot be undone.",
+            "Are you sure you want to clear all undo history?\n\nThis action cannot be undone and you will lose the ability to undo/redo any previous changes.",
             "Clear Undo History",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
@@ -284,6 +341,32 @@ public partial class UndoHistoryViewModel : ObservableObject, IDisposable
         {
             _undoService.Clear();
             RefreshHistory();
+        }
+    }
+
+    /// <summary>
+    /// Compacts the history by merging similar consecutive actions.
+    /// </summary>
+    [RelayCommand]
+    public void CompactHistory()
+    {
+        var result = MessageBox.Show(
+            "Compact history will merge similar consecutive actions to reduce memory usage.\n\nThis may combine multiple small changes into single entries. Continue?",
+            "Compact History",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            // Call the undo service's compact method if available
+            _undoService.CompactHistory();
+            RefreshHistory();
+
+            MessageBox.Show(
+                $"History compacted successfully.\n\nCurrent history: {TotalItems} items",
+                "Compact Complete",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
     }
 
@@ -300,7 +383,7 @@ public partial class UndoHistoryViewModel : ObservableObject, IDisposable
         JumpToState(SelectedItem.Index);
 
         MessageBox.Show(
-            $"Branched from: {SelectedItem.Description}\n\nAll redo history has been cleared.",
+            $"Branched from: {SelectedItem.Description}\n\nAll redo history has been cleared. Any new changes will start a new branch from this point.",
             "Branch Created",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
@@ -356,6 +439,41 @@ public partial class UndoHistoryViewModel : ObservableObject, IDisposable
         {
             item.IsCurrentPosition = (item.Index == CurrentIndex);
         }
+    }
+
+    /// <summary>
+    /// Determines the action type based on the description text.
+    /// </summary>
+    private static UndoActionType GetActionTypeForDescription(string description)
+    {
+        var lower = description.ToLowerInvariant();
+
+        // Check for specific action types
+        if (lower.Contains("add") || lower.Contains("create") || lower.Contains("insert") || lower.Contains("new"))
+            return UndoActionType.Add;
+        if (lower.Contains("delete") || lower.Contains("remove") || lower.Contains("clear"))
+            return UndoActionType.Delete;
+        if (lower.Contains("move") || lower.Contains("drag") || lower.Contains("reorder"))
+            return UndoActionType.Move;
+        if (lower.Contains("volume") || lower.Contains("gain") || lower.Contains("pan") ||
+            lower.Contains("level") || lower.Contains("value") || lower.Contains("change"))
+            return UndoActionType.Parameter;
+        if (lower.Contains("note") || lower.Contains("midi") || lower.Contains("pitch") ||
+            lower.Contains("velocity"))
+            return UndoActionType.Note;
+        if (lower.Contains("mixer") || lower.Contains("mute") || lower.Contains("solo"))
+            return UndoActionType.Mixer;
+        if (lower.Contains("effect") || lower.Contains("plugin") || lower.Contains("vst"))
+            return UndoActionType.Effect;
+        if (lower.Contains("automation") || lower.Contains("envelope"))
+            return UndoActionType.Automation;
+        if (lower.Contains("pattern") || lower.Contains("arrangement") || lower.Contains("clip") ||
+            lower.Contains("region"))
+            return UndoActionType.Arrangement;
+        if (lower.Contains("edit") || lower.Contains("modify") || lower.Contains("update"))
+            return UndoActionType.Edit;
+
+        return UndoActionType.Unknown;
     }
 
     private static string GetIconForAction(string description)

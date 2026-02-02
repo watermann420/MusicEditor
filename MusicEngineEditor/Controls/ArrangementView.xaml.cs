@@ -129,6 +129,76 @@ public partial class ArrangementView : UserControl
         _clips.CollectionChanged += (_, _) => RefreshClips();
     }
 
+    #region Zoom Toolbar Integration
+
+    private void ArrangementZoomToolbar_HorizontalZoomChanged(object? sender, double e)
+    {
+        // Update the visible beats based on horizontal zoom
+        if (_viewModel != null)
+        {
+            // Inverse relationship: higher zoom = fewer visible beats
+            var baseBeats = 64.0;
+            _viewModel.VisibleBeats = baseBeats / e;
+        }
+        RefreshView();
+    }
+
+    private void ArrangementZoomToolbar_VerticalZoomChanged(object? sender, double e)
+    {
+        // Vertical zoom affects track heights in the arrangement
+        // This can be implemented by adjusting canvas heights
+        RefreshView();
+    }
+
+    private void ArrangementZoomToolbar_ScrollOffsetChanged(object? sender, double e)
+    {
+        if (_viewModel != null)
+        {
+            _viewModel.ScrollOffset = e;
+        }
+        RefreshView();
+    }
+
+    private void ArrangementZoomToolbar_VisibleBeatsChanged(object? sender, double e)
+    {
+        if (_viewModel != null)
+        {
+            _viewModel.VisibleBeats = e;
+        }
+        RefreshView();
+    }
+
+    private void ArrangementZoomToolbar_GoToPlayheadRequested(object? sender, EventArgs e)
+    {
+        if (_viewModel != null)
+        {
+            // Center the playhead in the view
+            var newOffset = Math.Max(0, _viewModel.PlaybackPosition - _viewModel.VisibleBeats / 2);
+            _viewModel.ScrollOffset = newOffset;
+            RefreshView();
+        }
+    }
+
+    /// <summary>
+    /// Sets the selection range in the zoom toolbar for Fit Selection preset.
+    /// </summary>
+    /// <param name="start">Selection start in beats.</param>
+    /// <param name="end">Selection end in beats.</param>
+    public void SetZoomToolbarSelection(double start, double end)
+    {
+        ArrangementZoomToolbar?.SetSelection(start, end);
+    }
+
+    /// <summary>
+    /// Clears the zoom toolbar selection.
+    /// </summary>
+    public void ClearZoomToolbarSelection()
+    {
+        ArrangementZoomToolbar?.ClearSelection();
+    }
+
+    #endregion
+
     private void ArrangementView_Loaded(object sender, RoutedEventArgs e)
     {
         if (_viewModel == null)

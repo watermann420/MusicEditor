@@ -209,7 +209,8 @@
                 <TextBlock Text="PAN" FontSize="8" Foreground="#606060"
                            HorizontalAlignment="Center" Margin="0,0,0,2"/>
                 <Slider x:Name="PanSlider" Style="{StaticResource PanKnobStyle}"
-                        Value="0" ValueChanged="PanSlider_ValueChanged"/>
+                        Value="0" ValueChanged="PanSlider_ValueChanged"
+                        ToolTip="Pan: Stereo position (L to R)"/>
                 <TextBlock x:Name="PanValueText" Text="C" FontSize="8" Foreground="#808080"
                            HorizontalAlignment="Center" Margin="0,2,0,0"/>
             </StackPanel>
@@ -225,7 +226,8 @@
                 <!-- Volume Fader -->
                 <Slider x:Name="VolumeFader" Grid.Column="0"
                         Style="{StaticResource VolumeFaderStyle}"
-                        Value="0" ValueChanged="VolumeFader_ValueChanged"/>
+                        Value="0" ValueChanged="VolumeFader_ValueChanged"
+                        ToolTip="Volume: Track output level (-&#x221E; to +6dB)"/>
 
                 <!-- Level Meter -->
                 <local:MeterControl x:Name="LevelMeter" Grid.Column="2"/>
@@ -243,11 +245,11 @@
             <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Center">
                 <ToggleButton x:Name="SoloButton" Style="{StaticResource SoloButtonStyle}"
                               Checked="SoloButton_Changed" Unchecked="SoloButton_Changed"
-                              ToolTip="Solo"/>
+                              ToolTip="Solo: Listen only to this track [S]"/>
                 <ToggleButton x:Name="MuteButton" Style="{StaticResource MuteButtonStyle}"
                               Margin="4,0,0,0"
                               Checked="MuteButton_Changed" Unchecked="MuteButton_Changed"
-                              ToolTip="Mute"/>
+                              ToolTip="Mute: Silence this track [M]"/>
             </StackPanel>
 
             <!-- Send Knobs -->
@@ -266,25 +268,25 @@
                     <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center">
                         <TextBlock Text="A" FontSize="8" Foreground="#606060" HorizontalAlignment="Center"/>
                         <Slider x:Name="SendASlider" Style="{StaticResource SendKnobStyle}"
-                                Value="0" ToolTip="Send A"/>
+                                Value="0" ToolTip="Send A: Aux send level" ValueChanged="SendASlider_ValueChanged"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center">
                         <TextBlock Text="B" FontSize="8" Foreground="#606060" HorizontalAlignment="Center"/>
                         <Slider x:Name="SendBSlider" Style="{StaticResource SendKnobStyle}"
-                                Value="0" ToolTip="Send B"/>
+                                Value="0" ToolTip="Send B: Aux send level" ValueChanged="SendBSlider_ValueChanged"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" Margin="0,4,0,0">
                         <TextBlock Text="C" FontSize="8" Foreground="#606060" HorizontalAlignment="Center"/>
                         <Slider x:Name="SendCSlider" Style="{StaticResource SendKnobStyle}"
-                                Value="0" ToolTip="Send C"/>
+                                Value="0" ToolTip="Send C: Aux send level" ValueChanged="SendCSlider_ValueChanged"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Margin="0,4,0,0">
                         <TextBlock Text="D" FontSize="8" Foreground="#606060" HorizontalAlignment="Center"/>
                         <Slider x:Name="SendDSlider" Style="{StaticResource SendKnobStyle}"
-                                Value="0" ToolTip="Send D"/>
+                                Value="0" ToolTip="Send D: Aux send level" ValueChanged="SendDSlider_ValueChanged"/>
                     </StackPanel>
                 </Grid>
             </Border>

@@ -281,6 +281,110 @@ public partial class KeyboardShortcutsDialog : Window
         }
     }
 
+    private void PrintButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = "Markdown Files (*.md)|*.md|Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
+            Title = "Export Shortcuts as Printable Document",
+            FileName = "KeyboardShortcuts.md"
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            GeneratePrintableShortcuts(dialog.FileName);
+        }
+    }
+
+    private void GeneratePrintableShortcuts(string filePath)
+    {
+        try
+        {
+            var isMarkdown = filePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase);
+            var sb = new System.Text.StringBuilder();
+
+            if (isMarkdown)
+            {
+                sb.AppendLine("# MusicEngine Editor - Keyboard Shortcuts Reference");
+                sb.AppendLine();
+                sb.AppendLine($"*Generated on {DateTime.Now:yyyy-MM-dd HH:mm}*");
+                sb.AppendLine();
+                sb.AppendLine("---");
+                sb.AppendLine();
+            }
+            else
+            {
+                sb.AppendLine("MusicEngine Editor - Keyboard Shortcuts Reference");
+                sb.AppendLine(new string('=', 50));
+                sb.AppendLine($"Generated on {DateTime.Now:yyyy-MM-dd HH:mm}");
+                sb.AppendLine();
+            }
+
+            // Group shortcuts by category
+            var grouped = _shortcuts.Values
+                .OrderBy(s => s.Category)
+                .ThenBy(s => s.CommandName)
+                .GroupBy(s => s.Category);
+
+            foreach (var group in grouped)
+            {
+                if (isMarkdown)
+                {
+                    sb.AppendLine($"## {group.Key}");
+                    sb.AppendLine();
+                    sb.AppendLine("| Command | Shortcut | Description |");
+                    sb.AppendLine("|---------|----------|-------------|");
+
+                    foreach (var shortcut in group)
+                    {
+                        var shortcutText = shortcut.Key == Key.None ? "*None*" : $"`{shortcut.DisplayString}`";
+                        sb.AppendLine($"| {shortcut.CommandName} | {shortcutText} | {shortcut.Description} |");
+                    }
+                    sb.AppendLine();
+                }
+                else
+                {
+                    sb.AppendLine(group.Key.ToString().ToUpper());
+                    sb.AppendLine(new string('-', 40));
+
+                    foreach (var shortcut in group)
+                    {
+                        var shortcutText = shortcut.Key == Key.None ? "(None)" : shortcut.DisplayString;
+                        sb.AppendLine($"  {shortcut.CommandName,-30} {shortcutText,-20}");
+                        if (!string.IsNullOrEmpty(shortcut.Description))
+                        {
+                            sb.AppendLine($"    {shortcut.Description}");
+                        }
+                    }
+                    sb.AppendLine();
+                }
+            }
+
+            if (isMarkdown)
+            {
+                sb.AppendLine("---");
+                sb.AppendLine();
+                sb.AppendLine("*Shortcuts marked with (None) have no key binding assigned.*");
+            }
+
+            File.WriteAllText(filePath, sb.ToString());
+
+            MessageBox.Show(
+                $"Shortcuts reference exported to:\n{filePath}",
+                "Export Complete",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Failed to export shortcuts reference: {ex.Message}",
+                "Export Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
         SaveShortcutsToFile();
@@ -994,6 +1098,13 @@ public partial class KeyboardShortcutsDialog : Window
             new() { Id = "tools.eraser", CommandName = "Eraser Tool", Description = "Switch to eraser tool", Key = Key.E, Category = ShortcutCategory.Tools },
             new() { Id = "tools.split", CommandName = "Split Tool", Description = "Switch to split tool", Key = Key.T, Category = ShortcutCategory.Tools },
             new() { Id = "tools.mute", CommandName = "Mute Tool", Description = "Switch to mute tool", Key = Key.U, Category = ShortcutCategory.Tools },
+            new() { Id = "tools.quantize", CommandName = "Quantize", Description = "Quantize selected notes to grid", Key = Key.Q, Ctrl = true, Category = ShortcutCategory.Tools },
+            new() { Id = "tools.quantizeDialog", CommandName = "Quantize Settings", Description = "Open quantize settings dialog", Key = Key.Q, Ctrl = true, Shift = true, Category = ShortcutCategory.Tools },
+            new() { Id = "tools.transposeUp", CommandName = "Transpose Up", Description = "Transpose selection up one semitone", Key = Key.Up, Ctrl = true, Shift = true, Category = ShortcutCategory.Tools },
+            new() { Id = "tools.transposeDown", CommandName = "Transpose Down", Description = "Transpose selection down one semitone", Key = Key.Down, Ctrl = true, Shift = true, Category = ShortcutCategory.Tools },
+            new() { Id = "tools.transposeOctaveUp", CommandName = "Transpose Octave Up", Description = "Transpose selection up one octave", Key = Key.Up, Ctrl = true, Alt = true, Category = ShortcutCategory.Tools },
+            new() { Id = "tools.transposeOctaveDown", CommandName = "Transpose Octave Down", Description = "Transpose selection down one octave", Key = Key.Down, Ctrl = true, Alt = true, Category = ShortcutCategory.Tools },
+            new() { Id = "tools.transposeDialog", CommandName = "Transpose Settings", Description = "Open transpose settings dialog", Key = Key.T, Ctrl = true, Shift = true, Category = ShortcutCategory.Tools },
             new() { Id = "tools.run", CommandName = "Run Script", Description = "Run the current script", Key = Key.F5, Category = ShortcutCategory.Tools },
             new() { Id = "tools.compile", CommandName = "Compile", Description = "Compile the current script", Key = Key.F6, Category = ShortcutCategory.Tools },
             new() { Id = "tools.settings", CommandName = "Settings", Description = "Open settings", Key = Key.OemComma, Ctrl = true, Category = ShortcutCategory.Tools },
@@ -1008,6 +1119,19 @@ public partial class KeyboardShortcutsDialog : Window
             new() { Id = "nav.quickOpen", CommandName = "Quick Open", Description = "Quick open file", Key = Key.P, Ctrl = true, Category = ShortcutCategory.Navigation },
             new() { Id = "nav.nextTab", CommandName = "Next Tab", Description = "Switch to next tab", Key = Key.Tab, Ctrl = true, Category = ShortcutCategory.Navigation },
             new() { Id = "nav.previousTab", CommandName = "Previous Tab", Description = "Switch to previous tab", Key = Key.Tab, Ctrl = true, Shift = true, Category = ShortcutCategory.Navigation },
+
+            // Window operations
+            new() { Id = "window.fullscreen", CommandName = "Toggle Fullscreen", Description = "Toggle fullscreen mode", Key = Key.F11, Category = ShortcutCategory.Window },
+            new() { Id = "window.maximize", CommandName = "Maximize Window", Description = "Maximize or restore window", Key = Key.Up, Alt = true, Category = ShortcutCategory.Window },
+            new() { Id = "window.minimize", CommandName = "Minimize Window", Description = "Minimize window", Key = Key.Down, Alt = true, Category = ShortcutCategory.Window },
+            new() { Id = "window.closeWindow", CommandName = "Close Window", Description = "Close the current window", Key = Key.W, Ctrl = true, Shift = true, Category = ShortcutCategory.Window },
+            new() { Id = "window.workspace1", CommandName = "Workspace 1", Description = "Switch to workspace 1", Key = Key.D1, Alt = true, Category = ShortcutCategory.Window },
+            new() { Id = "window.workspace2", CommandName = "Workspace 2", Description = "Switch to workspace 2", Key = Key.D2, Alt = true, Category = ShortcutCategory.Window },
+            new() { Id = "window.workspace3", CommandName = "Workspace 3", Description = "Switch to workspace 3", Key = Key.D3, Alt = true, Category = ShortcutCategory.Window },
+            new() { Id = "window.saveWorkspace", CommandName = "Save Workspace", Description = "Save current workspace layout", Key = Key.W, Ctrl = true, Alt = true, Category = ShortcutCategory.Window },
+            new() { Id = "window.manageWorkspaces", CommandName = "Manage Workspaces", Description = "Open workspace manager", Key = Key.W, Alt = true, Category = ShortcutCategory.Window },
+            new() { Id = "window.splitHorizontal", CommandName = "Split Horizontal", Description = "Split view horizontally", Key = Key.OemMinus, Ctrl = true, Alt = true, Category = ShortcutCategory.Window },
+            new() { Id = "window.splitVertical", CommandName = "Split Vertical", Description = "Split view vertically", Key = Key.OemBackslash, Ctrl = true, Alt = true, Category = ShortcutCategory.Window },
 
             // Debug operations
             new() { Id = "debug.toggleBreakpoint", CommandName = "Toggle Breakpoint", Description = "Toggle breakpoint", Key = Key.F9, Category = ShortcutCategory.Debug },

@@ -110,7 +110,7 @@
                         <ToggleButton DockPanel.Dock="Right"
                                       Width="14" Height="14"
                                       IsChecked="{Binding IsEnabled}"
-                                      ToolTip="Enable/Disable Send"
+                                      ToolTip="Enable/Disable Send: Route audio to this bus"
                                       Margin="2,0,0,0">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
@@ -281,7 +281,7 @@
                     BorderBrush="{StaticResource SendBorderBrush}"
                     BorderThickness="1"
                     Margin="0,4,0,0"
-                    ToolTip="Add Send">
+                    ToolTip="Add Send: Create a new send to an aux/bus channel">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border"

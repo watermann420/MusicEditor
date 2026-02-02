@@ -227,6 +227,21 @@ public sealed class EditorUndoService : INotifyPropertyChanged, IDisposable
         return redone;
     }
 
+    /// <summary>
+    /// Compacts the history by merging similar consecutive commands.
+    /// This is a placeholder that will clear redo history as a simple form of compaction.
+    /// Future implementations may merge similar commands.
+    /// </summary>
+    public void CompactHistory()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        // For now, compacting just clears redo history to free memory
+        // A more sophisticated implementation could merge similar commands
+        _undoManager.ClearRedoStack();
+        RaiseAllPropertyChanges();
+        UndoStackChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     private void OnUndoManagerStateChanged(object? sender, EventArgs e)
     {
         RaiseAllPropertyChanges();

@@ -182,6 +182,12 @@ public partial class PianoRollViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private bool _loopEnabled;
 
+    /// <summary>
+    /// Gets or sets whether the view follows the playhead during playback.
+    /// </summary>
+    [ObservableProperty]
+    private bool _followPlayhead;
+
     #endregion
 
     #region Pattern Properties

@@ -214,7 +214,7 @@
                                   Content="BYPASS"
                                   Style="{StaticResource BandToggleButtonStyle}"
                                   Width="60"
-                                  ToolTip="Bypass all bands"/>
+                                  ToolTip="Bypass: Disable all compression and pass audio unchanged"/>
                 </Grid>
             </Border>
 
@@ -288,14 +288,14 @@
                             <ToggleButton x:Name="LowSoloButton"
                                           Content="S"
                                           Style="{StaticResource BandToggleButtonStyle}"
-                                          ToolTip="Solo Low Band"
+                                          ToolTip="Solo: Listen to only the low band (Range: 20Hz-200Hz)"
                                           Checked="OnSoloChanged"
                                           Unchecked="OnSoloChanged"
                                           Margin="0,0,4,0"/>
                             <ToggleButton x:Name="LowBypassButton"
                                           Content="B"
                                           Style="{StaticResource BandToggleButtonStyle}"
-                                          ToolTip="Bypass Low Band"
+                                          ToolTip="Bypass: Disable compression on the low band"
                                           Checked="OnBypassChanged"
                                           Unchecked="OnBypassChanged"/>
                         </StackPanel>
@@ -346,6 +346,7 @@
                                     Grid.Row="1" Grid.ColumnSpan="2"
                                     Minimum="-60" Maximum="0" Value="-20"
                                     ValueChanged="OnThresholdChanged"
+                                    ToolTip="Threshold: Level above which compression begins (Range: -60 to 0dB, Default: -20dB)"
                                     Margin="4,2"/>
                             <TextBlock x:Name="LowThresholdText"
                                        Grid.Row="1" Grid.ColumnSpan="2"
@@ -360,6 +361,7 @@
                                 <Slider x:Name="LowRatioSlider"
                                         Minimum="1" Maximum="20" Value="4"
                                         ValueChanged="OnRatioChanged"
+                                        ToolTip="Ratio: Compression amount (Range: 1:1-20:1, Default: 4:1)"
                                         Margin="0,2"/>
                                 <TextBlock x:Name="LowRatioText" Text="4:1" Style="{StaticResource ParamValueStyle}"/>
                             </StackPanel>
@@ -370,6 +372,7 @@
                                 <Slider x:Name="LowGainSlider"
                                         Minimum="-12" Maximum="12" Value="0"
                                         ValueChanged="OnGainChanged"
+                                        ToolTip="Gain: Makeup gain after compression (Range: -12 to +12dB, Default: 0dB)"
                                         Margin="0,2"/>
                                 <TextBlock x:Name="LowGainText" Text="0 dB" Style="{StaticResource ParamValueStyle}"/>
                             </StackPanel>
@@ -380,6 +383,7 @@
                                 <Slider x:Name="LowAttackSlider"
                                         Minimum="0.1" Maximum="100" Value="5"
                                         ValueChanged="OnAttackChanged"
+                                        ToolTip="Attack: How fast compression engages (Range: 0.1-100ms, Default: 5ms)"
                                         Margin="0,2"/>
                                 <TextBlock x:Name="LowAttackText" Text="5 ms" Style="{StaticResource ParamValueStyle}"/>
                             </StackPanel>
@@ -390,6 +394,7 @@
                                 <Slider x:Name="LowReleaseSlider"
                                         Minimum="10" Maximum="1000" Value="100"
                                         ValueChanged="OnReleaseChanged"
+                                        ToolTip="Release: How fast compression releases (Range: 10-1000ms, Default: 100ms)"
                                         Margin="0,2"/>
                                 <TextBlock x:Name="LowReleaseText" Text="100 ms" Style="{StaticResource ParamValueStyle}"/>
                             </StackPanel>
@@ -422,14 +427,14 @@
                             <ToggleButton x:Name="LowMidSoloButton"
                                           Content="S"
                                           Style="{StaticResource BandToggleButtonStyle}"
-                                          ToolTip="Solo Low-Mid Band"
+                                          ToolTip="Solo: Listen to only the low-mid band (Range: 200Hz-1kHz)"
                                           Checked="OnSoloChanged"
                                           Unchecked="OnSoloChanged"
                                           Margin="0,0,4,0"/>
                             <ToggleButton x:Name="LowMidBypassButton"
                                           Content="B"
                                           Style="{StaticResource BandToggleButtonStyle}"
-                                          ToolTip="Bypass Low-Mid Band"
+                                          ToolTip="Bypass: Disable compression on the low-mid band"
                                           Checked="OnBypassChanged"
                                           Unchecked="OnBypassChanged"/>
                         </StackPanel>
@@ -556,14 +561,14 @@
                             <ToggleButton x:Name="HighMidSoloButton"
                                           Content="S"
                                           Style="{StaticResource BandToggleButtonStyle}"
-                                          ToolTip="Solo High-Mid Band"
+                                          ToolTip="Solo: Listen to only the high-mid band (Range: 1kHz-5kHz)"
                                           Checked="OnSoloChanged"
                                           Unchecked="OnSoloChanged"
                                           Margin="0,0,4,0"/>
                             <ToggleButton x:Name="HighMidBypassButton"
                                           Content="B"
                                           Style="{StaticResource BandToggleButtonStyle}"
-                                          ToolTip="Bypass High-Mid Band"
+                                          ToolTip="Bypass: Disable compression on the high-mid band"
                                           Checked="OnBypassChanged"
                                           Unchecked="OnBypassChanged"/>
                         </StackPanel>
@@ -691,14 +696,14 @@
                             <ToggleButton x:Name="HighSoloButton"
                                           Content="S"
                                           Style="{StaticResource BandToggleButtonStyle}"
-                                          ToolTip="Solo High Band"
+                                          ToolTip="Solo: Listen to only the high band (Range: 5kHz-20kHz)"
                                           Checked="OnSoloChanged"
                                           Unchecked="OnSoloChanged"
                                           Margin="0,0,4,0"/>
                             <ToggleButton x:Name="HighBypassButton"
                                           Content="B"
                                           Style="{StaticResource BandToggleButtonStyle}"
-                                          ToolTip="Bypass High Band"
+                                          ToolTip="Bypass: Disable compression on the high band"
                                           Checked="OnBypassChanged"
                                           Unchecked="OnBypassChanged"/>
                         </StackPanel>

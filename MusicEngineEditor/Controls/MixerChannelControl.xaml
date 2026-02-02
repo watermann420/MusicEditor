@@ -280,7 +280,7 @@
                 <ToggleButton x:Name="PhaseButton"
                               Style="{StaticResource ChannelToggleButtonStyle}"
                               IsChecked="{Binding IsPhaseInverted, Mode=TwoWay}"
-                              ToolTip="Phase Invert"
+                              ToolTip="Phase Invert: Flip audio polarity 180 degrees (fixes phase cancellation issues)"
                               Margin="0,0,2,0"
                               Width="18"
                               Height="18"
@@ -312,7 +312,7 @@
                               Style="{StaticResource ChannelToggleButtonStyle}"
                               Content="M"
                               IsChecked="{Binding IsMuted, Mode=TwoWay}"
-                              ToolTip="Mute (M)"
+                              ToolTip="Mute: Silence this track [M]"
                               Margin="0,0,2,0">
                     <ToggleButton.Triggers>
                         <EventTrigger RoutedEvent="ToggleButton.Checked">
@@ -339,7 +339,7 @@
                               Style="{StaticResource ChannelToggleButtonStyle}"
                               Content="S"
                               IsChecked="{Binding IsSoloed, Mode=TwoWay}"
-                              ToolTip="Solo (S)"
+                              ToolTip="Solo: Listen to only this track [S]"
                               Margin="0,0,2,0">
                     <ToggleButton.Triggers>
                         <EventTrigger RoutedEvent="ToggleButton.Checked">
@@ -366,7 +366,7 @@
                               Style="{StaticResource ChannelToggleButtonStyle}"
                               Content="R"
                               IsChecked="{Binding IsArmed, Mode=TwoWay}"
-                              ToolTip="Record Arm (R)">
+                              ToolTip="Record Arm: Enable recording on this track [R]">
                     <ToggleButton.Triggers>
                         <EventTrigger RoutedEvent="ToggleButton.Checked">
                             <BeginStoryboard>
@@ -403,6 +403,7 @@
                         VerticalAlignment="Stretch"
                         HorizontalAlignment="Center"
                         Margin="0,10"
+                        ToolTip="Volume: Track output level (-inf to +6dB, Default: 0dB). Double-click to reset."
                         MouseDoubleClick="VolumeFader_MouseDoubleClick"/>
 
                 <!-- Level Meter -->
@@ -427,6 +428,7 @@
                         Style="{StaticResource PanSliderStyle}"
                         Value="{Binding Pan, Mode=TwoWay, FallbackValue=0}"
                         Margin="2,2"
+                        ToolTip="Pan: Stereo position (L100 to R100, Default: Center). Double-click to reset."
                         MouseDoubleClick="PanSlider_MouseDoubleClick"/>
             </StackPanel>
 
