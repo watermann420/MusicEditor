@@ -33,6 +33,12 @@ public static class EditorSetup
     // Track inline slider services per editor
     private static readonly Dictionary<TextEditor, InlineSliderService> _sliderServices = new();
 
+    // Track parameter tooltip services per editor
+    private static readonly Dictionary<TextEditor, ParameterTooltipService> _tooltipServices = new();
+
+    // Track color picker services per editor
+    private static readonly Dictionary<TextEditor, ColorPickerService> _colorPickerServices = new();
+
     public static void Configure(TextEditor editor)
     {
         // Editor behavior settings
@@ -238,6 +244,71 @@ public static class EditorSetup
         return service;
     }
 
+    /// <summary>
+    /// Setup parameter tooltips for the editor.
+    /// Shows function signatures and parameter descriptions on hover.
+    /// </summary>
+    public static ParameterTooltipService SetupParameterTooltips(TextEditor editor)
+    {
+        // Remove existing service if any
+        if (_tooltipServices.TryGetValue(editor, out var existing))
+        {
+            existing.Dispose();
+            _tooltipServices.Remove(editor);
+        }
+
+        // Create and register new service
+        var service = new ParameterTooltipService(editor);
+        _tooltipServices[editor] = service;
+
+        return service;
+    }
+
+    /// <summary>
+    /// Remove parameter tooltip service from an editor
+    /// </summary>
+    public static void RemoveParameterTooltips(TextEditor editor)
+    {
+        if (_tooltipServices.TryGetValue(editor, out var service))
+        {
+            service.Dispose();
+            _tooltipServices.Remove(editor);
+        }
+    }
+
+    /// <summary>
+    /// Setup color picker for the editor.
+    /// Ctrl+Click on color values to show a color picker popup.
+    /// Supports hex colors (#RRGGBB, #AARRGGBB) and Color.FromRgb/FromArgb calls.
+    /// </summary>
+    public static ColorPickerService SetupColorPicker(TextEditor editor)
+    {
+        // Remove existing service if any
+        if (_colorPickerServices.TryGetValue(editor, out var existing))
+        {
+            existing.Dispose();
+            _colorPickerServices.Remove(editor);
+        }
+
+        // Create and register new service
+        var service = new ColorPickerService(editor);
+        _colorPickerServices[editor] = service;
+
+        return service;
+    }
+
+    /// <summary>
+    /// Remove color picker service from an editor
+    /// </summary>
+    public static void RemoveColorPicker(TextEditor editor)
+    {
+        if (_colorPickerServices.TryGetValue(editor, out var service))
+        {
+            service.Dispose();
+            _colorPickerServices.Remove(editor);
+        }
+    }
+
     public static void SetupFolding(TextEditor editor)
     {
         // Initialize folding manager
@@ -287,6 +358,30 @@ public static class EditorSetup
         catch
         {
             // Ignore folding errors
+        }
+    }
+
+    /// <summary>
+    /// Fold all code blocks
+    /// </summary>
+    public static void FoldAll()
+    {
+        if (_foldingManager == null) return;
+        foreach (var folding in _foldingManager.AllFoldings)
+        {
+            folding.IsFolded = true;
+        }
+    }
+
+    /// <summary>
+    /// Unfold all code blocks
+    /// </summary>
+    public static void UnfoldAll()
+    {
+        if (_foldingManager == null) return;
+        foreach (var folding in _foldingManager.AllFoldings)
+        {
+            folding.IsFolded = false;
         }
     }
 

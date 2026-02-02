@@ -32,6 +32,12 @@ public class EngineService : IDisposable
     public event Action<string, float>? ParameterChanged;
     public event Action<string>? MidiLog;
 
+    /// <summary>
+    /// Event fired when a synth is created via script.
+    /// Parameters: synth instance (ISynth), synth name, synth type name.
+    /// </summary>
+    public event Action<object, string, string>? SynthCreated;
+
     /// <summary>Gets the sequencer for visualization integration.</summary>
     public Sequencer? Sequencer => _sequencer;
 
@@ -77,6 +83,10 @@ public class EngineService : IDisposable
 
         // Script host uses the shared engine/sequencer
         _scriptHost = new ScriptHost(_engine, _sequencer);
+
+        // Forward synth created events
+        _scriptHost.OnSynthCreated += (synth, name, typeName) => SynthCreated?.Invoke(synth, name, typeName);
+
         IsInitialized = true;
     }
 

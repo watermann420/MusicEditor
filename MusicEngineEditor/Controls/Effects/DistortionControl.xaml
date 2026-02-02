@@ -1,0 +1,213 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Effects.DistortionControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls.Effects"
+             mc:Ignorable="d"
+             d:DesignHeight="340" d:DesignWidth="340"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#0D0D0D</Color>
+        <Color x:Key="PanelColor">#181818</Color>
+        <Color x:Key="AccentColor">#00D9FF</Color>
+        <Color x:Key="TextColor">#E0E0E0</Color>
+        <Color x:Key="TextDimColor">#808080</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+        <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+
+        <!-- Label Style -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Value Style -->
+        <Style x:Key="ValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="MinWidth" Value="50"/>
+        </Style>
+
+        <!-- Header Style -->
+        <Style x:Key="HeaderStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Panel Style -->
+        <Style x:Key="PanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <!-- Slider Style -->
+        <Style x:Key="DistortionSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid>
+                            <Border x:Name="TrackBackground"
+                                    Height="4"
+                                    Background="{StaticResource BorderBrush}"
+                                    CornerRadius="2"
+                                    VerticalAlignment="Center"/>
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Height="4"
+                                                        Background="{StaticResource AccentBrush}"
+                                                        CornerRadius="2,0,0,2"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Width="14" Height="14"
+                                                         Fill="{StaticResource AccentBrush}"
+                                                         Stroke="{StaticResource BackgroundBrush}"
+                                                         StrokeThickness="2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="DistortionComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource PanelStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <TextBlock Grid.Row="0" Text="DISTORTION" Style="{StaticResource HeaderStyle}" Margin="0,0,0,16"/>
+
+            <!-- Distortion Type -->
+            <Grid Grid.Row="1" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="Type:" Style="{StaticResource LabelStyle}"/>
+                <ComboBox Grid.Column="1" x:Name="DistortionTypeCombo"
+                          Style="{StaticResource DistortionComboBoxStyle}"
+                          SelectionChanged="DistortionTypeCombo_SelectionChanged">
+                    <ComboBoxItem Content="Soft" IsSelected="True"/>
+                    <ComboBoxItem Content="Hard"/>
+                    <ComboBoxItem Content="Tube"/>
+                    <ComboBoxItem Content="Fuzz"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Drive (0-100%) -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Drive" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="DriveValue" Text="50%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="DriveSlider"
+                        Style="{StaticResource DistortionSliderStyle}"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="50"
+                        ValueChanged="DriveSlider_ValueChanged"/>
+            </StackPanel>
+
+            <!-- Tone (0-100%) -->
+            <StackPanel Grid.Row="3" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Tone" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="ToneValue" Text="50%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="ToneSlider"
+                        Style="{StaticResource DistortionSliderStyle}"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="50"
+                        ValueChanged="ToneSlider_ValueChanged"/>
+            </StackPanel>
+
+            <!-- Mix (0-100%) -->
+            <StackPanel Grid.Row="4">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Mix" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="MixValue" Text="100%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="MixSlider"
+                        Style="{StaticResource DistortionSliderStyle}"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="100"
+                        ValueChanged="MixSlider_ValueChanged"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

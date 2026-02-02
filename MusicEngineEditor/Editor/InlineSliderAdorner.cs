@@ -140,9 +140,9 @@ public class InlineSliderService : IDisposable
         var offset = _editor.Document.GetOffset(pos.Value.Location);
         var detectedNumber = NumberDetector.GetNumberAtOffset(_editor.Document, offset);
 
-        if (detectedNumber != null && Keyboard.Modifiers == ModifierKeys.Alt)
+        if (detectedNumber != null && Keyboard.Modifiers == ModifierKeys.Control)
         {
-            // Alt+Click to show slider immediately
+            // Ctrl+Click to show slider immediately
             ShowSlider(detectedNumber);
             e.Handled = true;
         }

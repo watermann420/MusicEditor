@@ -1,0 +1,155 @@
+<UserControl x:Class="MusicEngineEditor.Controls.SynthEditorPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:synths="clr-namespace:MusicEngineEditor.Controls.Synths"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="800"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#0D0D0D</Color>
+        <Color x:Key="PanelColor">#181818</Color>
+        <Color x:Key="AccentColor">#00D9FF</Color>
+        <Color x:Key="TextColor">#E0E0E0</Color>
+        <Color x:Key="TextDimColor">#808080</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+        <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+
+        <!-- Close Button Style -->
+        <Style x:Key="CloseButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                CornerRadius="4">
+                            <Path x:Name="icon" Data="M 0,0 L 10,10 M 10,0 L 0,10"
+                                  Stroke="{TemplateBinding Foreground}"
+                                  StrokeThickness="1.5"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Width="10" Height="10"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3C3C3C"/>
+                                <Setter TargetName="icon" Property="Stroke" Value="#FF6B6B"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Synth Type Selector Style -->
+        <Style x:Key="SynthTypeSelectorStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Bar -->
+        <Border Grid.Row="0" Background="{StaticResource PanelBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <Grid Margin="12,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Synth Icon -->
+                <Border Grid.Column="0" Background="{StaticResource AccentBrush}"
+                        CornerRadius="4" Width="32" Height="32" Margin="0,0,12,0">
+                    <Path Data="M 4,8 L 8,4 L 12,8 L 16,4 L 16,20 L 12,16 L 8,20 L 4,16 Z"
+                          Fill="{StaticResource BackgroundBrush}"
+                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                          Width="16" Height="16"/>
+                </Border>
+
+                <!-- Synth Name -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="SynthNameText" Text="No Synth Selected"
+                               Foreground="{StaticResource TextBrush}"
+                               FontSize="14" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="SynthTypeText" Text="Select a synth to edit"
+                               Foreground="{StaticResource TextDimBrush}"
+                               FontSize="11"/>
+                </StackPanel>
+
+                <!-- Synth Selector (for selecting from created synths) -->
+                <ComboBox Grid.Column="2" x:Name="SynthSelector"
+                          Style="{StaticResource SynthTypeSelectorStyle}"
+                          Width="200" Margin="20,0"
+                          SelectionChanged="SynthSelector_SelectionChanged"
+                          DisplayMemberPath="DisplayName">
+                    <!-- Items populated dynamically from registered synths -->
+                </ComboBox>
+
+                <!-- Close Button -->
+                <Button Grid.Column="3" Style="{StaticResource CloseButtonStyle}"
+                        Click="CloseButton_Click" ToolTip="Close Synth Editor (F4)"/>
+            </Grid>
+        </Border>
+
+        <!-- Synth Control Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <Grid x:Name="SynthControlContainer">
+                <!-- No Synth Selected State -->
+                <Border x:Name="NoSynthPanel" Visibility="Visible">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Path Data="M 20,40 A 20,20 0 1 1 60,40 A 20,20 0 1 1 20,40 M 40,25 V 45 M 40,50 V 55"
+                              Stroke="{StaticResource TextDimBrush}" StrokeThickness="2"
+                              Width="80" Height="80" HorizontalAlignment="Center"/>
+                        <TextBlock Text="No Synth Selected" Foreground="{StaticResource TextDimBrush}"
+                                   FontSize="16" HorizontalAlignment="Center" Margin="0,16,0,8"/>
+                        <TextBlock Text="Double-click a synth track or use CreateSynth() to open the editor"
+                                   Foreground="{StaticResource TextDimBrush}"
+                                   FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap"
+                                   MaxWidth="300" TextAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Dynamic Synth Controls - Only one visible at a time -->
+                <synths:SimpleSynthControl x:Name="SimpleSynthEditor" Visibility="Collapsed"/>
+                <synths:PolySynthControl x:Name="PolySynthEditor" Visibility="Collapsed"/>
+                <synths:FMSynthControl x:Name="FMSynthEditor" Visibility="Collapsed"/>
+                <synths:SupersawSynthControl x:Name="SupersawSynthEditor" Visibility="Collapsed"/>
+                <synths:AdvancedSynthControl x:Name="AdvancedSynthEditor" Visibility="Collapsed"/>
+                <synths:GranularSynthControl x:Name="GranularSynthEditor" Visibility="Collapsed"/>
+                <synths:SampleSynthControl x:Name="SampleSynthEditor" Visibility="Collapsed"/>
+                <synths:SpeechSynthControl x:Name="SpeechSynthEditor" Visibility="Collapsed"/>
+                <synths:PhysicalModelingControl x:Name="PhysicalModelingSynthEditor" Visibility="Collapsed"/>
+                <synths:NoiseGeneratorControl x:Name="NoiseGeneratorEditor" Visibility="Collapsed"/>
+                <synths:WavetableSynthControl x:Name="WavetableSynthEditor" Visibility="Collapsed"/>
+                <synths:VectorSynthControl x:Name="VectorSynthEditor" Visibility="Collapsed"/>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
