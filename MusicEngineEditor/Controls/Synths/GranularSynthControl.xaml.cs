@@ -30,9 +30,20 @@ public partial class GranularSynthControl : UserControl
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
         Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
 
     private GranularSynthViewModel? ViewModel => DataContext as GranularSynthViewModel;
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        // Clean up ViewModel event subscriptions
+        if (DataContext is GranularSynthViewModel vm)
+        {
+            vm.WaveformChanged -= OnWaveformChanged;
+            vm.ParameterChanged -= OnParameterChanged;
+        }
+    }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {

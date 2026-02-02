@@ -23,6 +23,7 @@ public partial class DrumSynthControl : UserControl
     {
         InitializeComponent();
         Loaded += DrumSynthControl_Loaded;
+        Unloaded += DrumSynthControl_Unloaded;
     }
 
     private DrumSynthViewModel? ViewModel => DataContext as DrumSynthViewModel;
@@ -31,6 +32,11 @@ public partial class DrumSynthControl : UserControl
     {
         // Update Pan value display initially
         UpdatePanDisplay();
+    }
+
+    private void DrumSynthControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        // Clean up event handlers
     }
 
     #region Master Controls

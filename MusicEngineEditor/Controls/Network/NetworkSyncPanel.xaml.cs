@@ -415,6 +415,7 @@ public partial class NetworkSyncPanel : UserControl, INotifyPropertyChanged
 
     private void MasterEnableToggle_Click(object sender, RoutedEventArgs e)
     {
+        if (MasterEnableToggle == null) return; // Guard during initialization
         IsMasterEnabled = MasterEnableToggle.IsChecked == true;
     }
 
@@ -444,6 +445,7 @@ public partial class NetworkSyncPanel : UserControl, INotifyPropertyChanged
 
     private void NetworkInterfaceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (NetworkInterfaceComboBox == null || !_isInitialized) return; // Guard during initialization
         if (NetworkInterfaceComboBox.SelectedItem is ComboBoxItem item && item.Tag is NetworkInterfaceInfo info)
         {
             _networkSyncService.SelectedNetworkInterface = info.IpAddress;
@@ -462,6 +464,7 @@ public partial class NetworkSyncPanel : UserControl, INotifyPropertyChanged
 
     private void SectionToggle_Click(object sender, RoutedEventArgs e)
     {
+        if (!_isInitialized) return; // Guard during initialization
         if (sender == LinkSectionToggle)
         {
             LinkSectionContent.Visibility = LinkSectionToggle.IsChecked == true
@@ -496,6 +499,7 @@ public partial class NetworkSyncPanel : UserControl, INotifyPropertyChanged
 
     private void LinkEnableToggle_Click(object sender, RoutedEventArgs e)
     {
+        if (LinkEnableToggle == null || !_isInitialized) return; // Guard during initialization
         bool enabled = LinkEnableToggle.IsChecked == true;
         LinkEnableToggle.Content = enabled ? "ON" : "OFF";
 
@@ -514,6 +518,7 @@ public partial class NetworkSyncPanel : UserControl, INotifyPropertyChanged
 
     private void LinkStartStopSyncCheck_Click(object sender, RoutedEventArgs e)
     {
+        if (LinkStartStopSyncCheck == null || !_isInitialized) return; // Guard during initialization
         _networkSyncService.LinkStartStopSyncEnabled = LinkStartStopSyncCheck.IsChecked == true;
     }
 
@@ -646,6 +651,7 @@ public partial class NetworkSyncPanel : UserControl, INotifyPropertyChanged
 
     private void MtcFrameRateComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (!_isInitialized) return; // Guard during initialization
         if (MtcFrameRateComboBox.SelectedItem is ComboBoxItem item)
         {
             var frameRate = item.Content?.ToString() switch

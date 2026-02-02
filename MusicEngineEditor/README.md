@@ -9,17 +9,59 @@ See the root `README.md` for full usage. Highlights of the current editor build:
 
 ## New in Feb 2026
 
+### Spatial Audio
+Full 3D audio positioning with multiple rendering modes:
+- **3D Positioning**: Place sounds anywhere in 3D space with distance attenuation
+- **Surround Panner**: 5.1/7.1 speaker positioning with visual layout
+- **Binaural Renderer**: HRTF-based 3D audio with head tracking support
+- **Ambisonics**: 1st-3rd order encoding/decoding with rotation controls
+
+### Analysis Tools
+Comprehensive audio analysis toolkit:
+- **Guitar Tuner**: Circular display with strobe mode and 10 tuning presets
+- **Chord Detector**: Real-time chord recognition with Roman numeral analysis
+- **Key Detector**: Circle of fifths with chromagram and mode detection
+- **Tempo Detector**: BPM detection with tap tempo and beat grid
+- **Loop Finder**: Automatic loop point detection with A/B comparison
+
+### Network/Sync
+Sync with external hardware and software:
+- **Ableton Link**: Tempo sync with peer discovery and visual metronome
+- **OSC Control**: Message mapping with learn mode and presets
+- **Network MIDI**: RTP-MIDI with Bonjour/mDNS discovery
+- **Machine Control (MMC/MTC)**: Timecode display and transport control
+
+### New Synth Types
+12 new synthesizer editors with visual controls:
+- **Additive**: 64 partials with Hammond-style drawbars
+- **FM**: 6-operator synthesis with 20 algorithms
+- **Granular**: Grain-based synthesis with envelope control
+- **Wavetable**: Position morphing with custom wavetables
+- **Vector**: XY crossfade between 4 sources
+- **ChipTune**: NES, GameBoy, C64 chip emulation
+- **Organ**: Hammond drawbars with Leslie simulation
+- **SID**: Commodore 64 SID chip synthesis
+- **OPN**: YM2612/Genesis FM synthesis
+- **EPiano**: Rhodes and Wurlitzer models
+- **Sampler/Slicer**: Waveform slicing with pad triggering
+
+### Session View & Clip Launcher
+- 8x8 grid for Ableton-style clip launching
+- Scene triggers for row-based launching
+- Visual clip states (empty, loaded, playing, queued)
+- Drag-and-drop clip arrangement
+
+### Workspace Presets
+- **Ctrl+1-5** quick layout switching (Recording, Mixing, Mastering, Editing, Performance)
+- Save and restore custom window layouts
+- Workspace Manager (Ctrl+Shift+W)
+
 ### AI Assistant Panel (F3)
 Four AI-powered tools in one tabbed panel:
 - **Auto-Master**: One-click mastering with LUFS targeting, A/B comparison
 - **Auto-Mix**: Frequency collision detection, EQ/compression suggestions
 - **Melody Generator**: Scale-aware melody generation with style presets
 - **Chord Suggester**: Context-aware suggestions with Roman numeral notation
-
-### Session View & Clip Launcher
-- 8x8 grid for Ableton-style clip launching
-- Scene triggers for row-based launching
-- Visual clip states (empty, loaded, playing, queued)
 
 ### Master Channel & Returns
 - Master channel strip with LUFS/VU meters
@@ -30,7 +72,6 @@ Four AI-powered tools in one tabbed panel:
 - **Welcome Screen**: Recent projects list with pinning
 - **Preset Browser**: Unified browser with search, favorites, tags
 - **Undo History**: Visual timeline with jump-to-state
-- **Workspace Presets**: Ctrl+1-5 for quick layout switching
 - **Track Colors**: 16-color picker with custom palettes
 - **Quick Actions**: Customizable toolbar for common tasks
 - **Zoom Presets**: 50%-200% quick access
@@ -88,23 +129,29 @@ Set environment variables before starting the editor to trim unused systems (han
 
 ## Synthesizer Editor
 
-Visual synth editing panel with support for 12 synthesizer types:
+Visual synth editing panel with support for 18+ synthesizer types:
 
 ### Synth Types
 | Type | Description |
 |------|-------------|
 | Simple | Basic waveform, filter, ADSR |
 | Poly | Polyphonic with voice management |
-| FM | Frequency modulation synthesis |
-| Supersaw | Unison detuned oscillators |
-| Advanced | Multi-oscillator with per-osc controls |
-| Granular | Grain-based synthesis |
-| Sample | Sample playback with zones |
-| Speech | Vowel/formant synthesis |
-| Physical | Physical modeling (string, wind, bell) |
-| Noise | White/pink/brown noise generation |
+| Additive | 64 partials with Hammond-style drawbars |
+| FM | 6-operator frequency modulation synthesis |
+| Granular | Grain-based synthesis with 5 envelope shapes |
 | Wavetable | Wavetable position morphing |
-| Vector | X/Y vector synthesis |
+| Vector | XY crossfade between 4 sources |
+| ChipTune | NES, GameBoy, C64 chip emulation |
+| Organ | Hammond-style drawbars with Leslie simulation |
+| SID | Commodore 64 SID chip with ring mod and sync |
+| OPN | YM2612/Genesis FM with 4 operators |
+| EPiano | Rhodes and Wurlitzer models |
+| Sampler/Slicer | Waveform slicing with pad triggering |
+| Supersaw | Unison detuned oscillators (JP-8000 style) |
+| Advanced | Multi-oscillator with per-osc controls |
+| Sample | Sample playback with velocity zones |
+| Physical | Physical modeling (string, wind, bell) |
+| Speech | Vowel/formant synthesis |
 
 ### Opening the Synth Editor
 - **F4**: Toggle synth editor panel

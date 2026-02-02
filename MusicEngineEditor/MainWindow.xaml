@@ -5,6 +5,9 @@
         xmlns:avalonDock="https://github.com/Dirkster99/AvalonDock"
         xmlns:views="clr-namespace:MusicEngineEditor.Views"
         xmlns:controls="clr-namespace:MusicEngineEditor.Controls"
+        xmlns:spatial="clr-namespace:MusicEngineEditor.Controls.Spatial"
+        xmlns:analysis="clr-namespace:MusicEngineEditor.Controls.Analysis"
+        xmlns:network="clr-namespace:MusicEngineEditor.Controls.Network"
         Title="MusicEngine Editor"
         Icon="/Resources/Icons/CodeEditorLogo.png"
         Height="800" Width="1200"
@@ -253,6 +256,32 @@
                                 <MenuItem Header="Mixer" IsCheckable="True" IsChecked="False" x:Name="MixerMenuItem" Click="ToggleMixer_Click" InputGestureText="F7"/>
                                 <MenuItem Header="Arrangement" x:Name="ArrangementMenuItem" Click="OpenArrangement_Click" InputGestureText="F8"/>
                                 <MenuItem Header="Session View" x:Name="SessionViewMenuItem" Click="OpenSessionView_Click" InputGestureText="Ctrl+Alt+S"/>
+                            </MenuItem>
+                            <!-- Spatial Audio Submenu -->
+                            <MenuItem Header="_Spatial Audio">
+                                <MenuItem Header="Spatial Panel" Click="OpenSpatialPanel_Click" InputGestureText="Ctrl+Alt+P"/>
+                                <MenuItem Header="Surround Panner" Click="OpenSurroundPanner_Click"/>
+                                <MenuItem Header="Binaural Renderer" Click="OpenBinauralRenderer_Click"/>
+                                <MenuItem Header="Ambisonics" Click="OpenAmbisonics_Click"/>
+                            </MenuItem>
+                            <!-- Analysis Submenu -->
+                            <MenuItem Header="_Analysis">
+                                <MenuItem Header="Analysis Panel" Click="OpenAnalysisPanel_Click" InputGestureText="Ctrl+Alt+A"/>
+                                <Separator/>
+                                <MenuItem Header="Guitar Tuner" Click="OpenGuitarTuner_Click" InputGestureText="Ctrl+Alt+T"/>
+                                <MenuItem Header="Chord Detector" Click="OpenChordDetector_Click" InputGestureText="Ctrl+Alt+C"/>
+                                <MenuItem Header="Key Detector" Click="OpenKeyDetector_Click" InputGestureText="Ctrl+Alt+K"/>
+                                <MenuItem Header="Tempo Detector" Click="OpenTempoDetector_Click" InputGestureText="Ctrl+Alt+B"/>
+                                <MenuItem Header="Loop Finder" Click="OpenLoopFinder_Click" InputGestureText="Ctrl+Alt+L"/>
+                            </MenuItem>
+                            <!-- Network Submenu -->
+                            <MenuItem Header="_Network">
+                                <MenuItem Header="Network Panel" Click="OpenNetworkPanel_Click" InputGestureText="Ctrl+Alt+N"/>
+                                <Separator/>
+                                <MenuItem Header="Ableton Link" Click="OpenLinkSync_Click"/>
+                                <MenuItem Header="OSC Control" Click="OpenOSCControl_Click"/>
+                                <MenuItem Header="Network MIDI" Click="OpenNetworkMIDI_Click"/>
+                                <MenuItem Header="Machine Control" Click="OpenMachineControl_Click"/>
                             </MenuItem>
                             <!-- Code View Submenu -->
                             <MenuItem Header="_Code View">
@@ -1181,6 +1210,15 @@
                         <!-- AI Assistant Panel -->
                         <controls:AIAssistantPanel x:Name="AIAssistantPanel" Visibility="Collapsed"
                                                    CloseRequested="AIAssistantPanel_CloseRequested"/>
+
+                        <!-- Spatial Audio Panel -->
+                        <spatial:SpatialAudioPanel x:Name="SpatialAudioPanel" Visibility="Collapsed"/>
+
+                        <!-- Analysis Panel -->
+                        <analysis:AnalysisPanel x:Name="AnalysisPanel" Visibility="Collapsed"/>
+
+                        <!-- Network Sync Panel -->
+                        <network:NetworkSyncPanel x:Name="NetworkSyncPanel" Visibility="Collapsed"/>
                     </Grid>
                 </DockPanel>
             </Border>

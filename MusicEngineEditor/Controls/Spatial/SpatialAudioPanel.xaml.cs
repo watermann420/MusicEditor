@@ -96,6 +96,7 @@ public partial class SpatialAudioPanel : UserControl
     private SpatialSourceItem? _draggingSource;
     private bool _isDragging;
     private Point _dragStartPoint;
+    private bool _isInitialized;
 
     // Engine reference
     private SpatialAudioEngine? _spatialEngine;
@@ -162,11 +163,19 @@ public partial class SpatialAudioPanel : UserControl
         SourcesListBox.ItemsSource = _sources;
 
         Loaded += SpatialAudioPanel_Loaded;
+        Unloaded += SpatialAudioPanel_Unloaded;
         SizeChanged += SpatialAudioPanel_SizeChanged;
+    }
+
+    private void SpatialAudioPanel_Unloaded(object sender, RoutedEventArgs e)
+    {
+        _isInitialized = false;
+        SizeChanged -= SpatialAudioPanel_SizeChanged;
     }
 
     private void SpatialAudioPanel_Loaded(object sender, RoutedEventArgs e)
     {
+        _isInitialized = true;
         DrawRoomVisualization();
         UpdateListenerMarker();
     }
@@ -492,7 +501,7 @@ public partial class SpatialAudioPanel : UserControl
 
     private void ListenerPosition_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        if (ListenerXValue == null) return; // Guard during initialization
+        if (!_isInitialized) return; // Guard during initialization
 
         ListenerXValue.Text = ListenerXSlider.Value.ToString("F1");
         ListenerYValue.Text = ListenerYSlider.Value.ToString("F1");
@@ -510,7 +519,7 @@ public partial class SpatialAudioPanel : UserControl
 
     private void ListenerOrientation_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        if (ListenerYawValue == null) return;
+        if (!_isInitialized) return; // Guard during initialization
 
         ListenerYawValue.Text = $"{ListenerYawSlider.Value:F0}";
 
@@ -530,7 +539,7 @@ public partial class SpatialAudioPanel : UserControl
 
     private void AmbisonicOrder_Changed(object sender, RoutedEventArgs e)
     {
-        if (Order1Radio == null) return; // Guard during initialization
+        if (!_isInitialized) return; // Guard during initialization
 
         if (Order1Radio.IsChecked == true)
         {
@@ -563,6 +572,7 @@ public partial class SpatialAudioPanel : UserControl
 
     private void OutputFormat_Changed(object sender, SelectionChangedEventArgs e)
     {
+        if (!_isInitialized) return; // Guard during initialization
         if (OutputFormatComboBox.SelectedItem is ComboBoxItem item)
         {
             string? formatTag = item.Tag?.ToString();
@@ -598,7 +608,7 @@ public partial class SpatialAudioPanel : UserControl
 
     private void ReverbSend_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        if (ReverbSendValue == null) return;
+        if (!_isInitialized) return; // Guard during initialization
 
         ReverbSendLevel = (float)(ReverbSendSlider.Value / 100.0);
         ReverbSendValue.Text = $"{ReverbSendSlider.Value:F0}%";
@@ -608,6 +618,7 @@ public partial class SpatialAudioPanel : UserControl
 
     private void RoomSize_Changed(object sender, SelectionChangedEventArgs e)
     {
+        if (!_isInitialized) return; // Guard during initialization
         if (RoomSizeComboBox.SelectedItem is ComboBoxItem item)
         {
             string? sizeTag = item.Tag?.ToString();
@@ -635,6 +646,8 @@ public partial class SpatialAudioPanel : UserControl
 
     private void UpdateReverbTimeDisplay()
     {
+        if (ReverbTimeDisplay == null) return; // Guard during initialization
+
         if (_spatialEngine != null)
         {
             float rt60 = _spatialEngine.Listener.EstimatedReverbTime;

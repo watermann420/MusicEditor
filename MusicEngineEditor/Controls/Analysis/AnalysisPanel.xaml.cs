@@ -225,6 +225,7 @@ public partial class AnalysisPanel : UserControl
 
     private void GlobalEnableToggle_Changed(object sender, RoutedEventArgs e)
     {
+        if (GlobalEnableToggle == null) return; // Guard during initialization
         IsGloballyEnabled = GlobalEnableToggle.IsChecked == true;
     }
 

@@ -24,12 +24,18 @@ public partial class NoiseGeneratorControl : UserControl
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
         DataContextChanged += OnDataContextChanged;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         DrawSpectrumShape();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        // Clean up event handlers
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
