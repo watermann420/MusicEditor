@@ -6,20 +6,18 @@
              xmlns:vm="clr-namespace:MusicEngineEditor.ViewModels.Synths"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="900"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
-        <!-- Dark Theme Colors -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>
-        <SolidColorBrush x:Key="PanelBrush" Color="#181818"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="#00FF88"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
+        <!-- Local aliases referencing global theme resources -->
+        <SolidColorBrush x:Key="PanelBrush" Color="{DynamicResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="ForegroundBrush" Color="{DynamicResource ForegroundColor}"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="{DynamicResource SecondaryForegroundColor}"/>
+
+        <!-- Drum-specific colors (not in theme, kept as local resources) -->
         <SolidColorBrush x:Key="KickBrush" Color="#DC143C"/>
         <SolidColorBrush x:Key="SnareBrush" Color="#FFD700"/>
-        <SolidColorBrush x:Key="HiHatBrush" Color="#00D9FF"/>
+        <SolidColorBrush x:Key="HiHatBrush" Color="{DynamicResource AccentColor}"/>
         <SolidColorBrush x:Key="ClapBrush" Color="#FF69B4"/>
         <SolidColorBrush x:Key="TomBrush" Color="#FF8C00"/>
         <SolidColorBrush x:Key="CymbalBrush" Color="#9370DB"/>
@@ -40,13 +38,13 @@
                             <Border x:Name="TrackBackground"
                                     Grid.Row="1"
                                     Height="4"
-                                    Background="#252525"
+                                    Background="{DynamicResource ElementHoverBrush}"
                                     CornerRadius="2"
                                     Margin="5,0"/>
                             <Border x:Name="PART_SelectionRange"
                                     Grid.Row="1"
                                     Height="4"
-                                    Background="{StaticResource AccentBrush}"
+                                    Background="{DynamicResource AccentBrush}"
                                     CornerRadius="2"
                                     HorizontalAlignment="Left"
                                     Margin="5,0"/>
@@ -55,7 +53,7 @@
                                     <Thumb Width="14" Height="14">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Ellipse Fill="{StaticResource AccentBrush}" Width="14" Height="14"/>
+                                                <Ellipse Fill="{DynamicResource AccentBrush}" Width="14" Height="14"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -69,7 +67,7 @@
 
         <!-- Button Style -->
         <Style x:Key="ToolbarButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#252525"/>
+            <Setter Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="12,6"/>
@@ -80,19 +78,47 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border"
                                 Background="{TemplateBinding Background}"
-                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="4"
                                 Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="glowEffect" Color="{DynamicResource AccentColor}"
+                                                  BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#303030"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="8" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.6" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="0" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource SubtleBorderBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -119,21 +145,49 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border"
                                 Background="{TemplateBinding Background}"
-                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
                                 BorderThickness="2"
                                 CornerRadius="8">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="glowEffect" Color="{DynamicResource AccentColor}"
+                                                  BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
                             <Grid>
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 <!-- Trigger flash overlay -->
                                 <Border x:Name="flashOverlay"
-                                        Background="White"
+                                        Background="{DynamicResource BrightForegroundBrush}"
                                         Opacity="0"
                                         CornerRadius="6"/>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="12" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.7" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="0" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="flashOverlay" Property="Opacity" Value="0.3"/>
@@ -161,7 +215,7 @@
 
         <!-- Section Header Style -->
         <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Margin" Value="0,0,0,8"/>
@@ -177,7 +231,7 @@
                     <ControlTemplate TargetType="TabItem">
                         <Border x:Name="border"
                                 Background="{TemplateBinding Background}"
-                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
                                 BorderThickness="1,1,1,0"
                                 CornerRadius="4,4,0,0"
                                 Padding="{TemplateBinding Padding}"
@@ -190,11 +244,11 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource PanelBrush}"/>
-                                <Setter TargetName="content" Property="TextBlock.Foreground" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="content" Property="TextBlock.Foreground" Value="{DynamicResource AccentBrush}"/>
                                 <Setter TargetName="content" Property="TextBlock.FontWeight" Value="Bold"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#202020"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HeaderBackgroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -204,10 +258,10 @@
 
         <!-- Toggle Button Style for Open/Closed Hi-Hat -->
         <Style x:Key="ToggleButtonStyle" TargetType="ToggleButton">
-            <Setter Property="Background" Value="#252525"/>
+            <Setter Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
@@ -219,15 +273,43 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4"
                                 Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="glowEffect" Color="{DynamicResource AccentColor}"
+                                                  BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="6" Duration="0:0:0.12"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.5" Duration="0:0:0.12"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

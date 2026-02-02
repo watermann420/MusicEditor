@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="80"
              Width="80"
-             Background="#181818">
+             Background="{DynamicResource PanelBackgroundBrush}">
     <UserControl.Resources>
         <!-- Volume Fader Style -->
         <Style x:Key="VolumeFaderStyle" TargetType="Slider">
@@ -18,16 +18,16 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
                         <Grid>
-                            <Border Width="4" Background="#0D0D0D" CornerRadius="2"
+                            <Border Width="4" Background="{DynamicResource BackgroundBrush}" CornerRadius="2"
                                     HorizontalAlignment="Center"/>
                             <Track x:Name="PART_Track">
                                 <Track.Thumb>
                                     <Thumb Width="24" Height="12">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Border Background="#00D9FF" CornerRadius="2"
-                                                        BorderBrush="#2A2A2A" BorderThickness="1">
-                                                    <Rectangle Width="16" Height="2" Fill="#0D0D0D"
+                                                <Border Background="{DynamicResource AccentBrush}" CornerRadius="2"
+                                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                                    <Rectangle Width="16" Height="2" Fill="{DynamicResource BackgroundBrush}"
                                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 </Border>
                                             </ControlTemplate>
@@ -50,17 +50,17 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
                         <Grid Height="20">
-                            <Border Height="4" Background="#0D0D0D" CornerRadius="2"
+                            <Border Height="4" Background="{DynamicResource BackgroundBrush}" CornerRadius="2"
                                     VerticalAlignment="Center"/>
-                            <Border Width="2" Height="8" Background="#606060"
+                            <Border Width="2" Height="8" Background="{DynamicResource SecondaryForegroundBrush}"
                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             <Track x:Name="PART_Track">
                                 <Track.Thumb>
                                     <Thumb Width="10" Height="16">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Border Background="#00D9FF" CornerRadius="2"
-                                                        BorderBrush="#2A2A2A" BorderThickness="1"/>
+                                                <Border Background="{DynamicResource AccentBrush}" CornerRadius="2"
+                                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -82,14 +82,14 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
                         <Grid>
-                            <Ellipse Width="18" Height="18" Fill="#0D0D0D" Stroke="#2A2A2A" StrokeThickness="1"/>
-                            <Ellipse Width="12" Height="12" Fill="#181818"/>
+                            <Ellipse Width="18" Height="18" Fill="{DynamicResource BackgroundBrush}" Stroke="{DynamicResource BorderBrush}" StrokeThickness="1"/>
+                            <Ellipse Width="12" Height="12" Fill="{DynamicResource PanelBackgroundBrush}"/>
                             <Track x:Name="PART_Track">
                                 <Track.Thumb>
                                     <Thumb Width="4" Height="4">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Ellipse Fill="#00D9FF"/>
+                                                <Ellipse Fill="{DynamicResource AccentBrush}"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -107,21 +107,25 @@
             <Setter Property="Height" Value="20"/>
             <Setter Property="FontSize" Value="10"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
-            <Setter Property="BorderBrush" Value="#2A2A2A"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
 
-        <!-- Solo Button Style -->
+        <!-- Solo Button Style with Hover Glow -->
         <Style x:Key="SoloButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToggleButtonBaseStyle}">
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="border" Background="#0D0D0D"
+                        <Border x:Name="border" Background="{DynamicResource BackgroundBrush}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="2">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="glowEffect" Color="{DynamicResource WarningColor}"
+                                                  BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
                             <TextBlock Text="S" HorizontalAlignment="Center" VerticalAlignment="Center"
                                        Foreground="{TemplateBinding Foreground}"
                                        FontSize="{TemplateBinding FontSize}"
@@ -129,11 +133,35 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#FFD700"/>
-                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource WarningBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource BackgroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#00D9FF"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="8" Duration="0:0:0.12"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.5" Duration="0:0:0.12"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource WarningBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -141,15 +169,19 @@
             </Setter>
         </Style>
 
-        <!-- Mute Button Style -->
+        <!-- Mute Button Style with Hover Glow -->
         <Style x:Key="MuteButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToggleButtonBaseStyle}">
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="border" Background="#0D0D0D"
+                        <Border x:Name="border" Background="{DynamicResource BackgroundBrush}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="2">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="glowEffect" Color="{DynamicResource ErrorColor}"
+                                                  BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
                             <TextBlock Text="M" HorizontalAlignment="Center" VerticalAlignment="Center"
                                        Foreground="{TemplateBinding Foreground}"
                                        FontSize="{TemplateBinding FontSize}"
@@ -157,11 +189,35 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#FF4040"/>
-                                <Setter Property="Foreground" Value="#E0E0E0"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ErrorBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#00D9FF"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="8" Duration="0:0:0.12"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.5" Duration="0:0:0.12"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -170,7 +226,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="2" Padding="4">
+    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="2" Padding="4">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>   <!-- Track Name -->
@@ -187,16 +243,16 @@
             </Grid.RowDefinitions>
 
             <!-- Track Name -->
-            <Border Grid.Row="0" Background="#0D0D0D" BorderBrush="#2A2A2A" BorderThickness="1"
+            <Border Grid.Row="0" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                     CornerRadius="2" Padding="4,2">
                 <Grid>
                     <TextBlock x:Name="TrackNameText" Text="Track" FontSize="10"
-                               Foreground="#E0E0E0" FontFamily="Segoe UI"
+                               Foreground="{DynamicResource ForegroundBrush}" FontFamily="Segoe UI"
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"
                                MouseLeftButtonDown="TrackNameText_MouseLeftButtonDown"/>
-                    <TextBox x:Name="TrackNameEdit" FontSize="10" Background="#0D0D0D"
-                             Foreground="#E0E0E0" BorderThickness="0"
+                    <TextBox x:Name="TrackNameEdit" FontSize="10" Background="{DynamicResource BackgroundBrush}"
+                             Foreground="{DynamicResource ForegroundBrush}" BorderThickness="0"
                              HorizontalAlignment="Stretch" VerticalAlignment="Center"
                              TextAlignment="Center" Visibility="Collapsed"
                              LostFocus="TrackNameEdit_LostFocus"
@@ -206,12 +262,12 @@
 
             <!-- Pan Control -->
             <StackPanel Grid.Row="2">
-                <TextBlock Text="PAN" FontSize="8" Foreground="#606060"
+                <TextBlock Text="PAN" FontSize="8" Foreground="{DynamicResource SecondaryForegroundBrush}"
                            HorizontalAlignment="Center" Margin="0,0,0,2"/>
                 <Slider x:Name="PanSlider" Style="{StaticResource PanKnobStyle}"
                         Value="0" ValueChanged="PanSlider_ValueChanged"
                         ToolTip="Pan: Stereo position (L to R)"/>
-                <TextBlock x:Name="PanValueText" Text="C" FontSize="8" Foreground="#808080"
+                <TextBlock x:Name="PanValueText" Text="C" FontSize="8" Foreground="{DynamicResource SecondaryForegroundBrush}"
                            HorizontalAlignment="Center" Margin="0,2,0,0"/>
             </StackPanel>
 
@@ -234,10 +290,10 @@
             </Grid>
 
             <!-- dB Display -->
-            <Border Grid.Row="6" Background="#0D0D0D" BorderBrush="#2A2A2A" BorderThickness="1"
+            <Border Grid.Row="6" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                     CornerRadius="2" Padding="2">
                 <TextBlock x:Name="VolumeDisplay" Text="0.0 dB" FontSize="9"
-                           Foreground="#00D9FF" FontFamily="Consolas"
+                           Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas"
                            HorizontalAlignment="Center"/>
             </Border>
 
@@ -253,7 +309,7 @@
             </StackPanel>
 
             <!-- Send Knobs -->
-            <Border Grid.Row="10" Background="#0D0D0D" BorderBrush="#2A2A2A" BorderThickness="1"
+            <Border Grid.Row="10" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                     CornerRadius="2" Padding="4">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -266,25 +322,25 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center">
-                        <TextBlock Text="A" FontSize="8" Foreground="#606060" HorizontalAlignment="Center"/>
+                        <TextBlock Text="A" FontSize="8" Foreground="{DynamicResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
                         <Slider x:Name="SendASlider" Style="{StaticResource SendKnobStyle}"
                                 Value="0" ToolTip="Send A: Aux send level" ValueChanged="SendASlider_ValueChanged"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center">
-                        <TextBlock Text="B" FontSize="8" Foreground="#606060" HorizontalAlignment="Center"/>
+                        <TextBlock Text="B" FontSize="8" Foreground="{DynamicResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
                         <Slider x:Name="SendBSlider" Style="{StaticResource SendKnobStyle}"
                                 Value="0" ToolTip="Send B: Aux send level" ValueChanged="SendBSlider_ValueChanged"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" Margin="0,4,0,0">
-                        <TextBlock Text="C" FontSize="8" Foreground="#606060" HorizontalAlignment="Center"/>
+                        <TextBlock Text="C" FontSize="8" Foreground="{DynamicResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
                         <Slider x:Name="SendCSlider" Style="{StaticResource SendKnobStyle}"
                                 Value="0" ToolTip="Send C: Aux send level" ValueChanged="SendCSlider_ValueChanged"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Margin="0,4,0,0">
-                        <TextBlock Text="D" FontSize="8" Foreground="#606060" HorizontalAlignment="Center"/>
+                        <TextBlock Text="D" FontSize="8" Foreground="{DynamicResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
                         <Slider x:Name="SendDSlider" Style="{StaticResource SendKnobStyle}"
                                 Value="0" ToolTip="Send D: Aux send level" ValueChanged="SendDSlider_ValueChanged"/>
                     </StackPanel>

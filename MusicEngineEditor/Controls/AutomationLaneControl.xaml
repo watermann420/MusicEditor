@@ -5,31 +5,25 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="150" d:DesignWidth="600"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              Loaded="UserControl_Loaded"
              SizeChanged="UserControl_SizeChanged">
 
     <UserControl.Resources>
-        <!-- Theme Colors -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>
-        <SolidColorBrush x:Key="CanvasBackgroundBrush" Color="#252628"/>
-        <SolidColorBrush x:Key="GridLineBrush" Color="#181818"/>
-        <SolidColorBrush x:Key="GridLineStrongBrush" Color="#2A2A2A"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#2A2A2A"/>
-        <SolidColorBrush x:Key="ForegroundBrush" Color="#E0E0E0"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#808080"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#00D9FF"/>
-        <SolidColorBrush x:Key="AccentHoverBrush" Color="#5A7FC4"/>
-        <SolidColorBrush x:Key="CurveBrush" Color="#00FF88"/>
-        <SolidColorBrush x:Key="PointBrush" Color="#E8E8E8"/>
-        <SolidColorBrush x:Key="PointSelectedBrush" Color="#FF9B4B"/>
-        <SolidColorBrush x:Key="PlayheadBrush" Color="#CC4B4B"/>
-        <SolidColorBrush x:Key="SelectionBrush" Color="#404B6EAF"/>
+        <!-- Local aliases referencing global theme resources -->
+        <SolidColorBrush x:Key="CanvasBackgroundBrush" Color="{DynamicResource AnalysisPanelColor}"/>
+        <SolidColorBrush x:Key="GridLineBrush" Color="{DynamicResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="GridLineStrongBrush" Color="{DynamicResource BorderColor}"/>
+        <SolidColorBrush x:Key="CurveBrush" Color="{DynamicResource SuccessColor}"/>
+        <SolidColorBrush x:Key="PointBrush" Color="{DynamicResource ForegroundColor}"/>
+        <SolidColorBrush x:Key="PointSelectedBrush" Color="{DynamicResource WarningColor}"/>
+        <SolidColorBrush x:Key="PlayheadBrush" Color="{DynamicResource ErrorColor}"/>
+        <SolidColorBrush x:Key="SelectionBrush" Color="{DynamicResource WaveformSelectionColor}"/>
 
         <!-- Lane Header Button Style -->
         <Style x:Key="LaneHeaderButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource SecondaryForegroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="4"/>
             <Setter Property="Width" Value="24"/>
@@ -42,12 +36,40 @@
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="3"
                                 Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="glowEffect" Color="{DynamicResource AccentColor}"
+                                                  BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#2A2A2A"/>
-                                <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="8" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.6" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="0" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -58,9 +80,9 @@
         <!-- Toggle Button Style (Mute/Solo/Arm) -->
         <Style x:Key="ToggleButtonStyle" TargetType="ToggleButton">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource SecondaryForegroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="Padding" Value="4,2"/>
             <Setter Property="MinWidth" Value="24"/>
             <Setter Property="Height" Value="20"/>
@@ -76,8 +98,41 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="3"
                                 Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="glowEffect" Color="{DynamicResource AccentColor}"
+                                                  BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="6" Duration="0:0:0.12"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.5" Duration="0:0:0.12"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -87,9 +142,9 @@
         <Style x:Key="MuteToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToggleButtonStyle}">
             <Style.Triggers>
                 <Trigger Property="IsChecked" Value="True">
-                    <Setter Property="Background" Value="#C75450"/>
-                    <Setter Property="Foreground" Value="White"/>
-                    <Setter Property="BorderBrush" Value="#C75450"/>
+                    <Setter Property="Background" Value="{DynamicResource ErrorBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -98,9 +153,9 @@
         <Style x:Key="SoloToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToggleButtonStyle}">
             <Style.Triggers>
                 <Trigger Property="IsChecked" Value="True">
-                    <Setter Property="Background" Value="#D9A343"/>
-                    <Setter Property="Foreground" Value="White"/>
-                    <Setter Property="BorderBrush" Value="#D9A343"/>
+                    <Setter Property="Background" Value="{DynamicResource WarningBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -109,18 +164,18 @@
         <Style x:Key="ArmToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToggleButtonStyle}">
             <Style.Triggers>
                 <Trigger Property="IsChecked" Value="True">
-                    <Setter Property="Background" Value="#CC4B4B"/>
-                    <Setter Property="Foreground" Value="White"/>
-                    <Setter Property="BorderBrush" Value="#CC4B4B"/>
+                    <Setter Property="Background" Value="{DynamicResource ErrorBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource BrightForegroundBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <!-- Curve Type ComboBox Style -->
         <Style x:Key="CurveTypeComboStyle" TargetType="ComboBox">
-            <Setter Property="Background" Value="#181818"/>
-            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="6,3"/>
             <Setter Property="FontSize" Value="11"/>
@@ -136,8 +191,8 @@
 
         <!-- Lane Header -->
         <Border Grid.Column="0"
-                Background="{StaticResource BackgroundBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource BackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,1,0"
                 Padding="8">
             <Grid>
@@ -155,7 +210,7 @@
                     <Border x:Name="ColorIndicator"
                             Width="4" Height="16"
                             CornerRadius="2"
-                            Background="{StaticResource AccentBrush}"
+                            Background="{DynamicResource AccentBrush}"
                             Margin="0,0,6,0"
                             Cursor="Hand"
                             MouseLeftButtonDown="ColorIndicator_MouseLeftButtonDown"
@@ -164,7 +219,7 @@
                                Text="Parameter"
                                FontSize="12"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource ForegroundBrush}"
+                               Foreground="{DynamicResource ForegroundBrush}"
                                VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"
                                MaxWidth="100"/>
@@ -191,7 +246,7 @@
                            Grid.Row="2"
                            Text="Target: None"
                            FontSize="10"
-                           Foreground="{StaticResource SecondaryForegroundBrush}"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
                            TextTrimming="CharacterEllipsis"
                            Margin="0,0,0,4"/>
 
@@ -229,12 +284,12 @@
                                Text="0.000"
                                FontSize="18"
                                FontWeight="Light"
-                               Foreground="{StaticResource ForegroundBrush}"
+                               Foreground="{DynamicResource ForegroundBrush}"
                                HorizontalAlignment="Center"/>
                     <TextBlock x:Name="ValueRangeText"
                                Text="0.0 - 1.0"
                                FontSize="9"
-                               Foreground="{StaticResource SecondaryForegroundBrush}"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                HorizontalAlignment="Center"
                                Margin="0,2,0,0"/>
                 </StackPanel>
@@ -258,7 +313,7 @@
         <!-- Automation Canvas -->
         <Border Grid.Column="1"
                 Background="{StaticResource CanvasBackgroundBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0"
                 ClipToBounds="True">
             <Grid>
@@ -282,7 +337,7 @@
                 <!-- Selection Rectangle -->
                 <Rectangle x:Name="SelectionRect"
                            Fill="{StaticResource SelectionBrush}"
-                           Stroke="{StaticResource AccentBrush}"
+                           Stroke="{DynamicResource AccentBrush}"
                            StrokeThickness="1"
                            Visibility="Collapsed"
                            IsHitTestVisible="False"/>
@@ -297,8 +352,8 @@
 
                 <!-- Value at Cursor -->
                 <Border x:Name="CursorValuePopup"
-                        Background="#E0252628"
-                        BorderBrush="{StaticResource BorderBrush}"
+                        Background="{DynamicResource AnalysisPanelBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="3"
                         Padding="6,3"
@@ -310,7 +365,7 @@
                         <TextBlock x:Name="CursorTimeText"
                                    Text="Time: 0.000"
                                    FontSize="10"
-                                   Foreground="{StaticResource ForegroundBrush}"/>
+                                   Foreground="{DynamicResource ForegroundBrush}"/>
                         <TextBlock x:Name="CursorValueText"
                                    Text="Value: 0.000"
                                    FontSize="10"

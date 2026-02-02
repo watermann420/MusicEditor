@@ -33,17 +33,34 @@ public partial class FrequencyCollisionControl : UserControl
     private const double MaxFrequency = 20000.0;
     private const int DefaultBandCount = 31;
 
-    private static readonly Color[] TrackColors =
+    // Track colors loaded from theme resources
+    private Color[] _trackColors = null!;
+
+    private Color[] GetTrackColors()
     {
-        Color.FromRgb(0, 217, 255),    // Cyan
-        Color.FromRgb(255, 107, 157),  // Pink
-        Color.FromRgb(127, 255, 0),    // Green
-        Color.FromRgb(255, 217, 61),   // Yellow
-        Color.FromRgb(199, 125, 255),  // Purple
-        Color.FromRgb(255, 140, 66),   // Orange
-        Color.FromRgb(100, 255, 218),  // Teal
-        Color.FromRgb(255, 99, 99),    // Red
-    };
+        if (_trackColors == null)
+        {
+            _trackColors = new Color[]
+            {
+                GetColorResource("AccentColor", Color.FromRgb(0, 217, 255)),         // Cyan
+                GetColorResource("TrackPinkColor", Color.FromRgb(255, 107, 157)),    // Pink
+                GetColorResource("SuccessColor", Color.FromRgb(127, 255, 0)),        // Green
+                GetColorResource("WarningColor", Color.FromRgb(255, 217, 61)),       // Yellow
+                GetColorResource("TrackPurpleColor", Color.FromRgb(199, 125, 255)), // Purple
+                GetColorResource("TrackOrangeColor", Color.FromRgb(255, 140, 66)),  // Orange
+                GetColorResource("TrackTealColor", Color.FromRgb(100, 255, 218)),   // Teal
+                GetColorResource("ErrorColor", Color.FromRgb(255, 99, 99)),          // Red
+            };
+        }
+        return _trackColors;
+    }
+
+    private static Color GetColorResource(string resourceKey, Color fallback)
+    {
+        if (Application.Current?.TryFindResource(resourceKey) is Color color)
+            return color;
+        return fallback;
+    }
 
     #endregion
 
@@ -1057,9 +1074,10 @@ public partial class FrequencyCollisionControl : UserControl
 
     #region Helper Methods
 
-    private static Color GetTrackColor(int index)
+    private Color GetTrackColor(int index)
     {
-        return TrackColors[index % TrackColors.Length];
+        var colors = GetTrackColors();
+        return colors[index % colors.Length];
     }
 
     private double FrequencyToX(double frequency, double width)
@@ -1235,11 +1253,16 @@ public class FrequencyCollisionSeverityToColorConverter : IValueConverter
     {
         if (value is not float score) return Brushes.Gray;
 
+        // Try to get colors from theme resources with fallbacks
+        Color successColor = Application.Current?.TryFindResource("SuccessColor") is Color sc ? sc : Color.FromRgb(0, 255, 136);
+        Color warningColor = Application.Current?.TryFindResource("WarningColor") is Color wc ? wc : Color.FromRgb(255, 165, 2);
+        Color errorColor = Application.Current?.TryFindResource("ErrorColor") is Color ec ? ec : Color.FromRgb(255, 71, 87);
+
         return score switch
         {
-            < 0.3f => new SolidColorBrush(Color.FromRgb(0, 255, 136)),   // Green
-            < 0.6f => new SolidColorBrush(Color.FromRgb(255, 165, 2)),   // Orange
-            _ => new SolidColorBrush(Color.FromRgb(255, 71, 87))         // Red
+            < 0.3f => new SolidColorBrush(successColor),
+            < 0.6f => new SolidColorBrush(warningColor),
+            _ => new SolidColorBrush(errorColor)
         };
     }
 
