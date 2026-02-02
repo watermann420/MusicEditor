@@ -1633,7 +1633,7 @@ public partial class MainWindow : Window
         EditorTabs.SelectedItem = tab;
 
         CodeEditor.Text = script.Content ?? string.Empty;
-        FileNameDisplay.Text = script.FileName ?? "Untitled";
+        
     }
 
     private void EditorTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1657,7 +1657,7 @@ public partial class MainWindow : Window
             if (_tabScripts.TryGetValue(newTab, out var script))
             {
                 CodeEditor.Text = script.Content ?? string.Empty;
-                FileNameDisplay.Text = script.FileName ?? "Untitled";
+               
             }
         }
     }
@@ -1693,7 +1693,7 @@ public partial class MainWindow : Window
             if (EditorTabs.Items.Count == 0)
             {
                 CodeEditor.Text = "";
-                FileNameDisplay.Text = "";
+               
             }
         }
     }
@@ -1954,12 +1954,11 @@ public partial class MainWindow : Window
         var errorCount = Problems.Count(p => p.Severity == ProblemSeverity.Error);
         if (errorCount > 0)
         {
-            ErrorCountBadge.Visibility = Visibility.Visible;
-            ErrorCountText.Text = errorCount.ToString();
+            
         }
         else
         {
-            ErrorCountBadge.Visibility = Visibility.Collapsed;
+           
         }
     }
 
@@ -2472,7 +2471,7 @@ public partial class MainWindow : Window
         SetTabHeaderInactive(AudioTabHeader);
         SetTabHeaderInactive(SynthTabHeader);
         SetTabHeaderInactive(EffectsTabHeader);
-        SetTabHeaderInactive(PresetsTabHeader);
+       
       
 
         // Hide all panels
@@ -3395,7 +3394,7 @@ public partial class MainWindow : Window
 
         // Update tab visuals
         SetBrowserTabActive(FilesTabHeader, tab == ProjectBrowserTab.Files);
-        SetBrowserTabActive(SamplesTabHeader, tab == ProjectBrowserTab.Samples);
+       
 
         // Update panel visibility
         FilesPanel.Visibility = tab == ProjectBrowserTab.Files ? Visibility.Visible : Visibility.Collapsed;
@@ -3563,28 +3562,7 @@ public partial class MainWindow : Window
 
     private DateTime _lastMidiActivity = DateTime.MinValue;
 
-    public void FlashMidiActivity()
-    {
-        _lastMidiActivity = DateTime.Now;
-        Dispatcher.BeginInvoke(() =>
-        {
-            MidiActivityIndicator.Background = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF));
-            MidiActivityGlow.BlurRadius = 6;
-            MidiActivityGlow.Opacity = 0.8;
-
-            // Reset after 100ms
-            Task.Delay(100).ContinueWith(_ =>
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    MidiActivityIndicator.Background = new SolidColorBrush(Color.FromRgb(0x40, 0x40, 0x40));
-                    MidiActivityGlow.BlurRadius = 0;
-                    MidiActivityGlow.Opacity = 0;
-                });
-            });
-        });
-    }
-
+    
     #endregion
 
     #region Custom Title Bar
@@ -3977,7 +3955,7 @@ Print("");
         // reset styles
         SetTabHeaderInactive(OutputTabHeader);
         SetTabHeaderInactive(ConsoleTabHeader);
-        SetTabHeaderInactive(ProblemsTabHeader);
+    
 
         OutputBox.Visibility = Visibility.Collapsed;
         UserConsoleBox.Visibility = Visibility.Collapsed;
@@ -3993,10 +3971,7 @@ Print("");
                 SetTabHeaderActive(ConsoleTabHeader);
                 UserConsoleBox.Visibility = Visibility.Visible;
                 break;
-            case OutputTab.Errors:
-                SetTabHeaderActive(ProblemsTabHeader);
-                ProblemsListView.Visibility = Visibility.Visible;
-                break;
+            
         }
     }
 

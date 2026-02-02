@@ -435,7 +435,7 @@
                     <!-- Stop Button -->
                   
 
-                    <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="10,4"/>
+                    
 
                    
                 </StackPanel>
@@ -487,25 +487,9 @@
                                     </StackPanel>
                                 </Border>
                                 <!-- Presets Tab -->
-                                <Border x:Name="PresetsTabHeader" Padding="12,8" Cursor="Hand" MouseDown="PresetsTab_Click"
-                                        Background="Transparent" BorderThickness="0,0,0,2" BorderBrush="Transparent">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Path Data="M 2,2 H 12 V 4 H 2 Z M 3,4 V 11 H 11 V 4" Stroke="{StaticResource SecondaryForegroundBrush}"
-                                              StrokeThickness="1.2" Fill="Transparent" Width="14" Height="12" Margin="0,0,6,0"/>
-                                        <TextBlock Text="PRESETS" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{StaticResource SecondaryForegroundBrush}"/>
-                                    </StackPanel>
-                                </Border>
+                                
                                 <!-- Samples Tab -->
-                                <Border x:Name="SamplesTabHeader" Padding="12,8" Cursor="Hand" MouseDown="SamplesTab_Click"
-                                        Background="Transparent" BorderThickness="0,0,0,2" BorderBrush="Transparent">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Path Data="M 2,6 Q 4,2 7,6 T 12,6 M 2,9 Q 4,5 7,9 T 12,9" Stroke="{StaticResource SecondaryForegroundBrush}"
-                                              StrokeThickness="1.2" Fill="Transparent" Width="14" Height="12" Margin="0,0,6,0"/>
-                                        <TextBlock Text="SAMPLES" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="{StaticResource SecondaryForegroundBrush}"/>
-                                    </StackPanel>
-                                </Border>
+                               
                                 <!-- Refresh Button -->
                                 <Button Style="{StaticResource IconButtonStyle}" Click="RefreshProjectTree_Click"
                                         ToolTip="Refresh" Width="26" Height="26" Margin="8,0,0,0" VerticalAlignment="Center">
@@ -783,22 +767,7 @@
                                         </StackPanel>
                                     </Border>
                                     <!-- Errors Tab -->
-                                    <Border x:Name="ProblemsTabHeader" Background="Transparent" Padding="16,10" Cursor="Hand" MouseDown="ProblemsTab_Click"
-                                            CornerRadius="4,4,0,0" Margin="2,4,0,0">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Path Data="M 8,2 L 14,12 H 2 Z M 8,6 V 8 M 8,10 V 10.5"
-                                                  Stroke="{StaticResource SecondaryForegroundBrush}" StrokeThickness="1.5" Fill="Transparent"
-                                                  Width="14" Height="12" Margin="0,0,8,0"/>
-                                            <TextBlock Text="ERRORS" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="12" FontWeight="SemiBold"/>
-                                            <Border x:Name="ErrorCountBadge" Background="{StaticResource ErrorBrush}" CornerRadius="8"
-                                                    Padding="6,2" Margin="8,0,0,0" Visibility="Collapsed">
-                                                <Border.Effect>
-                                                    <DropShadowEffect Color="#FF4757" BlurRadius="4" ShadowDepth="0" Opacity="0.4"/>
-                                                </Border.Effect>
-                                                <TextBlock x:Name="ErrorCountText" Text="0" Foreground="White" FontSize="10" FontWeight="Bold"/>
-                                            </Border>
-                                        </StackPanel>
-                                    </Border>
+                                   
                                 </StackPanel>
                             </DockPanel>
                         </Border>
@@ -1240,10 +1209,7 @@
             <Separator Background="{StaticResource BorderBrush}" Margin="8,4"/>
             <StatusBarItem>
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="M 2,2 H 12 V 12 H 2 Z M 4,4 H 10"
-                          Stroke="{StaticResource SecondaryForegroundBrush}" StrokeThickness="1" Fill="Transparent"
-                          Width="12" Height="12" Margin="0,0,6,0"/>
-                    <TextBlock x:Name="FileNameDisplay" Text="" FontSize="11"/>
+                   
                 </StackPanel>
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right">
@@ -1263,20 +1229,9 @@
                     <Rectangle Width="1" Height="16" Fill="{StaticResource BorderBrush}" Margin="0,0,12,0"/>
 
                     <!-- MIDI Activity Indicator -->
-                    <Border Background="#141414" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="3" Padding="8,3" Margin="0,0,12,0"
-                            ToolTip="MIDI Activity">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="MIDI" FontSize="9" FontWeight="SemiBold"
-                                       Foreground="{StaticResource SecondaryForegroundBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <Border x:Name="MidiActivityIndicator" Width="8" Height="8" CornerRadius="4" Background="#404040">
-                                <Border.Effect>
-                                    <DropShadowEffect x:Name="MidiActivityGlow" Color="#00D9FF" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
-                                </Border.Effect>
-                            </Border>
-                        </StackPanel>
-                    </Border>
+                    
 
-                    <Rectangle Width="1" Height="16" Fill="{StaticResource BorderBrush}" Margin="0,0,12,0"/>
+                 
 
                     <!-- Performance Meter -->
                     <controls:PerformanceMeter x:Name="PerformanceMeterControl"
