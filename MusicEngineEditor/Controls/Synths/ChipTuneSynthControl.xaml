@@ -1,0 +1,631 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Synths.ChipTuneSynthControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls.Synths"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="900"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#0D0D0D</Color>
+        <Color x:Key="PanelColor">#181818</Color>
+        <Color x:Key="PanelLightColor">#1E1E1E</Color>
+        <Color x:Key="AccentColor">#00D9FF</Color>
+        <Color x:Key="TextColor">#E0E0E0</Color>
+        <Color x:Key="TextDimColor">#808080</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+        <Color x:Key="ChipColor">#50FA7B</Color>
+        <Color x:Key="NESColor">#FF5555</Color>
+        <Color x:Key="GameBoyColor">#8BE9FD</Color>
+        <Color x:Key="C64Color">#FFB86C</Color>
+        <Color x:Key="Pulse1Color">#FF79C6</Color>
+        <Color x:Key="Pulse2Color">#BD93F9</Color>
+        <Color x:Key="TriangleColor">#50FA7B</Color>
+        <Color x:Key="NoiseColor">#F1FA8C</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
+        <SolidColorBrush x:Key="PanelLightBrush" Color="{StaticResource PanelLightColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+        <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="ChipBrush" Color="{StaticResource ChipColor}"/>
+        <SolidColorBrush x:Key="NESBrush" Color="{StaticResource NESColor}"/>
+        <SolidColorBrush x:Key="GameBoyBrush" Color="{StaticResource GameBoyColor}"/>
+        <SolidColorBrush x:Key="C64Brush" Color="{StaticResource C64Color}"/>
+        <SolidColorBrush x:Key="Pulse1Brush" Color="{StaticResource Pulse1Color}"/>
+        <SolidColorBrush x:Key="Pulse2Brush" Color="{StaticResource Pulse2Color}"/>
+        <SolidColorBrush x:Key="TriangleBrush" Color="{StaticResource TriangleColor}"/>
+        <SolidColorBrush x:Key="NoiseBrush" Color="{StaticResource NoiseColor}"/>
+
+        <!-- Slider Style -->
+        <Style x:Key="DarkSliderStyle" TargetType="Slider">
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+
+        <!-- Vertical Slider Style -->
+        <Style x:Key="VerticalSliderStyle" TargetType="Slider">
+            <Setter Property="Orientation" Value="Vertical"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="100"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+
+        <!-- Label Style -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Value Style -->
+        <Style x:Key="ValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="MinWidth" Value="40"/>
+        </Style>
+
+        <!-- Header Style -->
+        <Style x:Key="HeaderStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <!-- Panel Style -->
+        <Style x:Key="PanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="DarkComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
+        <!-- ToggleButton Style for Chip Selection -->
+        <Style x:Key="ChipToggleStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="4,2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource PanelLightBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="Border" Property="Background" Value="#1A3A4A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Duty Cycle Button Style -->
+        <Style x:Key="DutyCycleButtonStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="MinWidth" Value="50"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource PanelLightBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="Border" Property="Background" Value="#1A3A4A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Noise Mode Toggle Style -->
+        <Style x:Key="NoiseToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource PanelLightBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource NoiseBrush}"/>
+                                <Setter TargetName="Border" Property="Background" Value="#2A2A1A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Style="{StaticResource PanelStyle}" Margin="4,4,4,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="CHIPTUNE SYNTH" Style="{StaticResource HeaderStyle}"
+                               Foreground="{StaticResource ChipBrush}" FontSize="16" Margin="0,0,20,0"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="ChipNameDisplay" Text="NES (2A03)"
+                               Style="{StaticResource LabelStyle}" FontSize="12"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Volume:" Style="{StaticResource LabelStyle}" Margin="0,0,8,0"/>
+                    <Slider x:Name="VolumeSlider" Value="{Binding Volume, Mode=TwoWay, FallbackValue=0.7}"
+                            Minimum="0" Maximum="1" Width="100" Style="{StaticResource DarkSliderStyle}"
+                            ValueChanged="OnParameterChanged"/>
+                    <TextBlock Text="{Binding Volume, StringFormat='{}{0:F2}', FallbackValue='0.70'}"
+                               Style="{StaticResource ValueStyle}" Width="40" Margin="8,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="200"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Column: Chip Selection & Waveform -->
+            <StackPanel Grid.Column="0">
+                <!-- Chip Type Selection -->
+                <Border Style="{StaticResource PanelStyle}">
+                    <StackPanel>
+                        <TextBlock Text="CHIP TYPE" Style="{StaticResource HeaderStyle}"/>
+
+                        <RadioButton x:Name="NESRadio" GroupName="ChipType"
+                                     IsChecked="True" Style="{StaticResource ChipToggleStyle}"
+                                     Checked="OnChipTypeChanged">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="12" Height="12" Fill="{StaticResource NESBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="NES (2A03)" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton x:Name="GameBoyRadio" GroupName="ChipType"
+                                     Style="{StaticResource ChipToggleStyle}"
+                                     Checked="OnChipTypeChanged">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="12" Height="12" Fill="{StaticResource GameBoyBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="GameBoy (DMG)" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton x:Name="C64Radio" GroupName="ChipType"
+                                     Style="{StaticResource ChipToggleStyle}"
+                                     Checked="OnChipTypeChanged">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="12" Height="12" Fill="{StaticResource C64Brush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="C64 (SID)" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+                </Border>
+
+                <!-- Duty Cycle -->
+                <Border Style="{StaticResource PanelStyle}">
+                    <StackPanel>
+                        <TextBlock Text="DUTY CYCLE" Style="{StaticResource HeaderStyle}"/>
+
+                        <WrapPanel>
+                            <RadioButton x:Name="Duty12Radio" GroupName="DutyCycle" Content="12.5%"
+                                         Style="{StaticResource DutyCycleButtonStyle}"
+                                         Checked="OnDutyCycleChanged"/>
+                            <RadioButton x:Name="Duty25Radio" GroupName="DutyCycle" Content="25%"
+                                         Style="{StaticResource DutyCycleButtonStyle}"
+                                         Checked="OnDutyCycleChanged"/>
+                            <RadioButton x:Name="Duty50Radio" GroupName="DutyCycle" Content="50%"
+                                         IsChecked="True"
+                                         Style="{StaticResource DutyCycleButtonStyle}"
+                                         Checked="OnDutyCycleChanged"/>
+                        </WrapPanel>
+
+                        <Separator Background="{StaticResource BorderBrush}" Margin="0,8"/>
+
+                        <!-- Pulse Width (for variable mode) -->
+                        <TextBlock Text="Pulse Width (Variable)" Style="{StaticResource LabelStyle}" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <Slider x:Name="PulseWidthSlider" Grid.Column="0"
+                                    Value="{Binding PulseWidth, Mode=TwoWay, FallbackValue=0.5}"
+                                    Minimum="0.05" Maximum="0.95"
+                                    Style="{StaticResource DarkSliderStyle}"
+                                    ValueChanged="OnParameterChanged"/>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding PulseWidth, StringFormat='{}{0:P0}', FallbackValue='50%'}"
+                                       Style="{StaticResource ValueStyle}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Noise Mode -->
+                <Border Style="{StaticResource PanelStyle}">
+                    <StackPanel>
+                        <TextBlock Text="NOISE MODE" Style="{StaticResource HeaderStyle}" Foreground="{StaticResource NoiseBrush}"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ToggleButton x:Name="PeriodicNoiseToggle" Grid.Column="0"
+                                          Content="Periodic" Style="{StaticResource NoiseToggleStyle}"
+                                          Checked="OnNoiseTypeChanged" Unchecked="OnNoiseTypeChanged"/>
+                            <ToggleButton x:Name="WhiteNoiseToggle" Grid.Column="1"
+                                          Content="White" IsChecked="True"
+                                          Style="{StaticResource NoiseToggleStyle}"
+                                          Checked="OnNoiseTypeChanged" Unchecked="OnNoiseTypeChanged"/>
+                        </Grid>
+
+                        <TextBlock Text="Periodic: metallic, short loop" Style="{StaticResource LabelStyle}"
+                                   FontSize="10" Margin="0,8,0,2"/>
+                        <TextBlock Text="White: random, 15-bit LFSR" Style="{StaticResource LabelStyle}"
+                                   FontSize="10"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- Center Column: Modulation & Envelope -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Arpeggio -->
+                    <Border Grid.Column="0" Style="{StaticResource PanelStyle}">
+                        <StackPanel>
+                            <TextBlock Text="ARPEGGIO" Style="{StaticResource HeaderStyle}"/>
+
+                            <!-- Arpeggio Speed -->
+                            <TextBlock Text="Speed (Hz)" Style="{StaticResource LabelStyle}"/>
+                            <Grid Margin="0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider x:Name="ArpeggioSpeedSlider" Grid.Column="0"
+                                        Value="{Binding ArpeggioSpeed, Mode=TwoWay, FallbackValue=0}"
+                                        Minimum="0" Maximum="50"
+                                        Style="{StaticResource DarkSliderStyle}"
+                                        ValueChanged="OnParameterChanged"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding ArpeggioSpeed, StringFormat='{}{0:F1}', FallbackValue='0.0'}"
+                                           Style="{StaticResource ValueStyle}"/>
+                            </Grid>
+
+                            <!-- Arpeggio Semitones -->
+                            <TextBlock Text="Interval (semitones)" Style="{StaticResource LabelStyle}" Margin="0,8,0,0"/>
+                            <Grid Margin="0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider x:Name="ArpeggioSemitonesSlider" Grid.Column="0"
+                                        Value="{Binding ArpeggioSemitones, Mode=TwoWay, FallbackValue=0}"
+                                        Minimum="0" Maximum="24"
+                                        IsSnapToTickEnabled="True" TickFrequency="1"
+                                        Style="{StaticResource DarkSliderStyle}"
+                                        ValueChanged="OnParameterChanged"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding ArpeggioSemitones, StringFormat='{}{0:F0} st', FallbackValue='0 st'}"
+                                           Style="{StaticResource ValueStyle}"/>
+                            </Grid>
+
+                            <!-- Arpeggio Pattern Presets -->
+                            <TextBlock Text="Presets" Style="{StaticResource LabelStyle}" Margin="0,8,0,4"/>
+                            <WrapPanel>
+                                <Button x:Name="ArpMajorBtn" Content="Major" Padding="6,3" Margin="2"
+                                        Click="OnArpeggioPresetClick" Tag="4,7"/>
+                                <Button x:Name="ArpMinorBtn" Content="Minor" Padding="6,3" Margin="2"
+                                        Click="OnArpeggioPresetClick" Tag="3,7"/>
+                                <Button x:Name="ArpOctaveBtn" Content="Octave" Padding="6,3" Margin="2"
+                                        Click="OnArpeggioPresetClick" Tag="12"/>
+                                <Button x:Name="ArpFifthBtn" Content="Fifth" Padding="6,3" Margin="2"
+                                        Click="OnArpeggioPresetClick" Tag="7"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Vibrato -->
+                    <Border Grid.Column="1" Style="{StaticResource PanelStyle}">
+                        <StackPanel>
+                            <TextBlock Text="VIBRATO" Style="{StaticResource HeaderStyle}"/>
+
+                            <!-- Vibrato Depth -->
+                            <TextBlock Text="Depth (semitones)" Style="{StaticResource LabelStyle}"/>
+                            <Grid Margin="0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider x:Name="VibratoDepthSlider" Grid.Column="0"
+                                        Value="{Binding VibratoDepth, Mode=TwoWay, FallbackValue=0}"
+                                        Minimum="0" Maximum="2"
+                                        Style="{StaticResource DarkSliderStyle}"
+                                        ValueChanged="OnParameterChanged"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding VibratoDepth, StringFormat='{}{0:F2}', FallbackValue='0.00'}"
+                                           Style="{StaticResource ValueStyle}"/>
+                            </Grid>
+
+                            <!-- Vibrato Speed -->
+                            <TextBlock Text="Speed (Hz)" Style="{StaticResource LabelStyle}" Margin="0,8,0,0"/>
+                            <Grid Margin="0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider x:Name="VibratoSpeedSlider" Grid.Column="0"
+                                        Value="{Binding VibratoSpeed, Mode=TwoWay, FallbackValue=5}"
+                                        Minimum="0.5" Maximum="15"
+                                        Style="{StaticResource DarkSliderStyle}"
+                                        ValueChanged="OnParameterChanged"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding VibratoSpeed, StringFormat='{}{0:F1}', FallbackValue='5.0'}"
+                                           Style="{StaticResource ValueStyle}"/>
+                            </Grid>
+
+                            <Separator Background="{StaticResource BorderBrush}" Margin="0,12"/>
+
+                            <!-- Bit Depth -->
+                            <TextBlock Text="BIT DEPTH" Style="{StaticResource HeaderStyle}"/>
+                            <Grid Margin="0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider x:Name="BitDepthSlider" Grid.Column="0"
+                                        Value="{Binding BitDepth, Mode=TwoWay, FallbackValue=8}"
+                                        Minimum="4" Maximum="16"
+                                        IsSnapToTickEnabled="True" TickFrequency="1"
+                                        Style="{StaticResource DarkSliderStyle}"
+                                        ValueChanged="OnParameterChanged"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding BitDepth, StringFormat='{}{0:F0}-bit', FallbackValue='8-bit'}"
+                                           Style="{StaticResource ValueStyle}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ADSR Envelope -->
+                <Border Grid.Row="1" Style="{StaticResource PanelStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="ADSR ENVELOPE" Style="{StaticResource HeaderStyle}"/>
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Attack -->
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <TextBlock Text="Attack" Style="{StaticResource LabelStyle}" HorizontalAlignment="Center"/>
+                                <Slider x:Name="AttackSlider" Value="{Binding Attack, Mode=TwoWay, FallbackValue=0.01}"
+                                        Minimum="0.001" Maximum="2" Style="{StaticResource VerticalSliderStyle}"
+                                        ValueChanged="OnParameterChanged"/>
+                                <TextBlock Text="{Binding Attack, StringFormat='{}{0:F2}s', FallbackValue='0.01s'}"
+                                           Style="{StaticResource ValueStyle}"/>
+                            </StackPanel>
+
+                            <!-- Decay -->
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <TextBlock Text="Decay" Style="{StaticResource LabelStyle}" HorizontalAlignment="Center"/>
+                                <Slider x:Name="DecaySlider" Value="{Binding Decay, Mode=TwoWay, FallbackValue=0.1}"
+                                        Minimum="0.001" Maximum="2" Style="{StaticResource VerticalSliderStyle}"
+                                        ValueChanged="OnParameterChanged"/>
+                                <TextBlock Text="{Binding Decay, StringFormat='{}{0:F2}s', FallbackValue='0.10s'}"
+                                           Style="{StaticResource ValueStyle}"/>
+                            </StackPanel>
+
+                            <!-- Sustain -->
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                <TextBlock Text="Sustain" Style="{StaticResource LabelStyle}" HorizontalAlignment="Center"/>
+                                <Slider x:Name="SustainSlider" Value="{Binding Sustain, Mode=TwoWay, FallbackValue=0.7}"
+                                        Minimum="0" Maximum="1" Style="{StaticResource VerticalSliderStyle}"
+                                        ValueChanged="OnParameterChanged"/>
+                                <TextBlock Text="{Binding Sustain, StringFormat='{}{0:F2}', FallbackValue='0.70'}"
+                                           Style="{StaticResource ValueStyle}"/>
+                            </StackPanel>
+
+                            <!-- Release -->
+                            <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                                <TextBlock Text="Release" Style="{StaticResource LabelStyle}" HorizontalAlignment="Center"/>
+                                <Slider x:Name="ReleaseSlider" Value="{Binding Release, Mode=TwoWay, FallbackValue=0.1}"
+                                        Minimum="0.001" Maximum="4" Style="{StaticResource VerticalSliderStyle}"
+                                        ValueChanged="OnParameterChanged"/>
+                                <TextBlock Text="{Binding Release, StringFormat='{}{0:F2}s', FallbackValue='0.10s'}"
+                                           Style="{StaticResource ValueStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Right Column: Channel Mixer -->
+            <Border Grid.Column="2" Style="{StaticResource PanelStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="CHANNEL MIXER" Style="{StaticResource HeaderStyle}"/>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Pulse 1 -->
+                        <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                            <Border Width="8" Height="8" CornerRadius="4"
+                                    Background="{StaticResource Pulse1Brush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="P1" Style="{StaticResource LabelStyle}"
+                                       HorizontalAlignment="Center" Foreground="{StaticResource Pulse1Brush}"/>
+                            <Slider x:Name="Pulse1Slider" Value="{Binding Pulse1Level, Mode=TwoWay, FallbackValue=1}"
+                                    Minimum="0" Maximum="1" Style="{StaticResource VerticalSliderStyle}"
+                                    ValueChanged="OnMixerChanged"/>
+                            <TextBlock Text="{Binding Pulse1Level, StringFormat='{}{0:F2}', FallbackValue='1.00'}"
+                                       Style="{StaticResource ValueStyle}" FontSize="9"/>
+                            <CheckBox x:Name="Pulse1Mute" Content="M" Margin="0,4,0,0"
+                                      HorizontalAlignment="Center" ToolTip="Mute Pulse 1"
+                                      Checked="OnMixerChanged" Unchecked="OnMixerChanged"/>
+                        </StackPanel>
+
+                        <!-- Pulse 2 -->
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                            <Border Width="8" Height="8" CornerRadius="4"
+                                    Background="{StaticResource Pulse2Brush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="P2" Style="{StaticResource LabelStyle}"
+                                       HorizontalAlignment="Center" Foreground="{StaticResource Pulse2Brush}"/>
+                            <Slider x:Name="Pulse2Slider" Value="{Binding Pulse2Level, Mode=TwoWay, FallbackValue=1}"
+                                    Minimum="0" Maximum="1" Style="{StaticResource VerticalSliderStyle}"
+                                    ValueChanged="OnMixerChanged"/>
+                            <TextBlock Text="{Binding Pulse2Level, StringFormat='{}{0:F2}', FallbackValue='1.00'}"
+                                       Style="{StaticResource ValueStyle}" FontSize="9"/>
+                            <CheckBox x:Name="Pulse2Mute" Content="M" Margin="0,4,0,0"
+                                      HorizontalAlignment="Center" ToolTip="Mute Pulse 2"
+                                      Checked="OnMixerChanged" Unchecked="OnMixerChanged"/>
+                        </StackPanel>
+
+                        <!-- Triangle/Wave -->
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                            <Border Width="8" Height="8" CornerRadius="4"
+                                    Background="{StaticResource TriangleBrush}" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="TriangleLabel" Text="TRI" Style="{StaticResource LabelStyle}"
+                                       HorizontalAlignment="Center" Foreground="{StaticResource TriangleBrush}"/>
+                            <Slider x:Name="TriangleSlider" Value="{Binding TriangleLevel, Mode=TwoWay, FallbackValue=1}"
+                                    Minimum="0" Maximum="1" Style="{StaticResource VerticalSliderStyle}"
+                                    ValueChanged="OnMixerChanged"/>
+                            <TextBlock Text="{Binding TriangleLevel, StringFormat='{}{0:F2}', FallbackValue='1.00'}"
+                                       Style="{StaticResource ValueStyle}" FontSize="9"/>
+                            <CheckBox x:Name="TriangleMute" Content="M" Margin="0,4,0,0"
+                                      HorizontalAlignment="Center" ToolTip="Mute Triangle/Wave"
+                                      Checked="OnMixerChanged" Unchecked="OnMixerChanged"/>
+                        </StackPanel>
+
+                        <!-- Noise -->
+                        <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                            <Border Width="8" Height="8" CornerRadius="4"
+                                    Background="{StaticResource NoiseBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="NSE" Style="{StaticResource LabelStyle}"
+                                       HorizontalAlignment="Center" Foreground="{StaticResource NoiseBrush}"/>
+                            <Slider x:Name="NoiseSlider" Value="{Binding NoiseLevel, Mode=TwoWay, FallbackValue=1}"
+                                    Minimum="0" Maximum="1" Style="{StaticResource VerticalSliderStyle}"
+                                    ValueChanged="OnMixerChanged"/>
+                            <TextBlock Text="{Binding NoiseLevel, StringFormat='{}{0:F2}', FallbackValue='1.00'}"
+                                       Style="{StaticResource ValueStyle}" FontSize="9"/>
+                            <CheckBox x:Name="NoiseMute" Content="M" Margin="0,4,0,0"
+                                      HorizontalAlignment="Center" ToolTip="Mute Noise"
+                                      Checked="OnMixerChanged" Unchecked="OnMixerChanged"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

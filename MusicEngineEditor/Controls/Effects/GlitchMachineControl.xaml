@@ -1,0 +1,880 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Effects.GlitchMachineControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls.Effects"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="800"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <!-- Theme Colors -->
+        <Color x:Key="GlitchBackgroundColor">#0D0D0D</Color>
+        <Color x:Key="GlitchPanelColor">#181818</Color>
+        <Color x:Key="GlitchAccentColor">#00D9FF</Color>
+        <Color x:Key="GlitchActiveColor">#FF4757</Color>
+        <Color x:Key="GlitchSuccessColor">#00FF88</Color>
+        <Color x:Key="GlitchWarningColor">#FFB800</Color>
+        <Color x:Key="GlitchTextColor">#E0E0E0</Color>
+        <Color x:Key="GlitchSecondaryTextColor">#808080</Color>
+        <Color x:Key="GlitchBorderColor">#2A2A2A</Color>
+        <Color x:Key="GlitchHoverColor">#252525</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="GlitchBackgroundBrush" Color="{StaticResource GlitchBackgroundColor}"/>
+        <SolidColorBrush x:Key="GlitchPanelBrush" Color="{StaticResource GlitchPanelColor}"/>
+        <SolidColorBrush x:Key="GlitchAccentBrush" Color="{StaticResource GlitchAccentColor}"/>
+        <SolidColorBrush x:Key="GlitchActiveBrush" Color="{StaticResource GlitchActiveColor}"/>
+        <SolidColorBrush x:Key="GlitchSuccessBrush" Color="{StaticResource GlitchSuccessColor}"/>
+        <SolidColorBrush x:Key="GlitchWarningBrush" Color="{StaticResource GlitchWarningColor}"/>
+        <SolidColorBrush x:Key="GlitchTextBrush" Color="{StaticResource GlitchTextColor}"/>
+        <SolidColorBrush x:Key="GlitchSecondaryTextBrush" Color="{StaticResource GlitchSecondaryTextColor}"/>
+        <SolidColorBrush x:Key="GlitchBorderBrush" Color="{StaticResource GlitchBorderColor}"/>
+        <SolidColorBrush x:Key="GlitchHoverBrush" Color="{StaticResource GlitchHoverColor}"/>
+
+        <!-- Waveform Gradient -->
+        <LinearGradientBrush x:Key="GlitchWaveformGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#00D9FF" Offset="0.0"/>
+            <GradientStop Color="#0066FF" Offset="0.5"/>
+            <GradientStop Color="#00D9FF" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <!-- Glitch Effect Waveform Gradient -->
+        <LinearGradientBrush x:Key="GlitchEffectGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#FF4757" Offset="0.0"/>
+            <GradientStop Color="#FF6B7A" Offset="0.5"/>
+            <GradientStop Color="#FF4757" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <!-- Converters -->
+        <local:GlitchBoolToVisibilityConverter x:Key="GlitchBoolToVisibilityConverter"/>
+        <local:GlitchPercentageConverter x:Key="GlitchPercentageConverter"/>
+        <local:GlitchStepActiveConverter x:Key="GlitchStepActiveConverter"/>
+
+        <!-- Button Style -->
+        <Style x:Key="GlitchButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource GlitchPanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource GlitchTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource GlitchBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource GlitchHoverBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource GlitchAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource GlitchAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Primary Button Style -->
+        <Style x:Key="GlitchPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource GlitchButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource GlitchAccentBrush}"/>
+            <Setter Property="Foreground" Value="#0D0D0D"/>
+        </Style>
+
+        <!-- Toggle Button Style -->
+        <Style x:Key="GlitchToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{StaticResource GlitchPanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource GlitchTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource GlitchBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource GlitchHoverBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource GlitchAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource GlitchAccentBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource GlitchAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Effect Module Toggle Style -->
+        <Style x:Key="GlitchEffectModuleStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{StaticResource GlitchPanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource GlitchTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource GlitchBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="MinHeight" Value="60"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource GlitchAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#1A00D9FF" Offset="0"/>
+                                            <GradientStop Color="#0D00D9FF" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource GlitchAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Pattern Step Style -->
+        <Style x:Key="GlitchPatternStepStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="#1A1A1A"/>
+            <Setter Property="Foreground" Value="{StaticResource GlitchTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource GlitchBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <Grid>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <!-- Current Step Indicator -->
+                                <Border x:Name="currentIndicator"
+                                        Background="{StaticResource GlitchWarningBrush}"
+                                        Height="3"
+                                        VerticalAlignment="Bottom"
+                                        Margin="2"
+                                        CornerRadius="1"
+                                        Visibility="Collapsed"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource GlitchAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource GlitchAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                <Setter TargetName="currentIndicator" Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Slider Style -->
+        <Style x:Key="GlitchSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Foreground" Value="{StaticResource GlitchAccentBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid>
+                            <Border Height="4"
+                                    Background="{StaticResource GlitchBorderBrush}"
+                                    CornerRadius="2"
+                                    VerticalAlignment="Center"/>
+                            <Border x:Name="PART_SelectionRange"
+                                    Height="4"
+                                    HorizontalAlignment="Left"
+                                    Background="{StaticResource GlitchAccentBrush}"
+                                    CornerRadius="2"
+                                    VerticalAlignment="Center"/>
+                            <Track x:Name="PART_Track">
+                                <Track.Thumb>
+                                    <Thumb Width="14" Height="14">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Fill="{StaticResource GlitchAccentBrush}"
+                                                         Width="14" Height="14"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Label Style -->
+        <Style x:Key="GlitchLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource GlitchSecondaryTextBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <!-- Value Style -->
+        <Style x:Key="GlitchValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource GlitchTextBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="MinWidth" Value="40"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource GlitchBackgroundBrush}"
+            BorderBrush="{StaticResource GlitchBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6">
+        <Grid Margin="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource GlitchPanelBrush}"
+                    CornerRadius="4"
+                    Padding="12,8"
+                    Margin="0,0,0,12">
+                <DockPanel>
+                    <TextBlock Text="GLITCH MACHINE"
+                               DockPanel.Dock="Left"
+                               Foreground="{StaticResource GlitchTextBrush}"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+
+                    <StackPanel Orientation="Horizontal"
+                                DockPanel.Dock="Right"
+                                HorizontalAlignment="Right">
+                        <!-- Active Glitch Indicator -->
+                        <Border x:Name="ActiveGlitchIndicator"
+                                Background="#1A1A1A"
+                                CornerRadius="3"
+                                Padding="10,4"
+                                Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse x:Name="GlitchStatusDot"
+                                         Width="8" Height="8"
+                                         Fill="{StaticResource GlitchSuccessBrush}"
+                                         Margin="0,0,6,0"
+                                         VerticalAlignment="Center"/>
+                                <TextBlock x:Name="ActiveGlitchText"
+                                           Text="READY"
+                                           Foreground="{StaticResource GlitchAccentBrush}"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Bypass Toggle -->
+                        <ToggleButton x:Name="BypassToggle"
+                                      Content="BYPASS"
+                                      Style="{StaticResource GlitchToggleStyle}"
+                                      Click="BypassToggle_Click"
+                                      ToolTip="Bypass effect"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- Main Content -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="220"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Side: Effect Modules Grid -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource GlitchPanelBrush}"
+                        BorderBrush="{StaticResource GlitchBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="12"
+                        Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0"
+                                   Text="EFFECT MODULES"
+                                   Foreground="{StaticResource GlitchTextBrush}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,8"/>
+
+                        <!-- 2x4 Grid of Effect Modules -->
+                        <UniformGrid Grid.Row="1"
+                                     Rows="2" Columns="4"
+                                     x:Name="EffectModulesGrid">
+                            <!-- Buffer Repeat -->
+                            <ToggleButton x:Name="BufferRepeatToggle"
+                                          Style="{StaticResource GlitchEffectModuleStyle}"
+                                          IsChecked="True"
+                                          Margin="4"
+                                          Click="EffectModule_Click"
+                                          Tag="BufferRepeat">
+                                <StackPanel>
+                                    <TextBlock Text="BUFFER"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="REPEAT"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Stutter"
+                                               FontSize="8"
+                                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </ToggleButton>
+
+                            <!-- Tape Stop -->
+                            <ToggleButton x:Name="TapeStopToggle"
+                                          Style="{StaticResource GlitchEffectModuleStyle}"
+                                          IsChecked="True"
+                                          Margin="4"
+                                          Click="EffectModule_Click"
+                                          Tag="TapeStop">
+                                <StackPanel>
+                                    <TextBlock Text="TAPE"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="STOP"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Slowdown"
+                                               FontSize="8"
+                                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </ToggleButton>
+
+                            <!-- Bit Crush -->
+                            <ToggleButton x:Name="BitCrushToggle"
+                                          Style="{StaticResource GlitchEffectModuleStyle}"
+                                          IsChecked="True"
+                                          Margin="4"
+                                          Click="EffectModule_Click"
+                                          Tag="BitReduction">
+                                <StackPanel>
+                                    <TextBlock Text="BIT"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="CRUSH"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Lo-fi"
+                                               FontSize="8"
+                                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </ToggleButton>
+
+                            <!-- Sample Rate -->
+                            <ToggleButton x:Name="SampleRateToggle"
+                                          Style="{StaticResource GlitchEffectModuleStyle}"
+                                          IsChecked="True"
+                                          Margin="4"
+                                          Click="EffectModule_Click"
+                                          Tag="SampleRateReduction">
+                                <StackPanel>
+                                    <TextBlock Text="SAMPLE"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="RATE"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Aliasing"
+                                               FontSize="8"
+                                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </ToggleButton>
+
+                            <!-- Reverse -->
+                            <ToggleButton x:Name="ReverseToggle"
+                                          Style="{StaticResource GlitchEffectModuleStyle}"
+                                          IsChecked="True"
+                                          Margin="4"
+                                          Click="EffectModule_Click"
+                                          Tag="Reverse">
+                                <StackPanel>
+                                    <TextBlock Text="REVERSE"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text=""
+                                               FontSize="10"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Backwards"
+                                               FontSize="8"
+                                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </ToggleButton>
+
+                            <!-- Stretch -->
+                            <ToggleButton x:Name="StretchToggle"
+                                          Style="{StaticResource GlitchEffectModuleStyle}"
+                                          IsChecked="True"
+                                          Margin="4"
+                                          Click="EffectModule_Click"
+                                          Tag="Stretch">
+                                <StackPanel>
+                                    <TextBlock Text="STRETCH"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text=""
+                                               FontSize="10"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Time warp"
+                                               FontSize="8"
+                                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </ToggleButton>
+
+                            <!-- Gate/Chop -->
+                            <ToggleButton x:Name="GateToggle"
+                                          Style="{StaticResource GlitchEffectModuleStyle}"
+                                          IsChecked="True"
+                                          Margin="4"
+                                          Click="EffectModule_Click"
+                                          Tag="Gate">
+                                <StackPanel>
+                                    <TextBlock Text="GATE"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="CHOP"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Rhythmic"
+                                               FontSize="8"
+                                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </ToggleButton>
+
+                            <!-- Filter Sweep -->
+                            <ToggleButton x:Name="FilterSweepToggle"
+                                          Style="{StaticResource GlitchEffectModuleStyle}"
+                                          IsChecked="True"
+                                          Margin="4"
+                                          Click="EffectModule_Click"
+                                          Tag="FilterSweep">
+                                <StackPanel>
+                                    <TextBlock Text="FILTER"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="SWEEP"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Frequency"
+                                               FontSize="8"
+                                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </ToggleButton>
+                        </UniformGrid>
+                    </Grid>
+                </Border>
+
+                <!-- Right Side: Randomization Controls -->
+                <Border Grid.Column="1"
+                        Background="{StaticResource GlitchPanelBrush}"
+                        BorderBrush="{StaticResource GlitchBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="RANDOMIZATION"
+                                   Foreground="{StaticResource GlitchTextBrush}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,12"/>
+
+                        <!-- Chaos Amount -->
+                        <StackPanel Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Chaos Amount"
+                                           Style="{StaticResource GlitchLabelStyle}"/>
+                                <TextBlock Grid.Column="1" x:Name="ChaosValueText" Text="30%"
+                                           Style="{StaticResource GlitchValueStyle}"/>
+                            </Grid>
+                            <Slider x:Name="ChaosSlider"
+                                    Style="{StaticResource GlitchSliderStyle}"
+                                    Minimum="0" Maximum="100" Value="30"
+                                    ValueChanged="ChaosSlider_ValueChanged"
+                                    ToolTip="Probability of triggering random glitches"/>
+                        </StackPanel>
+
+                        <!-- Trigger Rate -->
+                        <StackPanel Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Trigger Rate"
+                                           Style="{StaticResource GlitchLabelStyle}"/>
+                                <TextBlock Grid.Column="1" x:Name="RateValueText" Text="4x"
+                                           Style="{StaticResource GlitchValueStyle}"/>
+                            </Grid>
+                            <Slider x:Name="RateSlider"
+                                    Style="{StaticResource GlitchSliderStyle}"
+                                    Minimum="1" Maximum="32" Value="4"
+                                    ValueChanged="RateSlider_ValueChanged"
+                                    ToolTip="How often glitches can trigger (per beat when synced)"/>
+                        </StackPanel>
+
+                        <!-- Duration Min -->
+                        <StackPanel Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Duration Min"
+                                           Style="{StaticResource GlitchLabelStyle}"/>
+                                <TextBlock Grid.Column="1" x:Name="DurationMinValueText" Text="50ms"
+                                           Style="{StaticResource GlitchValueStyle}"/>
+                            </Grid>
+                            <Slider x:Name="DurationMinSlider"
+                                    Style="{StaticResource GlitchSliderStyle}"
+                                    Minimum="10" Maximum="500" Value="50"
+                                    ValueChanged="DurationMinSlider_ValueChanged"
+                                    ToolTip="Minimum glitch duration"/>
+                        </StackPanel>
+
+                        <!-- Duration Max -->
+                        <StackPanel Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Duration Max"
+                                           Style="{StaticResource GlitchLabelStyle}"/>
+                                <TextBlock Grid.Column="1" x:Name="DurationMaxValueText" Text="200ms"
+                                           Style="{StaticResource GlitchValueStyle}"/>
+                            </Grid>
+                            <Slider x:Name="DurationMaxSlider"
+                                    Style="{StaticResource GlitchSliderStyle}"
+                                    Minimum="50" Maximum="1000" Value="200"
+                                    ValueChanged="DurationMaxSlider_ValueChanged"
+                                    ToolTip="Maximum glitch duration"/>
+                        </StackPanel>
+
+                        <!-- Sync to Tempo Toggle -->
+                        <DockPanel Margin="0,0,0,12">
+                            <ToggleButton x:Name="SyncTempoToggle"
+                                          Content="SYNC TO TEMPO"
+                                          Style="{StaticResource GlitchToggleStyle}"
+                                          IsChecked="True"
+                                          DockPanel.Dock="Left"
+                                          HorizontalAlignment="Left"
+                                          Click="SyncTempoToggle_Click"
+                                          ToolTip="Sync glitch timing to project tempo"/>
+                            <TextBlock x:Name="TempoValueText"
+                                       Text="120 BPM"
+                                       Foreground="{StaticResource GlitchWarningBrush}"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"
+                                       Margin="8,0,0,0"/>
+                        </DockPanel>
+
+                        <!-- Trigger Button -->
+                        <Button x:Name="TriggerGlitchButton"
+                                Content="TRIGGER GLITCH"
+                                Style="{StaticResource GlitchPrimaryButtonStyle}"
+                                Click="TriggerGlitch_Click"
+                                ToolTip="Manually trigger a random glitch"
+                                Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Pattern Sequencer -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource GlitchPanelBrush}"
+                    BorderBrush="{StaticResource GlitchBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12"
+                    Margin="0,12,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="PATTERN SEQUENCER"
+                                   Foreground="{StaticResource GlitchTextBrush}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"/>
+                    </StackPanel>
+
+                    <!-- 8-Step Pattern -->
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Center">
+                        <ToggleButton x:Name="Step1" Style="{StaticResource GlitchPatternStepStyle}"
+                                      Margin="2" Content="1" Click="PatternStep_Click" Tag="0"/>
+                        <ToggleButton x:Name="Step2" Style="{StaticResource GlitchPatternStepStyle}"
+                                      Margin="2" Content="2" Click="PatternStep_Click" Tag="1"/>
+                        <ToggleButton x:Name="Step3" Style="{StaticResource GlitchPatternStepStyle}"
+                                      Margin="2" Content="3" Click="PatternStep_Click" Tag="2"/>
+                        <ToggleButton x:Name="Step4" Style="{StaticResource GlitchPatternStepStyle}"
+                                      Margin="2" Content="4" Click="PatternStep_Click" Tag="3"/>
+                        <ToggleButton x:Name="Step5" Style="{StaticResource GlitchPatternStepStyle}"
+                                      Margin="2" Content="5" Click="PatternStep_Click" Tag="4"/>
+                        <ToggleButton x:Name="Step6" Style="{StaticResource GlitchPatternStepStyle}"
+                                      Margin="2" Content="6" Click="PatternStep_Click" Tag="5"/>
+                        <ToggleButton x:Name="Step7" Style="{StaticResource GlitchPatternStepStyle}"
+                                      Margin="2" Content="7" Click="PatternStep_Click" Tag="6"/>
+                        <ToggleButton x:Name="Step8" Style="{StaticResource GlitchPatternStepStyle}"
+                                      Margin="2" Content="8" Click="PatternStep_Click" Tag="7"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal">
+                        <Button Content="RANDOM"
+                                Style="{StaticResource GlitchButtonStyle}"
+                                Click="RandomizePattern_Click"
+                                ToolTip="Randomize pattern"
+                                Margin="0,0,8,0"/>
+                        <Button Content="CLEAR"
+                                Style="{StaticResource GlitchButtonStyle}"
+                                Click="ClearPattern_Click"
+                                ToolTip="Clear pattern"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Waveform Display -->
+            <Border Grid.Row="3"
+                    Background="{StaticResource GlitchPanelBrush}"
+                    BorderBrush="{StaticResource GlitchBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12"
+                    Margin="0,12,0,0"
+                    Height="100">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="REAL-TIME WAVEFORM"
+                               Foreground="{StaticResource GlitchTextBrush}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,8"/>
+
+                    <Canvas x:Name="WaveformCanvas"
+                            Grid.Row="1"
+                            Background="#121212"
+                            ClipToBounds="True">
+                        <!-- Input waveform (background) -->
+                        <Path x:Name="InputWaveformPath"
+                              Stroke="{StaticResource GlitchWaveformGradient}"
+                              StrokeThickness="1"
+                              Opacity="0.4"/>
+                        <!-- Output waveform (foreground) -->
+                        <Path x:Name="OutputWaveformPath"
+                              Stroke="{StaticResource GlitchEffectGradient}"
+                              StrokeThickness="1.5"/>
+                        <!-- Glitch indicator overlay -->
+                        <Border x:Name="GlitchOverlay"
+                                Background="#20FF4757"
+                                Visibility="Collapsed"/>
+                    </Canvas>
+                </Grid>
+            </Border>
+
+            <!-- Bottom Controls -->
+            <Grid Grid.Row="4" Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Preset Selector -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="PRESET:"
+                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <ComboBox x:Name="PresetComboBox"
+                              Width="120"
+                              SelectionChanged="PresetComboBox_SelectionChanged"
+                              ToolTip="Select glitch style preset">
+                        <ComboBoxItem Content="Subtle"/>
+                        <ComboBoxItem Content="Moderate" IsSelected="True"/>
+                        <ComboBoxItem Content="Extreme"/>
+                        <ComboBoxItem Content="Rhythmic"/>
+                        <ComboBoxItem Content="Chaotic"/>
+                        <ComboBoxItem Content="Retro"/>
+                        <ComboBoxItem Content="Digital"/>
+                        <ComboBoxItem Content="Tape"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Mix/Dry-Wet Slider -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="DRY"
+                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                               FontSize="10"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <Slider x:Name="MixSlider"
+                            Style="{StaticResource GlitchSliderStyle}"
+                            Width="200"
+                            Minimum="0" Maximum="100" Value="50"
+                            ValueChanged="MixSlider_ValueChanged"
+                            ToolTip="Dry/Wet mix"/>
+                    <TextBlock Text="WET"
+                               Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                               FontSize="10"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0"/>
+                    <TextBlock x:Name="MixValueText"
+                               Text="50%"
+                               Foreground="{StaticResource GlitchAccentBrush}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Width="40"
+                               TextAlignment="Right"
+                               Margin="8,0,0,0"/>
+                </StackPanel>
+
+                <!-- Status -->
+                <Border Grid.Column="2"
+                        Background="#1A1A1A"
+                        CornerRadius="4"
+                        Padding="12,6">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="GLITCHES: "
+                                   Foreground="{StaticResource GlitchSecondaryTextBrush}"
+                                   FontSize="10"/>
+                        <TextBlock x:Name="GlitchCountText"
+                                   Text="0"
+                                   Foreground="{StaticResource GlitchWarningBrush}"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"
+                                   Width="40"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

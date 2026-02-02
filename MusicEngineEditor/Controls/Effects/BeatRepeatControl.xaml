@@ -1,0 +1,671 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Effects.BeatRepeatControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls.Effects"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="700"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <!-- Theme Colors -->
+        <Color x:Key="BeatRepeatBackgroundColor">#0D0D0D</Color>
+        <Color x:Key="BeatRepeatPanelColor">#181818</Color>
+        <Color x:Key="BeatRepeatAccentColor">#00D9FF</Color>
+        <Color x:Key="BeatRepeatSuccessColor">#00FF88</Color>
+        <Color x:Key="BeatRepeatWarningColor">#FFB347</Color>
+        <Color x:Key="BeatRepeatErrorColor">#FF4757</Color>
+        <Color x:Key="BeatRepeatTextColor">#E0E0E0</Color>
+        <Color x:Key="BeatRepeatSecondaryTextColor">#808080</Color>
+        <Color x:Key="BeatRepeatBorderColor">#2A2A2A</Color>
+        <Color x:Key="BeatRepeatActiveStepColor">#00D9FF</Color>
+        <Color x:Key="BeatRepeatInactiveStepColor">#252525</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BeatRepeatBackgroundBrush" Color="{StaticResource BeatRepeatBackgroundColor}"/>
+        <SolidColorBrush x:Key="BeatRepeatPanelBrush" Color="{StaticResource BeatRepeatPanelColor}"/>
+        <SolidColorBrush x:Key="BeatRepeatAccentBrush" Color="{StaticResource BeatRepeatAccentColor}"/>
+        <SolidColorBrush x:Key="BeatRepeatSuccessBrush" Color="{StaticResource BeatRepeatSuccessColor}"/>
+        <SolidColorBrush x:Key="BeatRepeatWarningBrush" Color="{StaticResource BeatRepeatWarningColor}"/>
+        <SolidColorBrush x:Key="BeatRepeatErrorBrush" Color="{StaticResource BeatRepeatErrorColor}"/>
+        <SolidColorBrush x:Key="BeatRepeatTextBrush" Color="{StaticResource BeatRepeatTextColor}"/>
+        <SolidColorBrush x:Key="BeatRepeatSecondaryTextBrush" Color="{StaticResource BeatRepeatSecondaryTextColor}"/>
+        <SolidColorBrush x:Key="BeatRepeatBorderBrush" Color="{StaticResource BeatRepeatBorderColor}"/>
+        <SolidColorBrush x:Key="BeatRepeatActiveStepBrush" Color="{StaticResource BeatRepeatActiveStepColor}"/>
+        <SolidColorBrush x:Key="BeatRepeatInactiveStepBrush" Color="{StaticResource BeatRepeatInactiveStepColor}"/>
+
+        <!-- Parameter Label Style -->
+        <Style x:Key="BeatRepeatLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource BeatRepeatSecondaryTextBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <!-- Parameter Value Style -->
+        <Style x:Key="BeatRepeatValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource BeatRepeatTextBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="MinWidth" Value="50"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+        </Style>
+
+        <!-- Header Style -->
+        <Style x:Key="BeatRepeatHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource BeatRepeatAccentBrush}"/>
+        </Style>
+
+        <!-- Section Header Style -->
+        <Style x:Key="BeatRepeatSectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource BeatRepeatSecondaryTextBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <!-- Panel Style -->
+        <Style x:Key="BeatRepeatPanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource BeatRepeatPanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BeatRepeatBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <!-- Slider Style -->
+        <Style x:Key="BeatRepeatSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid>
+                            <Border x:Name="TrackBackground"
+                                    Height="4"
+                                    Background="{StaticResource BeatRepeatBorderBrush}"
+                                    CornerRadius="2"
+                                    VerticalAlignment="Center"/>
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Height="4"
+                                                        Background="{StaticResource BeatRepeatAccentBrush}"
+                                                        CornerRadius="2,0,0,2"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Width="14" Height="14"
+                                                         Fill="{StaticResource BeatRepeatAccentBrush}"
+                                                         Stroke="{StaticResource BeatRepeatBackgroundBrush}"
+                                                         StrokeThickness="2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toggle Button Style -->
+        <Style x:Key="BeatRepeatToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{StaticResource BeatRepeatPanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource BeatRepeatTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BeatRepeatBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource BeatRepeatAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource BeatRepeatAccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button Style -->
+        <Style x:Key="BeatRepeatButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BeatRepeatPanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource BeatRepeatTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BeatRepeatBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource BeatRepeatAccentBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="#222222"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource BeatRepeatAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Grid Division Button Style -->
+        <Style x:Key="GridDivisionButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="{StaticResource BeatRepeatInactiveStepBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource BeatRepeatTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BeatRepeatBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinWidth" Value="50"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource BeatRepeatAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource BeatRepeatAccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Gate Step Button Style -->
+        <Style x:Key="GateStepButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="22"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{StaticResource BeatRepeatInactiveStepBrush}"
+                                BorderBrush="{StaticResource BeatRepeatBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="2"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource BeatRepeatAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource BeatRepeatAccentBrush}"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsChecked" Value="True"/>
+                                    <Condition Property="Tag" Value="Active"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource BeatRepeatSuccessBrush}"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border BorderBrush="{StaticResource BeatRepeatBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Background="{StaticResource BeatRepeatBackgroundBrush}"
+            Padding="16">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Beat Repeat"
+                           Style="{StaticResource BeatRepeatHeaderStyle}"
+                           VerticalAlignment="Center"/>
+
+                <!-- Active Repeat Indicator -->
+                <Border Grid.Column="1"
+                        x:Name="ActiveRepeatIndicator"
+                        Background="{StaticResource BeatRepeatPanelBrush}"
+                        BorderBrush="{StaticResource BeatRepeatBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="8,4"
+                        Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse x:Name="RepeatActivityLed"
+                                 Width="8" Height="8"
+                                 Fill="{StaticResource BeatRepeatBorderBrush}"
+                                 Margin="0,0,6,0"/>
+                        <TextBlock x:Name="RepeatCountDisplay"
+                                   Text="-- / --"
+                                   FontSize="11"
+                                   FontFamily="Consolas"
+                                   Foreground="{StaticResource BeatRepeatTextBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <ToggleButton Grid.Column="2"
+                              x:Name="BypassToggle"
+                              Content="Bypass"
+                              Style="{StaticResource BeatRepeatToggleButtonStyle}"
+                              Click="BypassToggle_Click"/>
+            </Grid>
+
+            <!-- Grid Size Selection -->
+            <Border Grid.Row="1" Style="{StaticResource BeatRepeatPanelStyle}" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="GRID SIZE"
+                               Style="{StaticResource BeatRepeatSectionHeaderStyle}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,16,0"/>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <RadioButton x:Name="Grid1_4"
+                                     Content="1/4"
+                                     Style="{StaticResource GridDivisionButtonStyle}"
+                                     GroupName="GridSize"
+                                     Checked="GridSize_Checked"
+                                     Margin="0,0,4,0"/>
+                        <RadioButton x:Name="Grid1_8"
+                                     Content="1/8"
+                                     Style="{StaticResource GridDivisionButtonStyle}"
+                                     GroupName="GridSize"
+                                     IsChecked="True"
+                                     Checked="GridSize_Checked"
+                                     Margin="0,0,4,0"/>
+                        <RadioButton x:Name="Grid1_16"
+                                     Content="1/16"
+                                     Style="{StaticResource GridDivisionButtonStyle}"
+                                     GroupName="GridSize"
+                                     Checked="GridSize_Checked"
+                                     Margin="0,0,4,0"/>
+                        <RadioButton x:Name="Grid1_32"
+                                     Content="1/32"
+                                     Style="{StaticResource GridDivisionButtonStyle}"
+                                     GroupName="GridSize"
+                                     Checked="GridSize_Checked"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Main Parameters -->
+            <Grid Grid.Row="2" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Repeat Count -->
+                <Border Grid.Column="0" Style="{StaticResource BeatRepeatPanelStyle}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Repeat Count"
+                                       Style="{StaticResource BeatRepeatLabelStyle}"/>
+                            <TextBlock Grid.Column="1" x:Name="RepeatCountValue" Text="4"
+                                       Style="{StaticResource BeatRepeatValueStyle}"/>
+                        </Grid>
+                        <Slider x:Name="RepeatCountSlider"
+                                Style="{StaticResource BeatRepeatSliderStyle}"
+                                Minimum="1" Maximum="16" Value="4"
+                                IsSnapToTickEnabled="True"
+                                TickFrequency="1"
+                                ValueChanged="RepeatCountSlider_ValueChanged"
+                                ToolTip="Number of times to repeat the beat"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Decay -->
+                <Border Grid.Column="2" Style="{StaticResource BeatRepeatPanelStyle}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Decay"
+                                       Style="{StaticResource BeatRepeatLabelStyle}"/>
+                            <TextBlock Grid.Column="1" x:Name="DecayValue" Text="0%"
+                                       Style="{StaticResource BeatRepeatValueStyle}"/>
+                        </Grid>
+                        <Slider x:Name="DecaySlider"
+                                Style="{StaticResource BeatRepeatSliderStyle}"
+                                Minimum="0" Maximum="100" Value="0"
+                                ValueChanged="DecaySlider_ValueChanged"
+                                ToolTip="Volume reduction per repeat (%)"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Pitch Shift -->
+                <Border Grid.Column="4" Style="{StaticResource BeatRepeatPanelStyle}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Pitch Shift"
+                                       Style="{StaticResource BeatRepeatLabelStyle}"/>
+                            <TextBlock Grid.Column="1" x:Name="PitchShiftValue" Text="0 st"
+                                       Style="{StaticResource BeatRepeatValueStyle}"/>
+                        </Grid>
+                        <Slider x:Name="PitchShiftSlider"
+                                Style="{StaticResource BeatRepeatSliderStyle}"
+                                Minimum="-12" Maximum="12" Value="0"
+                                IsSnapToTickEnabled="True"
+                                TickFrequency="1"
+                                ValueChanged="PitchShiftSlider_ValueChanged"
+                                ToolTip="Pitch shift per repeat (semitones)"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Probability -->
+                <Border Grid.Column="6" Style="{StaticResource BeatRepeatPanelStyle}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Probability"
+                                       Style="{StaticResource BeatRepeatLabelStyle}"/>
+                            <TextBlock Grid.Column="1" x:Name="ProbabilityValue" Text="100%"
+                                       Style="{StaticResource BeatRepeatValueStyle}"/>
+                        </Grid>
+                        <Slider x:Name="ProbabilitySlider"
+                                Style="{StaticResource BeatRepeatSliderStyle}"
+                                Minimum="0" Maximum="100" Value="100"
+                                ValueChanged="ProbabilitySlider_ValueChanged"
+                                ToolTip="Chance of repeat triggering (%)"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Gate Pattern Editor -->
+            <Border Grid.Row="3" Style="{StaticResource BeatRepeatPanelStyle}" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="GATE PATTERN (8 ROWS x 16 STEPS)"
+                                   Style="{StaticResource BeatRepeatSectionHeaderStyle}"/>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Content="Clear"
+                                    Style="{StaticResource BeatRepeatButtonStyle}"
+                                    Click="ClearPattern_Click"
+                                    Margin="0,0,4,0"
+                                    Padding="8,4"/>
+                            <Button Content="Random"
+                                    Style="{StaticResource BeatRepeatButtonStyle}"
+                                    Click="RandomPattern_Click"
+                                    Margin="0,0,4,0"
+                                    Padding="8,4"/>
+                            <Button Content="Euclidean"
+                                    Style="{StaticResource BeatRepeatButtonStyle}"
+                                    Click="EuclideanPattern_Click"
+                                    Padding="8,4"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Pattern Grid Canvas -->
+                    <Border Grid.Row="1"
+                            Background="{StaticResource BeatRepeatBackgroundBrush}"
+                            BorderBrush="{StaticResource BeatRepeatBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            MinHeight="200">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Row Labels -->
+                            <ItemsControl Grid.Column="0" x:Name="RowLabelsControl">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Rows="8" Columns="1"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+
+                            <!-- Gate Pattern Grid -->
+                            <Canvas Grid.Column="1"
+                                    x:Name="GatePatternCanvas"
+                                    Background="Transparent"
+                                    ClipToBounds="True"
+                                    MouseLeftButtonDown="GatePatternCanvas_MouseLeftButtonDown"
+                                    MouseMove="GatePatternCanvas_MouseMove"
+                                    MouseLeftButtonUp="GatePatternCanvas_MouseLeftButtonUp"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Bottom Parameters Row -->
+            <Grid Grid.Row="4" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Mix / Dry-Wet -->
+                <Border Grid.Column="0" Style="{StaticResource BeatRepeatPanelStyle}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Mix (Dry/Wet)"
+                                       Style="{StaticResource BeatRepeatLabelStyle}"/>
+                            <TextBlock Grid.Column="1" x:Name="MixValue" Text="100%"
+                                       Style="{StaticResource BeatRepeatValueStyle}"/>
+                        </Grid>
+                        <Slider x:Name="MixSlider"
+                                Style="{StaticResource BeatRepeatSliderStyle}"
+                                Minimum="0" Maximum="100" Value="100"
+                                ValueChanged="MixSlider_ValueChanged"
+                                ToolTip="Dry/Wet mix (0% = all dry, 100% = all wet)"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Visual Feedback Area -->
+                <Border Grid.Column="2" Style="{StaticResource BeatRepeatPanelStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0"
+                                   Text="ACTIVE REPEATS"
+                                   Style="{StaticResource BeatRepeatSectionHeaderStyle}"/>
+
+                        <Canvas Grid.Row="1"
+                                x:Name="RepeatVisualizationCanvas"
+                                Background="Transparent"
+                                MinHeight="40"
+                                ClipToBounds="True"/>
+                    </Grid>
+                </Border>
+
+                <!-- Toggle Buttons -->
+                <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <ToggleButton x:Name="SyncToTempoToggle"
+                                  Content="Sync to Tempo"
+                                  Style="{StaticResource BeatRepeatToggleButtonStyle}"
+                                  IsChecked="True"
+                                  Click="SyncToTempoToggle_Click"
+                                  Margin="0,0,0,4"/>
+                    <ToggleButton x:Name="StutterModeToggle"
+                                  Content="Stutter Mode"
+                                  Style="{StaticResource BeatRepeatToggleButtonStyle}"
+                                  Click="StutterModeToggle_Click"/>
+                </StackPanel>
+
+                <!-- Presets -->
+                <Border Grid.Column="5" Style="{StaticResource BeatRepeatPanelStyle}" VerticalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock Text="PRESETS"
+                                   Style="{StaticResource BeatRepeatSectionHeaderStyle}"/>
+                        <ComboBox x:Name="PresetComboBox"
+                                  MinWidth="120"
+                                  SelectionChanged="PresetComboBox_SelectionChanged"
+                                  ToolTip="Load preset">
+                            <ComboBoxItem Content="-- Select --" IsSelected="True"/>
+                            <ComboBoxItem Content="Subtle"/>
+                            <ComboBoxItem Content="Classic"/>
+                            <ComboBoxItem Content="Glitch"/>
+                            <ComboBoxItem Content="Tape Stop"/>
+                            <ComboBoxItem Content="Riser"/>
+                            <ComboBoxItem Content="Breakdown"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Footer / Status -->
+            <Grid Grid.Row="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        x:Name="ResetButton"
+                        Content="Reset"
+                        Style="{StaticResource BeatRepeatButtonStyle}"
+                        Click="ResetButton_Click"
+                        ToolTip="Reset all parameters to defaults"/>
+
+                <Border Grid.Column="2"
+                        Background="{StaticResource BeatRepeatPanelBrush}"
+                        BorderBrush="{StaticResource BeatRepeatBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="12,6"
+                        MinWidth="150">
+                    <TextBlock x:Name="StatusText"
+                               Text="Ready"
+                               FontSize="11"
+                               Foreground="{StaticResource BeatRepeatSecondaryTextBrush}"
+                               HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

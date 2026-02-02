@@ -74,6 +74,10 @@ This folder contains technical documentation for developers integrating MusicEng
 | `EffectNodeFactory` | Creating effect nodes |
 | `EffectPatchManager` | Save/load effect presets |
 | `ProjectService` | Project management |
+| `SpatialAudioService` | Spatial audio state (surround, binaural, ambisonics) |
+| `IntegratedAnalysisService` | Audio analysis (tuner, chord, key, tempo, loops) |
+| `NetworkSyncService` | Network sync (Link, OSC, MIDI, MMC/MTC) |
+| `AudioReactiveService` | UI audio reactivity |
 
 ## Getting Started
 

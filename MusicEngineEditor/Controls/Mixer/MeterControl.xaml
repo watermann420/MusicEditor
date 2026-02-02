@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="200" d:DesignWidth="40"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -14,15 +14,15 @@
         </Grid.ColumnDefinitions>
 
         <!-- Left Channel Meter -->
-        <Border Grid.Column="0" BorderBrush="#2A2A2A" BorderThickness="1" Background="#181818">
+        <Border Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource PanelBackgroundBrush}">
             <Canvas x:Name="LeftMeterCanvas" ClipToBounds="True"/>
         </Border>
 
         <!-- Separator -->
-        <Rectangle Grid.Column="1" Fill="#2A2A2A"/>
+        <Rectangle Grid.Column="1" Fill="{DynamicResource BorderBrush}"/>
 
         <!-- Right Channel Meter -->
-        <Border Grid.Column="2" BorderBrush="#2A2A2A" BorderThickness="1" Background="#181818">
+        <Border Grid.Column="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource PanelBackgroundBrush}">
             <Canvas x:Name="RightMeterCanvas" ClipToBounds="True"/>
         </Border>
     </Grid>

@@ -1,0 +1,256 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Spatial.SurroundPannerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls.Spatial"
+             mc:Ignorable="d"
+             d:DesignHeight="500" d:DesignWidth="400"
+             MinHeight="400" MinWidth="320">
+
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#0D0D0D</Color>
+        <Color x:Key="PanelColor">#181818</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+        <Color x:Key="TextPrimaryColor">#E0E0E0</Color>
+        <Color x:Key="TextSecondaryColor">#808080</Color>
+        <Color x:Key="AccentColor">#00D9FF</Color>
+        <Color x:Key="SpeakerColor">#4A4D52</Color>
+        <Color x:Key="SpeakerActiveColor">#00D9FF</Color>
+        <Color x:Key="SourceColor">#00FF88</Color>
+        <Color x:Key="LFEColor">#FF6B6B</Color>
+        <Color x:Key="CenterColor">#FFA500</Color>
+        <Color x:Key="GridColor">#1A1A1A</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="SpeakerBrush" Color="{StaticResource SpeakerColor}"/>
+        <SolidColorBrush x:Key="SpeakerActiveBrush" Color="{StaticResource SpeakerActiveColor}"/>
+        <SolidColorBrush x:Key="SourceBrush" Color="{StaticResource SourceColor}"/>
+        <SolidColorBrush x:Key="LFEBrush" Color="{StaticResource LFEColor}"/>
+        <SolidColorBrush x:Key="CenterBrush" Color="{StaticResource CenterColor}"/>
+        <SolidColorBrush x:Key="GridBrush" Color="{StaticResource GridColor}"/>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="SurroundComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <!-- Slider Style -->
+        <Style x:Key="SurroundSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="1"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+        </Style>
+
+        <!-- Label Style -->
+        <Style x:Key="ParamLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Value Label Style -->
+        <Style x:Key="ParamValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="MinWidth" Value="45"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource BackgroundBrush}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6">
+        <Grid Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" MinHeight="200"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="{StaticResource PanelBrush}"
+                    CornerRadius="4" Padding="12,8" Margin="0,0,0,8">
+                <DockPanel>
+                    <TextBlock Text="SURROUND PANNER"
+                               Foreground="{StaticResource AccentBrush}"
+                               FontSize="12" FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Format:"
+                                   Style="{StaticResource ParamLabelStyle}"
+                                   Margin="0,0,6,0"/>
+                        <ComboBox x:Name="FormatCombo"
+                                  Style="{StaticResource SurroundComboBoxStyle}"
+                                  Width="90"
+                                  SelectionChanged="FormatCombo_SelectionChanged">
+                            <ComboBoxItem Content="Stereo"/>
+                            <ComboBoxItem Content="5.1"/>
+                            <ComboBoxItem Content="7.1"/>
+                            <ComboBoxItem Content="Atmos"/>
+                        </ComboBox>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- 2D Panning Pad -->
+            <Border Grid.Row="1" Background="{StaticResource PanelBrush}"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                    CornerRadius="4" Margin="0,0,0,8">
+                <Grid>
+                    <!-- Panning Canvas -->
+                    <Canvas x:Name="PanningCanvas"
+                            ClipToBounds="True"
+                            MouseLeftButtonDown="PanningCanvas_MouseLeftButtonDown"
+                            MouseMove="PanningCanvas_MouseMove"
+                            MouseLeftButtonUp="PanningCanvas_MouseLeftButtonUp"
+                            MouseLeave="PanningCanvas_MouseLeave"
+                            Background="Transparent">
+                    </Canvas>
+
+                    <!-- Speaker Position Canvas (drawn in code-behind) -->
+                    <Canvas x:Name="SpeakerCanvas" IsHitTestVisible="False" ClipToBounds="True"/>
+
+                    <!-- Grid Lines Canvas -->
+                    <Canvas x:Name="GridLinesCanvas" IsHitTestVisible="False" ClipToBounds="True"/>
+
+                    <!-- Source Position Indicator -->
+                    <Ellipse x:Name="SourceIndicator"
+                             Width="20" Height="20"
+                             Fill="{StaticResource SourceBrush}"
+                             Stroke="White" StrokeThickness="2"
+                             HorizontalAlignment="Left" VerticalAlignment="Top"
+                             IsHitTestVisible="False"
+                             Opacity="0.95">
+                        <Ellipse.Effect>
+                            <DropShadowEffect Color="{StaticResource SourceColor}"
+                                              BlurRadius="12" ShadowDepth="0"/>
+                        </Ellipse.Effect>
+                    </Ellipse>
+
+                    <!-- Spread Circle Indicator -->
+                    <Ellipse x:Name="SpreadIndicator"
+                             Stroke="{StaticResource AccentBrush}"
+                             StrokeThickness="1"
+                             StrokeDashArray="4,2"
+                             Fill="Transparent"
+                             HorizontalAlignment="Left" VerticalAlignment="Top"
+                             IsHitTestVisible="False"
+                             Opacity="0.5"/>
+
+                    <!-- Coordinate Display -->
+                    <Border Background="#80000000" CornerRadius="4"
+                            HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                            Padding="10,4" Margin="8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="X:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10"/>
+                            <TextBlock x:Name="XCoordText" Text=" 0.00" Foreground="{StaticResource AccentBrush}"
+                                       FontSize="10" FontFamily="Consolas" Margin="0,0,12,0"/>
+                            <TextBlock Text="Y:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10"/>
+                            <TextBlock x:Name="YCoordText" Text=" 0.00" Foreground="{StaticResource AccentBrush}"
+                                       FontSize="10" FontFamily="Consolas"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Listener Position (center) -->
+                    <Border Background="#40000000" CornerRadius="12"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Width="24" Height="24" IsHitTestVisible="False">
+                        <Ellipse Width="10" Height="10"
+                                 Fill="{StaticResource TextSecondaryBrush}"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Parameter Controls -->
+            <Border Grid.Row="2" Background="{StaticResource PanelBrush}"
+                    CornerRadius="4" Padding="12,8" Margin="0,0,0,8">
+                <StackPanel>
+                    <!-- LFE Level -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="50"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="LFE Level" Style="{StaticResource ParamLabelStyle}"/>
+                        <Slider x:Name="LFESlider" Grid.Column="1"
+                                Minimum="0" Maximum="100"
+                                Value="0"
+                                Style="{StaticResource SurroundSliderStyle}"
+                                ValueChanged="LFESlider_ValueChanged"/>
+                        <TextBlock x:Name="LFEValueText" Grid.Column="2"
+                                   Text="0%"
+                                   Style="{StaticResource ParamValueStyle}"/>
+                    </Grid>
+
+                    <!-- Spread/Divergence -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="50"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Spread" Style="{StaticResource ParamLabelStyle}"/>
+                        <Slider x:Name="SpreadSlider" Grid.Column="1"
+                                Minimum="0" Maximum="100"
+                                Value="0"
+                                Style="{StaticResource SurroundSliderStyle}"
+                                ValueChanged="SpreadSlider_ValueChanged"/>
+                        <TextBlock x:Name="SpreadValueText" Grid.Column="2"
+                                   Text="0%"
+                                   Style="{StaticResource ParamValueStyle}"/>
+                    </Grid>
+
+                    <!-- Center Percentage -->
+                    <Grid Margin="0,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="50"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Center %" Style="{StaticResource ParamLabelStyle}"/>
+                        <Slider x:Name="CenterSlider" Grid.Column="1"
+                                Minimum="0" Maximum="100"
+                                Value="50"
+                                Style="{StaticResource SurroundSliderStyle}"
+                                ValueChanged="CenterSlider_ValueChanged"/>
+                        <TextBlock x:Name="CenterValueText" Grid.Column="2"
+                                   Text="50%"
+                                   Style="{StaticResource ParamValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Channel Gains Display -->
+            <Border Grid.Row="3" Background="{StaticResource PanelBrush}"
+                    CornerRadius="4" Padding="12,8">
+                <StackPanel>
+                    <TextBlock Text="CHANNEL GAINS" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="9" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <WrapPanel x:Name="GainsPanel" Orientation="Horizontal">
+                        <!-- Channel gain indicators will be added dynamically -->
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

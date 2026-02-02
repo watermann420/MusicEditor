@@ -20,40 +20,84 @@ Discord: discord.gg/tWkqHMsB6a
 
 ### Code Editor
 - Syntax highlighting optimized for MusicEngine scripts
-- Intelligent autocomplete for classes, methods, and parameters (improved synth.* members)
+- Intelligent autocomplete for classes, methods, and parameters
 - Strudel-style inline sliders (drag numbers to change values)
-- **Inline visuals** (punchcard, piano roll glow, mixer meters) at 60 FPS, inserted via code comments
-- Live code visualization: active `Note(...)` pitches, pattern steps, and `midi.device(n)` literals glow only while matching MIDI/sequence events are happening (comments ignored; only visible lines render)
+- **Inline visuals** (punchcard, piano roll, mixer meters) at 60 FPS
+- Live code visualization with note and pattern highlighting
 - Dark/Light themes
 
 ### Audio Engine
 - Real-time audio playback and preview
-- Multiple synthesizer types (Simple, Advanced, Modular)
+- 12+ synthesizer types with visual editors
 - Built-in effects (Reverb, Delay, Filter, etc.)
-- MIDI input/output support with per-device logging (`midi.device(0).log.info()`) and LED control (`midi.device(0).led.set(note, val, channel)`)
+- MIDI input/output with per-device logging and LED control
 - VCV Rack-style modular parameter system
 
-### Workflow
-- Project management
-- Pattern and arrangement editor
-- Waveform visualization
-- Performance monitoring
-- VST plugin support
+### Session View & Clip Launcher
+- 8x8 grid for Ableton-style clip launching
+- Scene triggers for row-based playback
+- Visual clip states (empty, loaded, playing, queued)
+- Drag-and-drop clip arrangement
 
-### Professional DAW Features (NEW - Feb 2026)
-- **Master Channel Strip**: LUFS/VU meters, master fader, master effects
+### Workspace Presets
+- **Ctrl+1-5** quick layout switching (Recording, Mixing, Mastering, Editing, Performance)
+- Save and restore custom window layouts
+- Panel visibility and sizing presets
+- Workspace Manager (Ctrl+Shift+W)
+
+### AI Assistant Panel (F3)
+- **Auto-Master**: One-click mastering with LUFS targeting and A/B comparison
+- **Auto-Mix**: Frequency collision detection, EQ/compression suggestions
+- **Melody Generator**: Scale-aware melody generation with style presets
+- **Chord Suggester**: Context-aware chord suggestions with Roman numeral notation
+
+### Spatial Audio
+- **3D Positioning**: Place sounds anywhere in 3D space
+- **Surround Panner**: 5.1/7.1 positioning with visual speaker layout
+- **Binaural Renderer**: HRTF-based 3D audio with head tracking support
+- **Ambisonics**: 1st-3rd order encoding/decoding with rotation controls
+- Room simulation with size, damping, and near-field compensation
+
+### Synthesizer Editors
+- **Additive**: 64 partials with Hammond-style drawbars
+- **FM**: 6-operator FM with 20 algorithms
+- **Granular**: Grain-based synthesis with 5 envelope shapes
+- **Wavetable**: Wavetable morphing with position control
+- **Vector**: XY crossfade between 4 sources
+- **ChipTune**: NES, GameBoy, C64 chip emulation
+- **Organ**: Hammond-style drawbars with Leslie simulation
+- **SID**: Commodore 64 SID chip with ring mod and sync
+- **OPN**: YM2612/Genesis FM with 4 operators
+- **EPiano**: Rhodes and Wurlitzer models
+- **Sampler/Slicer**: Waveform slicing with pad triggering
+
+### Analysis Tools
+- **Guitar Tuner**: Circular display with strobe mode and 10 tuning presets
+- **Chord Detector**: Piano/guitar visualization with Roman numeral analysis
+- **Key Detector**: Circle of fifths with chromagram and mode detection
+- **Tempo Detector**: BPM display with tap tempo and beat grid visualization
+- **Loop Finder**: Automatic loop point detection with A/B comparison
+
+### Network/Sync
+- **Ableton Link**: Tempo sync with peer discovery and visual metronome
+- **OSC Control**: Message mapping with learn mode and presets
+- **Network MIDI**: RTP-MIDI with Bonjour/mDNS discovery
+- **Machine Control**: MMC/MTC support with timecode display
+
+### Professional DAW Features
+- **Master Channel Strip**: LUFS/VU meters, master fader, effects
 - **Return/Bus Tracks**: 4 auxiliary returns (A-D) with send routing
-- **AI Assistant Panel (F3)**: Auto-Master, Auto-Mix, Melody Generator, Chord Suggester
-- **Session View**: 8x8 clip launcher grid with scene triggers
 - **Unified Preset Browser**: Tree view, search, favorites, tags
 - **Visual Undo History**: Timeline visualization with jump-to-state
-- **Workspace Presets**: Ctrl+1-5 quick layout switching
 - **Track Color Picker**: 16-color palette with customization
-- **Modulation Matrix Editor**: Visual drag-drop routing
-- **Keyboard Shortcuts Editor**: Search, conflict detection, import/export
-- **Welcome Screen**: Recent projects with pinning
-- **Quick Actions Toolbar**: Customizable common actions
-- **Zoom Presets**: 50%-200% quick access buttons
+
+### Creative Effects
+- **AutoTune**: Pitch correction with key/scale selection
+- **BeatRepeat**: 8x16 gate pattern editor with stutter mode
+- **Harmonizer**: 4-voice harmony with scale lock
+- **GlitchMachine**: 8 effect modules with pattern sequencer
+- **SpectralFreeze**: FFT freeze with 4 slots and morphing
+- **Lo-Fi**: TapeStop, VinylEmulation, TapeSaturation, Bitcrusher
 
 ### Audio-Reactive UI (NEW)
 - **Audio Reactive Lighting**: UI elements glow and pulse with the music
@@ -303,16 +347,23 @@ Produces `MusicEngineEditor.Tests/PerfTests.trx` with generous thresholds to fla
 ```
 MusicEngineEditor/
 ├── Controls/              # UI controls
-│   ├── Synths/            # Synthesizer editors (FM, Granular, Wavetable, etc.)
-│   ├── Effects/           # Effect editors (Convolution, Multiband, Vocoder, etc.)
-│   ├── Analysis/          # Analysis tools (Spectrogram3D, MixRadar, Phase, etc.)
+│   ├── Synths/            # Synthesizer editors (FM, Granular, ChipTune, Organ, SID, OPN, etc.)
+│   ├── Effects/           # Effect editors (AutoTune, Harmonizer, GlitchMachine, Bitcrusher, etc.)
+│   ├── Analysis/          # Analysis tools (GuitarTuner, ChordDetector, KeyDetector, TempoDetector, LoopFinder)
+│   ├── Spatial/           # Spatial audio (SurroundPanner, BinauralRenderer, Ambisonic)
+│   ├── Network/           # Network sync (LinkSync, OSCControl, NetworkMIDI, MachineControl)
 │   ├── MIDI/              # MIDI controls (MPE, Expression Maps, Probability)
+│   ├── Mixer/             # Mixer controls (MasterChannelStrip, ReturnTrack)
+│   ├── Session/           # Session view (ClipSlot, ClipLauncher)
 │   └── Performance/       # Performance tools (Looper, DJ, GrooveBox)
 ├── Editor/                # Code editor components
 ├── Models/                # Data models
-├── Services/              # Business logic
+├── Services/              # Business logic (SpatialAudioService, IntegratedAnalysisService, NetworkSyncService)
 ├── ViewModels/            # MVVM ViewModels
-│   └── Synths/            # Synthesizer ViewModels
+│   ├── Synths/            # Synthesizer ViewModels
+│   ├── Effects/           # Effect ViewModels
+│   ├── Analysis/          # Analysis ViewModels
+│   └── Network/           # Network ViewModels
 ├── Views/                 # XAML Views
 │   └── Dialogs/           # Modal dialogs
 └── Themes/                # Dark/Light themes
@@ -323,6 +374,7 @@ MusicEngine/               # Core audio engine (separate repo)
     ├── Effects/           # 100+ effects
     ├── Analysis/          # Spectrum, Tempo, Chord detection
     ├── Sequencing/        # Step, Probability, Euclidean
+    ├── Spatial/           # Surround, Binaural, Ambisonics
     ├── Midi/              # MPE, MIDI 2.0, Expression Maps
     └── Modulation/        # VCV Rack-style system
 ```

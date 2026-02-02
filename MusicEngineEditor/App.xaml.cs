@@ -148,6 +148,20 @@ public partial class App : Application
         // Recent projects service
         services.AddSingleton<IRecentProjectsService, RecentProjectsService>();
 
+        // Spatial audio service
+        services.AddSingleton<SpatialAudioService>();
+
+        // Analysis service
+        services.AddSingleton(_ => IntegratedAnalysisService.Instance);
+
+        // Network sync service
+        services.AddSingleton(_ => NetworkSyncService.Instance);
+
+        // Workspace and UI services
+        services.AddSingleton<WorkspacePresetService>();
+        services.AddSingleton<TrackColorService>();
+        services.AddSingleton(_ => AudioReactiveService.Instance);
+
         // ViewModels
         services.AddTransient<MainViewModel>();
         services.AddTransient<ProjectExplorerViewModel>();

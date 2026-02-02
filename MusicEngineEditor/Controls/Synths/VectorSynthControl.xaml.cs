@@ -38,11 +38,24 @@ public partial class VectorSynthControl : UserControl
         InitializeComponent();
 
         Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
         DataContextChanged += OnDataContextChanged;
         SizeChanged += OnSizeChanged;
     }
 
     private VectorSynthViewModel? ViewModel => DataContext as VectorSynthViewModel;
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        // Clean up event handlers
+        SizeChanged -= OnSizeChanged;
+
+        if (DataContext is VectorSynthViewModel vm)
+        {
+            vm.PropertyChanged -= OnViewModelPropertyChanged;
+            vm.VectorPositionChanged -= OnVectorPositionChanged;
+        }
+    }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {

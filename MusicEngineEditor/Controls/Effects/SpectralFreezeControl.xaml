@@ -1,0 +1,664 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Effects.SpectralFreezeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls.Effects"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="700"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <!-- Theme Colors -->
+        <Color x:Key="SpectralFreezeBackgroundColor">#0D0D0D</Color>
+        <Color x:Key="SpectralFreezePanelColor">#181818</Color>
+        <Color x:Key="SpectralFreezeAccentColor">#00D9FF</Color>
+        <Color x:Key="SpectralFreezeSuccessColor">#00FF88</Color>
+        <Color x:Key="SpectralFreezeWarningColor">#FFB800</Color>
+        <Color x:Key="SpectralFreezeErrorColor">#FF4757</Color>
+        <Color x:Key="SpectralFreezeTextColor">#E0E0E0</Color>
+        <Color x:Key="SpectralFreezeSecondaryTextColor">#808080</Color>
+        <Color x:Key="SpectralFreezeBorderColor">#2A2A2A</Color>
+        <Color x:Key="SpectralFreezeFrozenColor">#8B5CF6</Color>
+        <Color x:Key="SpectralFreezeLiveColor">#00D9FF</Color>
+        <Color x:Key="SpectralFreezeBlendColor">#00FF88</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="SpectralFreezeBackgroundBrush" Color="{StaticResource SpectralFreezeBackgroundColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezePanelBrush" Color="{StaticResource SpectralFreezePanelColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezeAccentBrush" Color="{StaticResource SpectralFreezeAccentColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezeSuccessBrush" Color="{StaticResource SpectralFreezeSuccessColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezeWarningBrush" Color="{StaticResource SpectralFreezeWarningColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezeErrorBrush" Color="{StaticResource SpectralFreezeErrorColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezeTextBrush" Color="{StaticResource SpectralFreezeTextColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezeSecondaryTextBrush" Color="{StaticResource SpectralFreezeSecondaryTextColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezeBorderBrush" Color="{StaticResource SpectralFreezeBorderColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezeFrozenBrush" Color="{StaticResource SpectralFreezeFrozenColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezeLiveBrush" Color="{StaticResource SpectralFreezeLiveColor}"/>
+        <SolidColorBrush x:Key="SpectralFreezeBlendBrush" Color="{StaticResource SpectralFreezeBlendColor}"/>
+
+        <!-- Gradient for spectrum -->
+        <LinearGradientBrush x:Key="SpectralFreezeSpectrumGradient" StartPoint="0,1" EndPoint="0,0">
+            <GradientStop Color="#004D66" Offset="0.0"/>
+            <GradientStop Color="#006680" Offset="0.3"/>
+            <GradientStop Color="#00A8CC" Offset="0.6"/>
+            <GradientStop Color="#00D9FF" Offset="0.85"/>
+            <GradientStop Color="#7FECFF" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="SpectralFreezeFrozenGradient" StartPoint="0,1" EndPoint="0,0">
+            <GradientStop Color="#3B2066" Offset="0.0"/>
+            <GradientStop Color="#5B3080" Offset="0.3"/>
+            <GradientStop Color="#7B40CC" Offset="0.6"/>
+            <GradientStop Color="#8B5CF6" Offset="0.85"/>
+            <GradientStop Color="#A78BFA" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <!-- Parameter Label Style -->
+        <Style x:Key="SpectralFreezeParameterLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource SpectralFreezeSecondaryTextBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <!-- Parameter Value Style -->
+        <Style x:Key="SpectralFreezeParameterValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource SpectralFreezeTextBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="MinWidth" Value="55"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+        </Style>
+
+        <!-- Button Style -->
+        <Style x:Key="SpectralFreezeButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource SpectralFreezePanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource SpectralFreezeTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SpectralFreezeBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource SpectralFreezeAccentBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="#222222"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource SpectralFreezeAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Primary Button Style (Freeze) -->
+        <Style x:Key="SpectralFreezePrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource SpectralFreezeButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource SpectralFreezeAccentBrush}"/>
+            <Setter Property="Foreground" Value="#0D0D0D"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Toggle Button Style -->
+        <Style x:Key="SpectralFreezeToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{StaticResource SpectralFreezePanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource SpectralFreezeTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SpectralFreezeBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource SpectralFreezeAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource SpectralFreezeAccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Freeze Toggle Style (Purple when active) -->
+        <Style x:Key="SpectralFreezeFreezeToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource SpectralFreezeToggleButtonStyle}">
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="{StaticResource SpectralFreezeFrozenBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Slot Button Style -->
+        <Style x:Key="SpectralFreezeSlotButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource SpectralFreezePanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource SpectralFreezeTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SpectralFreezeBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource SpectralFreezeFrozenBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource SpectralFreezeFrozenBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="SpectralFreezeComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource SpectralFreezePanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource SpectralFreezeTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SpectralFreezeBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border BorderBrush="{StaticResource SpectralFreezeBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Background="{StaticResource SpectralFreezeBackgroundBrush}"
+            Padding="16">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" MinHeight="180"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Spectral Freeze"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource SpectralFreezeTextBrush}"
+                           VerticalAlignment="Center"/>
+
+                <!-- FFT Size -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,12,0">
+                    <TextBlock Text="FFT Size:"
+                               FontSize="11"
+                               Foreground="{StaticResource SpectralFreezeSecondaryTextBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <ComboBox x:Name="FftSizeComboBox"
+                              MinWidth="80"
+                              Style="{StaticResource SpectralFreezeComboBoxStyle}"
+                              SelectionChanged="FftSizeComboBox_SelectionChanged"
+                              ToolTip="FFT analysis size">
+                        <ComboBoxItem Content="512"/>
+                        <ComboBoxItem Content="1024"/>
+                        <ComboBoxItem Content="2048" IsSelected="True"/>
+                        <ComboBoxItem Content="4096"/>
+                        <ComboBoxItem Content="8192"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Freeze Button -->
+                <ToggleButton Grid.Column="2"
+                              x:Name="FreezeToggle"
+                              Content="FREEZE"
+                              Style="{StaticResource SpectralFreezeFreezeToggleStyle}"
+                              Margin="0,0,8,0"
+                              Click="FreezeToggle_Click"
+                              ToolTip="Freeze the current spectrum"/>
+
+                <!-- Bypass -->
+                <ToggleButton Grid.Column="3"
+                              x:Name="BypassToggle"
+                              Content="Bypass"
+                              Style="{StaticResource SpectralFreezeToggleButtonStyle}"
+                              Click="BypassToggle_Click"/>
+            </Grid>
+
+            <!-- Spectral Display -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource SpectralFreezePanelBrush}"
+                    BorderBrush="{StaticResource SpectralFreezeBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Margin="0,0,0,12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- dB Scale -->
+                    <Canvas x:Name="DbScaleCanvas"
+                            Grid.Row="0" Grid.Column="0"
+                            Background="Transparent"/>
+
+                    <!-- Main Spectrum Canvas -->
+                    <Canvas x:Name="SpectrumCanvas"
+                            Grid.Row="0" Grid.Column="1"
+                            ClipToBounds="True"
+                            Background="Transparent"/>
+
+                    <!-- Frequency Labels -->
+                    <Canvas x:Name="FrequencyLabelCanvas"
+                            Grid.Row="1" Grid.Column="1"
+                            Height="20"
+                            Background="Transparent"/>
+
+                    <!-- Legend -->
+                    <StackPanel Grid.Row="0" Grid.Column="1"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Orientation="Horizontal"
+                                Margin="0,4,4,0">
+                        <Border Background="#80000000" CornerRadius="3" Padding="6,3" Margin="2,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="8" Height="8" Fill="{StaticResource SpectralFreezeLiveBrush}" Margin="0,0,4,0"/>
+                                <TextBlock Text="Live" FontSize="10" Foreground="{StaticResource SpectralFreezeSecondaryTextBrush}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#80000000" CornerRadius="3" Padding="6,3" Margin="2,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="8" Height="8" Fill="{StaticResource SpectralFreezeFrozenBrush}" Margin="0,0,4,0"/>
+                                <TextBlock Text="Frozen" FontSize="10" Foreground="{StaticResource SpectralFreezeSecondaryTextBrush}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#80000000" CornerRadius="3" Padding="6,3" Margin="2,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="8" Height="8" Fill="{StaticResource SpectralFreezeBlendBrush}" Margin="0,0,4,0"/>
+                                <TextBlock Text="Blend" FontSize="10" Foreground="{StaticResource SpectralFreezeSecondaryTextBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Freeze Slots -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource SpectralFreezePanelBrush}"
+                    BorderBrush="{StaticResource SpectralFreezeBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12,8"
+                    Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Freeze Slots:"
+                               FontSize="11"
+                               Foreground="{StaticResource SpectralFreezeSecondaryTextBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0"/>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button x:Name="Slot1Button"
+                                Content="Slot 1"
+                                Style="{StaticResource SpectralFreezeSlotButtonStyle}"
+                                Tag="0"
+                                Click="SlotButton_Click"
+                                ToolTip="Click to select, right-click to capture"/>
+                        <Button x:Name="Slot2Button"
+                                Content="Slot 2"
+                                Style="{StaticResource SpectralFreezeSlotButtonStyle}"
+                                Tag="1"
+                                Click="SlotButton_Click"
+                                Margin="4,0,0,0"/>
+                        <Button x:Name="Slot3Button"
+                                Content="Slot 3"
+                                Style="{StaticResource SpectralFreezeSlotButtonStyle}"
+                                Tag="2"
+                                Click="SlotButton_Click"
+                                Margin="4,0,0,0"/>
+                        <Button x:Name="Slot4Button"
+                                Content="Slot 4"
+                                Style="{StaticResource SpectralFreezeSlotButtonStyle}"
+                                Tag="3"
+                                Click="SlotButton_Click"
+                                Margin="4,0,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button x:Name="CaptureButton"
+                                Content="Capture"
+                                Style="{StaticResource SpectralFreezePrimaryButtonStyle}"
+                                Click="CaptureButton_Click"
+                                ToolTip="Capture current spectrum to selected slot"
+                                Margin="0,0,4,0"/>
+                        <Button x:Name="ClearSlotButton"
+                                Content="Clear"
+                                Style="{StaticResource SpectralFreezeButtonStyle}"
+                                Click="ClearSlotButton_Click"
+                                ToolTip="Clear selected slot"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Parameter Controls -->
+            <Grid Grid.Row="3" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Freeze Blend -->
+                <StackPanel Grid.Row="0" Grid.Column="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Freeze Blend"
+                                   Style="{StaticResource SpectralFreezeParameterLabelStyle}"/>
+                        <TextBlock Grid.Column="1" x:Name="FreezeBlendValue" Text="50%"
+                                   Style="{StaticResource SpectralFreezeParameterValueStyle}"/>
+                    </Grid>
+                    <Slider x:Name="FreezeBlendSlider"
+                            Minimum="0" Maximum="100" Value="50"
+                            ValueChanged="FreezeBlendSlider_ValueChanged"
+                            ToolTip="Blend between live input and frozen spectrum"/>
+                </StackPanel>
+
+                <!-- Spectral Shift -->
+                <StackPanel Grid.Row="0" Grid.Column="2">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Spectral Shift"
+                                   Style="{StaticResource SpectralFreezeParameterLabelStyle}"/>
+                        <TextBlock Grid.Column="1" x:Name="SpectralShiftValue" Text="0 st"
+                                   Style="{StaticResource SpectralFreezeParameterValueStyle}"/>
+                    </Grid>
+                    <Slider x:Name="SpectralShiftSlider"
+                            Minimum="-24" Maximum="24" Value="0"
+                            ValueChanged="SpectralShiftSlider_ValueChanged"
+                            ToolTip="Shift frozen spectrum up/down in semitones"/>
+                </StackPanel>
+
+                <!-- Spectral Tilt -->
+                <StackPanel Grid.Row="0" Grid.Column="4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Spectral Tilt"
+                                   Style="{StaticResource SpectralFreezeParameterLabelStyle}"/>
+                        <TextBlock Grid.Column="1" x:Name="SpectralTiltValue" Text="0%"
+                                   Style="{StaticResource SpectralFreezeParameterValueStyle}"/>
+                    </Grid>
+                    <Slider x:Name="SpectralTiltSlider"
+                            Minimum="-100" Maximum="100" Value="0"
+                            ValueChanged="SpectralTiltSlider_ValueChanged"
+                            ToolTip="Adjust frequency balance (negative = darker, positive = brighter)"/>
+                </StackPanel>
+
+                <!-- Blur/Smear -->
+                <StackPanel Grid.Row="0" Grid.Column="6">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Blur/Smear"
+                                   Style="{StaticResource SpectralFreezeParameterLabelStyle}"/>
+                        <TextBlock Grid.Column="1" x:Name="BlurAmountValue" Text="0%"
+                                   Style="{StaticResource SpectralFreezeParameterValueStyle}"/>
+                    </Grid>
+                    <Slider x:Name="BlurAmountSlider"
+                            Minimum="0" Maximum="100" Value="0"
+                            ValueChanged="BlurAmountSlider_ValueChanged"
+                            ToolTip="Smear/blur the frozen spectrum across frequency bins"/>
+                </StackPanel>
+
+                <!-- Feedback -->
+                <StackPanel Grid.Row="2" Grid.Column="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Feedback"
+                                   Style="{StaticResource SpectralFreezeParameterLabelStyle}"/>
+                        <TextBlock Grid.Column="1" x:Name="FeedbackAmountValue" Text="0%"
+                                   Style="{StaticResource SpectralFreezeParameterValueStyle}"/>
+                    </Grid>
+                    <Slider x:Name="FeedbackAmountSlider"
+                            Minimum="0" Maximum="100" Value="0"
+                            ValueChanged="FeedbackAmountSlider_ValueChanged"
+                            ToolTip="Feed output back into the freeze"/>
+                </StackPanel>
+
+                <!-- Freeze Decay -->
+                <StackPanel Grid.Row="2" Grid.Column="2">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Freeze Decay"
+                                   Style="{StaticResource SpectralFreezeParameterLabelStyle}"/>
+                        <TextBlock Grid.Column="1" x:Name="FreezeDecayValue" Text="0%"
+                                   Style="{StaticResource SpectralFreezeParameterValueStyle}"/>
+                    </Grid>
+                    <Slider x:Name="FreezeDecaySlider"
+                            Minimum="0" Maximum="100" Value="0"
+                            ValueChanged="FreezeDecaySlider_ValueChanged"
+                            ToolTip="How quickly the frozen spectrum fades"/>
+                </StackPanel>
+
+                <!-- Randomize Bins -->
+                <StackPanel Grid.Row="2" Grid.Column="4" VerticalAlignment="Center">
+                    <CheckBox x:Name="RandomizeBinsCheckBox"
+                              Content="Randomize Bins"
+                              Foreground="{StaticResource SpectralFreezeTextBrush}"
+                              Checked="RandomizeBinsCheckBox_Changed"
+                              Unchecked="RandomizeBinsCheckBox_Changed"
+                              ToolTip="Randomly modulate frozen spectrum bins"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Morph Controls -->
+            <Border Grid.Row="4"
+                    Background="{StaticResource SpectralFreezePanelBrush}"
+                    BorderBrush="{StaticResource SpectralFreezeBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12,8"
+                    Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ToggleButton Grid.Column="0"
+                                  x:Name="MorphToggle"
+                                  Content="Morph"
+                                  Style="{StaticResource SpectralFreezeToggleButtonStyle}"
+                                  Click="MorphToggle_Click"
+                                  ToolTip="Enable morphing between freeze slots"
+                                  Margin="0,0,12,0"/>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="From:"
+                                   FontSize="11"
+                                   Foreground="{StaticResource SpectralFreezeSecondaryTextBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0"/>
+                        <ComboBox x:Name="MorphSourceComboBox"
+                                  MinWidth="60"
+                                  Style="{StaticResource SpectralFreezeComboBoxStyle}"
+                                  SelectionChanged="MorphSourceComboBox_SelectionChanged">
+                            <ComboBoxItem Content="1" IsSelected="True"/>
+                            <ComboBoxItem Content="2"/>
+                            <ComboBoxItem Content="3"/>
+                            <ComboBoxItem Content="4"/>
+                        </ComboBox>
+                        <TextBlock Text="To:"
+                                   FontSize="11"
+                                   Foreground="{StaticResource SpectralFreezeSecondaryTextBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0,4,0"/>
+                        <ComboBox x:Name="MorphTargetComboBox"
+                                  MinWidth="60"
+                                  Style="{StaticResource SpectralFreezeComboBoxStyle}"
+                                  SelectionChanged="MorphTargetComboBox_SelectionChanged">
+                            <ComboBoxItem Content="1"/>
+                            <ComboBoxItem Content="2" IsSelected="True"/>
+                            <ComboBoxItem Content="3"/>
+                            <ComboBoxItem Content="4"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Margin="12,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Morph Position"
+                                       Style="{StaticResource SpectralFreezeParameterLabelStyle}"/>
+                            <TextBlock Grid.Column="1" x:Name="MorphPositionValue" Text="0%"
+                                       Style="{StaticResource SpectralFreezeParameterValueStyle}"/>
+                        </Grid>
+                        <Slider x:Name="MorphPositionSlider"
+                                Minimum="0" Maximum="100" Value="0"
+                                ValueChanged="MorphPositionSlider_ValueChanged"
+                                ToolTip="Morph position between source and target slots"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Bottom Controls -->
+            <Grid Grid.Row="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Presets -->
+                <ComboBox Grid.Column="0"
+                          x:Name="PresetComboBox"
+                          MinWidth="130"
+                          Style="{StaticResource SpectralFreezeComboBoxStyle}"
+                          SelectionChanged="PresetComboBox_SelectionChanged"
+                          ToolTip="Load preset">
+                    <ComboBoxItem Content="-- Presets --" IsSelected="True"/>
+                    <ComboBoxItem Content="Clean Freeze"/>
+                    <ComboBoxItem Content="Shimmer"/>
+                    <ComboBoxItem Content="Dark Drone"/>
+                    <ComboBoxItem Content="Glitch"/>
+                    <ComboBoxItem Content="Ambient Pad"/>
+                </ComboBox>
+
+                <!-- Reset -->
+                <Button Grid.Column="2"
+                        x:Name="ResetButton"
+                        Content="Reset"
+                        Style="{StaticResource SpectralFreezeButtonStyle}"
+                        Click="ResetButton_Click"
+                        ToolTip="Reset all parameters to defaults"
+                        Margin="0,0,8,0"/>
+
+                <!-- Status -->
+                <Border Grid.Column="3"
+                        Background="{StaticResource SpectralFreezePanelBrush}"
+                        BorderBrush="{StaticResource SpectralFreezeBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="12,6"
+                        MinWidth="120">
+                    <TextBlock x:Name="StatusText"
+                               Text="Ready"
+                               FontSize="11"
+                               Foreground="{StaticResource SpectralFreezeSecondaryTextBrush}"
+                               HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

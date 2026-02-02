@@ -9,17 +9,59 @@ See the root `README.md` for full usage. Highlights of the current editor build:
 
 ## New in Feb 2026
 
+### Spatial Audio
+Full 3D audio positioning with multiple rendering modes:
+- **3D Positioning**: Place sounds anywhere in 3D space with distance attenuation
+- **Surround Panner**: 5.1/7.1 speaker positioning with visual layout
+- **Binaural Renderer**: HRTF-based 3D audio with head tracking support
+- **Ambisonics**: 1st-3rd order encoding/decoding with rotation controls
+
+### Analysis Tools
+Comprehensive audio analysis toolkit:
+- **Guitar Tuner**: Circular display with strobe mode and 10 tuning presets
+- **Chord Detector**: Real-time chord recognition with Roman numeral analysis
+- **Key Detector**: Circle of fifths with chromagram and mode detection
+- **Tempo Detector**: BPM detection with tap tempo and beat grid
+- **Loop Finder**: Automatic loop point detection with A/B comparison
+
+### Network/Sync
+Sync with external hardware and software:
+- **Ableton Link**: Tempo sync with peer discovery and visual metronome
+- **OSC Control**: Message mapping with learn mode and presets
+- **Network MIDI**: RTP-MIDI with Bonjour/mDNS discovery
+- **Machine Control (MMC/MTC)**: Timecode display and transport control
+
+### New Synth Types
+12 new synthesizer editors with visual controls:
+- **Additive**: 64 partials with Hammond-style drawbars
+- **FM**: 6-operator synthesis with 20 algorithms
+- **Granular**: Grain-based synthesis with envelope control
+- **Wavetable**: Position morphing with custom wavetables
+- **Vector**: XY crossfade between 4 sources
+- **ChipTune**: NES, GameBoy, C64 chip emulation
+- **Organ**: Hammond drawbars with Leslie simulation
+- **SID**: Commodore 64 SID chip synthesis
+- **OPN**: YM2612/Genesis FM synthesis
+- **EPiano**: Rhodes and Wurlitzer models
+- **Sampler/Slicer**: Waveform slicing with pad triggering
+
+### Session View & Clip Launcher
+- 8x8 grid for Ableton-style clip launching
+- Scene triggers for row-based launching
+- Visual clip states (empty, loaded, playing, queued)
+- Drag-and-drop clip arrangement
+
+### Workspace Presets
+- **Ctrl+1-5** quick layout switching (Recording, Mixing, Mastering, Editing, Performance)
+- Save and restore custom window layouts
+- Workspace Manager (Ctrl+Shift+W)
+
 ### AI Assistant Panel (F3)
 Four AI-powered tools in one tabbed panel:
 - **Auto-Master**: One-click mastering with LUFS targeting, A/B comparison
 - **Auto-Mix**: Frequency collision detection, EQ/compression suggestions
 - **Melody Generator**: Scale-aware melody generation with style presets
 - **Chord Suggester**: Context-aware suggestions with Roman numeral notation
-
-### Session View & Clip Launcher
-- 8x8 grid for Ableton-style clip launching
-- Scene triggers for row-based launching
-- Visual clip states (empty, loaded, playing, queued)
 
 ### Master Channel & Returns
 - Master channel strip with LUFS/VU meters
@@ -30,7 +72,6 @@ Four AI-powered tools in one tabbed panel:
 - **Welcome Screen**: Recent projects list with pinning
 - **Preset Browser**: Unified browser with search, favorites, tags
 - **Undo History**: Visual timeline with jump-to-state
-- **Workspace Presets**: Ctrl+1-5 for quick layout switching
 - **Track Colors**: 16-color picker with custom palettes
 - **Quick Actions**: Customizable toolbar for common tasks
 - **Zoom Presets**: 50%-200% quick access
@@ -88,23 +129,29 @@ Set environment variables before starting the editor to trim unused systems (han
 
 ## Synthesizer Editor
 
-Visual synth editing panel with support for 12 synthesizer types:
+Visual synth editing panel with support for 18+ synthesizer types:
 
 ### Synth Types
 | Type | Description |
 |------|-------------|
 | Simple | Basic waveform, filter, ADSR |
 | Poly | Polyphonic with voice management |
-| FM | Frequency modulation synthesis |
-| Supersaw | Unison detuned oscillators |
-| Advanced | Multi-oscillator with per-osc controls |
-| Granular | Grain-based synthesis |
-| Sample | Sample playback with zones |
-| Speech | Vowel/formant synthesis |
-| Physical | Physical modeling (string, wind, bell) |
-| Noise | White/pink/brown noise generation |
+| Additive | 64 partials with Hammond-style drawbars |
+| FM | 6-operator frequency modulation synthesis |
+| Granular | Grain-based synthesis with 5 envelope shapes |
 | Wavetable | Wavetable position morphing |
-| Vector | X/Y vector synthesis |
+| Vector | XY crossfade between 4 sources |
+| ChipTune | NES, GameBoy, C64 chip emulation |
+| Organ | Hammond-style drawbars with Leslie simulation |
+| SID | Commodore 64 SID chip with ring mod and sync |
+| OPN | YM2612/Genesis FM with 4 operators |
+| EPiano | Rhodes and Wurlitzer models |
+| Sampler/Slicer | Waveform slicing with pad triggering |
+| Supersaw | Unison detuned oscillators (JP-8000 style) |
+| Advanced | Multi-oscillator with per-osc controls |
+| Sample | Sample playback with velocity zones |
+| Physical | Physical modeling (string, wind, bell) |
+| Speech | Vowel/formant synthesis |
 
 ### Opening the Synth Editor
 - **F4**: Toggle synth editor panel
@@ -233,3 +280,159 @@ Timeline-based arrangement editing:
 - **Track Templates (Ctrl+Shift+T)**: Save and recall track configurations with effects chains
 - **Track Import**: Import tracks from other projects with all settings
 - **Workspace Manager (Ctrl+Shift+W)**: Save and restore window layouts and panel configurations
+
+## Spatial Audio
+
+### Surround Panner Control
+- 2D panner for 5.1/7.1 surround speaker layouts
+- Visual speaker positions with source indicator
+- LFE level and center divergence controls
+
+### Binaural Renderer Control
+- 3D head visualization with rotation tracking
+- HRTF profile selection (KEMAR, CIPIC, custom)
+- Room simulation with size and damping
+- Near-field compensation and crossfeed
+
+### Ambisonic Control
+- Ambisonic order selection (1st, 2nd, 3rd order)
+- Encoder with azimuth, elevation, distance
+- Decoder for various speaker configurations
+- Rotation controls (yaw, pitch, roll)
+
+### Key Files
+- `Controls/Spatial/SurroundPannerControl.xaml`
+- `Controls/Spatial/BinauralRendererControl.xaml`
+- `Controls/Spatial/AmbisonicControl.xaml`
+- `Controls/Spatial/SpatialAudioPanel.xaml`
+- `Services/SpatialAudioService.cs`
+
+## Creative Effects
+
+### AutoTune Control
+- Key/scale selector with 15+ scales
+- Correction speed and humanize amount
+- Formant preservation
+- Real-time pitch graph visualization
+
+### BeatRepeat Control
+- Grid size selection (1/4, 1/8, 1/16, 1/32)
+- 8x16 gate pattern editor
+- Decay and pitch shift per repeat
+- Stutter mode and probability
+
+### Harmonizer Control
+- 4 harmony voice slots
+- Interval, detune, level, pan, delay per voice
+- Scale lock for diatonic harmonies
+- Keyboard visualization of harmonies
+
+### GlitchMachine Control
+- 8 toggleable effect modules
+- Chaos amount and trigger rate
+- 8-step pattern sequencer
+- Real-time waveform display
+
+### SpectralFreeze Control
+- FFT freeze with 4 snapshot slots
+- Morphing between frozen spectrums
+- Spectral shift and tilt
+- Live/frozen spectrum overlay
+
+### Lo-Fi Effects
+| Effect | Features |
+|--------|----------|
+| TapeStop | Stop/start time, wow/flutter |
+| VinylEmulation | Crackle, pops, dust, warp, RPM |
+| TapeSaturation | Bias, hiss, tape speed, rolloff |
+| Bitcrusher | Bit depth, sample rate, dither |
+
+### Saturation
+| Effect | Features |
+|--------|----------|
+| Saturator | Tube, tape, transistor, digital modes |
+| Exciter | Frequency bands, harmonic amount |
+
+## Analysis Panels
+
+### Guitar Tuner Panel
+- Circular arc tuner with needle indicator
+- Note name, octave, cents deviation
+- 6-string guitar visualization
+- 10 tuning presets (Standard, Drop D, DADGAD, etc.)
+- Strobe tuner mode for precision
+
+### Chord Detector Panel
+- Large chord name display
+- Piano keyboard with detected notes
+- Guitar chord diagrams
+- Roman numeral analysis
+- Chord history list
+
+### Key Detector Panel
+- Circle of fifths visualization
+- Chromagram histogram
+- Mode detection (Ionian-Locrian)
+- Key change timeline
+- Relative/parallel key display
+
+### Tempo Detector Panel
+- BPM display with tap tempo
+- Beat grid visualization
+- Time signature detection
+- Tempo variation graph
+- Half-time/double-time alternatives
+
+### Loop Finder Panel
+- Waveform with loop regions
+- Loop candidates with similarity scores
+- Crossfade preview
+- A/B comparison mode
+- Export selected loop
+
+### Key Files
+- `Controls/Analysis/GuitarTunerPanel.xaml`
+- `Controls/Analysis/ChordDetectorPanel.xaml`
+- `Controls/Analysis/KeyDetectorPanel.xaml`
+- `Controls/Analysis/TempoDetectorPanel.xaml`
+- `Controls/Analysis/LoopFinderPanel.xaml`
+- `Controls/Analysis/AnalysisPanel.xaml`
+- `Services/IntegratedAnalysisService.cs`
+
+## Network/Sync
+
+### Ableton Link (LinkSyncPanel)
+- Enable/disable Link synchronization
+- Connected peers display
+- Session tempo with lock option
+- Visual metronome with beat indicators
+- Latency compensation
+
+### OSC Control (OSCControlPanel)
+- OSC server with configurable ports
+- Message monitor with timestamps
+- Address mapping with learn mode
+- Value range mapping
+- Preset save/load
+
+### Network MIDI (NetworkMIDIPanel)
+- RTP-MIDI session management
+- Bonjour/mDNS discovery
+- Session create/join/leave
+- Channel filtering (1-16)
+- Latency monitoring
+
+### Machine Control (MachineControlPanel)
+- MMC (MIDI Machine Control) support
+- MTC (MIDI Time Code) generator/receiver
+- Timecode display (HH:MM:SS:FF)
+- Frame rate selection (24/25/29.97/30)
+- Chase lock indicator
+
+### Key Files
+- `Controls/Network/LinkSyncPanel.xaml`
+- `Controls/Network/OSCControlPanel.xaml`
+- `Controls/Network/NetworkMIDIPanel.xaml`
+- `Controls/Network/MachineControlPanel.xaml`
+- `Controls/Network/NetworkSyncPanel.xaml`
+- `Services/NetworkSyncService.cs`

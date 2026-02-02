@@ -6,11 +6,11 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Mixer"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="800"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
     <UserControl.Resources>
         <!-- ScrollBar Styling -->
         <Style TargetType="ScrollBar">
-            <Setter Property="Background" Value="#181818"/>
+            <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}"/>
             <Style.Triggers>
                 <Trigger Property="Orientation" Value="Horizontal">
                     <Setter Property="Height" Value="10"/>
@@ -24,9 +24,9 @@
             <Setter Property="Height" Value="32"/>
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="#FF9500"/>
-            <Setter Property="Background" Value="#0D0D0D"/>
-            <Setter Property="BorderBrush" Value="#2A2A2A"/>
+            <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
@@ -36,6 +36,10 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="glowEffect" Color="{DynamicResource WarningColor}"
+                                                  BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
                             <TextBlock Text="+" HorizontalAlignment="Center" VerticalAlignment="Center"
                                        Foreground="{TemplateBinding Foreground}"
                                        FontSize="{TemplateBinding FontSize}"
@@ -44,12 +48,36 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#FF9500"/>
-                                <Setter TargetName="border" Property="Background" Value="#252525"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="8" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.6" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="0" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="glowEffect"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource WarningBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ElementHoverBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#FF9500"/>
-                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource WarningBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource BackgroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -71,17 +99,17 @@
         <ScrollViewer Grid.Column="0"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Disabled"
-                      Background="#0D0D0D">
+                      Background="{DynamicResource BackgroundBrush}">
             <StackPanel x:Name="ChannelStripContainer"
                         Orientation="Horizontal"
                         Margin="4"/>
         </ScrollViewer>
 
         <!-- Separator between Channels and Returns -->
-        <Rectangle Grid.Column="1" Fill="#2A2A2A"/>
+        <Rectangle Grid.Column="1" Fill="{DynamicResource BorderBrush}"/>
 
         <!-- Returns Section -->
-        <Border Grid.Column="2" Background="#141414" Padding="4">
+        <Border Grid.Column="2" Background="{DynamicResource ToolbarBackgroundBrush}" Padding="4">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>  <!-- Returns Header -->
@@ -89,9 +117,9 @@
                 </Grid.RowDefinitions>
 
                 <!-- Returns Header -->
-                <Border Grid.Row="0" Background="#1E1E1E" CornerRadius="2" Padding="6,4" Margin="0,0,0,4">
+                <Border Grid.Row="0" Background="{DynamicResource HeaderBackgroundBrush}" CornerRadius="2" Padding="6,4" Margin="0,0,0,4">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="RETURNS" FontSize="10" Foreground="#FF9500"
+                        <TextBlock Text="RETURNS" FontSize="10" Foreground="{DynamicResource WarningBrush}"
                                    FontFamily="Segoe UI" FontWeight="Bold"
                                    VerticalAlignment="Center"/>
                         <Button x:Name="AddReturnButton" Style="{StaticResource AddReturnButtonStyle}"
@@ -113,13 +141,13 @@
         </Border>
 
         <!-- Vertical Separator/Divider before Master -->
-        <Border Grid.Column="3" Width="6" Background="#0D0D0D" Margin="2,4">
+        <Border Grid.Column="3" Width="6" Background="{DynamicResource BackgroundBrush}" Margin="2,4">
             <Grid>
                 <!-- Decorative divider lines -->
-                <Rectangle Width="1" Fill="#2A2A2A" HorizontalAlignment="Left"/>
-                <Rectangle Width="1" Fill="#2A2A2A" HorizontalAlignment="Right"/>
+                <Rectangle Width="1" Fill="{DynamicResource BorderBrush}" HorizontalAlignment="Left"/>
+                <Rectangle Width="1" Fill="{DynamicResource BorderBrush}" HorizontalAlignment="Right"/>
                 <!-- Center accent line -->
-                <Rectangle Width="2" Fill="#00D9FF" HorizontalAlignment="Center" Opacity="0.4"/>
+                <Rectangle Width="2" Fill="{DynamicResource AccentBrush}" HorizontalAlignment="Center" Opacity="0.4"/>
             </Grid>
         </Border>
 

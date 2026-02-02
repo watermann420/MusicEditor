@@ -1,0 +1,464 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Synths.ModalSynthControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls.Synths"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="900"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <!-- Dark Theme Colors -->
+        <Color x:Key="BackgroundColor">#0D0D0D</Color>
+        <Color x:Key="PanelColor">#181818</Color>
+        <Color x:Key="PanelLightColor">#1E1E1E</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+        <Color x:Key="AccentColor">#00D9FF</Color>
+        <Color x:Key="TextColor">#E0E0E0</Color>
+        <Color x:Key="TextDimColor">#808080</Color>
+        <Color x:Key="SuccessColor">#00FF88</Color>
+        <Color x:Key="WarningColor">#FFD93D</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
+        <SolidColorBrush x:Key="PanelLightBrush" Color="{StaticResource PanelLightColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+        <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+
+        <!-- Slider Style -->
+        <Style x:Key="DarkSliderStyle" TargetType="Slider">
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+
+        <!-- Vertical Slider Style -->
+        <Style x:Key="VerticalSliderStyle" TargetType="Slider">
+            <Setter Property="Orientation" Value="Vertical"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="80"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+
+        <!-- Label Style -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Value Style -->
+        <Style x:Key="ValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="MinWidth" Value="40"/>
+        </Style>
+
+        <!-- Header Style -->
+        <Style x:Key="HeaderStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <!-- Panel Style -->
+        <Style x:Key="PanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+
+        <!-- Button Style -->
+        <Style x:Key="DarkButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource PanelLightBrush}"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource BackgroundBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="DarkComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
+        <!-- Preset Button Style -->
+        <Style x:Key="PresetButtonStyle" TargetType="Button" BasedOn="{StaticResource DarkButtonStyle}">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="MinWidth" Value="70"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Bar -->
+        <Border Grid.Row="0" Style="{StaticResource PanelStyle}" Margin="4,4,4,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="MODAL SYNTH" Style="{StaticResource HeaderStyle}"
+                               Foreground="{StaticResource AccentBrush}" FontSize="16" Margin="0,0,20,0"/>
+                    <TextBlock Text="Physical Modeling Synthesis" Style="{StaticResource LabelStyle}"
+                               FontStyle="Italic" Margin="0,0,20,0"/>
+                </StackPanel>
+
+                <!-- Master Controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Volume:" Style="{StaticResource LabelStyle}" Margin="0,0,8,0"/>
+                    <Slider x:Name="VolumeSlider" Value="{Binding Volume, Mode=TwoWay, FallbackValue=0.5}"
+                            Minimum="0" Maximum="1" Width="100" Style="{StaticResource DarkSliderStyle}"/>
+                    <TextBlock Text="{Binding Volume, StringFormat='{}{0:F2}', FallbackValue='0.50'}"
+                               Style="{StaticResource ValueStyle}" Width="40" Margin="8,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel: Exciter and Material -->
+            <StackPanel Grid.Column="0">
+                <!-- Exciter Section -->
+                <Border Style="{StaticResource PanelStyle}">
+                    <StackPanel>
+                        <TextBlock Text="EXCITER" Style="{StaticResource HeaderStyle}"/>
+
+                        <!-- Exciter Type -->
+                        <Grid Margin="0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Type:" Style="{StaticResource LabelStyle}"/>
+                            <ComboBox Grid.Column="1" x:Name="ExciterTypeCombo"
+                                      SelectedIndex="{Binding ExciterIndex, Mode=TwoWay, FallbackValue=0}"
+                                      Style="{StaticResource DarkComboBoxStyle}">
+                                <ComboBoxItem Content="Impulse"/>
+                                <ComboBoxItem Content="Noise Burst"/>
+                                <ComboBoxItem Content="Bow"/>
+                                <ComboBoxItem Content="Pluck"/>
+                                <ComboBoxItem Content="Friction"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <!-- Exciter Level -->
+                        <Grid Margin="0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Level:" Style="{StaticResource LabelStyle}"/>
+                            <Slider Grid.Column="1" x:Name="ExciterLevelSlider"
+                                    Value="{Binding ExciterLevel, Mode=TwoWay, FallbackValue=1.0}"
+                                    Minimum="0" Maximum="1" Style="{StaticResource DarkSliderStyle}"/>
+                            <TextBlock Grid.Column="2" Text="{Binding ExciterLevel, StringFormat='{}{0:F2}', FallbackValue='1.00'}"
+                                       Style="{StaticResource ValueStyle}"/>
+                        </Grid>
+
+                        <!-- Exciter Decay -->
+                        <Grid Margin="0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Decay:" Style="{StaticResource LabelStyle}"/>
+                            <Slider Grid.Column="1" x:Name="ExciterDecaySlider"
+                                    Value="{Binding ExciterDecay, Mode=TwoWay, FallbackValue=1.0}"
+                                    Minimum="0.1" Maximum="10" Style="{StaticResource DarkSliderStyle}"/>
+                            <TextBlock Grid.Column="2" Text="{Binding ExciterDecay, StringFormat='{}{0:F1}', FallbackValue='1.0'}"
+                                       Style="{StaticResource ValueStyle}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Material Section -->
+                <Border Style="{StaticResource PanelStyle}">
+                    <StackPanel>
+                        <TextBlock Text="MATERIAL" Style="{StaticResource HeaderStyle}"/>
+
+                        <!-- Material Selector -->
+                        <Grid Margin="0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Type:" Style="{StaticResource LabelStyle}"/>
+                            <ComboBox Grid.Column="1" x:Name="MaterialCombo"
+                                      SelectedIndex="{Binding MaterialIndex, Mode=TwoWay, FallbackValue=0}"
+                                      Style="{StaticResource DarkComboBoxStyle}">
+                                <ComboBoxItem Content="Steel"/>
+                                <ComboBoxItem Content="Aluminum"/>
+                                <ComboBoxItem Content="Glass"/>
+                                <ComboBoxItem Content="Wood"/>
+                                <ComboBoxItem Content="Brass"/>
+                                <ComboBoxItem Content="Bronze"/>
+                                <ComboBoxItem Content="Ceramic"/>
+                                <ComboBoxItem Content="Custom"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <!-- Stiffness (Inharmonicity) -->
+                        <Grid Margin="0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Stiffness:" Style="{StaticResource LabelStyle}"/>
+                            <Slider Grid.Column="1" x:Name="StiffnessSlider"
+                                    Value="{Binding Stiffness, Mode=TwoWay, FallbackValue=0.1}"
+                                    Minimum="0" Maximum="1" Style="{StaticResource DarkSliderStyle}"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Stiffness, StringFormat='{}{0:F2}', FallbackValue='0.10'}"
+                                       Style="{StaticResource ValueStyle}"/>
+                        </Grid>
+
+                        <!-- Brightness -->
+                        <Grid Margin="0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Brightness:" Style="{StaticResource LabelStyle}"/>
+                            <Slider Grid.Column="1" x:Name="BrightnessSlider"
+                                    Value="{Binding Brightness, Mode=TwoWay, FallbackValue=0.5}"
+                                    Minimum="0" Maximum="1" Style="{StaticResource DarkSliderStyle}"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Brightness, StringFormat='{}{0:F2}', FallbackValue='0.50'}"
+                                       Style="{StaticResource ValueStyle}"/>
+                        </Grid>
+
+                        <!-- Global Decay Scale -->
+                        <Grid Margin="0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Decay:" Style="{StaticResource LabelStyle}"/>
+                            <Slider Grid.Column="1" x:Name="DecayScaleSlider"
+                                    Value="{Binding DecayScale, Mode=TwoWay, FallbackValue=1.0}"
+                                    Minimum="0.1" Maximum="10" Style="{StaticResource DarkSliderStyle}"/>
+                            <TextBlock Grid.Column="2" Text="{Binding DecayScale, StringFormat='{}{0:F1}x', FallbackValue='1.0x'}"
+                                       Style="{StaticResource ValueStyle}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- Center Panel: Modes List -->
+            <Border Grid.Column="1" Style="{StaticResource PanelStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="RESONANT MODES" Style="{StaticResource HeaderStyle}"/>
+
+                    <!-- Mode Controls -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="Add Mode" Style="{StaticResource DarkButtonStyle}"
+                                Click="AddMode_Click" Margin="0,0,8,0"/>
+                        <Button Content="Remove Mode" Style="{StaticResource DarkButtonStyle}"
+                                Click="RemoveMode_Click" Margin="0,0,8,0"/>
+                        <Button Content="Reset" Style="{StaticResource DarkButtonStyle}"
+                                Click="ResetModes_Click"/>
+                    </StackPanel>
+
+                    <!-- Modes DataGrid -->
+                    <Border Grid.Row="2" Background="{StaticResource PanelLightBrush}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="3">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="ModesItemsControl" ItemsSource="{Binding Modes}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource PanelBrush}"
+                                                BorderBrush="{StaticResource BorderBrush}"
+                                                BorderThickness="0,0,0,1"
+                                                Padding="8,6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Mode Number -->
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding Index, StringFormat='M{0}'}"
+                                                           Foreground="{StaticResource AccentBrush}"
+                                                           FontWeight="Bold"
+                                                           Width="30"
+                                                           VerticalAlignment="Center"/>
+
+                                                <!-- Frequency Ratio -->
+                                                <StackPanel Grid.Column="1" Margin="4,0">
+                                                    <TextBlock Text="Ratio" Style="{StaticResource LabelStyle}" FontSize="9"/>
+                                                    <Slider Value="{Binding FrequencyRatio, Mode=TwoWay}"
+                                                            Minimum="0.5" Maximum="16"
+                                                            Style="{StaticResource DarkSliderStyle}"
+                                                            Height="16"/>
+                                                    <TextBlock Text="{Binding FrequencyRatio, StringFormat='{}{0:F2}'}"
+                                                               Style="{StaticResource ValueStyle}"
+                                                               HorizontalAlignment="Center" FontSize="9"/>
+                                                </StackPanel>
+
+                                                <!-- Amplitude -->
+                                                <StackPanel Grid.Column="2" Margin="4,0">
+                                                    <TextBlock Text="Amp" Style="{StaticResource LabelStyle}" FontSize="9"/>
+                                                    <Slider Value="{Binding Amplitude, Mode=TwoWay}"
+                                                            Minimum="0" Maximum="1"
+                                                            Style="{StaticResource DarkSliderStyle}"
+                                                            Height="16"/>
+                                                    <TextBlock Text="{Binding Amplitude, StringFormat='{}{0:F2}'}"
+                                                               Style="{StaticResource ValueStyle}"
+                                                               HorizontalAlignment="Center" FontSize="9"/>
+                                                </StackPanel>
+
+                                                <!-- Decay Time -->
+                                                <StackPanel Grid.Column="3" Margin="4,0">
+                                                    <TextBlock Text="Decay" Style="{StaticResource LabelStyle}" FontSize="9"/>
+                                                    <Slider Value="{Binding DecayTime, Mode=TwoWay}"
+                                                            Minimum="0.1" Maximum="10"
+                                                            Style="{StaticResource DarkSliderStyle}"
+                                                            Height="16"/>
+                                                    <TextBlock Text="{Binding DecayTime, StringFormat='{}{0:F1}s'}"
+                                                               Style="{StaticResource ValueStyle}"
+                                                               HorizontalAlignment="Center" FontSize="9"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Right Panel: Presets -->
+            <Border Grid.Column="2" Style="{StaticResource PanelStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="PRESETS" Style="{StaticResource HeaderStyle}"/>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <WrapPanel>
+                            <Button Content="Church Bell" Style="{StaticResource PresetButtonStyle}"
+                                    Click="LoadPreset_Click" Tag="ChurchBell"/>
+                            <Button Content="Tubular Bell" Style="{StaticResource PresetButtonStyle}"
+                                    Click="LoadPreset_Click" Tag="TubularBell"/>
+                            <Button Content="Vibraphone" Style="{StaticResource PresetButtonStyle}"
+                                    Click="LoadPreset_Click" Tag="Vibraphone"/>
+                            <Button Content="Marimba" Style="{StaticResource PresetButtonStyle}"
+                                    Click="LoadPreset_Click" Tag="Marimba"/>
+                            <Button Content="Glockenspiel" Style="{StaticResource PresetButtonStyle}"
+                                    Click="LoadPreset_Click" Tag="Glockenspiel"/>
+                            <Button Content="Bowed Glass" Style="{StaticResource PresetButtonStyle}"
+                                    Click="LoadPreset_Click" Tag="BowedGlass"/>
+                            <Button Content="Steel Bar" Style="{StaticResource PresetButtonStyle}"
+                                    Click="LoadPreset_Click" Tag="SteelBar"/>
+                            <Button Content="Wood Block" Style="{StaticResource PresetButtonStyle}"
+                                    Click="LoadPreset_Click" Tag="WoodBlock"/>
+                            <Button Content="Bronze Bell" Style="{StaticResource PresetButtonStyle}"
+                                    Click="LoadPreset_Click" Tag="BronzeBell"/>
+                            <Button Content="Glass Chime" Style="{StaticResource PresetButtonStyle}"
+                                    Click="LoadPreset_Click" Tag="GlassChime"/>
+                        </WrapPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Style="{StaticResource PanelStyle}" Margin="4,0,4,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="{Binding StatusMessage, FallbackValue='Ready'}"
+                           Style="{StaticResource LabelStyle}"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock Text="Modes: " Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Text="{Binding ModeCount, FallbackValue='6'}"
+                               Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold"/>
+                    <TextBlock Text=" | Material: " Style="{StaticResource LabelStyle}" Margin="16,0,0,0"/>
+                    <TextBlock Text="{Binding MaterialName, FallbackValue='Steel'}"
+                               Foreground="{StaticResource SuccessBrush}" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

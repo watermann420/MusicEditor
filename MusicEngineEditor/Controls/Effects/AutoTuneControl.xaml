@@ -1,0 +1,696 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Effects.AutoTuneControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MusicEngineEditor.Controls.Effects"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="800"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <!-- Theme Colors -->
+        <Color x:Key="AutoTuneBackgroundColor">#0D0D0D</Color>
+        <Color x:Key="AutoTunePanelColor">#181818</Color>
+        <Color x:Key="AutoTuneAccentColor">#00D9FF</Color>
+        <Color x:Key="AutoTuneSuccessColor">#00FF88</Color>
+        <Color x:Key="AutoTuneErrorColor">#FF4757</Color>
+        <Color x:Key="AutoTuneTextColor">#E0E0E0</Color>
+        <Color x:Key="AutoTuneSecondaryTextColor">#808080</Color>
+        <Color x:Key="AutoTuneBorderColor">#2A2A2A</Color>
+        <Color x:Key="AutoTuneInputPitchColor">#FF9500</Color>
+        <Color x:Key="AutoTuneOutputPitchColor">#00D9FF</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="AutoTuneBackgroundBrush" Color="{StaticResource AutoTuneBackgroundColor}"/>
+        <SolidColorBrush x:Key="AutoTunePanelBrush" Color="{StaticResource AutoTunePanelColor}"/>
+        <SolidColorBrush x:Key="AutoTuneAccentBrush" Color="{StaticResource AutoTuneAccentColor}"/>
+        <SolidColorBrush x:Key="AutoTuneSuccessBrush" Color="{StaticResource AutoTuneSuccessColor}"/>
+        <SolidColorBrush x:Key="AutoTuneErrorBrush" Color="{StaticResource AutoTuneErrorColor}"/>
+        <SolidColorBrush x:Key="AutoTuneTextBrush" Color="{StaticResource AutoTuneTextColor}"/>
+        <SolidColorBrush x:Key="AutoTuneSecondaryTextBrush" Color="{StaticResource AutoTuneSecondaryTextColor}"/>
+        <SolidColorBrush x:Key="AutoTuneBorderBrush" Color="{StaticResource AutoTuneBorderColor}"/>
+        <SolidColorBrush x:Key="AutoTuneInputPitchBrush" Color="{StaticResource AutoTuneInputPitchColor}"/>
+        <SolidColorBrush x:Key="AutoTuneOutputPitchBrush" Color="{StaticResource AutoTuneOutputPitchColor}"/>
+
+        <!-- Parameter Slider Style -->
+        <Style x:Key="AutoTuneSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid>
+                            <Border Height="4" VerticalAlignment="Center"
+                                    Background="#2A2A2A" CornerRadius="2"/>
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Height="4" Background="{StaticResource AutoTuneAccentBrush}" CornerRadius="2"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Width="14" Height="14">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Fill="{StaticResource AutoTuneAccentBrush}"
+                                                         Width="14" Height="14"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Parameter Label Style -->
+        <Style x:Key="AutoTuneParameterLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource AutoTuneSecondaryTextBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <!-- Parameter Value Style -->
+        <Style x:Key="AutoTuneParameterValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource AutoTuneTextBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="MinWidth" Value="50"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="AutoTuneComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource AutoTunePanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource AutoTuneTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AutoTuneBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="MinHeight" Value="28"/>
+        </Style>
+
+        <!-- Toggle Button Style -->
+        <Style x:Key="AutoTuneToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{StaticResource AutoTunePanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource AutoTuneTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AutoTuneBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource AutoTuneAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource AutoTuneAccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Note Bypass CheckBox Style -->
+        <Style x:Key="NoteBypassCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="Background" Value="{StaticResource AutoTunePanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource AutoTuneTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AutoTuneBorderBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="3"
+                                Padding="6,4"
+                                MinWidth="32"
+                                MinHeight="24">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource AutoTuneErrorBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource AutoTuneErrorBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource AutoTuneAccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button Style -->
+        <Style x:Key="AutoTuneButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AutoTunePanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource AutoTuneTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AutoTuneBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush"
+                                        Value="{StaticResource AutoTuneAccentBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="#222222"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background"
+                                        Value="{StaticResource AutoTuneAccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border BorderBrush="{StaticResource AutoTuneBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Background="{StaticResource AutoTuneBackgroundBrush}"
+            Padding="16">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" MinHeight="200"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Auto-Tune"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource AutoTuneTextBrush}"
+                           VerticalAlignment="Center"/>
+
+                <ToggleButton Grid.Column="1"
+                              x:Name="BypassToggle"
+                              Content="Bypass"
+                              Style="{StaticResource AutoTuneToggleButtonStyle}"
+                              Click="BypassToggle_Click"/>
+            </Grid>
+
+            <!-- Key/Scale and Main Controls -->
+            <Grid Grid.Row="1" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Root Note Selector -->
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Root Note"
+                               Style="{StaticResource AutoTuneParameterLabelStyle}"/>
+                    <ComboBox x:Name="RootNoteComboBox"
+                              Style="{StaticResource AutoTuneComboBoxStyle}"
+                              MinWidth="80"
+                              SelectionChanged="RootNoteComboBox_SelectionChanged">
+                        <ComboBoxItem Content="C" IsSelected="True"/>
+                        <ComboBoxItem Content="C#/Db"/>
+                        <ComboBoxItem Content="D"/>
+                        <ComboBoxItem Content="D#/Eb"/>
+                        <ComboBoxItem Content="E"/>
+                        <ComboBoxItem Content="F"/>
+                        <ComboBoxItem Content="F#/Gb"/>
+                        <ComboBoxItem Content="G"/>
+                        <ComboBoxItem Content="G#/Ab"/>
+                        <ComboBoxItem Content="A"/>
+                        <ComboBoxItem Content="A#/Bb"/>
+                        <ComboBoxItem Content="B"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Scale Type Selector -->
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Scale Type"
+                               Style="{StaticResource AutoTuneParameterLabelStyle}"/>
+                    <ComboBox x:Name="ScaleTypeComboBox"
+                              Style="{StaticResource AutoTuneComboBoxStyle}"
+                              MinWidth="140"
+                              SelectionChanged="ScaleTypeComboBox_SelectionChanged">
+                        <ComboBoxItem Content="Chromatic" IsSelected="True"/>
+                        <ComboBoxItem Content="Major"/>
+                        <ComboBoxItem Content="Minor (Natural)"/>
+                        <ComboBoxItem Content="Minor (Harmonic)"/>
+                        <ComboBoxItem Content="Minor (Melodic)"/>
+                        <ComboBoxItem Content="Dorian"/>
+                        <ComboBoxItem Content="Phrygian"/>
+                        <ComboBoxItem Content="Lydian"/>
+                        <ComboBoxItem Content="Mixolydian"/>
+                        <ComboBoxItem Content="Locrian"/>
+                        <ComboBoxItem Content="Pentatonic Major"/>
+                        <ComboBoxItem Content="Pentatonic Minor"/>
+                        <ComboBoxItem Content="Blues"/>
+                        <ComboBoxItem Content="Whole Tone"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Pitch Displays -->
+                <Grid Grid.Column="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Input Pitch Display -->
+                    <Border Grid.Column="0"
+                            Background="{StaticResource AutoTunePanelBrush}"
+                            BorderBrush="{StaticResource AutoTuneBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="12,8">
+                        <StackPanel>
+                            <TextBlock Text="Input Pitch"
+                                       FontSize="10"
+                                       Foreground="{StaticResource AutoTuneSecondaryTextBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="InputPitchNote"
+                                       Text="--"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource AutoTuneInputPitchBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="InputPitchCents"
+                                       Text="0 cents"
+                                       FontSize="10"
+                                       Foreground="{StaticResource AutoTuneInputPitchBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Output Pitch Display -->
+                    <Border Grid.Column="2"
+                            Background="{StaticResource AutoTunePanelBrush}"
+                            BorderBrush="{StaticResource AutoTuneBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="12,8">
+                        <StackPanel>
+                            <TextBlock Text="Output Pitch"
+                                       FontSize="10"
+                                       Foreground="{StaticResource AutoTuneSecondaryTextBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="OutputPitchNote"
+                                       Text="--"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource AutoTuneOutputPitchBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="OutputPitchCents"
+                                       Text="0 cents"
+                                       FontSize="10"
+                                       Foreground="{StaticResource AutoTuneOutputPitchBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Formant Preservation Toggle -->
+                <StackPanel Grid.Column="6" VerticalAlignment="Center">
+                    <TextBlock Text="Formant"
+                               Style="{StaticResource AutoTuneParameterLabelStyle}"
+                               HorizontalAlignment="Center"/>
+                    <ToggleButton x:Name="FormantPreservationToggle"
+                                  Content="Preserve"
+                                  Style="{StaticResource AutoTuneToggleButtonStyle}"
+                                  IsChecked="True"
+                                  Click="FormantPreservationToggle_Click"
+                                  ToolTip="Preserve natural formants during pitch correction"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Pitch Correction Graph -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource AutoTunePanelBrush}"
+                    BorderBrush="{StaticResource AutoTuneBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Margin="0,0,0,12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Title -->
+                    <Border Grid.Row="0" Grid.ColumnSpan="2"
+                            Background="#151515"
+                            Padding="8,4">
+                        <Grid>
+                            <TextBlock Text="Pitch Correction Graph"
+                                       FontSize="11"
+                                       Foreground="{StaticResource AutoTuneSecondaryTextBrush}"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Ellipse Width="8" Height="8" Fill="{StaticResource AutoTuneInputPitchBrush}" Margin="0,0,4,0"/>
+                                <TextBlock Text="Input" FontSize="9" Foreground="{StaticResource AutoTuneSecondaryTextBrush}" Margin="0,0,12,0"/>
+                                <Ellipse Width="8" Height="8" Fill="{StaticResource AutoTuneOutputPitchBrush}" Margin="0,0,4,0"/>
+                                <TextBlock Text="Output" FontSize="9" Foreground="{StaticResource AutoTuneSecondaryTextBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Pitch Scale (Y-axis) -->
+                    <Canvas x:Name="PitchScaleCanvas"
+                            Grid.Row="1" Grid.Column="0"
+                            Background="Transparent"/>
+
+                    <!-- Main Graph Canvas -->
+                    <Canvas x:Name="PitchGraphCanvas"
+                            Grid.Row="1" Grid.Column="1"
+                            ClipToBounds="True"
+                            Background="Transparent"
+                            SizeChanged="PitchGraphCanvas_SizeChanged"/>
+
+                    <!-- Time Scale (X-axis) -->
+                    <Canvas x:Name="TimeScaleCanvas"
+                            Grid.Row="2" Grid.Column="1"
+                            Height="20"
+                            Background="Transparent"/>
+                </Grid>
+            </Border>
+
+            <!-- Main Parameter Controls with Retune Speed Knob -->
+            <Grid Grid.Row="3" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Retune Speed Knob -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource AutoTunePanelBrush}"
+                        BorderBrush="{StaticResource AutoTuneBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="16,12">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="Retune Speed"
+                                   Style="{StaticResource AutoTuneParameterLabelStyle}"
+                                   HorizontalAlignment="Center"/>
+
+                        <Canvas x:Name="RetuneSpeedKnobCanvas"
+                                Width="60" Height="60"
+                                Cursor="Hand"
+                                MouseLeftButtonDown="RetuneSpeedKnob_MouseLeftButtonDown"
+                                MouseLeftButtonUp="RetuneSpeedKnob_MouseLeftButtonUp"
+                                MouseMove="RetuneSpeedKnob_MouseMove"
+                                MouseWheel="RetuneSpeedKnob_MouseWheel"
+                                ToolTip="Drag up/down to adjust. Hold Shift for fine control.">
+
+                            <!-- Track Arc -->
+                            <Path x:Name="RetuneSpeedTrackArc"
+                                  Stroke="#2A2A2A"
+                                  StrokeThickness="5"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"/>
+
+                            <!-- Value Arc -->
+                            <Path x:Name="RetuneSpeedValueArc"
+                                  Stroke="{StaticResource AutoTuneAccentBrush}"
+                                  StrokeThickness="5"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"/>
+
+                            <!-- Knob Body -->
+                            <Ellipse Width="40" Height="40"
+                                     Canvas.Left="10" Canvas.Top="10">
+                                <Ellipse.Fill>
+                                    <RadialGradientBrush>
+                                        <GradientStop Color="#4B4D52" Offset="0"/>
+                                        <GradientStop Color="#3C3E42" Offset="0.5"/>
+                                        <GradientStop Color="#181818" Offset="1"/>
+                                    </RadialGradientBrush>
+                                </Ellipse.Fill>
+                                <Ellipse.Stroke>
+                                    <SolidColorBrush Color="#2A2A2A"/>
+                                </Ellipse.Stroke>
+                            </Ellipse>
+
+                            <!-- Indicator Line -->
+                            <Line x:Name="RetuneSpeedIndicator"
+                                  Stroke="{StaticResource AutoTuneAccentBrush}"
+                                  StrokeThickness="3"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"/>
+                        </Canvas>
+
+                        <TextBlock x:Name="RetuneSpeedValue"
+                                   Text="50 ms"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource AutoTuneTextBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Correction Speed Slider -->
+                <StackPanel Grid.Column="2">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Correction Speed"
+                                   Style="{StaticResource AutoTuneParameterLabelStyle}"/>
+                        <TextBlock Grid.Column="1" x:Name="CorrectionSpeedValue" Text="100%"
+                                   Style="{StaticResource AutoTuneParameterValueStyle}"/>
+                    </Grid>
+                    <Slider x:Name="CorrectionSpeedSlider"
+                            Style="{StaticResource AutoTuneSliderStyle}"
+                            Minimum="0" Maximum="100" Value="100"
+                            ValueChanged="CorrectionSpeedSlider_ValueChanged"
+                            ToolTip="How quickly pitch is corrected. 100% = instant, 0% = no correction"/>
+                    <TextBlock Text="0% = Natural, 100% = Robotic"
+                               FontSize="9"
+                               Foreground="{StaticResource AutoTuneSecondaryTextBrush}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Humanize Slider -->
+                <StackPanel Grid.Column="4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Humanize"
+                                   Style="{StaticResource AutoTuneParameterLabelStyle}"/>
+                        <TextBlock Grid.Column="1" x:Name="HumanizeValue" Text="0%"
+                                   Style="{StaticResource AutoTuneParameterValueStyle}"/>
+                    </Grid>
+                    <Slider x:Name="HumanizeSlider"
+                            Style="{StaticResource AutoTuneSliderStyle}"
+                            Minimum="0" Maximum="100" Value="0"
+                            ValueChanged="HumanizeSlider_ValueChanged"
+                            ToolTip="Adds natural pitch variation to avoid robotic sound"/>
+                    <TextBlock Text="Adds natural pitch variation"
+                               FontSize="9"
+                               Foreground="{StaticResource AutoTuneSecondaryTextBrush}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Note Bypass Section -->
+            <Border Grid.Row="4"
+                    Background="{StaticResource AutoTunePanelBrush}"
+                    BorderBrush="{StaticResource AutoTuneBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12"
+                    Margin="0,0,0,12">
+                <StackPanel>
+                    <Grid Margin="0,0,0,8">
+                        <TextBlock Text="Note Bypass (click to exclude from correction)"
+                                   FontSize="11"
+                                   Foreground="{StaticResource AutoTuneSecondaryTextBrush}"/>
+                        <Button x:Name="ClearBypassButton"
+                                Content="Clear All"
+                                Style="{StaticResource AutoTuneButtonStyle}"
+                                HorizontalAlignment="Right"
+                                FontSize="10"
+                                Padding="8,4"
+                                Click="ClearBypassButton_Click"/>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <CheckBox Grid.Column="0" x:Name="BypassC" Content="C"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="1" x:Name="BypassCSharp" Content="C#"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="2" x:Name="BypassD" Content="D"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="3" x:Name="BypassDSharp" Content="D#"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="4" x:Name="BypassE" Content="E"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="5" x:Name="BypassF" Content="F"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="6" x:Name="BypassFSharp" Content="F#"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="7" x:Name="BypassG" Content="G"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="8" x:Name="BypassGSharp" Content="G#"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="9" x:Name="BypassA" Content="A"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="10" x:Name="BypassASharp" Content="A#"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                        <CheckBox Grid.Column="11" x:Name="BypassB" Content="B"
+                                  Style="{StaticResource NoteBypassCheckBoxStyle}"
+                                  Margin="2" Checked="NoteBypass_Changed" Unchecked="NoteBypass_Changed"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Bottom Status Bar -->
+            <Grid Grid.Row="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Presets -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <ComboBox x:Name="PresetComboBox"
+                              Style="{StaticResource AutoTuneComboBoxStyle}"
+                              MinWidth="150"
+                              Margin="0,0,8,0"
+                              SelectionChanged="PresetComboBox_SelectionChanged">
+                        <ComboBoxItem Content="-- Presets --" IsSelected="True"/>
+                        <ComboBoxItem Content="Subtle Correction"/>
+                        <ComboBoxItem Content="Natural Voice"/>
+                        <ComboBoxItem Content="Standard"/>
+                        <ComboBoxItem Content="Hard Correction"/>
+                        <ComboBoxItem Content="T-Pain Effect"/>
+                        <ComboBoxItem Content="Cher Effect"/>
+                    </ComboBox>
+                    <Button x:Name="ResetButton"
+                            Content="Reset"
+                            Style="{StaticResource AutoTuneButtonStyle}"
+                            Click="ResetButton_Click"/>
+                </StackPanel>
+
+                <!-- Status -->
+                <Border Grid.Column="2"
+                        Background="{StaticResource AutoTunePanelBrush}"
+                        BorderBrush="{StaticResource AutoTuneBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="12,6"
+                        MinWidth="120">
+                    <TextBlock x:Name="StatusText"
+                               Text="Ready"
+                               FontSize="11"
+                               Foreground="{StaticResource AutoTuneSecondaryTextBrush}"
+                               HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

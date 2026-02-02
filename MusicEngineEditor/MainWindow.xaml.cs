@@ -498,6 +498,13 @@ public partial class MainWindow : Window
             timer.Start();
         }
 
+        // F3: AI Assistant Panel
+        if (e.Key == Key.F3 && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            e.Handled = true;
+            ToggleAIAssistant_Click(this, new RoutedEventArgs());
+        }
+
         // Handle F4 for Synth Editor toggle
         if (e.Key == Key.F4 && Keyboard.Modifiers == ModifierKeys.None)
         {
@@ -627,14 +634,6 @@ public partial class MainWindow : Window
             ToggleSynthEditor_Click(this, new RoutedEventArgs());
         }
 
-        // Ctrl+Shift+W: Workspace Manager
-        if (e.Key == Key.W && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
-        {
-            e.Handled = true;
-            var dialog = new WorkspaceDialog(App.Services.GetRequiredService<WorkspaceService>()) { Owner = this };
-            dialog.ShowDialog();
-        }
-
         // Ctrl+Shift+T: Track Template
         if (e.Key == Key.T && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
         {
@@ -665,6 +664,62 @@ public partial class MainWindow : Window
             e.Handled = true;
             var dialog = new GrooveTemplateDialog { Owner = this };
             dialog.ShowDialog();
+        }
+
+        // Ctrl+Alt+T: Guitar Tuner
+        if (e.Key == Key.T && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+        {
+            e.Handled = true;
+            OpenGuitarTuner_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Alt+C: Chord Detector
+        if (e.Key == Key.C && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+        {
+            e.Handled = true;
+            OpenChordDetector_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Alt+K: Key Detector
+        if (e.Key == Key.K && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+        {
+            e.Handled = true;
+            OpenKeyDetector_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Alt+B: Tempo Detector (BPM)
+        if (e.Key == Key.B && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+        {
+            e.Handled = true;
+            OpenTempoDetector_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Alt+L: Loop Finder
+        if (e.Key == Key.L && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+        {
+            e.Handled = true;
+            OpenLoopFinder_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Alt+P: Spatial Audio Panel
+        if (e.Key == Key.P && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+        {
+            e.Handled = true;
+            OpenSpatialPanel_Click(this, new RoutedEventArgs());
+        }
+
+        // Ctrl+Alt+A: Analysis Panel
+        if (e.Key == Key.A && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+        {
+            e.Handled = true;
+            SwitchRightPanelTab("analysis");
+        }
+
+        // Ctrl+Alt+N: Network Sync Panel
+        if (e.Key == Key.N && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt))
+        {
+            e.Handled = true;
+            SwitchRightPanelTab("network");
         }
     }
 
@@ -2427,6 +2482,7 @@ public partial class MainWindow : Window
         SetTabHeaderInactive(SynthTabHeader);
         SetTabHeaderInactive(EffectsTabHeader);
         SetTabHeaderInactive(PresetsTabHeader);
+        SetTabHeaderInactive(SpatialTabHeader);
 
         // Hide all panels
         MidiDevicesPanel.Visibility = Visibility.Collapsed;
@@ -2438,6 +2494,9 @@ public partial class MainWindow : Window
         EffectsEditorPanel.Visibility = Visibility.Collapsed;
         PresetBrowserPanel.Visibility = Visibility.Collapsed;
         AIAssistantPanel.Visibility = Visibility.Collapsed;
+        SpatialAudioPanel.Visibility = Visibility.Collapsed;
+        AnalysisPanel.Visibility = Visibility.Collapsed;
+        NetworkSyncPanel.Visibility = Visibility.Collapsed;
 
         // Show selected tab
         switch (tab)
@@ -2477,6 +2536,18 @@ public partial class MainWindow : Window
             case "aiassistant":
                 // AI Assistant panel is standalone (no tab header in the tabbed area)
                 AIAssistantPanel.Visibility = Visibility.Visible;
+                break;
+            case "spatial":
+                SetTabHeaderActive(SpatialTabHeader);
+                SpatialAudioPanel.Visibility = Visibility.Visible;
+                break;
+            case "analysis":
+                // Analysis panel is standalone
+                AnalysisPanel.Visibility = Visibility.Visible;
+                break;
+            case "network":
+                // Network sync panel is standalone
+                NetworkSyncPanel.Visibility = Visibility.Visible;
                 break;
         }
     }
@@ -2541,6 +2612,11 @@ public partial class MainWindow : Window
     private void EffectsEditorPanel_CloseRequested(object? sender, EventArgs e)
     {
         HideRightPanel();
+    }
+
+    private void SpatialTab_Click(object sender, MouseButtonEventArgs e)
+    {
+        SwitchRightPanelTab("spatial");
     }
 
     private void PresetsTab_Click(object sender, MouseButtonEventArgs e)
@@ -2623,6 +2699,105 @@ public partial class MainWindow : Window
         _sessionViewWindow.Show();
         _sessionViewWindow.Activate();
     }
+
+    #region Spatial Audio Menu Handlers
+
+    private void OpenSpatialPanel_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("spatial");
+    }
+
+    private void OpenSurroundPanner_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("spatial");
+        // Could switch to surround tab if SpatialAudioPanel supports it
+    }
+
+    private void OpenBinauralRenderer_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("spatial");
+        // Could switch to binaural tab if SpatialAudioPanel supports it
+    }
+
+    private void OpenAmbisonics_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("spatial");
+        // Could switch to ambisonics tab if SpatialAudioPanel supports it
+    }
+
+    #endregion
+
+    #region Analysis Menu Handlers
+
+    private void OpenAnalysisPanel_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("analysis");
+    }
+
+    private void OpenGuitarTuner_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("analysis");
+        // Switch to tuner tab in AnalysisPanel
+    }
+
+    private void OpenChordDetector_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("analysis");
+        // Switch to chord tab in AnalysisPanel
+    }
+
+    private void OpenKeyDetector_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("analysis");
+        // Switch to key tab in AnalysisPanel
+    }
+
+    private void OpenTempoDetector_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("analysis");
+        // Switch to tempo tab in AnalysisPanel
+    }
+
+    private void OpenLoopFinder_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("analysis");
+        // Switch to loop tab in AnalysisPanel
+    }
+
+    #endregion
+
+    #region Network Menu Handlers
+
+    private void OpenNetworkPanel_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("network");
+    }
+
+    private void OpenLinkSync_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("network");
+        // Switch to Link tab in NetworkSyncPanel
+    }
+
+    private void OpenOSCControl_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("network");
+        // Switch to OSC tab in NetworkSyncPanel
+    }
+
+    private void OpenNetworkMIDI_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("network");
+        // Switch to Network MIDI tab in NetworkSyncPanel
+    }
+
+    private void OpenMachineControl_Click(object sender, RoutedEventArgs e)
+    {
+        ShowRightPanel("network");
+        // Switch to Machine Control tab in NetworkSyncPanel
+    }
+
+    #endregion
 
     /// <summary>
     /// Opens the synth editor panel for a specific synth instance.
