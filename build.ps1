@@ -64,19 +64,24 @@ if ($Clean) {
     Write-Host ""
     Write-Host "[3/$totalSteps] Cleaning solution..." -ForegroundColor Yellow
 
-    # Clean MusicEngine
-    Push-Location "$scriptDir\..\MusicEngine"
-    dotnet clean -c $configuration 2>$null
-    Pop-Location
+    # Clean MusicEngine (specify .csproj explicitly)
+    $musicEngineCsproj = "$scriptDir\..\MusicEngine\MusicEngine.csproj"
+    if (Test-Path $musicEngineCsproj) {
+        dotnet clean $musicEngineCsproj -c $configuration 2>$null
+    }
 
-    # Clean MusicEngineEditor
-    Push-Location "$scriptDir\MusicEngineEditor"
-    dotnet clean -c $configuration 2>$null
-    Pop-Location
+    # Clean MusicEngineEditor (specify .csproj explicitly)
+    $editorCsproj = "$scriptDir\MusicEngineEditor\MusicEngineEditor.csproj"
+    if (Test-Path $editorCsproj) {
+        dotnet clean $editorCsproj -c $configuration 2>$null
+    }
 
     # Remove obj and bin folders
     Get-ChildItem -Path $scriptDir -Include bin,obj -Recurse -Directory | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
     Get-ChildItem -Path "$scriptDir\..\MusicEngine" -Include bin,obj -Recurse -Directory | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+
+    # Remove WPF temp .csproj files that cause MSB1011 errors
+    Get-ChildItem -Path $scriptDir -Filter "*_wpftmp.csproj" -Recurse | Remove-Item -Force -ErrorAction SilentlyContinue
 
     Write-Host "      Clean completed" -ForegroundColor Green
 } else {
@@ -88,58 +93,50 @@ if ($Clean) {
 Write-Host ""
 Write-Host "[4/$totalSteps] Restoring NuGet packages..." -ForegroundColor Yellow
 
-# Restore MusicEngine first
+# Restore MusicEngine first (specify .csproj explicitly to avoid MSB1011)
 Write-Host "      Restoring MusicEngine..." -ForegroundColor Cyan
-Push-Location "$scriptDir\..\MusicEngine"
-$restoreResult = dotnet restore 2>&1
+$musicEngineCsproj = "$scriptDir\..\MusicEngine\MusicEngine.csproj"
+$restoreResult = dotnet restore $musicEngineCsproj 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Failed to restore MusicEngine packages" -ForegroundColor Red
     Write-Host $restoreResult -ForegroundColor Red
-    Pop-Location
     exit 1
 }
-Pop-Location
 Write-Host "      MusicEngine packages restored" -ForegroundColor Green
 
-# Restore MusicEngineEditor
+# Restore MusicEngineEditor (specify .csproj explicitly to avoid MSB1011)
 Write-Host "      Restoring MusicEngineEditor..." -ForegroundColor Cyan
-Push-Location "$scriptDir\MusicEngineEditor"
-$restoreResult = dotnet restore 2>&1
+$editorCsproj = "$scriptDir\MusicEngineEditor\MusicEngineEditor.csproj"
+$restoreResult = dotnet restore $editorCsproj 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Failed to restore MusicEngineEditor packages" -ForegroundColor Red
     Write-Host $restoreResult -ForegroundColor Red
-    Pop-Location
     exit 1
 }
-Pop-Location
 Write-Host "      MusicEngineEditor packages restored" -ForegroundColor Green
 
-# Build MusicEngine
+# Build MusicEngine (specify .csproj explicitly to avoid MSB1011)
 Write-Host ""
 Write-Host "[5/$totalSteps] Building MusicEngine..." -ForegroundColor Yellow
-Push-Location "$scriptDir\..\MusicEngine"
-$buildResult = dotnet build -c $configuration --no-restore 2>&1
+$musicEngineCsproj = "$scriptDir\..\MusicEngine\MusicEngine.csproj"
+$buildResult = dotnet build $musicEngineCsproj -c $configuration --no-restore 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: MusicEngine build failed" -ForegroundColor Red
     Write-Host $buildResult -ForegroundColor Red
-    Pop-Location
     exit 1
 }
-Pop-Location
 Write-Host "      MusicEngine built successfully" -ForegroundColor Green
 
-# Build MusicEngineEditor
+# Build MusicEngineEditor (specify .csproj explicitly to avoid MSB1011)
 Write-Host ""
 Write-Host "[6/$totalSteps] Building MusicEngineEditor..." -ForegroundColor Yellow
-Push-Location "$scriptDir\MusicEngineEditor"
-$buildResult = dotnet build -c $configuration --no-restore 2>&1
+$editorCsproj = "$scriptDir\MusicEngineEditor\MusicEngineEditor.csproj"
+$buildResult = dotnet build $editorCsproj -c $configuration --no-restore 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: MusicEngineEditor build failed" -ForegroundColor Red
     Write-Host $buildResult -ForegroundColor Red
-    Pop-Location
     exit 1
 }
-Pop-Location
 Write-Host "      MusicEngineEditor built successfully" -ForegroundColor Green
 
 # Run tests
@@ -235,15 +232,13 @@ if ($Publish) {
     }
 
     Write-Host "Publishing self-contained win-x64 application..." -ForegroundColor Yellow
-    Push-Location "$scriptDir\MusicEngineEditor"
-    $publishResult = dotnet publish -c Release -r win-x64 --self-contained true -p:PublishDir="$publishDir\" -p:PublishReadyToRun=true 2>&1
+    $editorCsproj = "$scriptDir\MusicEngineEditor\MusicEngineEditor.csproj"
+    $publishResult = dotnet publish $editorCsproj -c Release -r win-x64 --self-contained true -p:PublishDir="$publishDir\" -p:PublishReadyToRun=true 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: Publish failed" -ForegroundColor Red
         Write-Host $publishResult -ForegroundColor Red
-        Pop-Location
         exit 1
     }
-    Pop-Location
 
     Write-Host "Application published successfully" -ForegroundColor Green
     Write-Host "Output: $publishDir" -ForegroundColor Cyan

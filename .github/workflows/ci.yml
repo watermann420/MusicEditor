@@ -10,8 +10,16 @@ jobs:
   build-and-test:
     runs-on: windows-latest
     steps:
-      - name: Checkout
+      - name: Checkout MusicEditor
         uses: actions/checkout@v4
+        with:
+          path: MusicEditor
+
+      - name: Checkout MusicEngine dependency
+        uses: actions/checkout@v4
+        with:
+          repository: watermann420/MusicEngine
+          path: MusicEngine
 
       - name: Install .NET (10.0 preview)
         uses: actions/setup-dotnet@v4
@@ -29,6 +37,7 @@ jobs:
 
       - name: Build & Test
         shell: pwsh
+        working-directory: MusicEditor
         run: pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Clean -Release
 
       - name: Upload test results
@@ -36,5 +45,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: MusicEngineEditor.Tests/TestResults.trx
+          path: MusicEditor/MusicEngineEditor.Tests/TestResults.trx
           if-no-files-found: warn
