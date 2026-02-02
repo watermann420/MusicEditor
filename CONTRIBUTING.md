@@ -95,25 +95,26 @@ Or simply double-click `StartEditor.bat`.
 ```csharp
 // Every MusicEngine script follows this pattern:
 
-// 1. Create a sequencer
-var seq = new Sequencer();
-seq.Bpm = 120;
+// 1. Configure and start the global sequencer
+Sequencer.Bpm = 120;
+Sequencer.Start();
 
 // 2. Create instruments
-var synth = new SimpleSynth();
-var drums = new DrumMachine();
+var synth = CreateSynth();
+var drums = CreateSynth();
 
 // 3. Create patterns
-var melody = seq.CreatePattern("melody", synth);
-var beat = seq.CreatePattern("beat", drums);
+var melody = CreatePattern(synth);
+var beat = CreatePattern(drums);
 
 // 4. Add notes
 melody.Note(60, 0, 0.5, 100);    // C4 at beat 0, half beat, velocity 100
 melody.Note(64, 0.5, 0.5, 100);  // E4 at beat 0.5
 melody.Note(67, 1, 0.5, 100);    // G4 at beat 1
 
-// 5. Play
-seq.Play();
+// 5. Play patterns
+melody.Start();
+beat.Start();
 ```
 
 ### Note Method Syntax
@@ -170,9 +171,11 @@ pattern.Loop = true;
 ### Example 1: Simple Melody
 
 ```csharp
-var seq = new Sequencer { Bpm = 100 };
-var piano = new SimpleSynth();
-var melody = seq.CreatePattern("melody", piano);
+Sequencer.Bpm = 100;
+Sequencer.Start();
+
+var piano = CreateSynth();
+var melody = CreatePattern(piano);
 
 // Twinkle Twinkle Little Star
 int[] notes = { 60, 60, 67, 67, 69, 69, 67 };
@@ -181,15 +184,17 @@ for (int i = 0; i < notes.Length; i++)
     melody.Note(notes[i], i * 0.5, 0.5, 90);
 }
 
-seq.Play();
+melody.Start();
 ```
 
 ### Example 2: Drum Pattern
 
 ```csharp
-var seq = new Sequencer { Bpm = 120 };
-var drums = new DrumMachine();
-var beat = seq.CreatePattern("drums", drums);
+Sequencer.Bpm = 120;
+Sequencer.Start();
+
+var drums = CreateSynth();
+var beat = CreatePattern(drums);
 
 // 4-beat drum loop
 beat.Length = 4;
@@ -209,58 +214,56 @@ for (double i = 0; i < 4; i += 0.5)
     beat.Note(42, i, 0.25, 60);  // Closed hi-hat
 }
 
-seq.Play();
+beat.Start();
 ```
 
 ### Example 3: Synthesizer with Modulation
 
 ```csharp
-var seq = new Sequencer { Bpm = 128 };
+Sequencer.Bpm = 128;
+Sequencer.Start();
 
-// Create modular synth
-var synth = new AdvancedSynth(3);  // 3 oscillators
-synth.SetOscillator(0, WaveType.Sawtooth, 0.6f, 0);
-synth.SetOscillator(1, WaveType.Square, 0.4f, 7);   // Detuned
-synth.FilterType = SynthFilterType.MoogLadder;
-synth.FilterCutoff = 0.5f;
-synth.FilterResonance = 0.4f;
+// Create a synth and shape it with parameters
+var synth = CreateSynth();
+synth.SetParameter("waveform", 2); // Saw
+synth.SetParameter("cutoff", 0.55f);
+synth.SetParameter("resonance", 0.35f);
 
-// Envelope settings
-synth.Attack = 0.01;
-synth.Decay = 0.2;
-synth.Sustain = 0.6;
-synth.Release = 0.3;
+// Optional envelope-style shaping (if exposed)
+synth.SetParameter("attack", 0.01f);
+synth.SetParameter("decay", 0.2f);
+synth.SetParameter("sustain", 0.6f);
+synth.SetParameter("release", 0.3f);
 
-var pattern = seq.CreatePattern("lead", synth);
+var pattern = CreatePattern(synth);
 pattern.Note(60, 0, 2, 100);
-
-seq.Play();
+pattern.Start();
 ```
 
 ### Example 4: Using Effects
 
 ```csharp
-var seq = new Sequencer { Bpm = 90 };
-var synth = new SimpleSynth();
+Sequencer.Bpm = 90;
+Sequencer.Start();
 
-// Add effects chain
-var delay = new Delay { Time = 0.375, Feedback = 0.4, Mix = 0.3 };
-var reverb = new Reverb { RoomSize = 0.7, Damping = 0.5, Mix = 0.25 };
+var synth = CreateSynth();
 
-synth.AddEffect(delay);
-synth.AddEffect(reverb);
+// Add effects chain (use your routing helpers)
+var delay = vst.load("Delay");
+var reverb = vst.load("Reverb");
+if (delay != null) Engine.AddEffectAfter(synth, delay);
+if (reverb != null) Engine.AddEffectAfter(synth, reverb);
 
-var pattern = seq.CreatePattern("ambient", synth);
+var pattern = CreatePattern(synth);
 pattern.Note(60, 0, 4, 80);
-
-seq.Play();
+pattern.Start();
 ```
 
 ### Example 5: VCV Rack-style Modulation
 
 ```csharp
 // Using the modular parameter system
-var synth = new ModularSynthBase();
+var synth = CreateSynth();
 
 // Get parameters
 var cutoff = synth.GetParameter("cutoff");
@@ -294,8 +297,8 @@ synth.Connect(env, resonance, 0.7);
 Numbers in your code are interactive:
 
 ```csharp
-synth.FilterCutoff = 0.5f;  // <- Drag left/right to change!
-seq.Bpm = 120;              // <- Drag to change BPM in real-time!
+synth.SetParameter("cutoff", 0.5f);  // <- Drag left/right to change!
+Sequencer.Bpm = 120;                 // <- Drag to change BPM in real-time!
 ```
 
 - **Hover** over numbers to see the slider
@@ -374,8 +377,8 @@ public class PE { }             // Bad
 public Pattern CreatePattern(string name, ISynth instrument)
 
 // Use var when type is obvious
-var synth = new SimpleSynth();  // Good
-SimpleSynth synth = new SimpleSynth();  // Also fine
+var synth = CreateSynth();  // Good
+var synthExplicit = CreateSynth();  // Also fine
 
 // Prefer expression bodies for simple members
 public string Name => _name;
