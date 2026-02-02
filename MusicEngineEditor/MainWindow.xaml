@@ -1019,6 +1019,16 @@
                                         <TextBlock Text="PRESETS" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="12" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </Border>
+                                <!-- Spatial Tab -->
+                                <Border x:Name="SpatialTabHeader" Background="Transparent" Padding="14,10" Cursor="Hand" MouseDown="SpatialTab_Click"
+                                        CornerRadius="4,4,0,0" Margin="2,4,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="M 8,2 A 6,6 0 1 0 8,14 A 6,6 0 1 0 8,2 M 8,5 A 3,3 0 1 0 8,11 A 3,3 0 1 0 8,5 M 8,7 A 1,1 0 1 0 8,9 A 1,1 0 1 0 8,7"
+                                              Stroke="{StaticResource SecondaryForegroundBrush}" StrokeThickness="1.2" Fill="Transparent"
+                                              Width="12" Height="12" Margin="0,0,8,0"/>
+                                        <TextBlock Text="SPATIAL" Foreground="{StaticResource SecondaryForegroundBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </DockPanel>
                     </Border>

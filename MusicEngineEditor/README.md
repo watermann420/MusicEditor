@@ -233,3 +233,159 @@ Timeline-based arrangement editing:
 - **Track Templates (Ctrl+Shift+T)**: Save and recall track configurations with effects chains
 - **Track Import**: Import tracks from other projects with all settings
 - **Workspace Manager (Ctrl+Shift+W)**: Save and restore window layouts and panel configurations
+
+## Spatial Audio
+
+### Surround Panner Control
+- 2D panner for 5.1/7.1 surround speaker layouts
+- Visual speaker positions with source indicator
+- LFE level and center divergence controls
+
+### Binaural Renderer Control
+- 3D head visualization with rotation tracking
+- HRTF profile selection (KEMAR, CIPIC, custom)
+- Room simulation with size and damping
+- Near-field compensation and crossfeed
+
+### Ambisonic Control
+- Ambisonic order selection (1st, 2nd, 3rd order)
+- Encoder with azimuth, elevation, distance
+- Decoder for various speaker configurations
+- Rotation controls (yaw, pitch, roll)
+
+### Key Files
+- `Controls/Spatial/SurroundPannerControl.xaml`
+- `Controls/Spatial/BinauralRendererControl.xaml`
+- `Controls/Spatial/AmbisonicControl.xaml`
+- `Controls/Spatial/SpatialAudioPanel.xaml`
+- `Services/SpatialAudioService.cs`
+
+## Creative Effects
+
+### AutoTune Control
+- Key/scale selector with 15+ scales
+- Correction speed and humanize amount
+- Formant preservation
+- Real-time pitch graph visualization
+
+### BeatRepeat Control
+- Grid size selection (1/4, 1/8, 1/16, 1/32)
+- 8x16 gate pattern editor
+- Decay and pitch shift per repeat
+- Stutter mode and probability
+
+### Harmonizer Control
+- 4 harmony voice slots
+- Interval, detune, level, pan, delay per voice
+- Scale lock for diatonic harmonies
+- Keyboard visualization of harmonies
+
+### GlitchMachine Control
+- 8 toggleable effect modules
+- Chaos amount and trigger rate
+- 8-step pattern sequencer
+- Real-time waveform display
+
+### SpectralFreeze Control
+- FFT freeze with 4 snapshot slots
+- Morphing between frozen spectrums
+- Spectral shift and tilt
+- Live/frozen spectrum overlay
+
+### Lo-Fi Effects
+| Effect | Features |
+|--------|----------|
+| TapeStop | Stop/start time, wow/flutter |
+| VinylEmulation | Crackle, pops, dust, warp, RPM |
+| TapeSaturation | Bias, hiss, tape speed, rolloff |
+| Bitcrusher | Bit depth, sample rate, dither |
+
+### Saturation
+| Effect | Features |
+|--------|----------|
+| Saturator | Tube, tape, transistor, digital modes |
+| Exciter | Frequency bands, harmonic amount |
+
+## Analysis Panels
+
+### Guitar Tuner Panel
+- Circular arc tuner with needle indicator
+- Note name, octave, cents deviation
+- 6-string guitar visualization
+- 10 tuning presets (Standard, Drop D, DADGAD, etc.)
+- Strobe tuner mode for precision
+
+### Chord Detector Panel
+- Large chord name display
+- Piano keyboard with detected notes
+- Guitar chord diagrams
+- Roman numeral analysis
+- Chord history list
+
+### Key Detector Panel
+- Circle of fifths visualization
+- Chromagram histogram
+- Mode detection (Ionian-Locrian)
+- Key change timeline
+- Relative/parallel key display
+
+### Tempo Detector Panel
+- BPM display with tap tempo
+- Beat grid visualization
+- Time signature detection
+- Tempo variation graph
+- Half-time/double-time alternatives
+
+### Loop Finder Panel
+- Waveform with loop regions
+- Loop candidates with similarity scores
+- Crossfade preview
+- A/B comparison mode
+- Export selected loop
+
+### Key Files
+- `Controls/Analysis/GuitarTunerPanel.xaml`
+- `Controls/Analysis/ChordDetectorPanel.xaml`
+- `Controls/Analysis/KeyDetectorPanel.xaml`
+- `Controls/Analysis/TempoDetectorPanel.xaml`
+- `Controls/Analysis/LoopFinderPanel.xaml`
+- `Controls/Analysis/AnalysisPanel.xaml`
+- `Services/IntegratedAnalysisService.cs`
+
+## Network/Sync
+
+### Ableton Link (LinkSyncPanel)
+- Enable/disable Link synchronization
+- Connected peers display
+- Session tempo with lock option
+- Visual metronome with beat indicators
+- Latency compensation
+
+### OSC Control (OSCControlPanel)
+- OSC server with configurable ports
+- Message monitor with timestamps
+- Address mapping with learn mode
+- Value range mapping
+- Preset save/load
+
+### Network MIDI (NetworkMIDIPanel)
+- RTP-MIDI session management
+- Bonjour/mDNS discovery
+- Session create/join/leave
+- Channel filtering (1-16)
+- Latency monitoring
+
+### Machine Control (MachineControlPanel)
+- MMC (MIDI Machine Control) support
+- MTC (MIDI Time Code) generator/receiver
+- Timecode display (HH:MM:SS:FF)
+- Frame rate selection (24/25/29.97/30)
+- Chase lock indicator
+
+### Key Files
+- `Controls/Network/LinkSyncPanel.xaml`
+- `Controls/Network/OSCControlPanel.xaml`
+- `Controls/Network/NetworkMIDIPanel.xaml`
+- `Controls/Network/MachineControlPanel.xaml`
+- `Controls/Network/NetworkSyncPanel.xaml`
+- `Services/NetworkSyncService.cs`

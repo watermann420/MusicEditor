@@ -1,0 +1,296 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Effects.VinylEmulationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="340"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#0D0D0D</Color>
+        <Color x:Key="PanelColor">#181818</Color>
+        <Color x:Key="AccentColor">#00D9FF</Color>
+        <Color x:Key="TextColor">#E0E0E0</Color>
+        <Color x:Key="TextDimColor">#808080</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+        <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+
+        <!-- Label Style -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Value Style -->
+        <Style x:Key="ValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="MinWidth" Value="50"/>
+        </Style>
+
+        <!-- Header Style -->
+        <Style x:Key="HeaderStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Section Header Style -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,8,0,4"/>
+        </Style>
+
+        <!-- Panel Style -->
+        <Style x:Key="PanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <!-- Slider Style -->
+        <Style x:Key="VinylSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid>
+                            <Border x:Name="TrackBackground"
+                                    Height="4"
+                                    Background="{StaticResource BorderBrush}"
+                                    CornerRadius="2"
+                                    VerticalAlignment="Center"/>
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Height="4"
+                                                        Background="{StaticResource AccentBrush}"
+                                                        CornerRadius="2,0,0,2"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Width="14" Height="14"
+                                                         Fill="{StaticResource AccentBrush}"
+                                                         Stroke="{StaticResource BackgroundBrush}"
+                                                         StrokeThickness="2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="VinylComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
+        <!-- RPM Radio Button Style -->
+        <Style x:Key="RpmRadioStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource PanelStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <TextBlock Grid.Row="0" Text="VINYL EMULATION" Style="{StaticResource HeaderStyle}" Margin="0,0,0,12"/>
+
+            <!-- Age Selector -->
+            <Grid Grid.Row="1" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Condition:" Style="{StaticResource LabelStyle}"/>
+                <ComboBox Grid.Column="1" x:Name="AgeCombo"
+                          Style="{StaticResource VinylComboBoxStyle}"
+                          SelectionChanged="AgeCombo_SelectionChanged">
+                    <ComboBoxItem Content="New" IsSelected="False"/>
+                    <ComboBoxItem Content="Used" IsSelected="True"/>
+                    <ComboBoxItem Content="Vintage"/>
+                    <ComboBoxItem Content="Damaged"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- RPM Selector -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,16">
+                <TextBlock Text="SPEED" Style="{StaticResource SectionHeaderStyle}"/>
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton x:Name="Rpm33Radio" Content="33" Style="{StaticResource RpmRadioStyle}"
+                                 IsChecked="True" Checked="RpmRadio_Checked"/>
+                    <RadioButton x:Name="Rpm45Radio" Content="45" Style="{StaticResource RpmRadioStyle}"
+                                 Checked="RpmRadio_Checked"/>
+                    <RadioButton x:Name="Rpm78Radio" Content="78" Style="{StaticResource RpmRadioStyle}"
+                                 Checked="RpmRadio_Checked"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Crackle Amount -->
+            <StackPanel Grid.Row="3" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Crackle" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="CrackleValue" Text="30%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="CrackleSlider"
+                        Style="{StaticResource VinylSliderStyle}"
+                        Value="30"
+                        ValueChanged="CrackleSlider_ValueChanged"
+                        ToolTip="Amount of continuous vinyl crackle"/>
+            </StackPanel>
+
+            <!-- Pop Frequency -->
+            <StackPanel Grid.Row="4" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Pops" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="PopValue" Text="20%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="PopSlider"
+                        Style="{StaticResource VinylSliderStyle}"
+                        Value="20"
+                        ValueChanged="PopSlider_ValueChanged"
+                        ToolTip="Frequency of random pops and clicks"/>
+            </StackPanel>
+
+            <!-- Dust Amount -->
+            <StackPanel Grid.Row="5" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Dust" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="DustValue" Text="15%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="DustSlider"
+                        Style="{StaticResource VinylSliderStyle}"
+                        Value="15"
+                        ValueChanged="DustSlider_ValueChanged"
+                        ToolTip="Amount of dust particle noise"/>
+            </StackPanel>
+
+            <!-- Surface Noise -->
+            <StackPanel Grid.Row="6" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Surface Noise" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="SurfaceNoiseValue" Text="25%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="SurfaceNoiseSlider"
+                        Style="{StaticResource VinylSliderStyle}"
+                        Value="25"
+                        ValueChanged="SurfaceNoiseSlider_ValueChanged"
+                        ToolTip="Overall surface noise level"/>
+            </StackPanel>
+
+            <!-- Warp Amount -->
+            <StackPanel Grid.Row="7" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Warp (Wobble)" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="WarpValue" Text="10%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="WarpSlider"
+                        Style="{StaticResource VinylSliderStyle}"
+                        Value="10"
+                        ValueChanged="WarpSlider_ValueChanged"
+                        ToolTip="Record warp causing pitch wobble"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

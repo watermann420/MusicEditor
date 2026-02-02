@@ -148,6 +148,9 @@ public partial class App : Application
         // Recent projects service
         services.AddSingleton<IRecentProjectsService, RecentProjectsService>();
 
+        // Spatial audio service
+        services.AddSingleton<SpatialAudioService>();
+
         // ViewModels
         services.AddTransient<MainViewModel>();
         services.AddTransient<ProjectExplorerViewModel>();

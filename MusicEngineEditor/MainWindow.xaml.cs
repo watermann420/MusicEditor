@@ -2554,6 +2554,11 @@ public partial class MainWindow : Window
         HideRightPanel();
     }
 
+    private void SpatialTab_Click(object sender, MouseButtonEventArgs e)
+    {
+        SwitchRightPanelTab("spatial");
+    }
+
     private void PresetsTab_Click(object sender, MouseButtonEventArgs e)
     {
         SwitchRightPanelTab("presets");

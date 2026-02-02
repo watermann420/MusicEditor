@@ -1,0 +1,271 @@
+<UserControl x:Class="MusicEngineEditor.Controls.Effects.ExciterControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="340"
+             Background="#0D0D0D">
+
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="BackgroundColor">#0D0D0D</Color>
+        <Color x:Key="PanelColor">#181818</Color>
+        <Color x:Key="AccentColor">#00D9FF</Color>
+        <Color x:Key="TextColor">#E0E0E0</Color>
+        <Color x:Key="TextDimColor">#808080</Color>
+        <Color x:Key="BorderColor">#2A2A2A</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+        <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+
+        <!-- Label Style -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Value Style -->
+        <Style x:Key="ValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="MinWidth" Value="70"/>
+        </Style>
+
+        <!-- Header Style -->
+        <Style x:Key="HeaderStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Section Header Style -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,8,0,6"/>
+        </Style>
+
+        <!-- Panel Style -->
+        <Style x:Key="PanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <!-- Slider Style -->
+        <Style x:Key="ExciterSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid>
+                            <Border x:Name="TrackBackground"
+                                    Height="4"
+                                    Background="{StaticResource BorderBrush}"
+                                    CornerRadius="2"
+                                    VerticalAlignment="Center"/>
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Height="4"
+                                                        Background="{StaticResource AccentBrush}"
+                                                        CornerRadius="2,0,0,2"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Width="14" Height="14"
+                                                         Fill="{StaticResource AccentBrush}"
+                                                         Stroke="{StaticResource BackgroundBrush}"
+                                                         StrokeThickness="2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Frequency Preset Button Style -->
+        <Style x:Key="FreqPresetButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="#222222"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="#0D0D0D"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource PanelStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <TextBlock Grid.Row="0" Text="EXCITER" Style="{StaticResource HeaderStyle}" Margin="0,0,0,12"/>
+
+            <!-- Frequency Range Section -->
+            <TextBlock Grid.Row="1" Text="FREQUENCY RANGE" Style="{StaticResource SectionHeaderStyle}"/>
+
+            <!-- Low Frequency -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Low Freq" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="LowFreqValue" Text="200 Hz" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="LowFreqSlider"
+                        Style="{StaticResource ExciterSliderStyle}"
+                        Minimum="20" Maximum="2000" Value="200"
+                        ValueChanged="LowFreqSlider_ValueChanged"
+                        ToolTip="Lower bound of excitation frequency range"/>
+            </StackPanel>
+
+            <!-- High Frequency -->
+            <StackPanel Grid.Row="3" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="High Freq" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="HighFreqValue" Text="8.0 kHz" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="HighFreqSlider"
+                        Style="{StaticResource ExciterSliderStyle}"
+                        Minimum="1000" Maximum="20000" Value="8000"
+                        ValueChanged="HighFreqSlider_ValueChanged"
+                        ToolTip="Upper bound of excitation frequency range"/>
+            </StackPanel>
+
+            <!-- Frequency Presets -->
+            <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,16">
+                <Button Content="Bass" Style="{StaticResource FreqPresetButtonStyle}" Click="FreqPreset_Click" Tag="bass"/>
+                <Button Content="Mid" Style="{StaticResource FreqPresetButtonStyle}" Click="FreqPreset_Click" Tag="mid"/>
+                <Button Content="Air" Style="{StaticResource FreqPresetButtonStyle}" Click="FreqPreset_Click" Tag="air"/>
+                <Button Content="Full" Style="{StaticResource FreqPresetButtonStyle}" Click="FreqPreset_Click" Tag="full"/>
+            </StackPanel>
+
+            <!-- Harmonic Amount -->
+            <StackPanel Grid.Row="5" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Harmonics" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="HarmonicValue" Text="40%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="HarmonicSlider"
+                        Style="{StaticResource ExciterSliderStyle}"
+                        Value="40"
+                        ValueChanged="HarmonicSlider_ValueChanged"
+                        ToolTip="Amount of harmonic generation"/>
+            </StackPanel>
+
+            <!-- Brightness -->
+            <StackPanel Grid.Row="6" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Brightness" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="BrightnessValue" Text="50%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="BrightnessSlider"
+                        Style="{StaticResource ExciterSliderStyle}"
+                        Value="50"
+                        ValueChanged="BrightnessSlider_ValueChanged"
+                        ToolTip="Character of harmonics (warm to airy)"/>
+            </StackPanel>
+
+            <!-- Mix -->
+            <StackPanel Grid.Row="7">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Mix" Style="{StaticResource LabelStyle}"/>
+                    <TextBlock Grid.Column="1" x:Name="MixValue" Text="100%" Style="{StaticResource ValueStyle}"/>
+                </Grid>
+                <Slider x:Name="MixSlider"
+                        Style="{StaticResource ExciterSliderStyle}"
+                        Value="100"
+                        ValueChanged="MixSlider_ValueChanged"
+                        ToolTip="Dry/Wet mix"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
