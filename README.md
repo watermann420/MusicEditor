@@ -217,9 +217,18 @@ led.cc(1, 80, 9);      // some controllers use CC for lights
 ## Code Example
 
 ```csharp
+// Set BPM and start the transport
+Sequencer.Bpm = 120;
+Sequencer.Start();
+
 // Create instruments
-var bass = new SimpleSynth();
-var lead = new SimpleSynth();
+var bass = CreateSynth();
+bass.SetParameter("waveform", 2); // 0=Sine, 1=Square, 2=Saw, 3=Triangle, 4=Noise
+bass.SetParameter("cutoff", 0.5f);
+
+var lead = CreateSynth();
+lead.SetParameter("waveform", 1);
+lead.SetParameter("cutoff", 0.7f);
 
 // Pattern can drive multiple synths
 var pat = CreatePattern(bass, lead);
@@ -240,7 +249,7 @@ double mod = r.next();                 // reuse across calls
 bool hit = random.nextBool(0.3);       // 30% chance
 
 // Play!
-pat.Play();
+pat.Start();
 ```
 
 ---
