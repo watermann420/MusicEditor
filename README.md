@@ -43,11 +43,6 @@
 - Panel visibility and sizing presets
 - Workspace Manager (Ctrl+Shift+W)
 
-### AI Assistant Panel (F3)
-- **Auto-Master**: One-click mastering with LUFS targeting and A/B comparison
-- **Auto-Mix**: Frequency collision detection, EQ/compression suggestions
-- **Melody Generator**: Scale-aware melody generation with style presets
-- **Chord Suggester**: Context-aware chord suggestions with Roman numeral notation
 
 ### Spatial Audio
 - **3D Positioning**: Place sounds anywhere in 3D space
@@ -69,13 +64,6 @@
 - **EPiano**: Rhodes and Wurlitzer models
 - **Sampler/Slicer**: Waveform slicing with pad triggering
 
-### Analysis Tools
-- **Guitar Tuner**: Circular display with strobe mode and 10 tuning presets
-- **Chord Detector**: Piano/guitar visualization with Roman numeral analysis
-- **Key Detector**: Circle of fifths with chromagram and mode detection
-- **Tempo Detector**: BPM display with tap tempo and beat grid visualization
-- **Loop Finder**: Automatic loop point detection with A/B comparison
-
 ### Network/Sync
 - **Ableton Link**: Tempo sync with peer discovery and visual metronome
 - **OSC Control**: Message mapping with learn mode and presets
@@ -96,24 +84,6 @@
 - **GlitchMachine**: 8 effect modules with pattern sequencer
 - **SpectralFreeze**: FFT freeze with 4 slots and morphing
 - **Lo-Fi**: TapeStop, VinylEmulation, TapeSaturation, Bitcrusher
-
-### Audio-Reactive UI (NEW)
-- **Audio Reactive Lighting**: UI elements glow and pulse with the music
-  - Run button pulses with bass frequencies and beat transients
-  - Sidebar icons create wave-like effects based on mid frequencies
-  - Status indicator brightness varies with overall audio level
-- **Audio Visualizer Background**: Subtle ambient background effects
-  - Bass glow (bottom, purple/blue gradient)
-  - Mid glow (side edges, cyan)
-  - High sparkle (top, white/cyan)
-  - Center ambient pulse that scales with beat
-  - Configurable intensity (default 12% opacity)
-- **Colored Output Console**: Log levels displayed with colors
-  - Errors: Red (#FF4757)
-  - Warnings: Yellow (#FFB800)
-  - Debug: Gray (#808080)
-  - Info: White (default)
-
 
 ---
 
