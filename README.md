@@ -392,7 +392,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ## Documentation
 
-- [Modulation System](docs/MODULATION_SYSTEM.md) - VCV Rack-style parameter modulation
+
 - [CONTRIBUTING Guide](CONTRIBUTING.md) - How to contribute
 
 ---
