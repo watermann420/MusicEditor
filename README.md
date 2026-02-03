@@ -368,44 +368,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ---
 
-## Keyboard Shortcuts
 
-### Quick Access (Function Keys)
-| Key | Action |
-|-----|--------|
-| F3 | AI Assistant Panel |
-| F4 | Synth Editor |
-| F5 | Effects Editor |
-| F6 | Pattern Editor |
-| F7 | Mixer |
-| F8 | Arrangement |
-| F9 | Performance Monitor |
-| F10 | Audio Statistics |
-| F11 | Toggle Fullscreen |
-| F12 | Plugin Manager (via command palette) |
 
-### Workspace Presets
-| Key | Workspace |
-|-----|-----------|
-| Ctrl+1 | Recording |
-| Ctrl+2 | Mixing |
-| Ctrl+3 | Mastering |
-| Ctrl+4 | Editing |
-| Ctrl+5 | Performance |
-
-### Editor Shortcuts (Ctrl+Shift)
-| Shortcut | Action |
-|----------|--------|
-| Ctrl+Shift+M | Mixer |
-| Ctrl+Shift+P | Pattern Editor |
-| Ctrl+Shift+A | Arrangement |
-| Ctrl+Shift+E | Effects Editor |
-| Ctrl+Shift+Y | Synth Editor |
-| Ctrl+Shift+W | Workspace Manager |
-| Ctrl+Shift+T | Track Template |
-| Ctrl+Shift+R | Render Queue |
-| Ctrl+Shift+L | Loudness Report |
-| Ctrl+Shift+G | Groove Template |
 
 ### Command Palette & Transport
 | Shortcut | Action |
