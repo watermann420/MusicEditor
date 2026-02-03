@@ -452,3 +452,5 @@ All core tools and assets created through this effort will remain freely availab
 to the community.
 
 This project is driven by openness, long-term sustainability, and shared creativity.
+---
+**Music Editor** - Created by Watermann420 and Contributors
