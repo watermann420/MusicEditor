@@ -99,24 +99,7 @@ Then **double-click `StartEditor.bat`** - done!
 
 ---
 
-## Inline Visuals (editor-only)
 
-Add a command as a comment and the visual appears right under that line:
-
-```csharp
-// .punchcard
-// .pianoroll
-// .mixervisual height=160
-```
-
-- 60 FPS updates
-- Notes glow while playing; pattern steps pulse; `midi.device(0)` index glows on any incoming MIDI (notes/CC/clock) when logging or routing is active
-- Mixer meters show per-channel levels
-- Only visible, non-comment lines render for performance
-
-See `docs/InlineVisuals.md` for details.
-
----
 
 ## Audio-Reactive UI
 
