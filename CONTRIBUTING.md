@@ -23,8 +23,8 @@ Welcome to **MusicEngineEditor**! This guide will help you understand the projec
 
 | Component | Description | Status |
 |-----------|-------------|--------|
-| **MusicEngine** (Core) | The audio engine - written by hand | Stable |
-| **MusicEngineEditor** | Visual editor/IDE - AI-enhanced | Active Development |
+| **MusicEngine** (Core) | The audio engine  | Stable/Active Development |
+| **MusicEngineEditor** | Visual editor/IDE | Stable/Active Development |
 
 > **Note:** The core MusicEngine was written manually. The Editor and many features are AI-assisted and may still be rough around the edges. Contributions to improve stability are welcome!
 
