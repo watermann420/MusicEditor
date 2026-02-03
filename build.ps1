@@ -9,7 +9,9 @@ param(
     [switch]$Installer,
     [switch]$UiSmoke,
     [switch]$AudioSmoke,
-    [switch]$PerfSmoke
+    [switch]$PerfSmoke,
+    [switch]$SkipNative,
+    [switch]$NativeOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -20,7 +22,7 @@ Write-Host "  MusicEngineEditor Build Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-$totalSteps = 7
+$totalSteps = 8
 
 # Check if dotnet is installed
 Write-Host "[1/$totalSteps] Checking .NET SDK..." -ForegroundColor Yellow
@@ -115,9 +117,81 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "      MusicEngineEditor packages restored" -ForegroundColor Green
 
+# Build VstBridge Native (C++) if not skipped
+Write-Host ""
+if (-not $SkipNative) {
+    Write-Host "[5/$totalSteps] Building MusicEngine.VstBridge Native (C++)..." -ForegroundColor Yellow
+    $vstBridgePath = "$scriptDir\..\MusicEngine\MusicEngine.VstBridge"
+    $vstBridgeBuildPath = "$vstBridgePath\build_cmake"
+
+    # Check if CMake is available
+    $cmakeAvailable = $false
+    try {
+        $cmakeVersion = cmake --version 2>$null | Select-Object -First 1
+        if ($cmakeVersion) {
+            $cmakeAvailable = $true
+            Write-Host "      CMake found: $cmakeVersion" -ForegroundColor Gray
+        }
+    } catch {
+        Write-Host "      CMake not found - skipping native build" -ForegroundColor Yellow
+    }
+
+    if ($cmakeAvailable -and (Test-Path "$vstBridgePath\CMakeLists.txt")) {
+        # Create build directory
+        if (-not (Test-Path $vstBridgeBuildPath)) {
+            New-Item -ItemType Directory -Path $vstBridgeBuildPath -Force | Out-Null
+        }
+
+        # Configure with CMake
+        Write-Host "      Configuring CMake..." -ForegroundColor Gray
+        Push-Location $vstBridgeBuildPath
+        $cmakeConfigResult = cmake -S "$vstBridgePath" -B . -A x64 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "WARNING: CMake configuration failed" -ForegroundColor Yellow
+            Write-Host $cmakeConfigResult -ForegroundColor Gray
+            Write-Host "      Native VST Bridge will not be built" -ForegroundColor Yellow
+        } else {
+            # Build with CMake
+            Write-Host "      Building native library..." -ForegroundColor Gray
+            $cmakeBuildResult = cmake --build . --config $configuration 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "WARNING: Native build failed" -ForegroundColor Yellow
+                Write-Host $cmakeBuildResult -ForegroundColor Gray
+                Write-Host "      Continuing without native VST Bridge" -ForegroundColor Yellow
+            } else {
+                Write-Host "      VstBridge Native built successfully" -ForegroundColor Green
+
+                # Copy DLL to managed project runtimes folder
+                $nativeDll = "$vstBridgePath\build\x64\MusicEngine.VstBridge.Native.dll"
+                $runtimeDir = "$vstBridgePath\managed\runtimes\win-x64\native"
+                if (Test-Path $nativeDll) {
+                    if (-not (Test-Path $runtimeDir)) {
+                        New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
+                    }
+                    Copy-Item $nativeDll $runtimeDir -Force
+                    Write-Host "      Native DLL copied to managed project" -ForegroundColor Green
+                }
+            }
+        }
+        Pop-Location
+    } else {
+        if (-not (Test-Path "$vstBridgePath\CMakeLists.txt")) {
+            Write-Host "      VstBridge CMakeLists.txt not found - skipping native build" -ForegroundColor Gray
+        }
+    }
+
+    if ($NativeOnly) {
+        Write-Host ""
+        Write-Host "Native build completed (NativeOnly mode)" -ForegroundColor Green
+        exit 0
+    }
+} else {
+    Write-Host "[5/$totalSteps] Skipping native build (-SkipNative)" -ForegroundColor Gray
+}
+
 # Build MusicEngine (specify .csproj explicitly to avoid MSB1011)
 Write-Host ""
-Write-Host "[5/$totalSteps] Building MusicEngine..." -ForegroundColor Yellow
+Write-Host "[6/$totalSteps] Building MusicEngine..." -ForegroundColor Yellow
 $musicEngineCsproj = "$scriptDir\..\MusicEngine\MusicEngine.csproj"
 $buildResult = dotnet build $musicEngineCsproj -c $configuration --no-restore 2>&1
 if ($LASTEXITCODE -ne 0) {
@@ -129,7 +203,7 @@ Write-Host "      MusicEngine built successfully" -ForegroundColor Green
 
 # Build MusicEngineEditor (specify .csproj explicitly to avoid MSB1011)
 Write-Host ""
-Write-Host "[6/$totalSteps] Building MusicEngineEditor..." -ForegroundColor Yellow
+Write-Host "[7/$totalSteps] Building MusicEngineEditor..." -ForegroundColor Yellow
 $editorCsproj = "$scriptDir\MusicEngineEditor\MusicEngineEditor.csproj"
 $buildResult = dotnet build $editorCsproj -c $configuration --no-restore 2>&1
 if ($LASTEXITCODE -ne 0) {
@@ -141,7 +215,7 @@ Write-Host "      MusicEngineEditor built successfully" -ForegroundColor Green
 
 # Run tests
 Write-Host ""
-Write-Host "[7/$totalSteps] Running tests..." -ForegroundColor Yellow
+Write-Host "[8/$totalSteps] Running tests..." -ForegroundColor Yellow
 Push-Location "$scriptDir\MusicEngineEditor.Tests"
 $testResult = dotnet test -c $configuration --logger "trx;LogFileName=TestResults.trx" 2>&1
 if ($LASTEXITCODE -ne 0) {
