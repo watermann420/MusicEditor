@@ -408,28 +408,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - [MusicEngine Core](https://github.com/watermann420/MusicEngine)
 - [Report Issues](https://github.com/watermann420/MusicEngineEditor/issues)
 
-  ---
-## Donations
 
-If you want to support the development of **MusicEngine and MusicEditor**,  
-you can do so via bank transfer:
-
-**Account Holder:** Yannis Watermann  
-**Bank:** Sissquote Bank SA  
-**Address:** Chemin de la Crètaux 33  
-Case postale 319  
-1196 Gland  
-Switzerland  
-
-**IBAN:** CH98 0878 1000 2193 5970 0  
-**BIC / SWIFT:** SWQBCHZZXXX  
-
-**Purpose / Reference:** MusicEngine and MusicEditor Donation
-
-If you need an invoice, confirmation, or want to discuss funding or sponsorships,  
-please contact: musicenginebusiness@gmail.com
-
-Thank you for supporting independent open-source development ❤️
 ---
 ## Free & Open Source Commitment
 
@@ -452,5 +431,7 @@ All core tools and assets created through this effort will remain freely availab
 to the community.
 
 This project is driven by openness, long-term sustainability, and shared creativity.
+
+Thank you for supporting independent open-source development ❤️
 ---
 **Music Editor** - Created by Watermann420 and Contributors
