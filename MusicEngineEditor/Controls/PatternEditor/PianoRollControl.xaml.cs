@@ -5,11 +5,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 
 namespace MusicEngineEditor.Controls.PatternEditor;
@@ -41,6 +43,14 @@ public partial class PianoRollControl : UserControl
     private static readonly Color BlackKeyLaneColor = (Color)ColorConverter.ConvertFromString("#151515")!;
     private static readonly Color GridLineColor = (Color)ColorConverter.ConvertFromString("#2A2A2A")!;
     private static readonly Color BarLineColor = (Color)ColorConverter.ConvertFromString("#3A3A3A")!;
+    private static readonly Color PlayingNoteColor = (Color)ColorConverter.ConvertFromString("#FFD700")!;
+    private static readonly Effect PlayingNoteGlow = new DropShadowEffect
+    {
+        Color = PlayingNoteColor,
+        BlurRadius = 16,
+        ShadowDepth = 0,
+        Opacity = 0.9
+    };
 
     #endregion
 
@@ -48,6 +58,7 @@ public partial class PianoRollControl : UserControl
 
     private PianoRollViewModel _viewModel;
     private readonly Dictionary<NoteItem, Rectangle> _noteRectangles = new();
+    private readonly Dictionary<NoteItem, PropertyChangedEventHandler> _noteSubscriptions = new();
     private Rectangle? _ghostNoteRect;
     private int _ghostNotePitch = -1;
     private double _ghostNoteBeat = -1;
@@ -67,8 +78,24 @@ public partial class PianoRollControl : UserControl
         SizeChanged += OnSizeChanged;
 
         // Subscribe to notes collection changes
-        _viewModel.Notes.CollectionChanged += (_, _) =>
+        _viewModel.Notes.CollectionChanged += (_, e) =>
         {
+            if (e?.OldItems != null)
+            {
+                foreach (NoteItem note in e.OldItems)
+                {
+                    DetachNote(note);
+                }
+            }
+
+            if (e?.NewItems != null)
+            {
+                foreach (NoteItem note in e.NewItems)
+                {
+                    AttachNote(note);
+                }
+            }
+
             RenderNotes();
             UpdateNoteCount();
         };
@@ -80,6 +107,11 @@ public partial class PianoRollControl : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        foreach (var note in _viewModel.Notes)
+        {
+            AttachNote(note);
+        }
+
         RenderAll();
     }
 
@@ -304,16 +336,11 @@ public partial class PianoRollControl : UserControl
             RadiusX = NoteCornerRadius,
             RadiusY = NoteCornerRadius,
             Fill = new SolidColorBrush(noteColor) { Opacity = velocityOpacity },
-            Stroke = note.IsSelected ? new SolidColorBrush(Colors.White) : null,
-            StrokeThickness = note.IsSelected ? 2.0 : 0,
             Cursor = Cursors.Hand,
             Tag = note
         };
 
-        // Apply effect
-        rect.Effect = note.IsSelected
-            ? FindResource("SelectedNoteGlow") as System.Windows.Media.Effects.Effect
-            : FindResource("NoteDropShadow") as System.Windows.Media.Effects.Effect;
+        ApplyNoteVisuals(note, rect, noteColor, velocityOpacity);
 
         Canvas.SetLeft(rect, x + 1);
         Canvas.SetTop(rect, y + 1);
@@ -367,6 +394,36 @@ public partial class PianoRollControl : UserControl
     private void UpdateNoteCount()
     {
         NoteCountText.Text = _viewModel.Notes.Count.ToString();
+    }
+
+    private static Color BrightenColor(Color color, double factor)
+    {
+        return Color.FromArgb(
+            color.A,
+            (byte)Math.Min(255, color.R + (255 - color.R) * factor),
+            (byte)Math.Min(255, color.G + (255 - color.G) * factor),
+            (byte)Math.Min(255, color.B + (255 - color.B) * factor));
+    }
+
+    private void ApplyNoteVisuals(NoteItem note, Rectangle rect, Color baseColor, double velocityOpacity)
+    {
+        if (note.IsPlaying)
+        {
+            var bright = BrightenColor(baseColor, 0.4);
+            rect.Fill = new SolidColorBrush(bright) { Opacity = Math.Min(1.0, velocityOpacity + 0.25) };
+            rect.Stroke = new SolidColorBrush(PlayingNoteColor);
+            rect.StrokeThickness = 2.5;
+            rect.Effect = PlayingNoteGlow;
+        }
+        else
+        {
+            rect.Fill = new SolidColorBrush(baseColor) { Opacity = velocityOpacity };
+            rect.Stroke = note.IsSelected ? new SolidColorBrush(Colors.White) : null;
+            rect.StrokeThickness = note.IsSelected ? 2.0 : 0;
+            rect.Effect = note.IsSelected
+                ? FindResource("SelectedNoteGlow") as Effect
+                : FindResource("NoteDropShadow") as Effect;
+        }
     }
 
     #endregion
@@ -692,14 +749,75 @@ public partial class PianoRollControl : UserControl
         _viewModel = viewModel;
         DataContext = _viewModel;
 
-        _viewModel.Notes.CollectionChanged += (_, _) =>
+        _viewModel.Notes.CollectionChanged += (_, e) =>
         {
+            if (e?.OldItems != null)
+            {
+                foreach (NoteItem note in e.OldItems)
+                {
+                    DetachNote(note);
+                }
+            }
+
+            if (e?.NewItems != null)
+            {
+                foreach (NoteItem note in e.NewItems)
+                {
+                    AttachNote(note);
+                }
+            }
+
             RenderNotes();
             UpdateNoteCount();
         };
+
+        foreach (var note in _viewModel.Notes)
+        {
+            AttachNote(note);
+        }
 
         RenderAll();
     }
 
     #endregion
+
+    private void AttachNote(NoteItem note)
+    {
+        if (_noteSubscriptions.ContainsKey(note))
+        {
+            return;
+        }
+
+        PropertyChangedEventHandler handler = (_, args) =>
+        {
+            if (args.PropertyName == nameof(NoteItem.IsPlaying) ||
+                args.PropertyName == nameof(NoteItem.IsSelected) ||
+                args.PropertyName == nameof(NoteItem.Velocity))
+            {
+                UpdateNoteVisual(note);
+            }
+        };
+
+        note.PropertyChanged += handler;
+        _noteSubscriptions[note] = handler;
+    }
+
+    private void DetachNote(NoteItem note)
+    {
+        if (_noteSubscriptions.TryGetValue(note, out var handler))
+        {
+            note.PropertyChanged -= handler;
+            _noteSubscriptions.Remove(note);
+        }
+    }
+
+    private void UpdateNoteVisual(NoteItem note)
+    {
+        if (_noteRectangles.TryGetValue(note, out var rect))
+        {
+            var noteColor = GetVelocityColor(note.Velocity);
+            var velocityOpacity = 0.5 + (note.Velocity / 127.0) * 0.5;
+            ApplyNoteVisuals(note, rect, noteColor, velocityOpacity);
+        }
+    }
 }

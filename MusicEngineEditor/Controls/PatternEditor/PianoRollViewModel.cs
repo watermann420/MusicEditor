@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MusicEngine.Core;
 
 namespace MusicEngineEditor.Controls.PatternEditor;
 
@@ -54,6 +55,24 @@ public partial class NoteItem : ObservableObject
     /// </summary>
     [ObservableProperty]
     private bool _isSelected;
+
+    /// <summary>
+    /// Whether this note is currently playing.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isPlaying;
+
+    /// <summary>
+    /// Source pattern identifier for playback mapping.
+    /// </summary>
+    [ObservableProperty]
+    private Guid _sourcePatternId;
+
+    /// <summary>
+    /// Source note index within the pattern.
+    /// </summary>
+    [ObservableProperty]
+    private int _sourceNoteIndex = -1;
 
     /// <summary>
     /// Gets the note name with octave (e.g., "C4", "F#3").
@@ -104,7 +123,10 @@ public partial class NoteItem : ObservableObject
             Start = Start,
             Duration = Duration,
             Velocity = Velocity,
-            IsSelected = false
+            IsSelected = false,
+            IsPlaying = false,
+            SourcePatternId = SourcePatternId,
+            SourceNoteIndex = SourceNoteIndex
         };
     }
 }
@@ -194,6 +216,33 @@ public partial class PianoRollViewModel : ObservableObject
     {
         Notes.CollectionChanged += (_, _) => OnPropertyChanged(nameof(Notes));
         SelectedNotes.CollectionChanged += (_, _) => OnPropertyChanged(nameof(SelectedNotes));
+    }
+
+    /// <summary>
+    /// Loads notes from a MusicEngine.Core.Pattern into the piano roll.
+    /// </summary>
+    public void LoadFromPattern(MusicEngine.Core.Pattern pattern)
+    {
+        Notes.Clear();
+        SelectedNotes.Clear();
+
+        TotalBeats = Math.Max(1.0, pattern.LoopLength);
+
+        for (int i = 0; i < pattern.Events.Count; i++)
+        {
+            var evt = pattern.Events[i];
+            var item = new NoteItem
+            {
+                Pitch = Math.Clamp(evt.Note, 0, 127),
+                Start = Math.Max(0, evt.Beat),
+                Duration = Math.Max(GridResolution, evt.Duration),
+                Velocity = Math.Clamp(evt.Velocity, 0, 127),
+                SourcePatternId = pattern.Id,
+                SourceNoteIndex = i
+            };
+
+            Notes.Add(item);
+        }
     }
 
     #endregion

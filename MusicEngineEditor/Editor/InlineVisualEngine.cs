@@ -92,7 +92,7 @@ public sealed class InlineVisualEngine : IDisposable
     /// </summary>
     public void OnNoteTriggered(MusicalEvent e)
     {
-        _noteHighlighter.HighlightPitch(e.Note);
+        _noteHighlighter.HighlightEvent(e);
         foreach (var host in _hosts.Values)
         {
             host.NotifyNoteOn(e);
@@ -101,7 +101,7 @@ public sealed class InlineVisualEngine : IDisposable
 
     public void OnNoteEnded(MusicalEvent e)
     {
-        _noteHighlighter.ClearPitch(e.Note);
+        _noteHighlighter.ClearEvent(e);
         foreach (var host in _hosts.Values)
         {
             host.NotifyNoteOff(e);
@@ -220,7 +220,7 @@ public sealed class InlineVisualEngine : IDisposable
         {
             host.UpdatePosition();
         }
-}
+    }
 
 #endregion
 }
@@ -228,8 +228,7 @@ public sealed class InlineVisualEngine : IDisposable
 internal sealed class NoteHighlightTransformer : DocumentColorizingTransformer
 {
     private readonly TextEditor _editor;
-    private readonly Regex _noteRegex = new(@"Note\s*\(\s*(?<pitch>\d{1,3})", RegexOptions.Compiled);
-    private readonly Dictionary<int, List<(int offset, int length)>> _activeSpans = new();
+    private readonly Dictionary<object, List<(int offset, int length)>> _activeEventSpans = new();
     private readonly Dispatcher _dispatcher;
 
     public NoteHighlightTransformer(TextEditor editor)
@@ -238,26 +237,30 @@ internal sealed class NoteHighlightTransformer : DocumentColorizingTransformer
         _dispatcher = editor.Dispatcher;
     }
 
-    public void HighlightPitch(int pitch)
+    public void HighlightEvent(MusicalEvent e)
     {
         _dispatcher.InvokeAsync(() =>
         {
-            var spans = FindPitchSpans(pitch);
-            lock (_activeSpans)
+            var spans = GetEventSpans(e);
+            if (spans.Count == 0)
             {
-                _activeSpans[pitch] = spans;
+                return;
+            }
+            lock (_activeEventSpans)
+            {
+                _activeEventSpans[e] = spans;
             }
             _editor.TextArea.TextView.Redraw();
         }, DispatcherPriority.Background);
     }
 
-    public void ClearPitch(int pitch)
+    public void ClearEvent(MusicalEvent e)
     {
         _dispatcher.InvokeAsync(() =>
         {
-            lock (_activeSpans)
+            lock (_activeEventSpans)
             {
-                _activeSpans.Remove(pitch);
+                _activeEventSpans.Remove(e);
             }
             _editor.TextArea.TextView.Redraw();
         }, DispatcherPriority.Background);
@@ -266,13 +269,16 @@ internal sealed class NoteHighlightTransformer : DocumentColorizingTransformer
     protected override void ColorizeLine(DocumentLine line)
     {
         List<(int offset, int length)> spansForLine = new();
-        lock (_activeSpans)
+        lock (_activeEventSpans)
         {
-            foreach (var kvp in _activeSpans)
+            foreach (var kvp in _activeEventSpans)
             {
                 foreach (var span in kvp.Value)
                 {
-                    if (span.offset >= line.EndOffset || span.offset + span.length <= line.Offset) continue;
+                    if (span.offset >= line.EndOffset || span.offset + span.length <= line.Offset)
+                    {
+                        continue;
+                    }
                     spansForLine.Add(span);
                 }
             }
@@ -319,17 +325,59 @@ internal sealed class NoteHighlightTransformer : DocumentColorizingTransformer
         }
     }
 
-    private List<(int offset, int length)> FindPitchSpans(int pitch)
+    private List<(int offset, int length)> GetEventSpans(MusicalEvent e)
     {
-        var text = _editor.Document.Text;
-        var spans = new List<(int offset, int length)>();
-        foreach (Match m in _noteRegex.Matches(text))
+        if (e.SourceInfo != null && e.SourceInfo.EndIndex > e.SourceInfo.StartIndex)
         {
-            if (!int.TryParse(m.Groups["pitch"].Value, out var p)) continue;
-            if (p != pitch) continue;
-            spans.Add((m.Groups["pitch"].Index, m.Groups["pitch"].Length));
+            return new List<(int offset, int length)>
+            {
+                (e.SourceInfo.StartIndex, e.SourceInfo.EndIndex - e.SourceInfo.StartIndex)
+            };
         }
-        return spans;
+
+        var beat = TryGetEventBeat(e);
+        if (!beat.HasValue)
+        {
+            return new List<(int offset, int length)>();
+        }
+
+        var patternVar = e.SourcePattern?.Name;
+        var source = CodeSourceAnalyzer.GetSourceInfoForNote(
+            _editor.Document.Text,
+            e.Note,
+            beat.Value,
+            e.InstrumentName,
+            patternVar);
+
+        if ((source == null || source.EndIndex <= source.StartIndex) &&
+            e.Id.PatternIndex >= 0 && e.Id.NoteIndex >= 0)
+        {
+            source = CodeSourceAnalyzer.GetSourceInfoForNoteIndex(
+                _editor.Document.Text,
+                e.Id.PatternIndex,
+                e.Id.NoteIndex,
+                patternVar);
+        }
+
+        if (source == null || source.EndIndex <= source.StartIndex)
+        {
+            return new List<(int offset, int length)>();
+        }
+
+        return new List<(int offset, int length)>
+        {
+            (source.StartIndex, source.EndIndex - source.StartIndex)
+        };
+    }
+
+    private static double? TryGetEventBeat(MusicalEvent e)
+    {
+        if (e.NoteEvent != null)
+        {
+            return e.NoteEvent.Beat;
+        }
+
+        return e.CyclePosition;
     }
 }
 

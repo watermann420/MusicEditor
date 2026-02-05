@@ -22,6 +22,7 @@ using System.Xml;
 using ICSharpCode.AvalonEdit.Document;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using MusicEngine.Core;
 using MusicEngineEditor.Editor;
 using MusicEngineEditor.Models;
 using MusicEngineEditor.Services;
@@ -29,60 +30,13 @@ using MusicEngineEditor.Controls;
 using MusicEngineEditor.ViewModels;
 using MusicEngineEditor.Views;
 using MusicEngineEditor.Views.Dialogs;
+using MusicEngineEditor.Services;
+using MusicEngine.Core.Vst;
 
 namespace MusicEngineEditor;
 
 public partial class MainWindow : Window
 {
-    // Cached frozen brushes for hot-path methods (timer callbacks, audio reactive, log output)
-    private static readonly SolidColorBrush s_statusGreenBrush;
-    private static readonly SolidColorBrush s_statusGrayBrush;
-    private static readonly SolidColorBrush s_runButtonRedBrush;
-    private static readonly SolidColorBrush s_runButtonGreenBrush;
-    private static readonly SolidColorBrush s_statusTextGreenBrush;
-    private static readonly SolidColorBrush s_statusTextGrayBrush;
-    private static readonly SolidColorBrush s_logErrorBrush;
-    private static readonly SolidColorBrush s_logWarningBrush;
-    private static readonly SolidColorBrush s_logDebugBrush;
-    private static readonly SolidColorBrush s_logDefaultBrush;
-    private static readonly SolidColorBrush s_timestampBrush;
-
-    static MainWindow()
-    {
-        s_statusGreenBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88));
-        s_statusGreenBrush.Freeze();
-
-        s_statusGrayBrush = new SolidColorBrush(Color.FromRgb(0x6F, 0x73, 0x7A));
-        s_statusGrayBrush.Freeze();
-
-        s_runButtonRedBrush = new SolidColorBrush(Color.FromRgb(0x8B, 0x2D, 0x2D));
-        s_runButtonRedBrush.Freeze();
-
-        s_runButtonGreenBrush = new SolidColorBrush(Color.FromRgb(0x2D, 0x5A, 0x2D));
-        s_runButtonGreenBrush.Freeze();
-
-        s_statusTextGreenBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66));
-        s_statusTextGreenBrush.Freeze();
-
-        s_statusTextGrayBrush = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80));
-        s_statusTextGrayBrush.Freeze();
-
-        s_logErrorBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0x47, 0x57));
-        s_logErrorBrush.Freeze();
-
-        s_logWarningBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xB8, 0x00));
-        s_logWarningBrush.Freeze();
-
-        s_logDebugBrush = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80));
-        s_logDebugBrush.Freeze();
-
-        s_logDefaultBrush = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
-        s_logDefaultBrush.Freeze();
-
-        s_timestampBrush = new SolidColorBrush(Color.FromRgb(0x60, 0x60, 0x60));
-        s_timestampBrush.Freeze();
-    }
-
     private readonly EngineService _engineService;
     private readonly IProjectService _projectService;
     private readonly DispatcherTimer _statusTimer;
@@ -93,6 +47,7 @@ public partial class MainWindow : Window
     private bool _outputVisible = true;
     private bool _isRunning = false;
     private bool _isLiveMode = false;
+    private bool _showingOutput = true;
     private CompletionProvider? _completionProvider;
     private InlineSliderService? _inlineSliderService;
     private MinimapControl? _minimap;
@@ -102,6 +57,10 @@ public partial class MainWindow : Window
 
     // VST Plugin Windows
     private readonly Dictionary<string, VstPluginWindow> _vstWindows = new();
+    private readonly VstHost _vstHost = new();
+    private readonly Dictionary<string, IVstPlugin> _scriptVstInstances = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _scriptVstVariables = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<IVstPlugin> _panelOwnedInstances = new();
 
     // DAW Windows
     private Views.PatternEditorWindow? _patternEditorWindow;
@@ -134,7 +93,6 @@ public partial class MainWindow : Window
     private AudioReactiveService? _audioReactiveService;
     private DropShadowEffect? _runButtonGlow;
     private readonly List<DropShadowEffect?> _sidebarGlows = new();
-    private readonly SolidColorBrush _audioReactiveStatusBrush = new(Color.FromRgb(0x6F, 0x73, 0x7A));
 
     // Audio Visualizer Background Settings
     private bool _audioVisualizerEnabled = true;
@@ -197,11 +155,31 @@ public partial class MainWindow : Window
         VstPluginsPanel.OnPluginDoubleClick += VstPluginsPanel_OnPluginDoubleClick;
         VstPluginsPanel.OnScanCompleted += VstPluginsPanel_OnScanCompleted;
 
-        // Pipe MIDI log to output console and mirror to console tab
-        _engineService.MidiLog += OnMidiLog;
+        // Pipe MIDI log to output console (use the script engine's shared engine)
+        _engineService.MidiLog += msg => Dispatcher.BeginInvoke(() => OutputLine(msg));
+        // Also mirror MIDI logs to console tab if active
+        _engineService.MidiLog += msg => Dispatcher.BeginInvoke(() =>
+        {
+            if (_activeTab == OutputTab.Console)
+            {
+                AppendConsole(msg);
+            }
+        });
 
         // Open synth editor when a synth is created via script
-        _engineService.SynthCreated += OnSynthCreated;
+        _engineService.SynthCreated += (synth, name, typeName) => Dispatcher.BeginInvoke(() =>
+        {
+            if (synth is IVstPlugin vstPlugin)
+            {
+                VstPluginsPanel.AssociatePluginInstance(vstPlugin.Name, vstPlugin);
+                _scriptVstInstances[vstPlugin.Name] = vstPlugin;
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    _scriptVstVariables[vstPlugin.Name] = name;
+                }
+            }
+            SynthEditorPanel.RegisterSynth(synth, name, typeName);
+        });
 
         // Hook user console keydown
         UserConsoleBox.KeyDown += UserConsoleBox_KeyDown;
@@ -243,7 +221,7 @@ public partial class MainWindow : Window
 
         // Setup visualization integration for real-time playback highlighting
         _visualization = this.CreateVisualizationIntegration(CodeEditor);
-        _visualization.VisualizationError += OnVisualizationError;
+        _visualization.VisualizationError += (s, msg) => OutputLine($"[Visualization] {msg}");
 
         // Setup context menu for code editor
         SetupEditorContextMenu();
@@ -1084,32 +1062,13 @@ public partial class MainWindow : Window
 
     private void OpenVstWindowByName(string name)
     {
-        // Try to find or create VST window
-        if (_vstWindows.TryGetValue(name, out var existingWindow))
-        {
-            existingWindow.Show();
-            existingWindow.WindowState = System.Windows.WindowState.Normal;
-            existingWindow.Activate();
-        }
-        else
-        {
-            // Find the VST plugin in the panel's list
-            var plugin = VstPluginsPanel.Plugins.FirstOrDefault(p =>
-                p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        var plugin = VstPluginsPanel.Plugins.FirstOrDefault(p =>
+            p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        var instance = plugin != null ? EnsureVstPluginInstance(plugin) : null;
 
-            if (plugin != null)
-            {
-                var window = new VstPluginWindow(plugin.Name, plugin.FullPath);
-                _vstWindows[name] = window;
-                window.Show();
-                OutputLine($"Opened VST window: {name}");
-            }
-            else
-            {
-                // Plugin not found in panel, open with just the name
-                OpenVstPluginWindow(name, name);
-            }
-        }
+        var pluginName = plugin?.Name ?? name;
+        var variableName = GetVstVariableName(pluginName, name);
+        OpenVstPluginWindow(pluginName, variableName, instance);
     }
 
     private DateTime _lastClickTime = DateTime.MinValue;
@@ -1250,14 +1209,6 @@ public partial class MainWindow : Window
             }
         }
 
-        // Unsubscribe from service events to prevent leaks
-        _engineService.MidiLog -= OnMidiLog;
-        _engineService.SynthCreated -= OnSynthCreated;
-        if (_visualization != null)
-            _visualization.VisualizationError -= OnVisualizationError;
-        if (_audioReactiveService != null)
-            _audioReactiveService.ValuesUpdated -= OnAudioReactiveValuesUpdated;
-
         _statusTimer.Stop();
         _sliderHotReloadTimer?.Stop();
         _inlineSliderService?.Dispose();
@@ -1266,6 +1217,7 @@ public partial class MainWindow : Window
         _transportViewModel?.Dispose();
         _performanceMonitorService.Dispose();
         CloseAllVstWindows();
+        (_vstHost as IDisposable)?.Dispose();
         _engineService.Dispose();
 
         // Mark session as cleanly closed (no crash recovery needed)
@@ -1293,43 +1245,17 @@ public partial class MainWindow : Window
         // Update status indicator based on running state
         if (_isRunning)
         {
-            StatusIndicator.Fill = s_statusGreenBrush; // Green
+            StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88)); // Green
         }
         else
         {
-            StatusIndicator.Fill = s_statusGrayBrush; // Gray
+            StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0x73, 0x7A)); // Gray
         }
     }
 
     private void Caret_PositionChanged(object? sender, EventArgs e)
     {
         CaretPositionDisplay.Text = $"Ln {CodeEditor.TextArea.Caret.Line}, Col {CodeEditor.TextArea.Caret.Column}";
-    }
-
-    private void OnMidiLog(string msg)
-    {
-        Dispatcher.BeginInvoke(() =>
-        {
-            OutputLine(msg);
-            if (_activeTab == OutputTab.Console)
-            {
-                AppendConsole(msg);
-            }
-        });
-    }
-
-    private void OnSynthCreated(object synth, string name, string typeName)
-    {
-        Dispatcher.BeginInvoke(() =>
-        {
-            SynthEditorPanel.RegisterSynth(synth, name, typeName);
-            OpenSynthEditor(synth, name, typeName);
-        });
-    }
-
-    private void OnVisualizationError(object? sender, string msg)
-    {
-        OutputLine($"[Visualization] {msg}");
     }
 
     #region Inline Slider Events
@@ -1343,11 +1269,7 @@ public partial class MainWindow : Window
         if (_isRunning)
         {
             // Debounce hot-reload to avoid too many re-evaluations
-            if (_sliderHotReloadTimer != null)
-            {
-                _sliderHotReloadTimer.Stop();
-                _sliderHotReloadTimer = null;
-            }
+            _sliderHotReloadTimer?.Stop();
             _sliderHotReloadTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(100)
@@ -1940,6 +1862,7 @@ public partial class MainWindow : Window
 
                 // Notify visualization system after successful execution
                 _visualization?.OnAfterExecute(true);
+                RefreshPatternEditor();
                 _visualization?.OnPlaybackStarted();
 
                 // Start audio reactive lighting
@@ -2106,7 +2029,7 @@ public partial class MainWindow : Window
         if (_isRunning)
         {
             // Show Stop state (red)
-            RunStopButton.Background = s_runButtonRedBrush;
+            RunStopButton.Background = new SolidColorBrush(Color.FromRgb(0x8B, 0x2D, 0x2D));
             RunStopIcon.Text = "\u25A0"; // Square (stop icon)
             RunStopText.Text = "Stop";
 
@@ -2119,7 +2042,7 @@ public partial class MainWindow : Window
         else
         {
             // Show Run state (green)
-            RunStopButton.Background = s_runButtonGreenBrush;
+            RunStopButton.Background = new SolidColorBrush(Color.FromRgb(0x2D, 0x5A, 0x2D));
             RunStopIcon.Text = "\u25B6"; // Triangle (play icon)
             RunStopText.Text = "Run";
 
@@ -2303,9 +2226,7 @@ public partial class MainWindow : Window
             byte g = (byte)Math.Min(255, baseColor.G + (int)(e.Overall * 30));
             byte b = (byte)Math.Min(255, baseColor.B + (int)(e.Overall * 30));
 
-            _audioReactiveStatusBrush.Color = Color.FromRgb(r, g, b);
-            if (StatusIndicator.Fill != _audioReactiveStatusBrush)
-                StatusIndicator.Fill = _audioReactiveStatusBrush;
+            StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(r, g, b));
         }
 
         // Update Audio Visualizer Background
@@ -2707,8 +2628,26 @@ public partial class MainWindow : Window
             _patternEditorWindow.Owner = this;
             _patternEditorWindow.Closed += (s, args) => _patternEditorWindow = null;
         }
+        RefreshPatternEditor();
         _patternEditorWindow.Show();
         _patternEditorWindow.Activate();
+    }
+
+    private void RefreshPatternEditor()
+    {
+        if (_patternEditorWindow == null || !_patternEditorWindow.IsLoaded)
+        {
+            return;
+        }
+
+        var sequencer = _engineService.Sequencer;
+        if (sequencer == null)
+        {
+            return;
+        }
+
+        _patternEditorWindow.BindToSequencer(sequencer);
+        _patternEditorWindow.RegisterPatterns(sequencer.Patterns);
     }
 
     private void ToggleMixer_Click(object sender, RoutedEventArgs e)
@@ -3220,12 +3159,16 @@ public partial class MainWindow : Window
     // VstPluginPanel Event Handlers
     private void VstPluginsPanel_OnOpenPluginEditor(object? sender, VstPluginEventArgs e)
     {
-        OpenVstPluginWindow(e.Plugin.Name, e.Plugin.Name);
+        var instance = EnsureVstPluginInstance(e.Plugin);
+        var variableName = GetVstVariableName(e.Plugin.Name, e.Plugin.Name);
+        OpenVstPluginWindow(e.Plugin.Name, variableName, instance);
     }
 
     private void VstPluginsPanel_OnPluginDoubleClick(object? sender, VstPluginEventArgs e)
     {
-        OpenVstPluginWindow(e.Plugin.Name, e.Plugin.Name);
+        var instance = EnsureVstPluginInstance(e.Plugin);
+        var variableName = GetVstVariableName(e.Plugin.Name, e.Plugin.Name);
+        OpenVstPluginWindow(e.Plugin.Name, variableName, instance);
     }
 
     private void VstPluginsPanel_OnScanCompleted(object? sender, VstScanCompletedEventArgs e)
@@ -3486,16 +3429,16 @@ public partial class MainWindow : Window
 
     private void SetBrowserTabActive(Border header, bool active)
     {
-        header.BorderBrush = active ? FindResource("AccentBrush") as Brush ?? Brushes.Transparent : Brushes.Transparent;
+        header.BorderBrush = active ? (Brush)FindResource("AccentBrush") : Brushes.Transparent;
         var stack = header.Child as StackPanel;
         if (stack != null)
         {
             foreach (var child in stack.Children)
             {
                 if (child is System.Windows.Shapes.Path path)
-                    path.Stroke = active ? FindResource("AccentBrush") as Brush ?? Brushes.Transparent : FindResource("SecondaryForegroundBrush") as Brush ?? Brushes.Transparent;
+                    path.Stroke = active ? (Brush)FindResource("AccentBrush") : (Brush)FindResource("SecondaryForegroundBrush");
                 else if (child is TextBlock text)
-                    text.Foreground = active ? FindResource("BrightForegroundBrush") as Brush ?? Brushes.Transparent : FindResource("SecondaryForegroundBrush") as Brush ?? Brushes.Transparent;
+                    text.Foreground = active ? (Brush)FindResource("BrightForegroundBrush") : (Brush)FindResource("SecondaryForegroundBrush");
             }
         }
     }
@@ -3760,19 +3703,19 @@ public partial class MainWindow : Window
 
         if (text == "Running" || text.StartsWith("Running ("))
         {
-            StatusText.Foreground = s_statusTextGreenBrush; // Green
+            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66)); // Green
         }
         else if (text == "Stopped")
         {
-            StatusText.Foreground = s_statusTextGrayBrush; // Gray
+            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)); // Gray
         }
         else if (text == "Ready")
         {
-            StatusText.Foreground = FindResource("ForegroundBrush") as Brush ?? Brushes.Transparent; // Default
+            StatusText.Foreground = (Brush)FindResource("ForegroundBrush"); // Default
         }
         else
         {
-            StatusText.Foreground = FindResource("ForegroundBrush") as Brush ?? Brushes.Transparent; // Default for other messages
+            StatusText.Foreground = (Brush)FindResource("ForegroundBrush"); // Default for other messages
         }
     }
 
@@ -3790,7 +3733,7 @@ public partial class MainWindow : Window
             lowerText.Contains("failed") ||
             lowerText.StartsWith("error"))
         {
-            return s_logErrorBrush; // #FF4757 - Red
+            return new SolidColorBrush(Color.FromRgb(0xFF, 0x47, 0x57)); // #FF4757 - Red
         }
 
         // Check for warning indicators
@@ -3799,7 +3742,7 @@ public partial class MainWindow : Window
             lowerText.Contains("warning:") ||
             lowerText.Contains("warn:"))
         {
-            return s_logWarningBrush; // #FFB800 - Yellow
+            return new SolidColorBrush(Color.FromRgb(0xFF, 0xB8, 0x00)); // #FFB800 - Yellow
         }
 
         // Check for debug/trace indicators
@@ -3808,11 +3751,11 @@ public partial class MainWindow : Window
             lowerText.Contains("debug:") ||
             lowerText.Contains("trace:"))
         {
-            return s_logDebugBrush; // #808080 - Gray
+            return new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)); // #808080 - Gray
         }
 
         // Default to white/info color
-        return s_logDefaultBrush; // #E0E0E0 - White/Light gray
+        return new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)); // #E0E0E0 - White/Light gray
     }
 
     /// <summary>
@@ -3832,7 +3775,7 @@ public partial class MainWindow : Window
         // Add timestamp in gray
         var timestampRun = new Run(timestamp)
         {
-            Foreground = s_timestampBrush // Dark gray timestamp
+            Foreground = new SolidColorBrush(Color.FromRgb(0x60, 0x60, 0x60)) // Dark gray timestamp
         };
         paragraph.Inlines.Add(timestampRun);
 
@@ -4101,7 +4044,7 @@ Print("");
 
     #region VST Plugin Windows
 
-    public void OpenVstPluginWindow(string pluginName, string variableName)
+    public void OpenVstPluginWindow(string pluginName, string variableName, IVstPlugin? pluginInstance = null)
     {
         var key = $"{variableName}_{pluginName}";
 
@@ -4113,7 +4056,7 @@ Print("");
         else
         {
             // Create new VST window
-            var window = new VstPluginWindow(pluginName, variableName, null)
+            var window = new VstPluginWindow(pluginName, variableName, pluginInstance)
             {
                 Owner = this
             };
@@ -4126,12 +4069,167 @@ Print("");
                 if (!window.KeepRunning)
                 {
                     _vstWindows.Remove(key);
+                    if (pluginInstance != null && _panelOwnedInstances.Remove(pluginInstance))
+                    {
+                        try
+                        {
+                            _vstHost.UnloadPlugin(pluginInstance.Name);
+                        }
+                        catch (Exception ex)
+                        {
+                            OutputLine($"Failed to unload VST plugin '{pluginInstance.Name}': {ex.Message}");
+                        }
+
+                        var panelPlugin = VstPluginsPanel.Plugins.FirstOrDefault(p =>
+                            ReferenceEquals(p.PluginInstance, pluginInstance));
+                        if (panelPlugin != null)
+                        {
+                            panelPlugin.PluginInstance = null;
+                            panelPlugin.IsLoaded = false;
+                        }
+                    }
                 }
             };
 
             window.Show();
             OutputLine($"Opened VST plugin window: {pluginName} (variable: {variableName})");
         }
+    }
+
+    private IVstPlugin? EnsureVstPluginInstance(VstPluginDisplayInfo plugin)
+    {
+        if (plugin.PluginInstance != null)
+        {
+            return plugin.PluginInstance;
+        }
+
+        var resolved = TryResolveVstInstanceFromScript(plugin.Name);
+        if (resolved != null)
+        {
+            plugin.PluginInstance = resolved;
+            plugin.IsLoaded = true;
+            return resolved;
+        }
+
+        if (_scriptVstInstances.TryGetValue(plugin.Name, out var scriptInstance))
+        {
+            plugin.PluginInstance = scriptInstance;
+            plugin.IsLoaded = true;
+            return scriptInstance;
+        }
+
+        if (string.IsNullOrWhiteSpace(plugin.FullPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var instance = _vstHost.LoadPlugin(plugin.FullPath);
+            if (instance != null)
+            {
+                plugin.PluginInstance = instance;
+                plugin.IsLoaded = true;
+                _panelOwnedInstances.Add(instance);
+            }
+            else
+            {
+                OutputLine($"Failed to load VST plugin '{plugin.Name}' (LoadPlugin returned null).");
+            }
+            return instance;
+        }
+        catch (Exception ex)
+        {
+            OutputLine($"Failed to load VST plugin '{plugin.Name}': {ex.Message}");
+            return null;
+        }
+    }
+
+    private string GetVstVariableName(string pluginName, string fallback)
+    {
+        if (_scriptVstVariables.TryGetValue(pluginName, out var variableName))
+        {
+            return variableName;
+        }
+
+        var discovered = FindVstVariableForPlugin(pluginName);
+        if (!string.IsNullOrWhiteSpace(discovered))
+        {
+            _scriptVstVariables[pluginName] = discovered;
+            return discovered;
+        }
+
+        return fallback;
+    }
+
+    private IVstPlugin? TryResolveVstInstanceFromScript(string pluginName)
+    {
+        var variableName = GetVstVariableName(pluginName, string.Empty);
+        if (string.IsNullOrWhiteSpace(variableName))
+        {
+            return null;
+        }
+
+        if (_engineService.TryGetScriptVariable(variableName, out var value) && value is IVstPlugin vstPlugin)
+        {
+            _scriptVstInstances[pluginName] = vstPlugin;
+            _scriptVstVariables[pluginName] = variableName;
+            VstPluginsPanel.AssociatePluginInstance(vstPlugin.Name, vstPlugin);
+            return vstPlugin;
+        }
+
+        return null;
+    }
+
+    private string? FindVstVariableForPlugin(string pluginName)
+    {
+        var code = CodeEditor.Text;
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return null;
+        }
+
+        var normalizedTarget = NormalizeVstName(pluginName);
+        var regex = new System.Text.RegularExpressions.Regex(
+            @"var\s+(?<var>\w+)\s*=\s*(?:vst\.load|vst\.loadFile)\s*\(\s*[""'](?<name>[^""']+)[""']\s*\)",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        foreach (System.Text.RegularExpressions.Match match in regex.Matches(code))
+        {
+            var matchName = match.Groups["name"].Value;
+            if (NormalizeVstName(matchName) == normalizedTarget)
+            {
+                return match.Groups["var"].Value;
+            }
+        }
+
+        return null;
+    }
+
+    private static string NormalizeVstName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return string.Empty;
+        }
+
+        var normalized = name.Trim().Replace("\\", "/");
+        var lastSlash = normalized.LastIndexOf('/');
+        if (lastSlash >= 0)
+        {
+            normalized = normalized[(lastSlash + 1)..];
+        }
+
+        if (normalized.EndsWith(".vst3", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[..^5];
+        }
+        else if (normalized.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[..^4];
+        }
+
+        return normalized.Trim().ToLowerInvariant();
     }
 
     public void CloseAllVstWindows()
@@ -5067,17 +5165,6 @@ Print("");
 // Data classes for the right panel lists
 public class MidiDeviceInfo
 {
-    private static readonly System.Windows.Media.SolidColorBrush s_inputBrush;
-    private static readonly System.Windows.Media.SolidColorBrush s_outputBrush;
-
-    static MidiDeviceInfo()
-    {
-        s_inputBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88));
-        s_inputBrush.Freeze();
-        s_outputBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF));
-        s_outputBrush.Freeze();
-    }
-
     public string Name { get; set; } = "";
     public string Type { get; set; } = "";  // "Input" or "Output"
     public int DeviceIndex { get; set; } = -1;
@@ -5092,8 +5179,8 @@ public class MidiDeviceInfo
 
     // Color for the type indicator
     public System.Windows.Media.Brush TypeColor => Type == "Input"
-        ? s_inputBrush   // Green for input
-        : s_outputBrush; // Blue for output
+        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88))  // Green for input
+        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF)); // Blue for output
 }
 
 public class VstPluginInfo
@@ -5120,20 +5207,6 @@ public enum ProblemSeverity
 
 public class ProblemItem
 {
-    private static readonly System.Windows.Media.SolidColorBrush s_errorBrush;
-    private static readonly System.Windows.Media.SolidColorBrush s_warningBrush;
-    private static readonly System.Windows.Media.SolidColorBrush s_infoBrush;
-
-    static ProblemItem()
-    {
-        s_errorBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0x47, 0x57));
-        s_errorBrush.Freeze();
-        s_warningBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xB8, 0x00));
-        s_warningBrush.Freeze();
-        s_infoBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF));
-        s_infoBrush.Freeze();
-    }
-
     public ProblemSeverity Severity { get; set; } = ProblemSeverity.Error;
     public string Message { get; set; } = "";
     public string FileName { get; set; } = "";
@@ -5153,9 +5226,9 @@ public class ProblemItem
 
     public System.Windows.Media.Brush IconColor => Severity switch
     {
-        ProblemSeverity.Error => s_errorBrush,
-        ProblemSeverity.Warning => s_warningBrush,
-        ProblemSeverity.Info => s_infoBrush,
+        ProblemSeverity.Error => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0x47, 0x57)),
+        ProblemSeverity.Warning => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xB8, 0x00)),
+        ProblemSeverity.Info => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF)),
         _ => System.Windows.Media.Brushes.White
     };
 }
@@ -5163,30 +5236,6 @@ public class ProblemItem
 // Active Instrument display item with animation support
 public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
 {
-    // Cached frozen brushes for static (non-animated) states
-    private static readonly System.Windows.Media.SolidColorBrush s_activeIconBrush;
-    private static readonly System.Windows.Media.SolidColorBrush s_inactiveGrayBrush;
-    private static readonly System.Windows.Media.SolidColorBrush s_activeTextBrush;
-    private static readonly System.Windows.Media.SolidColorBrush s_activeBackgroundBrush;
-    private static readonly System.Windows.Media.SolidColorBrush s_activeBorderBrush;
-    private static readonly System.Windows.Media.SolidColorBrush s_inactiveBorderBrush;
-
-    static ActiveInstrumentInfo()
-    {
-        s_activeIconBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88));
-        s_activeIconBrush.Freeze();
-        s_inactiveGrayBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0x73, 0x7A));
-        s_inactiveGrayBrush.Freeze();
-        s_activeTextBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xDF, 0xE1, 0xE5));
-        s_activeTextBrush.Freeze();
-        s_activeBackgroundBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x33, 0x00, 0xD9, 0xFF));
-        s_activeBackgroundBrush.Freeze();
-        s_activeBorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF));
-        s_activeBorderBrush.Freeze();
-        s_inactiveBorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2A, 0x2A, 0x2A));
-        s_inactiveBorderBrush.Freeze();
-    }
-
     private string _name = "";
     private string _instrumentType = "synth";
     private bool _isActive;
@@ -5262,9 +5311,9 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return s_activeIconBrush; // Green
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88)); // Green
             }
-            return s_inactiveGrayBrush; // Gray
+            return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0x73, 0x7A)); // Gray
         }
     }
 
@@ -5280,9 +5329,9 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return s_activeTextBrush; // Bright
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xDF, 0xE1, 0xE5)); // Bright
             }
-            return s_inactiveGrayBrush; // Dim
+            return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0x73, 0x7A)); // Dim
         }
     }
 
@@ -5298,7 +5347,7 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return s_activeBackgroundBrush;
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x33, 0x00, 0xD9, 0xFF));
             }
             return System.Windows.Media.Brushes.Transparent;
         }
@@ -5316,9 +5365,9 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return s_activeBorderBrush;
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF));
             }
-            return s_inactiveBorderBrush;
+            return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2A, 0x2A, 0x2A));
         }
     }
 

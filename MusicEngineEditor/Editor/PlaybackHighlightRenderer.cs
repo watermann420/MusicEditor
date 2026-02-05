@@ -496,7 +496,11 @@ public class PlaybackHighlightService : IDisposable
 
     private void Sequencer_NoteTriggered(object? sender, MusicalEventArgs e)
     {
-        _editor.Dispatcher.BeginInvoke(() => _renderer.OnNoteTriggered(e.Event));
+        _editor.Dispatcher.BeginInvoke(() =>
+        {
+            EnsureSourceInfo(e.Event);
+            _renderer.OnNoteTriggered(e.Event);
+        });
     }
 
     private void Sequencer_NoteEnded(object? sender, MusicalEventArgs e)
@@ -517,6 +521,38 @@ public class PlaybackHighlightService : IDisposable
     private void Sequencer_PlaybackStopped(object? sender, PlaybackStateEventArgs e)
     {
         _editor.Dispatcher.BeginInvoke(() => _renderer.Stop());
+    }
+
+    private void EnsureSourceInfo(MusicalEvent musicalEvent)
+    {
+        if (musicalEvent.SourceInfo != null && musicalEvent.SourceInfo.EndIndex > musicalEvent.SourceInfo.StartIndex)
+        {
+            return;
+        }
+
+        var beat = musicalEvent.NoteEvent?.Beat ?? musicalEvent.CyclePosition;
+        var patternVar = musicalEvent.SourcePattern?.Name;
+        var source = CodeSourceAnalyzer.GetSourceInfoForNote(
+            _editor.Document.Text,
+            musicalEvent.Note,
+            beat,
+            musicalEvent.InstrumentName,
+            patternVar);
+
+        if ((source == null || source.EndIndex <= source.StartIndex) &&
+            musicalEvent.Id.PatternIndex >= 0 && musicalEvent.Id.NoteIndex >= 0)
+        {
+            source = CodeSourceAnalyzer.GetSourceInfoForNoteIndex(
+                _editor.Document.Text,
+                musicalEvent.Id.PatternIndex,
+                musicalEvent.Id.NoteIndex,
+                patternVar);
+        }
+
+        if (source != null && source.EndIndex > source.StartIndex)
+        {
+            musicalEvent.SourceInfo = source;
+        }
     }
 
     public void Dispose()

@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using MusicEngine.Core;
 using MusicEngineEditor.Controls.PatternEditor;
 
 namespace MusicEngineEditor.Views;
@@ -21,8 +22,10 @@ public partial class PatternEditorWindow : Window
 {
     #region Private Fields
 
-    private readonly List<object> _patterns = new();
-    private object? _currentPattern;
+    private readonly List<Pattern> _patterns = new();
+    private Pattern? _currentPattern;
+    private readonly Dictionary<Guid, Dictionary<int, NoteItem>> _noteMap = new();
+    private Sequencer? _sequencer;
     private bool _isPlaying;
     private bool _keepRunning = true;
 
@@ -43,7 +46,7 @@ public partial class PatternEditorWindow : Window
     /// <summary>
     /// Raised when the selected pattern changes.
     /// </summary>
-    public event EventHandler<object?>? PatternChanged;
+    public event EventHandler<Pattern?>? PatternChanged;
 
     /// <summary>
     /// Raised when loop toggle state changes.
@@ -59,7 +62,7 @@ public partial class PatternEditorWindow : Window
     /// <summary>
     /// Gets the currently selected pattern.
     /// </summary>
-    public object? CurrentPattern => _currentPattern;
+    public Pattern? CurrentPattern => _currentPattern;
 
     /// <summary>
     /// Gets whether playback is active.
@@ -150,6 +153,15 @@ public partial class PatternEditorWindow : Window
             _currentPattern = null;
         }
 
+        if (_currentPattern != null)
+        {
+            LoadPatternIntoPianoRoll(_currentPattern);
+        }
+        else
+        {
+            PianoRoll.ViewModel.Notes.Clear();
+        }
+
         UpdatePatternDisplay();
         PatternChanged?.Invoke(this, _currentPattern);
     }
@@ -176,9 +188,10 @@ public partial class PatternEditorWindow : Window
     /// Registers patterns for editing.
     /// </summary>
     /// <param name="patterns">The patterns to register.</param>
-    public void RegisterPatterns(IEnumerable<object> patterns)
+    public void RegisterPatterns(IEnumerable<Pattern> patterns)
     {
         _patterns.Clear();
+        _noteMap.Clear();
         PatternSelectorCombo.Items.Clear();
 
         int index = 1;
@@ -194,6 +207,8 @@ public partial class PatternEditorWindow : Window
         if (PatternSelectorCombo.Items.Count > 0)
         {
             PatternSelectorCombo.SelectedIndex = 0;
+            _currentPattern = _patterns[0];
+            LoadPatternIntoPianoRoll(_currentPattern);
         }
     }
 
@@ -202,7 +217,7 @@ public partial class PatternEditorWindow : Window
     /// </summary>
     /// <param name="pattern">The pattern to register.</param>
     /// <param name="name">Optional display name for the pattern.</param>
-    public void RegisterPattern(object pattern, string? name = null)
+    public void RegisterPattern(Pattern pattern, string? name = null)
     {
         _patterns.Add(pattern);
 
@@ -212,6 +227,8 @@ public partial class PatternEditorWindow : Window
         if (PatternSelectorCombo.SelectedIndex < 0)
         {
             PatternSelectorCombo.SelectedIndex = 0;
+            _currentPattern = _patterns[0];
+            LoadPatternIntoPianoRoll(_currentPattern);
         }
     }
 
@@ -221,6 +238,7 @@ public partial class PatternEditorWindow : Window
     public void ClearPatterns()
     {
         _patterns.Clear();
+        _noteMap.Clear();
         PatternSelectorCombo.Items.Clear();
         _currentPattern = null;
         UpdatePatternDisplay();
@@ -311,7 +329,7 @@ public partial class PatternEditorWindow : Window
         // For example, changing button appearance when playing
     }
 
-    private string? GetPatternName(object pattern)
+    private string? GetPatternName(Pattern pattern)
     {
         // Try to get Name property via reflection
         var nameProperty = pattern.GetType().GetProperty("Name");
@@ -320,6 +338,129 @@ public partial class PatternEditorWindow : Window
             return nameProperty.GetValue(pattern)?.ToString();
         }
         return null;
+    }
+
+    public void BindToSequencer(Sequencer sequencer)
+    {
+        if (_sequencer == sequencer) return;
+
+        UnbindSequencer();
+        _sequencer = sequencer;
+        _sequencer.NoteTriggered += OnSequencerNoteTriggered;
+        _sequencer.NoteEnded += OnSequencerNoteEnded;
+        _sequencer.PlaybackStopped += OnSequencerPlaybackStopped;
+    }
+
+    public void UnbindSequencer()
+    {
+        if (_sequencer == null) return;
+
+        _sequencer.NoteTriggered -= OnSequencerNoteTriggered;
+        _sequencer.NoteEnded -= OnSequencerNoteEnded;
+        _sequencer.PlaybackStopped -= OnSequencerPlaybackStopped;
+        _sequencer = null;
+    }
+
+    private void LoadPatternIntoPianoRoll(Pattern pattern)
+    {
+        PianoRoll.ViewModel.LoadFromPattern(pattern);
+        MapNotes(pattern);
+    }
+
+    private void MapNotes(Pattern pattern)
+    {
+        if (!_noteMap.TryGetValue(pattern.Id, out var map))
+        {
+            map = new Dictionary<int, NoteItem>();
+            _noteMap[pattern.Id] = map;
+        }
+        else
+        {
+            map.Clear();
+        }
+
+        foreach (var note in PianoRoll.ViewModel.Notes)
+        {
+            if (note.SourceNoteIndex >= 0)
+            {
+                map[note.SourceNoteIndex] = note;
+            }
+        }
+    }
+
+    private void OnSequencerNoteTriggered(object? sender, MusicalEventArgs e)
+    {
+        RunOnUi(() =>
+        {
+            if (_currentPattern == null)
+            {
+                return;
+            }
+
+            if (e.Event.SourcePattern == null || e.Event.SourcePattern.Id != _currentPattern.Id)
+            {
+                return;
+            }
+
+            if (_noteMap.TryGetValue(_currentPattern.Id, out var map) &&
+                map.TryGetValue(e.Event.Id.NoteIndex, out var note))
+            {
+                note.IsPlaying = true;
+            }
+        });
+    }
+
+    private void OnSequencerNoteEnded(object? sender, MusicalEventArgs e)
+    {
+        RunOnUi(() =>
+        {
+            if (_currentPattern == null)
+            {
+                return;
+            }
+
+            if (e.Event.SourcePattern == null || e.Event.SourcePattern.Id != _currentPattern.Id)
+            {
+                return;
+            }
+
+            if (_noteMap.TryGetValue(_currentPattern.Id, out var map) &&
+                map.TryGetValue(e.Event.Id.NoteIndex, out var note))
+            {
+                note.IsPlaying = false;
+            }
+        });
+    }
+
+    private void OnSequencerPlaybackStopped(object? sender, PlaybackStateEventArgs e)
+    {
+        RunOnUi(() =>
+        {
+            if (_currentPattern == null)
+            {
+                return;
+            }
+
+            if (_noteMap.TryGetValue(_currentPattern.Id, out var map))
+            {
+                foreach (var note in map.Values)
+                {
+                    note.IsPlaying = false;
+                }
+            }
+        });
+    }
+
+    private void RunOnUi(Action action)
+    {
+        if (Dispatcher.CheckAccess())
+        {
+            action();
+        }
+        else
+        {
+            Dispatcher.BeginInvoke(action);
+        }
     }
 
     #endregion

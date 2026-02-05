@@ -159,6 +159,71 @@ public class EngineService : IDisposable
         return result;
     }
 
+    public bool TryGetScriptVariable(string name, out object? value)
+    {
+        value = null;
+        if (_scriptHost == null || string.IsNullOrWhiteSpace(name))
+        {
+            return false;
+        }
+
+        var hostType = _scriptHost.GetType();
+
+        var tryGetMethod = hostType.GetMethod("TryGetVariable",
+            new[] { typeof(string), typeof(object).MakeByRefType() });
+        if (tryGetMethod != null)
+        {
+            var args = new object?[] { name, null };
+            var result = tryGetMethod.Invoke(_scriptHost, args);
+            if (result is bool success && success)
+            {
+                value = args[1];
+                return value != null;
+            }
+        }
+
+        var getMethod = hostType.GetMethod("GetVariable", new[] { typeof(string) })
+            ?? hostType.GetMethod("GetValue", new[] { typeof(string) })
+            ?? hostType.GetMethod("GetGlobal", new[] { typeof(string) });
+        if (getMethod != null)
+        {
+            value = getMethod.Invoke(_scriptHost, new object?[] { name });
+            return value != null;
+        }
+
+        var stateProp = hostType.GetProperty("State") ?? hostType.GetProperty("ScriptState");
+        var state = stateProp?.GetValue(_scriptHost);
+        var variablesProp = state?.GetType().GetProperty("Variables");
+        if (variablesProp?.GetValue(state) is System.Collections.IEnumerable variables)
+        {
+            foreach (var variable in variables)
+            {
+                var variableType = variable.GetType();
+                var nameProp = variableType.GetProperty("Name");
+                if (!string.Equals(nameProp?.GetValue(variable) as string, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var valueProp = variableType.GetProperty("Value");
+                value = valueProp?.GetValue(variable);
+                return value != null;
+            }
+        }
+
+        var globalsProp = hostType.GetProperty("Globals")
+            ?? hostType.GetProperty("GlobalVariables")
+            ?? hostType.GetProperty("Variables");
+        var globals = globalsProp?.GetValue(_scriptHost);
+        if (globals is System.Collections.IDictionary dictionary && dictionary.Contains(name))
+        {
+            value = dictionary[name];
+            return value != null;
+        }
+
+        return false;
+    }
+
     public void AllNotesOff()
     {
         if (_scriptHost != null)

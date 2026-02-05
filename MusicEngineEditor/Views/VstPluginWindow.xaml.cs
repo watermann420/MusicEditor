@@ -5,7 +5,9 @@
 
 using System;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Media;
+using System.Windows.Threading;
 using MusicEngine.Core;
 
 namespace MusicEngineEditor.Views;
@@ -17,6 +19,8 @@ public partial class VstPluginWindow : Window
     private readonly IVstPlugin? _vstPlugin;
     private bool _isBypassed;
     private bool _keepRunning = true;
+    private Panel? _editorHostPanel;
+    private bool _editorOpened;
 
     public string PluginName => _pluginName;
     public string VariableName => _variableName;
@@ -69,8 +73,7 @@ public partial class VstPluginWindow : Window
             PluginTypeText.Text = "(VST2)";
         }
 
-        // Try to initialize plugin UI
-        InitializePluginUI();
+        Loaded += (_, _) => InitializePluginUI();
     }
 
     private void OnPluginBypassChanged(object? sender, bool isBypassed)
@@ -86,24 +89,86 @@ public partial class VstPluginWindow : Window
     {
         if (_vstPlugin != null)
         {
-            // Try to get the plugin editor window handle
             try
             {
-                // This is where you would hook into the actual VST plugin UI
-                // For now, show a placeholder
-                PluginStatusText.Text = "Plugin loaded - UI available";
-                PlaceholderPanel.Visibility = Visibility.Visible;
-                VstHost.Visibility = Visibility.Collapsed;
+                if (!_vstPlugin.HasEditor)
+                {
+                    PluginStatusText.Text = "Plugin has no editor UI";
+                    PlaceholderPanel.Visibility = Visibility.Visible;
+                    VstHost.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                EnsureEditorHost();
+
+                if (_editorOpened)
+                {
+                    return;
+                }
+
+                if (!_vstPlugin.GetEditorSize(out int width, out int height))
+                {
+                    width = 800;
+                    height = 600;
+                }
+
+                AdjustWindowToEditor(width, height);
+
+                var editorHandle = _vstPlugin.OpenEditor(_editorHostPanel!.Handle);
+                if (editorHandle == IntPtr.Zero)
+                {
+                    PluginStatusText.Text = "Plugin UI failed to open";
+                    PlaceholderPanel.Visibility = Visibility.Visible;
+                    VstHost.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                _editorOpened = true;
+                PluginStatusText.Text = "Plugin UI loaded";
+                PlaceholderPanel.Visibility = Visibility.Collapsed;
+                VstHost.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
                 PluginStatusText.Text = $"UI not available: {ex.Message}";
+                PlaceholderPanel.Visibility = Visibility.Visible;
+                VstHost.Visibility = Visibility.Collapsed;
             }
         }
         else
         {
             PluginStatusText.Text = "No plugin instance - using variable reference";
         }
+    }
+
+    private void EnsureEditorHost()
+    {
+        if (_editorHostPanel != null)
+        {
+            return;
+        }
+
+        _editorHostPanel = new Panel
+        {
+            Dock = DockStyle.Fill
+        };
+
+        VstHost.Child = _editorHostPanel;
+        _editorHostPanel.CreateControl();
+    }
+
+    private void AdjustWindowToEditor(int width, int height)
+    {
+        if (width <= 0 || height <= 0)
+        {
+            return;
+        }
+
+        var chromeWidth = 28;
+        var chromeHeight = 120;
+        Width = Math.Max(MinWidth, width + chromeWidth);
+        Height = Math.Max(MinHeight, height + chromeHeight);
+        Dispatcher.BeginInvoke(() => PluginHostBorder.InvalidateVisual(), DispatcherPriority.Loaded);
     }
 
     private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -132,6 +197,7 @@ public partial class VstPluginWindow : Window
             if (_vstPlugin != null)
             {
                 _vstPlugin.BypassChanged -= OnPluginBypassChanged;
+                TryCloseEditor();
             }
             base.OnClosing(e);
         }
@@ -145,6 +211,7 @@ public partial class VstPluginWindow : Window
         if (_vstPlugin != null)
         {
             _vstPlugin.BypassChanged -= OnPluginBypassChanged;
+            TryCloseEditor();
         }
 
         Close();
@@ -158,6 +225,31 @@ public partial class VstPluginWindow : Window
             WindowState = WindowState.Normal;
         }
         Activate();
+
+        if (_vstPlugin != null && !_editorOpened)
+        {
+            InitializePluginUI();
+        }
+    }
+
+    private void TryCloseEditor()
+    {
+        try
+        {
+            _vstPlugin?.CloseEditor();
+        }
+        catch
+        {
+            // Ignore close errors
+        }
+
+        _editorOpened = false;
+        if (_editorHostPanel != null)
+        {
+            VstHost.Child = null;
+            _editorHostPanel.Dispose();
+            _editorHostPanel = null;
+        }
     }
 
     private void BypassButton_Click(object sender, RoutedEventArgs e)
