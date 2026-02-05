@@ -30,7 +30,6 @@ using MusicEngineEditor.Controls;
 using MusicEngineEditor.ViewModels;
 using MusicEngineEditor.Views;
 using MusicEngineEditor.Views.Dialogs;
-using MusicEngineEditor.Services;
 using MusicEngine.Core.Vst;
 
 namespace MusicEngineEditor;
@@ -47,7 +46,6 @@ public partial class MainWindow : Window
     private bool _outputVisible = true;
     private bool _isRunning = false;
     private bool _isLiveMode = false;
-    private bool _showingOutput = true;
     private CompletionProvider? _completionProvider;
     private InlineSliderService? _inlineSliderService;
     private MinimapControl? _minimap;

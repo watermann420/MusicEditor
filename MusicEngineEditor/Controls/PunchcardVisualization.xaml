@@ -13,7 +13,7 @@
         </Border>
 
         <!-- Scrolling container -->
-        <ScrollViewer x:Name="ScrollContainer"
+        <ScrollViewer x:Name="MainScrollViewer"
                       HorizontalScrollBarVisibility="Hidden"
                       VerticalScrollBarVisibility="Disabled"
                       Background="Transparent"
@@ -26,7 +26,7 @@
                 <Canvas x:Name="NotesCanvas" Background="Transparent"/>
 
                 <!-- Labels layer (on top of notes) -->
-                <Canvas x:Name="LabelsCanvas" Background="Transparent" IsHitTestVisible="False"/>
+                <Canvas x:Name="BeatLabelsCanvas" Background="Transparent" IsHitTestVisible="False"/>
             </Grid>
         </ScrollViewer>
 
@@ -47,5 +47,13 @@
 
         <!-- Cycle/loop markers -->
         <Canvas x:Name="CycleCanvas" IsHitTestVisible="False"/>
+
+        <!-- Note tooltip popup -->
+        <Popup x:Name="NoteTooltip" Placement="Mouse" AllowsTransparency="True" IsHitTestVisible="False">
+            <Border Background="{DynamicResource PanelBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="4" Padding="8,6">
+                <TextBlock x:Name="NoteTooltipText" Foreground="{DynamicResource ForegroundBrush}" FontSize="11"/>
+            </Border>
+        </Popup>
     </Grid>
 </UserControl>

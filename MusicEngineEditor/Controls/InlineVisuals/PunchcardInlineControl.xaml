@@ -9,11 +9,6 @@
     <Border Background="#0A0A0A" CornerRadius="4" Margin="0,4,0,4">
         <controls:PunchcardVisualization x:Name="Punch"
                                          TotalBeats="16"
-                                         BeatWidth="40"
-                                         Cycles="2"
-                                         ShowLabels="False"
-                                         AutoRange="True"
-                                         PlayheadPosition="0.15"
-                                         ScrollingMode="FollowPlayhead"/>
+                                         BeatWidth="40"/>
     </Border>
 </UserControl>

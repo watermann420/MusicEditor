@@ -1490,9 +1490,6 @@ C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-wind
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\Dialogs\WorkspacePresetDialog.baml
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\SessionViewWindow.baml
 C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Views\WelcomeScreen.baml
-C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\bin\Debug\net10.0-windows\MusicEngine.VstBridge.dll
-C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\bin\Debug\net10.0-windows\MusicEngine.VstBridge.pdb
-C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\bin\Debug\net10.0-windows\MusicEngine.VstBridge.xml
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\Effects\BitcrusherControl.baml
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\Effects\ExciterControl.baml
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\Effects\SaturatorControl.baml
@@ -1567,3 +1564,5 @@ C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-win
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\obj\Debug\net10.0-windows\Controls\Synths\WavefolderSynthControl.baml
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\bin\Debug\net10.0-windows\MusicEngine.CppLayer.dll
 C:\Users\water\RiderProjects\MusicEditor\MusicEngineEditor\bin\Debug\net10.0-windows\MusicEngine.CppLayer.pdb
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\bin\Debug\net10.0-windows\MusicEngine.CppLayer.dll
+C:\Users\null\RiderProjects\MusicEditor\MusicEngineEditor\bin\Debug\net10.0-windows\MusicEngine.CppLayer.pdb
