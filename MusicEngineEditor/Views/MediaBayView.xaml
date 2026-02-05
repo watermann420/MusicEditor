@@ -8,8 +8,8 @@
         Width="1000" Height="700"
         MinWidth="800" MinHeight="500"
         WindowStartupLocation="CenterOwner"
-        Background="#0D0D0D"
-        Foreground="#E0E0E0">
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -184,7 +184,7 @@
 
         <!-- Header -->
         <Border Grid.Row="0" Grid.ColumnSpan="5"
-                Background="#181818"
+                Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="0,0,0,1"
                 Padding="16,12">
@@ -204,14 +204,14 @@
                     <TextBlock x:Name="FileCountText"
                                Text=" - 0 files"
                                FontSize="12"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                VerticalAlignment="Center"
                                Margin="8,0,0,0"/>
                 </StackPanel>
 
                 <!-- Search Box -->
                 <Border Grid.Column="1"
-                        Background="#141414"
+                        Background="{DynamicResource ToolbarBackgroundBrush}"
                         BorderBrush="#252525"
                         BorderThickness="1"
                         CornerRadius="4"
@@ -233,7 +233,7 @@
                                  Grid.Column="1"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 Foreground="#E0E0E0"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  CaretBrush="#E0E0E0"
                                  FontSize="12"
                                  VerticalAlignment="Center"
@@ -264,7 +264,7 @@
 
         <!-- Left Panel - Folder Tree -->
         <Border Grid.Row="1" Grid.RowSpan="3" Grid.Column="0"
-                Background="#181818"
+                Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="0,0,1,0">
             <Grid>
@@ -282,7 +282,7 @@
                     <TextBlock Text="Locations"
                                FontWeight="SemiBold"
                                FontSize="12"
-                               Foreground="#808080"/>
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                 </Border>
 
                 <!-- Folder Tree -->
@@ -303,7 +303,7 @@
                         <TextBlock Text="Quick Access"
                                    FontWeight="SemiBold"
                                    FontSize="11"
-                                   Foreground="#808080"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    Margin="4,0,0,8"/>
                         <Button Content="Add Current Folder"
                                 Background="#333337"
@@ -319,7 +319,7 @@
 
         <GridSplitter Grid.Row="1" Grid.RowSpan="3" Grid.Column="1"
                       Width="4"
-                      Background="#181818"
+                      Background="{DynamicResource PanelBackgroundBrush}"
                       HorizontalAlignment="Center"/>
 
         <!-- Center - File List -->
@@ -370,12 +370,12 @@
 
         <GridSplitter Grid.Row="1" Grid.Column="3"
                       Width="4"
-                      Background="#181818"
+                      Background="{DynamicResource PanelBackgroundBrush}"
                       HorizontalAlignment="Center"/>
 
         <!-- Right Panel - Tags and Filters -->
         <Border Grid.Row="1" Grid.Column="4"
-                Background="#181818"
+                Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="1,0,0,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
@@ -384,7 +384,7 @@
                     <TextBlock Text="Rating"
                                FontWeight="SemiBold"
                                FontSize="12"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                Margin="4,8,0,8"/>
                     <WrapPanel>
                         <ToggleButton x:Name="Star5Filter" Style="{StaticResource TagButtonStyle}" Content="5 Stars" Click="RatingFilter_Click"/>
@@ -397,7 +397,7 @@
                     <TextBlock Text="Color Labels"
                                FontWeight="SemiBold"
                                FontSize="12"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                Margin="4,16,0,8"/>
                     <WrapPanel>
                         <ToggleButton Style="{StaticResource TagButtonStyle}" Tag="Red" Click="ColorFilter_Click">
@@ -424,7 +424,7 @@
                     <TextBlock Text="Tags"
                                FontWeight="SemiBold"
                                FontSize="12"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                Margin="4,16,0,8"/>
                     <ItemsControl x:Name="TagsPanel">
                         <ItemsControl.ItemsPanel>
@@ -446,7 +446,7 @@
                     <TextBlock Text="Format"
                                FontWeight="SemiBold"
                                FontSize="12"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                Margin="4,16,0,8"/>
                     <WrapPanel>
                         <ToggleButton Style="{StaticResource TagButtonStyle}" Content="WAV" Tag="wav" Click="FormatFilter_Click"/>
@@ -471,7 +471,7 @@
 
         <!-- Bottom Bar - Selected File Info -->
         <Border Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"
-                Background="#181818"
+                Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="0,1,0,0"
                 Padding="12,8">
@@ -485,14 +485,14 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock x:Name="SelectedFileInfo"
                                Text="No file selected"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Rating Editor -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,16,0">
                     <TextBlock Text="Rating:"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,8,0"/>
                     <Button x:Name="Star1" Content="*" FontSize="16" Padding="2" Background="Transparent" BorderThickness="0" Foreground="#4A4A4A" Click="StarButton_Click" Tag="1"/>
@@ -516,14 +516,14 @@
 
         <!-- Waveform Preview -->
         <Border Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3"
-                Background="#141414"
+                Background="{DynamicResource ToolbarBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="0,1,0,0">
             <Grid>
                 <Canvas x:Name="WaveformCanvas" ClipToBounds="True"/>
                 <TextBlock x:Name="PreviewFileName"
                            Text="Select a file to preview"
-                           Foreground="#808080"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
                            FontSize="12"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"/>
@@ -534,14 +534,14 @@
                     <Button x:Name="PlayPreviewButton"
                             Content="Play"
                             Background="#333337"
-                            Foreground="#E0E0E0"
+                            Foreground="{DynamicResource ForegroundBrush}"
                             BorderThickness="0"
                             Padding="12,4"
                             Click="PlayPreviewButton_Click"/>
                     <Button x:Name="StopPreviewButton"
                             Content="Stop"
                             Background="#333337"
-                            Foreground="#E0E0E0"
+                            Foreground="{DynamicResource ForegroundBrush}"
                             BorderThickness="0"
                             Padding="12,4"
                             Margin="8,0,0,0"
@@ -551,7 +551,7 @@
                            HorizontalAlignment="Right"
                            VerticalAlignment="Bottom"
                            Margin="12,8"
-                           Foreground="#808080"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
                            FontSize="11"/>
             </Grid>
         </Border>

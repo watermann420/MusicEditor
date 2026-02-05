@@ -438,7 +438,7 @@
                                   Click="AllChannelsCheck_Click"
                                   Margin="0,0,0,8"/>
 
-                        <Border Background="#0D0D0D"
+                        <Border Background="{DynamicResource BackgroundBrush}"
                                 CornerRadius="4"
                                 Padding="8"
                                 Margin="0,0,0,16">

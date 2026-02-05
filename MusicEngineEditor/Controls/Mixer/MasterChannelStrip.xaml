@@ -18,7 +18,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
                         <Grid>
-                            <Border Width="6" Background="#0D0D0D" CornerRadius="3"
+                            <Border Width="6" Background="{DynamicResource BackgroundBrush}" CornerRadius="3"
                                     HorizontalAlignment="Center"/>
                             <Track x:Name="PART_Track">
                                 <Track.Thumb>
@@ -26,7 +26,7 @@
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
                                                 <Border Background="#00D9FF" CornerRadius="2"
-                                                        BorderBrush="#2A2A2A" BorderThickness="1">
+                                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                                                     <Rectangle Width="24" Height="2" Fill="#0D0D0D"
                                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 </Border>
@@ -58,7 +58,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="border" Background="#0D0D0D"
+                        <Border x:Name="border" Background="{DynamicResource BackgroundBrush}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="2">
@@ -86,7 +86,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="border" Background="#0D0D0D"
+                        <Border x:Name="border" Background="{DynamicResource BackgroundBrush}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="2">
@@ -120,8 +120,8 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="#0D0D0D"
-                                BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="2">
+                        <Border x:Name="border" Background="{DynamicResource BackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="2">
                             <TextBlock Text="FX CHAIN" HorizontalAlignment="Center" VerticalAlignment="Center"
                                        Foreground="{TemplateBinding Foreground}"
                                        FontSize="{TemplateBinding FontSize}"
@@ -144,10 +144,10 @@
     </UserControl.Resources>
 
     <!-- Accent border on left side -->
-    <Border BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="2">
+    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="2">
         <Grid>
             <!-- Left accent stripe -->
-            <Rectangle Width="3" Fill="#00D9FF" HorizontalAlignment="Left"/>
+            <Rectangle Width="3" Fill="{DynamicResource AccentBrush}" HorizontalAlignment="Left"/>
 
             <Grid Margin="6,4,4,4">
                 <Grid.RowDefinitions>
@@ -191,7 +191,7 @@
                 </Grid>
 
                 <!-- LUFS Display (Integrated and Short-term) -->
-                <Border Grid.Row="4" Background="#0D0D0D" BorderBrush="#2A2A2A" BorderThickness="1"
+                <Border Grid.Row="4" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                         CornerRadius="2" Padding="4,3">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -204,7 +204,7 @@
                             <TextBlock Text="INT" FontSize="7" Foreground="#606060"
                                        FontFamily="Segoe UI" FontWeight="SemiBold" HorizontalAlignment="Center"/>
                             <TextBlock x:Name="IntegratedLUFSText" Text="-14.0" FontSize="10"
-                                       Foreground="#E0E0E0" FontFamily="Consolas" FontWeight="Bold"
+                                       Foreground="{DynamicResource ForegroundBrush}" FontFamily="Consolas" FontWeight="Bold"
                                        HorizontalAlignment="Center"/>
                         </StackPanel>
 
@@ -213,20 +213,20 @@
                             <TextBlock Text="ST" FontSize="7" Foreground="#606060"
                                        FontFamily="Segoe UI" FontWeight="SemiBold" HorizontalAlignment="Center"/>
                             <TextBlock x:Name="ShortTermLUFSText" Text="-14.0" FontSize="10"
-                                       Foreground="#E0E0E0" FontFamily="Consolas" FontWeight="Bold"
+                                       Foreground="{DynamicResource ForegroundBrush}" FontFamily="Consolas" FontWeight="Bold"
                                        HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- True Peak Indicator -->
-                <Border x:Name="TruePeakBorder" Grid.Row="6" Background="#0D0D0D" BorderBrush="#2A2A2A" BorderThickness="1"
+                <Border x:Name="TruePeakBorder" Grid.Row="6" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                         CornerRadius="2" Padding="4,2">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <TextBlock Text="TP:" FontSize="9" Foreground="#606060"
                                    FontFamily="Segoe UI" VerticalAlignment="Center" Margin="0,0,4,0"/>
                         <TextBlock x:Name="TruePeakText" Text="-1.0" FontSize="10"
-                                   Foreground="#00D9FF" FontFamily="Consolas" FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas" FontWeight="Bold"
                                    VerticalAlignment="Center"/>
                         <TextBlock Text="dB" FontSize="8" Foreground="#606060"
                                    FontFamily="Segoe UI" VerticalAlignment="Center" Margin="2,0,0,0"/>
@@ -234,10 +234,10 @@
                 </Border>
 
                 <!-- dB Display -->
-                <Border Grid.Row="8" Background="#0D0D0D" BorderBrush="#2A2A2A" BorderThickness="1"
+                <Border Grid.Row="8" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                         CornerRadius="2" Padding="4,3">
                     <TextBlock x:Name="VolumeDisplay" Text="0.0 dB" FontSize="11"
-                               Foreground="#00D9FF" FontFamily="Consolas" FontWeight="Bold"
+                               Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas" FontWeight="Bold"
                                HorizontalAlignment="Center"/>
                 </Border>
 

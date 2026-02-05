@@ -225,7 +225,7 @@
                         <Grid>
                             <Border x:Name="TrackBackground"
                                     Height="4"
-                                    Background="#2A2A2A"
+                                    Background="{DynamicResource BorderBrush}"
                                     CornerRadius="2"
                                     VerticalAlignment="Center"/>
                             <Track x:Name="PART_Track">

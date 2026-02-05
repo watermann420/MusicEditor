@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls"
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="600"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              ClipToBounds="True">
 
     <UserControl.Resources>
@@ -193,7 +193,7 @@
         <Grid Grid.Row="1" ClipToBounds="True">
             <!-- Background Grid -->
             <Canvas x:Name="GridCanvas"
-                    Background="#1A1A1A"
+                    Background="{DynamicResource PianoRollBackgroundBrush}"
                     ClipToBounds="True"/>
 
             <!-- Note Background -->

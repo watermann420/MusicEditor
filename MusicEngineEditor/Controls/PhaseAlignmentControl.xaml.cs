@@ -559,10 +559,10 @@ public partial class PhaseAlignmentControl : UserControl
         // Color based on correlation
         StatusResultText.Foreground = result.Correlation switch
         {
-            > 0.9 => (Brush)FindResource("InPhaseBrush"),
-            > 0.5 => (Brush)FindResource("AccentBrush"),
-            > 0 => (Brush)FindResource("TargetBrush"),
-            _ => (Brush)FindResource("OutOfPhaseBrush")
+            > 0.9 => FindResource("InPhaseBrush") as Brush ?? Brushes.Transparent,
+            > 0.5 => FindResource("AccentBrush") as Brush ?? Brushes.Transparent,
+            > 0 => FindResource("TargetBrush") as Brush ?? Brushes.Transparent,
+            _ => FindResource("OutOfPhaseBrush") as Brush ?? Brushes.Transparent
         };
     }
 

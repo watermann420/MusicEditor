@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1000"
              d:DataContext="{d:DesignInstance Type=vm:PolyphonicPitchViewModel}"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Dark Theme Colors -->

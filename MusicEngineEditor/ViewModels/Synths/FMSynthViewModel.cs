@@ -137,39 +137,24 @@ public partial class FMOperatorViewModel : ObservableObject
     public void LoadFromSynth()
     {
         var op = _synth.Operators[_operatorIndex];
-        _ratio = op.Ratio;
-        _level = op.Level;
-        _detune = op.Detune;
-        _feedback = op.Feedback;
-        _velocitySensitivity = op.VelocitySensitivity;
-        _keyScaling = op.KeyScaling;
-        _waveform = op.Waveform;
-        _isCarrier = op.IsCarrier;
-        _isEnabled = op.Level > 0;
+        Ratio = op.Ratio;
+        Level = op.Level;
+        Detune = op.Detune;
+        Feedback = op.Feedback;
+        VelocitySensitivity = op.VelocitySensitivity;
+        KeyScaling = op.KeyScaling;
+        Waveform = op.Waveform;
+        IsCarrier = op.IsCarrier;
+        IsEnabled = op.Level > 0;
         _previousLevel = op.Level > 0 ? op.Level : 0.5f;
 
         if (op.Envelope != null)
         {
-            _attack = (float)op.Envelope.Attack;
-            _decay = (float)op.Envelope.Decay;
-            _sustain = (float)op.Envelope.Sustain;
-            _release = (float)op.Envelope.Release;
+            Attack = (float)op.Envelope.Attack;
+            Decay = (float)op.Envelope.Decay;
+            Sustain = (float)op.Envelope.Sustain;
+            Release = (float)op.Envelope.Release;
         }
-
-        // Notify all properties changed
-        OnPropertyChanged(nameof(Ratio));
-        OnPropertyChanged(nameof(Level));
-        OnPropertyChanged(nameof(Detune));
-        OnPropertyChanged(nameof(Feedback));
-        OnPropertyChanged(nameof(Attack));
-        OnPropertyChanged(nameof(Decay));
-        OnPropertyChanged(nameof(Sustain));
-        OnPropertyChanged(nameof(Release));
-        OnPropertyChanged(nameof(VelocitySensitivity));
-        OnPropertyChanged(nameof(KeyScaling));
-        OnPropertyChanged(nameof(Waveform));
-        OnPropertyChanged(nameof(IsCarrier));
-        OnPropertyChanged(nameof(IsEnabled));
     }
 
     partial void OnRatioChanged(float value)
@@ -394,19 +379,12 @@ public partial class FMSynthViewModel : ViewModelBase, IDisposable
             Operators.Add(opVm);
         }
 
-        _selectedAlgorithm = _synth.Algorithm;
-        _masterVolume = _synth.Volume;
-        _globalFeedback = _synth.FeedbackAmount;
-        _pitchBendRange = _synth.PitchBendRange;
-        _vibratoDepth = _synth.VibratoDepth;
-        _presetName = _synth.Name;
-
-        OnPropertyChanged(nameof(SelectedAlgorithm));
-        OnPropertyChanged(nameof(MasterVolume));
-        OnPropertyChanged(nameof(GlobalFeedback));
-        OnPropertyChanged(nameof(PitchBendRange));
-        OnPropertyChanged(nameof(VibratoDepth));
-        OnPropertyChanged(nameof(PresetName));
+        SelectedAlgorithm = _synth.Algorithm;
+        MasterVolume = _synth.Volume;
+        GlobalFeedback = _synth.FeedbackAmount;
+        PitchBendRange = _synth.PitchBendRange;
+        VibratoDepth = _synth.VibratoDepth;
+        PresetName = _synth.Name;
 
         UpdateAlgorithmConnections();
 

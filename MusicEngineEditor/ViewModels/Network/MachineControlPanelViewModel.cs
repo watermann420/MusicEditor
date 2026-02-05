@@ -61,7 +61,9 @@ public partial class MachineControlPanelViewModel : ViewModelBase, IDisposable
     private DateTime _lastMtcReceived;
     private bool _disposed;
     private double _internalTimecode;
+#pragma warning disable CS0414 // Field is assigned but never read - reserved for future MTC chase logic
     private bool _isChasing;
+#pragma warning restore CS0414
 
     #endregion
 

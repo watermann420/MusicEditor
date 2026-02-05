@@ -84,7 +84,7 @@
                     <ControlTemplate TargetType="Slider">
                         <Grid Height="4">
                             <Border Height="4"
-                                    Background="#1A1A1A"
+                                    Background="{DynamicResource PianoRollBackgroundBrush}"
                                     CornerRadius="2"/>
                             <Border x:Name="PART_TrackFill"
                                     Height="4"

@@ -162,7 +162,7 @@
                             <!-- Project Icon with Crash Indicator -->
                             <Grid Grid.Column="0" Width="40" Height="40" Margin="0,0,12,0">
                                 <Border Width="40" Height="40"
-                                        Background="#2A2A2A"
+                                        Background="{DynamicResource BorderBrush}"
                                         CornerRadius="4">
                                     <TextBlock Text="P"
                                                FontSize="18"
@@ -220,7 +220,7 @@
                                     Padding="8,4"
                                     Margin="8,0"
                                     VerticalAlignment="Center"
-                                    Background="#252525">
+                                    Background="{DynamicResource ElementHoverBrush}">
                                 <TextBlock Text="{Binding TimeAgo}"
                                            FontSize="10"
                                            Foreground="{DynamicResource SecondaryForegroundBrush}"/>

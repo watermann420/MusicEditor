@@ -7,7 +7,7 @@
              xmlns:vm="clr-namespace:MusicEngineEditor.ViewModels.Network"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="450"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Color Definitions -->
@@ -570,7 +570,7 @@
 
                             <!-- MIDI In -->
                             <Border Grid.Column="0"
-                                    Background="#0D0D0D"
+                                    Background="{DynamicResource BackgroundBrush}"
                                     CornerRadius="4"
                                     Padding="12"
                                     Margin="0,0,4,0">
@@ -607,7 +607,7 @@
 
                             <!-- MIDI Out -->
                             <Border Grid.Column="1"
-                                    Background="#0D0D0D"
+                                    Background="{DynamicResource BackgroundBrush}"
                                     CornerRadius="4"
                                     Padding="12"
                                     Margin="4,0,0,0">
@@ -644,7 +644,7 @@
                         </Grid>
 
                         <!-- Connection Quality -->
-                        <Border Background="#0D0D0D"
+                        <Border Background="{DynamicResource BackgroundBrush}"
                                 CornerRadius="4"
                                 Padding="12"
                                 Margin="0,8,0,0">
@@ -739,7 +739,7 @@
                                       Click="AllChannelsCheckBox_Click"/>
                         </Grid>
 
-                        <Border Background="#0D0D0D"
+                        <Border Background="{DynamicResource BackgroundBrush}"
                                 CornerRadius="4"
                                 Padding="8">
                             <Grid>

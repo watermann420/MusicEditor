@@ -58,7 +58,9 @@ public partial class SynthEditorPanel : UserControl
     /// <summary>
     /// Event raised when synth parameters change.
     /// </summary>
+#pragma warning disable CS0067
     public event EventHandler<SynthParameterChangedEventArgs>? ParameterChanged;
+#pragma warning restore CS0067
 
     /// <summary>
     /// Creates a new SynthEditorPanel.

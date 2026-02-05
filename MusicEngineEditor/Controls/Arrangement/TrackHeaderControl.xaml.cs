@@ -165,11 +165,18 @@ public partial class TrackHeaderControl : UserControl
 
     #region Fields
 
-    private readonly SolidColorBrush _defaultButtonBackground = new(Color.FromRgb(0x25, 0x25, 0x25));
-    private readonly SolidColorBrush _muteActiveBrush = new(Color.FromRgb(0xFF, 0x47, 0x57));
-    private readonly SolidColorBrush _soloActiveBrush = new(Color.FromRgb(0xFF, 0xB8, 0x00));
-    private readonly SolidColorBrush _activeTextBrush = new(Colors.White);
-    private readonly SolidColorBrush _inactiveTextBrush = new(Color.FromRgb(0x80, 0x80, 0x80));
+    private readonly SolidColorBrush _defaultButtonBackground = CreateFrozenBrush(Color.FromRgb(0x25, 0x25, 0x25));
+    private readonly SolidColorBrush _muteActiveBrush = CreateFrozenBrush(Color.FromRgb(0xFF, 0x47, 0x57));
+    private readonly SolidColorBrush _soloActiveBrush = CreateFrozenBrush(Color.FromRgb(0xFF, 0xB8, 0x00));
+    private readonly SolidColorBrush _activeTextBrush = CreateFrozenBrush(Colors.White);
+    private readonly SolidColorBrush _inactiveTextBrush = CreateFrozenBrush(Color.FromRgb(0x80, 0x80, 0x80));
+
+    private static SolidColorBrush CreateFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
 
     #endregion
 

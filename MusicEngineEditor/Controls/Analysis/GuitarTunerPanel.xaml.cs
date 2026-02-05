@@ -89,6 +89,39 @@ public partial class GuitarTunerPanel : UserControl
 
     #endregion
 
+    #region Cached Frozen Brushes
+
+    private static readonly SolidColorBrush AccentBrush = new(Color.FromRgb(0x00, 0xD9, 0xFF));
+    private static readonly SolidColorBrush SuccessBrush = new(Color.FromRgb(0x00, 0xFF, 0x88));
+    private static readonly SolidColorBrush WarningBrush = new(Color.FromRgb(0xFF, 0xB8, 0x00));
+    private static readonly SolidColorBrush ErrorBrush = new(Color.FromRgb(0xFF, 0x47, 0x57));
+    private static readonly SolidColorBrush DimBrush = new(Color.FromRgb(0x80, 0x80, 0x80));
+    private static readonly SolidColorBrush WhiteBrush = new(Colors.White);
+    private static readonly SolidColorBrush BlackBrush = new(Colors.Black);
+    private static readonly SolidColorBrush PanelBackgroundBrush = new(Color.FromRgb(0x1A, 0x1A, 0x1A));
+    private static readonly SolidColorBrush CachedBorderBrush = new(Color.FromRgb(0x2A, 0x2A, 0x2A));
+    private static readonly SolidColorBrush SecondaryForegroundBrush = new(Color.FromRgb(0x90, 0x90, 0x90));
+    private static readonly SolidColorBrush SubtleBorderBrush = new(Color.FromRgb(0x3A, 0x3A, 0x3A));
+    private static readonly SolidColorBrush DisabledForegroundBrush = new(Color.FromRgb(0x40, 0x40, 0x40));
+
+    static GuitarTunerPanel()
+    {
+        AccentBrush.Freeze();
+        SuccessBrush.Freeze();
+        WarningBrush.Freeze();
+        ErrorBrush.Freeze();
+        DimBrush.Freeze();
+        WhiteBrush.Freeze();
+        BlackBrush.Freeze();
+        PanelBackgroundBrush.Freeze();
+        CachedBorderBrush.Freeze();
+        SecondaryForegroundBrush.Freeze();
+        SubtleBorderBrush.Freeze();
+        DisabledForegroundBrush.Freeze();
+    }
+
+    #endregion
+
     #region Private Fields
 
     private bool _isInitialized;
@@ -98,7 +131,9 @@ public partial class GuitarTunerPanel : UserControl
 
     // Arc display elements
     private Shapes.Path? _arcBackground;
+#pragma warning disable CS0169
     private Shapes.Path? _arcIndicator;
+#pragma warning restore CS0169
     private Shapes.Ellipse? _needleIndicator;
     private readonly List<Shapes.Line> _arcTicks = new();
     private readonly List<TextBlock> _arcLabels = new();
@@ -409,7 +444,7 @@ public partial class GuitarTunerPanel : UserControl
                 Y1 = y1,
                 X2 = x2,
                 Y2 = y2,
-                Stroke = new SolidColorBrush(cents == 0 ? SuccessColor : DimColor),
+                Stroke = cents == 0 ? SuccessBrush : DimBrush,
                 StrokeThickness = cents == 0 ? 2 : 1
             };
             TunerArcCanvas.Children.Add(tick);
@@ -426,7 +461,7 @@ public partial class GuitarTunerPanel : UserControl
                 {
                     Text = cents == 0 ? "0" : (cents > 0 ? $"+{cents}" : cents.ToString()),
                     FontSize = 9,
-                    Foreground = new SolidColorBrush(cents == 0 ? SuccessColor : DimColor)
+                    Foreground = cents == 0 ? SuccessBrush : DimBrush
                 };
                 Canvas.SetLeft(label, labelX - 12);
                 Canvas.SetTop(label, labelY - 6);
@@ -440,8 +475,8 @@ public partial class GuitarTunerPanel : UserControl
         {
             Width = 16,
             Height = 16,
-            Fill = new SolidColorBrush(AccentColor),
-            Stroke = new SolidColorBrush(Colors.White),
+            Fill = AccentBrush,
+            Stroke = WhiteBrush,
             StrokeThickness = 2
         };
         Canvas.SetLeft(_needleIndicator, centerX - 8);
@@ -453,7 +488,7 @@ public partial class GuitarTunerPanel : UserControl
         {
             Width = 8,
             Height = 8,
-            Fill = new SolidColorBrush(DimColor)
+            Fill = DimBrush
         };
         Canvas.SetLeft(centerDot, centerX - 4);
         Canvas.SetTop(centerDot, centerY - 4);
@@ -476,7 +511,7 @@ public partial class GuitarTunerPanel : UserControl
         {
             Width = width - 40,
             Height = height - 20,
-            Fill = new SolidColorBrush(GetThemeColor("PanelBackgroundColor", Color.FromRgb(0x1A, 0x1A, 0x1A))),
+            Fill = PanelBackgroundBrush,
             RadiusX = 4,
             RadiusY = 4
         };
@@ -494,7 +529,7 @@ public partial class GuitarTunerPanel : UserControl
                 Y1 = startY + 5,
                 X2 = fretX,
                 Y2 = endY - 5,
-                Stroke = new SolidColorBrush(GetThemeColor("SubtleBorderColor", Color.FromRgb(0x3A, 0x3A, 0x3A))),
+                Stroke = SubtleBorderBrush,
                 StrokeThickness = 2
             };
             StringVisualizationCanvas.Children.Add(fret);
@@ -513,7 +548,7 @@ public partial class GuitarTunerPanel : UserControl
                 Y1 = stringY,
                 X2 = width - 25,
                 Y2 = stringY,
-                Stroke = new SolidColorBrush(GetThemeColor("SecondaryForegroundColor", Color.FromRgb(0x90, 0x90, 0x90))),
+                Stroke = SecondaryForegroundBrush,
                 StrokeThickness = stringThicknesses[i]
             };
             StringVisualizationCanvas.Children.Add(stringLine);
@@ -537,7 +572,7 @@ public partial class GuitarTunerPanel : UserControl
             {
                 Width = barWidth,
                 Height = 40,
-                Fill = new SolidColorBrush(AccentColor),
+                Fill = AccentBrush,
                 RadiusX = 2,
                 RadiusY = 2
             };
@@ -570,22 +605,22 @@ public partial class GuitarTunerPanel : UserControl
                             FontSize = 14,
                             FontWeight = FontWeights.Bold,
                             HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
-                            Foreground = new SolidColorBrush(GetThemeColor("BrightForegroundColor", Colors.White))
+                            Foreground = WhiteBrush
                         },
                         new TextBlock
                         {
                             Text = guitarString.StringNumber.ToString(),
                             FontSize = 9,
                             HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
-                            Foreground = new SolidColorBrush(DimColor)
+                            Foreground = DimBrush
                         }
                     }
                 },
                 Width = 48,
                 Height = 48,
                 Margin = new Thickness(4),
-                Background = new SolidColorBrush(GetThemeColor("PanelBackgroundColor", Color.FromRgb(0x1A, 0x1A, 0x1A))),
-                BorderBrush = new SolidColorBrush(GetThemeColor("BorderColor", Color.FromRgb(0x2A, 0x2A, 0x2A))),
+                Background = PanelBackgroundBrush,
+                BorderBrush = CachedBorderBrush,
                 BorderThickness = new Thickness(2),
                 Cursor = System.Windows.Input.Cursors.Hand,
                 Tag = index
@@ -622,8 +657,8 @@ public partial class GuitarTunerPanel : UserControl
 
         // Mouse over trigger
         var mouseOverTrigger = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
-        mouseOverTrigger.Setters.Add(new Setter(Border.BackgroundProperty, new SolidColorBrush(GetThemeColor("BorderColor", Color.FromRgb(0x2A, 0x2A, 0x2A))), "border"));
-        mouseOverTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, new SolidColorBrush(AccentColor), "border"));
+        mouseOverTrigger.Setters.Add(new Setter(Border.BackgroundProperty, CachedBorderBrush, "border"));
+        mouseOverTrigger.Setters.Add(new Setter(Border.BorderBrushProperty, AccentBrush, "border"));
         template.Triggers.Add(mouseOverTrigger);
 
         return template;
@@ -641,27 +676,19 @@ public partial class GuitarTunerPanel : UserControl
 
     #region Update Methods
 
+    private static SolidColorBrush GetTuningBrush(double cents)
+    {
+        if (Math.Abs(cents) <= 5) return SuccessBrush;
+        if (Math.Abs(cents) <= 15) return WarningBrush;
+        return ErrorBrush;
+    }
+
     private void UpdateCentsDisplay()
     {
         double cents = _viewModel.CentsDeviation;
         string sign = cents >= 0 ? "+" : "";
         CentsText.Text = $"{sign}{cents:F0} cents";
-
-        // Color based on deviation
-        Color color;
-        if (Math.Abs(cents) <= 5)
-        {
-            color = SuccessColor;
-        }
-        else if (Math.Abs(cents) <= 15)
-        {
-            color = WarningColor;
-        }
-        else
-        {
-            color = ErrorColor;
-        }
-        CentsText.Foreground = new SolidColorBrush(color);
+        CentsText.Foreground = GetTuningBrush(cents);
     }
 
     private void UpdateNeedlePosition()
@@ -685,21 +712,7 @@ public partial class GuitarTunerPanel : UserControl
         Canvas.SetLeft(_needleIndicator, needleX);
         Canvas.SetTop(_needleIndicator, needleY);
 
-        // Update needle color based on tuning
-        Color needleColor;
-        if (Math.Abs(cents) <= 5)
-        {
-            needleColor = SuccessColor;
-        }
-        else if (Math.Abs(cents) <= 15)
-        {
-            needleColor = WarningColor;
-        }
-        else
-        {
-            needleColor = ErrorColor;
-        }
-        _needleIndicator.Fill = new SolidColorBrush(needleColor);
+        _needleIndicator.Fill = GetTuningBrush(cents);
     }
 
     private void UpdateInTuneVisual()
@@ -710,48 +723,44 @@ public partial class GuitarTunerPanel : UserControl
         double targetOpacity = _viewModel.IsInTune ? 1.0 : 0.0;
         _inTuneGlow.Opacity = targetOpacity;
 
-        // Update note name color
-        NoteNameText.Foreground = new SolidColorBrush(_viewModel.IsInTune ? SuccessColor : Colors.White);
+        NoteNameText.Foreground = _viewModel.IsInTune ? SuccessBrush : WhiteBrush;
     }
 
     private void UpdateSelectedString()
     {
         int selectedIndex = _viewModel.SelectedStringIndex;
 
-        // Update string buttons
         for (int i = 0; i < _stringButtons.Count; i++)
         {
             var button = _stringButtons[i];
             bool isSelected = i == selectedIndex;
 
-            button.Background = new SolidColorBrush(isSelected ? AccentColor : GetThemeColor("PanelBackgroundColor", Color.FromRgb(0x1A, 0x1A, 0x1A)));
-            button.BorderBrush = new SolidColorBrush(isSelected ? AccentColor : GetThemeColor("BorderColor", Color.FromRgb(0x2A, 0x2A, 0x2A)));
+            button.Background = isSelected ? AccentBrush : PanelBackgroundBrush;
+            button.BorderBrush = isSelected ? AccentBrush : CachedBorderBrush;
 
-            // Update text color
             if (button.Content is StackPanel panel)
             {
                 foreach (var child in panel.Children)
                 {
                     if (child is TextBlock textBlock)
                     {
-                        if (textBlock.FontSize == 14) // Note name
+                        if (textBlock.FontSize == 14)
                         {
-                            textBlock.Foreground = new SolidColorBrush(isSelected ? GetThemeColor("BackgroundColor", Colors.Black) : GetThemeColor("BrightForegroundColor", Colors.White));
+                            textBlock.Foreground = isSelected ? BlackBrush : WhiteBrush;
                         }
-                        else // String number
+                        else
                         {
-                            textBlock.Foreground = new SolidColorBrush(isSelected ? GetThemeColor("DisabledForegroundColor", Color.FromRgb(0x40, 0x40, 0x40)) : DimColor);
+                            textBlock.Foreground = isSelected ? DisabledForegroundBrush : DimBrush;
                         }
                     }
                 }
             }
         }
 
-        // Update string visualization
         for (int i = 0; i < _stringLines.Count && i < 6; i++)
         {
             bool isSelected = i == selectedIndex;
-            _stringLines[i].Stroke = new SolidColorBrush(isSelected ? AccentColor : GetThemeColor("SecondaryForegroundColor", Color.FromRgb(0x90, 0x90, 0x90)));
+            _stringLines[i].Stroke = isSelected ? AccentBrush : SecondaryForegroundBrush;
         }
     }
 
@@ -762,21 +771,20 @@ public partial class GuitarTunerPanel : UserControl
 
         InputLevelBar.Width = level * maxWidth;
 
-        // Color based on level
         if (level > 0.9)
         {
-            InputLevelBar.Background = new SolidColorBrush(ErrorColor);
+            InputLevelBar.Background = ErrorBrush;
             InputPeakIndicator.Visibility = Visibility.Visible;
             Canvas.SetLeft(InputPeakIndicator, level * maxWidth - 3);
         }
         else if (level > 0.7)
         {
-            InputLevelBar.Background = new SolidColorBrush(WarningColor);
+            InputLevelBar.Background = WarningBrush;
             InputPeakIndicator.Visibility = Visibility.Collapsed;
         }
         else
         {
-            InputLevelBar.Background = new SolidColorBrush(AccentColor);
+            InputLevelBar.Background = AccentBrush;
             InputPeakIndicator.Visibility = Visibility.Collapsed;
         }
 
@@ -822,24 +830,10 @@ public partial class GuitarTunerPanel : UserControl
             _strobeLines[i].Opacity = Math.Max(0.2, edgeFade);
         }
 
-        // Color based on tuning
-        Color strobeColor;
-        if (Math.Abs(cents) <= 5)
-        {
-            strobeColor = SuccessColor;
-        }
-        else if (Math.Abs(cents) <= 15)
-        {
-            strobeColor = WarningColor;
-        }
-        else
-        {
-            strobeColor = ErrorColor;
-        }
-
+        var strobeBrush = GetTuningBrush(cents);
         foreach (var bar in _strobeLines)
         {
-            bar.Fill = new SolidColorBrush(strobeColor);
+            bar.Fill = strobeBrush;
         }
     }
 

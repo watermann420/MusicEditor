@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              d:DesignHeight="200" d:DesignWidth="280"
              Background="#252628"
-             BorderBrush="#2A2A2A"
+             BorderBrush="{DynamicResource BorderBrush}"
              BorderThickness="1">
 
     <UserControl.Resources>
@@ -329,7 +329,7 @@
                     Grid.Column="1"
                     Style="{StaticResource EditorButtonStyle}"
                     Content="Cancel"
-                    Background="#252525"
+                    Background="{DynamicResource ElementHoverBrush}"
                     Margin="0,0,8,0"
                     Click="CancelButton_Click"/>
 

@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="350"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -57,7 +57,7 @@
 
             <!-- Header -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,10">
@@ -88,7 +88,7 @@
                     <Button Grid.Column="1"
                             Content="..."
                             Background="Transparent"
-                            Foreground="#808080"
+                            Foreground="{DynamicResource SecondaryForegroundBrush}"
                             BorderThickness="0"
                             Padding="8,4"
                             Cursor="Hand"
@@ -185,7 +185,7 @@
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="[File]"
                                                                FontSize="10"
-                                                               Foreground="#808080"
+                                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                                                Margin="0,0,6,0"/>
                                                     <TextBlock Text="{Binding AttachmentName}"
                                                                FontSize="11"
@@ -210,7 +210,7 @@
 
             <!-- Input Area -->
             <Border Grid.Row="3"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,1,0,0"
                     Padding="8">
@@ -226,7 +226,7 @@
                             Content="+"
                             Width="32" Height="32"
                             Background="#333337"
-                            Foreground="#808080"
+                            Foreground="{DynamicResource SecondaryForegroundBrush}"
                             BorderThickness="0"
                             FontSize="16"
                             Cursor="Hand"
@@ -258,7 +258,7 @@
                         <TextBox x:Name="MessageTextBox"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 Foreground="#E0E0E0"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  CaretBrush="#E0E0E0"
                                  FontSize="12"
                                  Padding="12,8"

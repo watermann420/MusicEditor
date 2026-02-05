@@ -7,7 +7,7 @@
              xmlns:vm="clr-namespace:MusicEngineEditor.ViewModels"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="320"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Bool to Visibility Converter -->
@@ -133,17 +133,17 @@
 
         <!-- Context Menu -->
         <ContextMenu x:Key="HistoryContextMenu"
-                     Background="#181818"
-                     BorderBrush="#333333"
-                     Foreground="#E0E0E0">
+                     Background="{DynamicResource PanelBackgroundBrush}"
+                     BorderBrush="{DynamicResource SubtleBorderBrush}"
+                     Foreground="{DynamicResource ForegroundBrush}">
             <MenuItem Header="Jump to This State"
                       Command="{Binding DataContext.JumpToSelectedStateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                       InputGestureText="Enter"/>
-            <Separator Background="#333333"/>
+            <Separator Background="{DynamicResource SubtleBorderBrush}"/>
             <MenuItem Header="Branch from Here"
                       Command="{Binding DataContext.BranchFromHereCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                       ToolTip="Create a new branch from this point, discarding redo history"/>
-            <Separator Background="#333333"/>
+            <Separator Background="{DynamicResource SubtleBorderBrush}"/>
             <MenuItem Header="Clear All History"
                       Command="{Binding DataContext.ClearHistoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                       Foreground="#FF6B6B"/>
@@ -163,7 +163,7 @@
 
             <!-- Header -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,10">
@@ -207,7 +207,7 @@
 
             <!-- Undo/Redo Control Buttons -->
             <Border Grid.Row="1"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,10">
@@ -236,14 +236,14 @@
 
                     <!-- Position Indicator -->
                     <Border Grid.Column="1"
-                            Background="#252525"
+                            Background="{DynamicResource ElementHoverBrush}"
                             CornerRadius="4"
                             Padding="12,4"
                             Margin="8,0">
                         <TextBlock HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    FontSize="11"
-                                   Foreground="#808080"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    FontFamily="Consolas">
                             <Run Text="{Binding UndoCount, Mode=OneWay}"/>
                             <Run Text=" / "/>
@@ -284,7 +284,7 @@
                         <TextBlock Text="No History Yet"
                                    FontSize="14"
                                    FontWeight="SemiBold"
-                                   Foreground="#808080"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,12,0,4"/>
                         <TextBlock Text="Your undo/redo history&#x0a;will appear here as a timeline"
@@ -322,7 +322,7 @@
                                     <Grid Grid.Column="0">
                                         <!-- Timeline Vertical Line -->
                                         <Border Width="2"
-                                                Background="#2A2A2A"
+                                                Background="{DynamicResource BorderBrush}"
                                                 HorizontalAlignment="Center"
                                                 Margin="0,-1,0,-1"/>
 
@@ -372,7 +372,7 @@
 
                                         <!-- Current Position Arrow -->
                                         <Path Data="M0,0 L8,6 L0,12 Z"
-                                              Fill="#00D9FF"
+                                              Fill="{DynamicResource AccentBrush}"
                                               Width="6" Height="10"
                                               Stretch="Uniform"
                                               HorizontalAlignment="Left"
@@ -452,7 +452,7 @@
 
             <!-- Footer Control Panel -->
             <Border Grid.Row="3"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,1,0,0"
                     Padding="12,10">
@@ -470,7 +470,7 @@
                                 CornerRadius="3"
                                 Padding="6,2"
                                 Margin="0,0,6,0">
-                            <TextBlock FontSize="10" Foreground="#00FF88">
+                            <TextBlock FontSize="10" Foreground="{DynamicResource SuccessBrush}">
                                 <Run Text="Undo:"/>
                                 <Run Text="{Binding UndoCount, Mode=OneWay}" FontWeight="SemiBold"/>
                             </TextBlock>
@@ -478,7 +478,7 @@
                         <Border Background="#1A2A3A"
                                 CornerRadius="3"
                                 Padding="6,2">
-                            <TextBlock FontSize="10" Foreground="#00D9FF">
+                            <TextBlock FontSize="10" Foreground="{DynamicResource AccentBrush}">
                                 <Run Text="Redo:"/>
                                 <Run Text="{Binding RedoCount, Mode=OneWay}" FontWeight="SemiBold"/>
                             </TextBlock>

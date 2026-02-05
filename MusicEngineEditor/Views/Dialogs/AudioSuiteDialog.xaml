@@ -107,7 +107,7 @@
                                         <Setter.Value>
                                             <VisualBrush AlignmentX="Left" Stretch="None">
                                                 <VisualBrush.Visual>
-                                                    <TextBlock Text="Search effects..." Foreground="#808080" Margin="8,6"/>
+                                                    <TextBlock Text="Search effects..." Foreground="{DynamicResource SecondaryForegroundBrush}" Margin="8,6"/>
                                                 </VisualBrush.Visual>
                                             </VisualBrush>
                                         </Setter.Value>

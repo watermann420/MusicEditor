@@ -309,7 +309,7 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <TextBlock Text="Notes: "
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                VerticalAlignment="Center"
                                FontSize="11"/>
                     <TextBlock x:Name="NoteCountText"

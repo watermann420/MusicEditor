@@ -44,7 +44,7 @@ public partial class App : Application
         if (recentProjectsService.ShowWelcomeOnStartup)
         {
             // Defer welcome screen to after main window is fully loaded
-            mainWindow.Dispatcher.BeginInvoke(new Action(async () =>
+            _ = mainWindow.Dispatcher.BeginInvoke(new Action(async () =>
             {
                 var welcomeScreen = new WelcomeScreen(recentProjectsService);
                 welcomeScreen.Owner = mainWindow;

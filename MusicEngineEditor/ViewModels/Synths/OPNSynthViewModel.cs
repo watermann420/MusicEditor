@@ -97,31 +97,20 @@ public partial class OPNOperatorViewModel : ObservableObject
         if (_operatorIndex >= channel.Operators.Length) return;
 
         var op = channel.Operators[_operatorIndex];
-        _totalLevel = op.TotalLevel;
-        _multiple = op.Multiple;
-        _detune = op.Detune;
-        _keyScale = op.KeyScale;
-        _attackRate = op.AttackRate;
-        _decay1Rate = op.Decay1Rate;
-        _decay2Rate = op.Decay2Rate;
-        _sustainLevel = op.SustainLevel;
-        _releaseRate = op.ReleaseRate;
-        _ssgEgEnabled = op.SsgEg > 0;
-        _amSensitivity = op.AmSensitivity;
+        TotalLevel = op.TotalLevel;
+        Multiple = op.Multiple;
+        Detune = op.Detune;
+        KeyScale = op.KeyScale;
+        AttackRate = op.AttackRate;
+        Decay1Rate = op.Decay1Rate;
+        Decay2Rate = op.Decay2Rate;
+        SustainLevel = op.SustainLevel;
+        ReleaseRate = op.ReleaseRate;
+        SsgEgEnabled = op.SsgEg > 0;
+        AmSensitivity = op.AmSensitivity;
 
-        // Notify all properties changed
-        OnPropertyChanged(nameof(TotalLevel));
-        OnPropertyChanged(nameof(Multiple));
+        // Notify dependent properties changed
         OnPropertyChanged(nameof(MultipleDisplay));
-        OnPropertyChanged(nameof(Detune));
-        OnPropertyChanged(nameof(KeyScale));
-        OnPropertyChanged(nameof(AttackRate));
-        OnPropertyChanged(nameof(Decay1Rate));
-        OnPropertyChanged(nameof(Decay2Rate));
-        OnPropertyChanged(nameof(SustainLevel));
-        OnPropertyChanged(nameof(ReleaseRate));
-        OnPropertyChanged(nameof(SsgEgEnabled));
-        OnPropertyChanged(nameof(AmSensitivity));
         OnPropertyChanged(nameof(IsCarrier));
     }
 
@@ -359,18 +348,13 @@ public partial class OPNSynthViewModel : ViewModelBase, IDisposable
         LoadFromChannel();
         UpdateCarrierStatus();
 
-        _masterVolume = _synth.Volume;
-        _activeChannel = _synth.ActiveChannel;
-        _lfoEnabled = _synth.LfoEnabled;
-        _lfoFrequency = _synth.LfoFrequency;
-        _presetName = _synth.Name;
+        MasterVolume = _synth.Volume;
+        ActiveChannel = _synth.ActiveChannel;
+        LfoEnabled = _synth.LfoEnabled;
+        LfoFrequency = _synth.LfoFrequency;
+        PresetName = _synth.Name;
 
-        OnPropertyChanged(nameof(MasterVolume));
-        OnPropertyChanged(nameof(ActiveChannel));
-        OnPropertyChanged(nameof(LfoEnabled));
-        OnPropertyChanged(nameof(LfoFrequency));
         OnPropertyChanged(nameof(LfoFrequencyDisplay));
-        OnPropertyChanged(nameof(PresetName));
         OnPropertyChanged(nameof(AlgorithmDescription));
         OnPropertyChanged(nameof(AlgorithmShortDescription));
 
@@ -388,23 +372,15 @@ public partial class OPNSynthViewModel : ViewModelBase, IDisposable
         if (_synth == null || ActiveChannel < 0 || ActiveChannel >= 6) return;
 
         var channel = _synth.Channels[ActiveChannel];
-        _algorithm = (int)channel.Algorithm;
-        _feedback = channel.Feedback;
-        _pmSensitivity = channel.FmSensitivity;
-        _amSensitivity = channel.AmSensitivity;
+        Algorithm = (int)channel.Algorithm;
+        Feedback = channel.Feedback;
+        PmSensitivity = channel.FmSensitivity;
+        AmSensitivity = channel.AmSensitivity;
 
         // Panning
-        _panLeft = channel.Panning == 2;
-        _panCenter = channel.Panning == 3;
-        _panRight = channel.Panning == 1;
-
-        OnPropertyChanged(nameof(Algorithm));
-        OnPropertyChanged(nameof(Feedback));
-        OnPropertyChanged(nameof(PmSensitivity));
-        OnPropertyChanged(nameof(AmSensitivity));
-        OnPropertyChanged(nameof(PanLeft));
-        OnPropertyChanged(nameof(PanCenter));
-        OnPropertyChanged(nameof(PanRight));
+        PanLeft = channel.Panning == 2;
+        PanCenter = channel.Panning == 3;
+        PanRight = channel.Panning == 1;
 
         foreach (var op in Operators)
         {
@@ -530,10 +506,8 @@ public partial class OPNSynthViewModel : ViewModelBase, IDisposable
         if (value && _synth != null && ActiveChannel >= 0 && ActiveChannel < 6)
         {
             _synth.Channels[ActiveChannel].Panning = 2;
-            _panCenter = false;
-            _panRight = false;
-            OnPropertyChanged(nameof(PanCenter));
-            OnPropertyChanged(nameof(PanRight));
+            PanCenter = false;
+            PanRight = false;
         }
     }
 
@@ -542,10 +516,8 @@ public partial class OPNSynthViewModel : ViewModelBase, IDisposable
         if (value && _synth != null && ActiveChannel >= 0 && ActiveChannel < 6)
         {
             _synth.Channels[ActiveChannel].Panning = 3;
-            _panLeft = false;
-            _panRight = false;
-            OnPropertyChanged(nameof(PanLeft));
-            OnPropertyChanged(nameof(PanRight));
+            PanLeft = false;
+            PanRight = false;
         }
     }
 
@@ -554,10 +526,8 @@ public partial class OPNSynthViewModel : ViewModelBase, IDisposable
         if (value && _synth != null && ActiveChannel >= 0 && ActiveChannel < 6)
         {
             _synth.Channels[ActiveChannel].Panning = 1;
-            _panLeft = false;
-            _panCenter = false;
-            OnPropertyChanged(nameof(PanLeft));
-            OnPropertyChanged(nameof(PanCenter));
+            PanLeft = false;
+            PanCenter = false;
         }
     }
 

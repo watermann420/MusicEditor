@@ -48,7 +48,9 @@ public partial class PatternEditorWindow : Window
     /// <summary>
     /// Raised when loop toggle state changes.
     /// </summary>
+#pragma warning disable CS0067
     public event EventHandler<bool>? LoopToggled;
+#pragma warning restore CS0067
 
     #endregion
 

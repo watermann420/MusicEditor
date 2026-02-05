@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="500"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinHeight="200"
              MinWidth="300">
 
@@ -87,7 +87,7 @@
 
             <!-- Header with track selectors -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="0,0,0,1"
                     Padding="10,8">
@@ -152,7 +152,7 @@
 
                 <!-- Main display area -->
                 <Border Grid.Column="1"
-                        Background="#1A1A1A"
+                        Background="{DynamicResource PianoRollBackgroundBrush}"
                         CornerRadius="3"
                         BorderBrush="#3A3A3A"
                         BorderThickness="1">
@@ -196,7 +196,7 @@
 
             <!-- EQ Suggestions panel -->
             <Border Grid.Row="3"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="0,1,0,0"
                     Padding="10,8">

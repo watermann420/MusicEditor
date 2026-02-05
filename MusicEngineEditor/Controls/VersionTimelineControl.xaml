@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="600"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -46,7 +46,7 @@
 
             <!-- Header -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,10">
@@ -65,14 +65,14 @@
                         <TextBlock x:Name="VersionCountText"
                                    Text=" (0 versions)"
                                    FontSize="12"
-                                   Foreground="#808080"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button Content="Create Branch"
                                 Background="#333337"
-                                Foreground="#E0E0E0"
+                                Foreground="{DynamicResource ForegroundBrush}"
                                 BorderThickness="0"
                                 Padding="12,6"
                                 Margin="0,0,8,0"
@@ -80,7 +80,7 @@
                                 Click="CreateBranchButton_Click"/>
                         <Button Content="Compare"
                                 Background="#333337"
-                                Foreground="#E0E0E0"
+                                Foreground="{DynamicResource ForegroundBrush}"
                                 BorderThickness="0"
                                 Padding="12,6"
                                 Cursor="Hand"
@@ -102,7 +102,7 @@
 
             <!-- Selected Version Info -->
             <Border Grid.Row="2"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,1,0,0"
                     Padding="12,10">
@@ -114,7 +114,7 @@
 
                     <StackPanel x:Name="SelectedVersionInfo" Orientation="Horizontal">
                         <TextBlock Text="Select a version to view details"
-                                   Foreground="#808080"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    FontSize="12"
                                    VerticalAlignment="Center"/>
                     </StackPanel>

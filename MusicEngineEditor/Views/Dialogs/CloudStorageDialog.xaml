@@ -129,7 +129,7 @@
 
                     <!-- Search Box -->
                     <Border Grid.Row="0"
-                            Background="#141414"
+                            Background="{DynamicResource ToolbarBackgroundBrush}"
                             BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1"
                             CornerRadius="4"
@@ -200,7 +200,7 @@
                                     <!-- Thumbnail -->
                                     <Border Grid.Column="0"
                                             Width="48" Height="48"
-                                            Background="#2A2A2A"
+                                            Background="{DynamicResource BorderBrush}"
                                             CornerRadius="4"
                                             Margin="0,0,12,0">
                                         <TextBlock Text="&#x266B;"

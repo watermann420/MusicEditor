@@ -539,7 +539,7 @@
                                                         ToolTip="{Binding ConflictTooltip}">
                                                     <TextBlock Text="Conflict"
                                                                FontSize="10"
-                                                               Foreground="#FF4757"/>
+                                                               Foreground="{DynamicResource ErrorBrush}"/>
                                                 </Border>
 
                                                 <!-- Modified Badge -->
@@ -701,7 +701,7 @@
                                        TextWrapping="Wrap"/>
                             <TextBlock x:Name="ConflictCommandText"
                                        Text="Command Name"
-                                       Foreground="#FF4757"
+                                       Foreground="{DynamicResource ErrorBrush}"
                                        FontWeight="SemiBold"
                                        TextWrapping="Wrap"/>
                         </StackPanel>

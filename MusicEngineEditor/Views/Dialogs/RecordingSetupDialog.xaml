@@ -10,7 +10,7 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        Background="#0D0D0D">
+        Background="{DynamicResource BackgroundBrush}">
 
     <Window.Resources>
         <!-- Colors matching the dark theme -->
@@ -164,7 +164,7 @@
 
         <!-- Armed Track Item Template -->
         <DataTemplate x:Key="ArmedTrackTemplate">
-            <Border Background="#141414" CornerRadius="4" Padding="10,8" Margin="0,2">
+            <Border Background="{DynamicResource ToolbarBackgroundBrush}" CornerRadius="4" Padding="10,8" Margin="0,2">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -265,7 +265,7 @@
 
                         <!-- No tracks armed message -->
                         <Border Visibility="{Binding HasArmedTracks, Converter={StaticResource BoolToVis}, ConverterParameter=Inverse}"
-                                Background="#141414" CornerRadius="4" Padding="20">
+                                Background="{DynamicResource ToolbarBackgroundBrush}" CornerRadius="4" Padding="20">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="No tracks armed"
                                            FontWeight="SemiBold"
@@ -388,7 +388,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBox Grid.Column="0"
                                      Text="{Binding RecordingsPath}"
-                                     Background="#141414"
+                                     Background="{DynamicResource ToolbarBackgroundBrush}"
                                      Foreground="{StaticResource ForegroundBrush}"
                                      BorderBrush="{StaticResource BorderBrush}"
                                      Padding="8,6"

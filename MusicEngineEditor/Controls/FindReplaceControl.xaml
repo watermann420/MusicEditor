@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="80" d:DesignWidth="400"
-             Background="#181818"
+             Background="{DynamicResource PanelBackgroundBrush}"
              Visibility="Collapsed">
 
     <UserControl.Resources>
@@ -223,7 +223,7 @@
                 </StackPanel>
 
                 <!-- Results Counter -->
-                <Border Grid.Column="3" Background="#0D0D0D" CornerRadius="4" Padding="10,4" Margin="4,0">
+                <Border Grid.Column="3" Background="{DynamicResource BackgroundBrush}" CornerRadius="4" Padding="10,4" Margin="4,0">
                     <TextBlock x:Name="ResultsCounter"
                                Text="0 results"
                                Foreground="{StaticResource SecondaryBrush}"

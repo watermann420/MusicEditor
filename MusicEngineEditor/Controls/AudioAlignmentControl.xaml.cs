@@ -460,9 +460,9 @@ public partial class AudioAlignmentControl : UserControl
             // Color based on correlation quality
             var brush = result.Correlation switch
             {
-                > 0.9 => (Brush)FindResource("ReferenceBrush"),
-                > 0.7 => (Brush)FindResource("AccentBrush"),
-                > 0.5 => (Brush)FindResource("TargetBrush"),
+                > 0.9 => FindResource("ReferenceBrush") as Brush ?? Brushes.Transparent,
+                > 0.7 => FindResource("AccentBrush") as Brush ?? Brushes.Transparent,
+                > 0.5 => FindResource("TargetBrush") as Brush ?? Brushes.Transparent,
                 _ => Brushes.Red
             };
             CorrelationResultText.Foreground = brush;

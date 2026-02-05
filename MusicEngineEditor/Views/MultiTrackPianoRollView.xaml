@@ -7,7 +7,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Views"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1000"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              ClipToBounds="True">
 
     <UserControl.Resources>
@@ -369,7 +369,7 @@
             <!-- Note Canvas -->
             <Canvas x:Name="NotesCanvas"
                     Grid.Row="1" Grid.Column="3"
-                    Background="#0D0D0D"
+                    Background="{DynamicResource BackgroundBrush}"
                     ClipToBounds="True"
                     MouseLeftButtonDown="NotesCanvas_MouseLeftButtonDown"
                     MouseLeftButtonUp="NotesCanvas_MouseLeftButtonUp"

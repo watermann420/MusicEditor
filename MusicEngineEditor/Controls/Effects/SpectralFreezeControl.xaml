@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Effects"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="700"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Theme Colors -->

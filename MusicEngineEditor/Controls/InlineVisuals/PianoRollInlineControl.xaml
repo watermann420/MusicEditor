@@ -8,7 +8,7 @@
              Width="520"
              Background="#0f0f0f"
              Opacity="0.95">
-    <Border CornerRadius="6" BorderBrush="#222" BorderThickness="1" Padding="4" Background="#141414">
+    <Border CornerRadius="6" BorderBrush="#222" BorderThickness="1" Padding="4" Background="{DynamicResource SurfaceBackgroundBrush}">
         <Grid>
             <Canvas x:Name="RollCanvas" Background="#101010"/>
         </Grid>

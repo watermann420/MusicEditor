@@ -461,9 +461,9 @@ public partial class SpectralSelectionControl : UserControl
 
         _selectionRectangle = new Shapes.Rectangle
         {
-            Stroke = (Brush)FindResource("SelectionBorderBrush"),
+            Stroke = FindResource("SelectionBorderBrush") as Brush ?? Brushes.Transparent,
             StrokeThickness = 1,
-            Fill = (Brush)FindResource("SelectionBrush"),
+            Fill = FindResource("SelectionBrush") as Brush ?? Brushes.Transparent,
             StrokeDashArray = new DoubleCollection { 4, 2 }
         };
         SpectrogramCanvas.Children.Add(_selectionRectangle);
@@ -493,9 +493,9 @@ public partial class SpectralSelectionControl : UserControl
 
         _lassoPath = new Shapes.Polyline
         {
-            Stroke = (Brush)FindResource("SelectionBorderBrush"),
+            Stroke = FindResource("SelectionBorderBrush") as Brush ?? Brushes.Transparent,
             StrokeThickness = 2,
-            Fill = (Brush)FindResource("SelectionBrush")
+            Fill = FindResource("SelectionBrush") as Brush ?? Brushes.Transparent
         };
         SpectrogramCanvas.Children.Add(_lassoPath);
     }
@@ -751,7 +751,7 @@ public partial class SpectralSelectionControl : UserControl
         if (height <= 0) return;
 
         double maxFreq = SampleRate / 2.0;
-        var textBrush = (Brush)FindResource("TextSecondaryBrush");
+        var textBrush = FindResource("TextSecondaryBrush") as Brush ?? Brushes.Transparent;
 
         // Draw frequency markers
         double[] freqMarkers = { 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000 };
@@ -784,7 +784,7 @@ public partial class SpectralSelectionControl : UserControl
         if (width <= 0 || _timeFrames <= 0) return;
 
         double totalTime = _timeFrames * _timePerFrame;
-        var textBrush = (Brush)FindResource("TextSecondaryBrush");
+        var textBrush = FindResource("TextSecondaryBrush") as Brush ?? Brushes.Transparent;
 
         // Calculate appropriate time interval
         double interval = 1.0;

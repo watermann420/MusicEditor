@@ -97,7 +97,7 @@
                         <Border x:Name="border"
                                 Background="{TemplateBinding Background}"
                                 BorderThickness="0,0,0,1"
-                                BorderBrush="#2A2A2A"
+                                BorderBrush="{DynamicResource BorderBrush}"
                                 Padding="12,10">
                             <ContentPresenter/>
                         </Border>
@@ -125,14 +125,14 @@
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Border x:Name="checkBorder"
                                     Width="16" Height="16"
-                                    Background="#0A0A0A"
+                                    Background="{DynamicResource InputBackgroundBrush}"
                                     BorderBrush="#444444"
                                     BorderThickness="1"
                                     CornerRadius="3"
                                     Margin="0,0,8,0">
                                 <Path x:Name="checkMark"
                                       Data="M2,5 L5,8 L10,2"
-                                      Stroke="#00D9FF"
+                                      Stroke="{DynamicResource AccentBrush}"
                                       StrokeThickness="2"
                                       Visibility="Collapsed"
                                       HorizontalAlignment="Center"
@@ -157,9 +157,9 @@
     </Window.Resources>
 
     <!-- Main Container with Drop Shadow -->
-    <Border Background="#0D0D0D"
+    <Border Background="{DynamicResource BackgroundBrush}"
             CornerRadius="8"
-            BorderBrush="#333333"
+            BorderBrush="{DynamicResource SubtleBorderBrush}"
             BorderThickness="1">
         <Border.Effect>
             <DropShadowEffect Color="#000000"
@@ -177,7 +177,7 @@
 
             <!-- Title Bar -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     CornerRadius="8,8,0,0"
                     Padding="20,16"
                     MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
@@ -191,10 +191,10 @@
                         <TextBlock Text="MusicEngine Editor"
                                    FontSize="22"
                                    FontWeight="Bold"
-                                   Foreground="#E0E0E0"/>
+                                   Foreground="{DynamicResource ForegroundBrush}"/>
                         <TextBlock Text="Welcome"
                                    FontSize="12"
-                                   Foreground="#00D9FF"
+                                   Foreground="{DynamicResource AccentBrush}"
                                    Margin="0,4,0,0"/>
                     </StackPanel>
 
@@ -204,7 +204,7 @@
                             FontFamily="Segoe MDL2 Assets"
                             FontSize="14"
                             Background="Transparent"
-                            Foreground="#808080"
+                            Foreground="{DynamicResource SecondaryForegroundBrush}"
                             BorderThickness="0"
                             Padding="8"
                             Cursor="Hand"
@@ -247,7 +247,7 @@
 
                 <!-- Left Side: Recent Projects -->
                 <Border Grid.Column="0"
-                        Background="#0D0D0D"
+                        Background="{DynamicResource BackgroundBrush}"
                         Padding="20,16">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -260,7 +260,7 @@
                             <TextBlock Text="Recent Projects"
                                        FontSize="16"
                                        FontWeight="SemiBold"
-                                       Foreground="#E0E0E0"/>
+                                       Foreground="{DynamicResource ForegroundBrush}"/>
                             <TextBlock Text="Double-click to open, click star to pin"
                                        FontSize="11"
                                        Foreground="#606060"
@@ -302,7 +302,7 @@
                                             <TextBlock Text="{Binding Name}"
                                                        FontSize="14"
                                                        FontWeight="SemiBold"
-                                                       Foreground="#E0E0E0"
+                                                       Foreground="{DynamicResource ForegroundBrush}"
                                                        TextTrimming="CharacterEllipsis"/>
                                             <TextBlock Text="{Binding FilePath}"
                                                        FontSize="11"
@@ -319,7 +319,7 @@
                                                     Margin="12,0,0,0">
                                             <TextBlock Text="{Binding LastModifiedFormatted}"
                                                        FontSize="11"
-                                                       Foreground="#808080"
+                                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
                                                        HorizontalAlignment="Right"/>
                                         </StackPanel>
                                     </Grid>
@@ -355,17 +355,17 @@
                 <!-- Vertical Separator -->
                 <Border Grid.Column="1"
                         Width="1"
-                        Background="#2A2A2A"/>
+                        Background="{DynamicResource BorderBrush}"/>
 
                 <!-- Right Side: Actions -->
                 <Border Grid.Column="2"
-                        Background="#181818"
+                        Background="{DynamicResource PanelBackgroundBrush}"
                         Padding="24,16">
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="Get Started"
                                    FontSize="16"
                                    FontWeight="SemiBold"
-                                   Foreground="#E0E0E0"
+                                   Foreground="{DynamicResource ForegroundBrush}"
                                    Margin="0,0,0,20"/>
 
                         <!-- New Project Button -->
@@ -384,7 +384,7 @@
                                                FontWeight="SemiBold"/>
                                     <TextBlock Text="Create a new music project"
                                                FontSize="11"
-                                               Foreground="#808080"
+                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                                Margin="0,2,0,0"/>
                                 </StackPanel>
                             </StackPanel>
@@ -405,7 +405,7 @@
                                                FontWeight="SemiBold"/>
                                     <TextBlock Text="Browse for existing project"
                                                FontSize="11"
-                                               Foreground="#808080"
+                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                                Margin="0,2,0,0"/>
                                 </StackPanel>
                             </StackPanel>
@@ -413,7 +413,7 @@
 
                         <!-- Separator -->
                         <Border Height="1"
-                                Background="#333333"
+                                Background="{DynamicResource SubtleBorderBrush}"
                                 Margin="0,24,0,24"/>
 
                         <!-- Version Info -->
@@ -432,7 +432,7 @@
 
             <!-- Bottom Bar -->
             <Border Grid.Row="2"
-                    Background="#141414"
+                    Background="{DynamicResource ToolbarBackgroundBrush}"
                     CornerRadius="0,0,8,8"
                     Padding="20,12">
                 <Grid>
@@ -452,9 +452,9 @@
                     <Button Grid.Column="1"
                             Content="Skip"
                             Background="Transparent"
-                            Foreground="#808080"
+                            Foreground="{DynamicResource SecondaryForegroundBrush}"
                             BorderThickness="1"
-                            BorderBrush="#333333"
+                            BorderBrush="{DynamicResource SubtleBorderBrush}"
                             Padding="16,6"
                             Cursor="Hand"
                             Click="SkipButton_Click"

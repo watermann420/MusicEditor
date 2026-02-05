@@ -249,7 +249,7 @@
 
                     <!-- Waveform Display Area -->
                     <Border Grid.Column="1"
-                            Background="#0D0D0D"
+                            Background="{DynamicResource BackgroundBrush}"
                             BorderBrush="{StaticResource BorderBrush}"
                             BorderThickness="1"
                             CornerRadius="3"

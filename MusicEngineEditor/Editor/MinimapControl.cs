@@ -41,6 +41,19 @@ public class MinimapControl : Canvas
     private static readonly Brush TextBrush = new SolidColorBrush(Color.FromRgb(0xA0, 0xA0, 0xA0));
     private static readonly Brush CurrentLineBrush = new SolidColorBrush(Color.FromArgb(80, 255, 255, 0)); // Yellow highlight
 
+    static MinimapControl()
+    {
+        BackgroundBrush.Freeze();
+        ViewportBrush.Freeze();
+        ViewportBorderBrush.Freeze();
+        KeywordBrush.Freeze();
+        StringBrush.Freeze();
+        CommentBrush.Freeze();
+        NumberBrush.Freeze();
+        TextBrush.Freeze();
+        CurrentLineBrush.Freeze();
+    }
+
     public MinimapControl(TextEditor editor)
     {
         _editor = editor;
@@ -161,8 +174,7 @@ public class MinimapControl : Canvas
             else if (char.IsLetter(c))
             {
                 tokenLength = FindWordEnd(lineText, i);
-                var word = lineText.Substring(i, tokenLength);
-                if (IsKeyword(word))
+                if (IsKeyword(lineText.AsSpan(i, tokenLength)))
                 {
                     brush = KeywordBrush;
                 }
@@ -240,7 +252,10 @@ public class MinimapControl : Canvas
         "var", "int", "float", "double", "string", "bool", "void", "true", "false", "null"
     };
 
-    private static bool IsKeyword(string word) => Keywords.Contains(word);
+    private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> KeywordLookup =
+        Keywords.GetAlternateLookup<ReadOnlySpan<char>>();
+
+    private static bool IsKeyword(ReadOnlySpan<char> word) => KeywordLookup.Contains(word);
 
     private void UpdateViewport()
     {

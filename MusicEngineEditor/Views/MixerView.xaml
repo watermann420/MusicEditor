@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=vm:MixerViewModel}"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.InputBindings>
         <KeyBinding Key="S" Modifiers="Alt" Command="{Binding ClearSolosCommand}"/>
@@ -340,7 +340,7 @@
 
                     <ComboBox x:Name="LayoutSelector"
                               SelectedIndex="0"
-                              Background="#181818"
+                              Background="{DynamicResource PanelBackgroundBrush}"
                               Foreground="{StaticResource MixerTextPrimaryBrush}"
                               BorderBrush="{StaticResource MixerBorderBrush}"
                               Padding="8,4"

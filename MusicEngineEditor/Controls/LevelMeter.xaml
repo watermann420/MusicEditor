@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="200" d:DesignWidth="60"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinWidth="40"
              MinHeight="80"
              ToolTip="Click to reset peak hold indicators"

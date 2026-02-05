@@ -303,6 +303,16 @@ public class StrudelSliderRenderer : IBackgroundRenderer
     private static readonly SolidColorBrush ActiveBrush = new(Color.FromArgb(80, 232, 145, 184)); // Pink when dragging
     private static readonly Pen SliderBorderPen = new(new SolidColorBrush(Color.FromArgb(120, 78, 201, 176)), 1);
 
+    static StrudelSliderRenderer()
+    {
+        SliderTrackBrush.Freeze();
+        SliderFillBrush.Freeze();
+        HoverBrush.Freeze();
+        ActiveBrush.Freeze();
+        SliderBorderPen.Brush.Freeze();
+        SliderBorderPen.Freeze();
+    }
+
     public StrudelSliderRenderer(TextEditor editor, StrudelInlineSliderService service)
     {
         _editor = editor;

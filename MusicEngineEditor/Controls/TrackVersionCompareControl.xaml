@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="350"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -74,7 +74,7 @@
 
             <!-- Header -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,10">
@@ -86,7 +86,7 @@
                     <TextBlock x:Name="TrackNameText"
                                Text="Select versions to compare"
                                FontSize="11"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
@@ -105,13 +105,13 @@
                            Text="Version A (Base)"
                            FontSize="11"
                            FontWeight="SemiBold"
-                           Foreground="#808080"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
                            Margin="0,0,0,4"/>
                 <ComboBox x:Name="VersionACombo"
                           Grid.Row="1"
                           DisplayMemberPath="DisplayName"
-                          Background="#181818"
-                          Foreground="#E0E0E0"
+                          Background="{DynamicResource PanelBackgroundBrush}"
+                          Foreground="{DynamicResource ForegroundBrush}"
                           BorderBrush="#252525"
                           SelectionChanged="VersionCombo_SelectionChanged"
                           Margin="0,0,0,12"/>
@@ -121,13 +121,13 @@
                            Text="Version B (Compare)"
                            FontSize="11"
                            FontWeight="SemiBold"
-                           Foreground="#808080"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
                            Margin="0,0,0,4"/>
                 <ComboBox x:Name="VersionBCombo"
                           Grid.Row="3"
                           DisplayMemberPath="DisplayName"
-                          Background="#181818"
-                          Foreground="#E0E0E0"
+                          Background="{DynamicResource PanelBackgroundBrush}"
+                          Foreground="{DynamicResource ForegroundBrush}"
                           BorderBrush="#252525"
                           SelectionChanged="VersionCombo_SelectionChanged"/>
             </Grid>
@@ -141,14 +141,14 @@
                     <TextBlock x:Name="QuickDiffText"
                                Text="Select two versions to see a quick comparison"
                                FontSize="11"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                TextWrapping="Wrap"/>
                 </StackPanel>
             </ScrollViewer>
 
             <!-- Actions -->
             <Border Grid.Row="3"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,1,0,0"
                     Padding="12">
@@ -161,7 +161,7 @@
                     <Button x:Name="QuickCompareButton"
                             Content="Quick Compare"
                             Background="#333337"
-                            Foreground="#E0E0E0"
+                            Foreground="{DynamicResource ForegroundBrush}"
                             BorderThickness="0"
                             Padding="16,8"
                             Margin="0,8,0,0"

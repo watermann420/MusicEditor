@@ -710,7 +710,7 @@
                             <DockPanel Margin="0">
                                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                                     <!-- Output Search Box -->
-                                    <Border Background="#0A0A0A" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="3"
+                                    <Border Background="#0A0A0A" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3"
                                             Margin="4" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal">
                                             <Path Data="M 10,10 L 14,14 M 6,2 A 4,4 0 1 1 6,10 A 4,4 0 1 1 6,2"
@@ -1215,7 +1215,7 @@
             <StatusBarItem HorizontalAlignment="Right">
                 <StackPanel Orientation="Horizontal">
                     <!-- Playback Time Display -->
-                    <Border Background="#0A0A0A" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="3" Padding="10,3" Margin="0,0,12,0">
+                    <Border Background="#0A0A0A" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="10,3" Margin="0,0,12,0">
                         <StackPanel Orientation="Horizontal">
                             <Path Data="M 8,2 A 6,6 0 1 1 8,14 A 6,6 0 1 1 8,2 M 8,4 V 8 H 11"
                                   Stroke="{StaticResource SecondaryForegroundBrush}" StrokeThickness="1.2"
@@ -1241,7 +1241,7 @@
                     <Rectangle Width="1" Height="16" Fill="{StaticResource BorderBrush}" Margin="0,0,12,0"/>
 
                     <!-- Caret Position -->
-                    <Border Background="#141414" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="3" Padding="10,3" Margin="0,0,12,0">
+                    <Border Background="{DynamicResource SurfaceBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="10,3" Margin="0,0,12,0">
                         <TextBlock x:Name="CaretPositionDisplay" Text="Ln 1, Col 1" FontSize="11" FontFamily="JetBrains Mono, Consolas"/>
                     </Border>
 

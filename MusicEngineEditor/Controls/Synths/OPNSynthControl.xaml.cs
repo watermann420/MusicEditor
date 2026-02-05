@@ -533,6 +533,12 @@ public class OPNCarrierBackgroundConverter : IValueConverter
     private static readonly SolidColorBrush ModulatorBrush =
         new(Color.FromRgb(0x1A, 0x1A, 0x2A)); // Dark blue for modulators
 
+    static OPNCarrierBackgroundConverter()
+    {
+        CarrierBrush.Freeze();
+        ModulatorBrush.Freeze();
+    }
+
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is bool isCarrier)

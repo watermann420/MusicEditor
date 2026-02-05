@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1000"
              d:DataContext="{d:DesignInstance Type=vm:ScoreEditorViewModel}"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Dark Theme Colors -->
@@ -219,7 +219,7 @@
                 <!-- Left Section: Tools -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                     <!-- Tool Selection Group -->
-                    <Border Background="#141414"
+                    <Border Background="{DynamicResource ToolbarBackgroundBrush}"
                             CornerRadius="4"
                             Padding="2"
                             Margin="0,0,8,0">
@@ -257,7 +257,7 @@
                                VerticalAlignment="Center"
                                Margin="8,0,4,0"/>
 
-                    <Border Background="#141414"
+                    <Border Background="{DynamicResource ToolbarBackgroundBrush}"
                             CornerRadius="4"
                             Padding="2">
                         <StackPanel Orientation="Horizontal">

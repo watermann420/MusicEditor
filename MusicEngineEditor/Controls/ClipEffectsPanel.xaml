@@ -104,7 +104,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
                         <Grid>
-                            <Border Height="4" Background="#1A1A1A" CornerRadius="2"/>
+                            <Border Height="4" Background="{DynamicResource PianoRollBackgroundBrush}" CornerRadius="2"/>
                             <Border x:Name="PART_SelectionRange"
                                     Height="4"
                                     Background="{StaticResource AccentBrush}"

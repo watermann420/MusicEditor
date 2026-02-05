@@ -38,6 +38,12 @@ public class EngineService : IDisposable
     /// </summary>
     public event Action<object, string, string>? SynthCreated;
 
+    /// <summary>
+    /// Event fired when punchcard visualization is requested for a pattern.
+    /// The UI should show the pattern in the punchcard view.
+    /// </summary>
+    public event Action<Pattern>? PunchcardRequested;
+
     /// <summary>Gets the sequencer for visualization integration.</summary>
     public Sequencer? Sequencer => _sequencer;
 
@@ -86,6 +92,9 @@ public class EngineService : IDisposable
 
         // Forward synth created events
         _scriptHost.OnSynthCreated += (synth, name, typeName) => SynthCreated?.Invoke(synth, name, typeName);
+
+        // Subscribe to pattern punchcard visualization requests
+        Pattern.OnPunchcardRequested += OnPatternPunchcardRequested;
 
         IsInitialized = true;
     }
@@ -202,9 +211,17 @@ public class EngineService : IDisposable
         }
     }
 
+    private void OnPatternPunchcardRequested(Pattern pattern)
+    {
+        PunchcardRequested?.Invoke(pattern);
+    }
+
     public void Dispose()
     {
         if (_disposed) return;
+
+        // Unsubscribe from static events
+        Pattern.OnPunchcardRequested -= OnPatternPunchcardRequested;
 
         _sequencer?.Stop();
         _engine?.Dispose();

@@ -8,8 +8,8 @@
         Width="900" Height="650"
         MinWidth="700" MinHeight="500"
         WindowStartupLocation="CenterOwner"
-        Background="#0D0D0D"
-        Foreground="#E0E0E0">
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -100,7 +100,7 @@
 
         <!-- Header -->
         <Border Grid.Row="0" Grid.ColumnSpan="3"
-                Background="#181818"
+                Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="0,0,0,1"
                 Padding="16,12">
@@ -119,14 +119,14 @@
                     <TextBlock x:Name="PresetCountText"
                                Text=" - 0 presets"
                                FontSize="12"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                VerticalAlignment="Center"
                                Margin="8,0,0,0"/>
                 </StackPanel>
 
                 <!-- Search Box -->
                 <Border Grid.Column="1"
-                        Background="#141414"
+                        Background="{DynamicResource ToolbarBackgroundBrush}"
                         BorderBrush="#252525"
                         BorderThickness="1"
                         CornerRadius="4"
@@ -147,7 +147,7 @@
                                  Grid.Column="1"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 Foreground="#E0E0E0"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  CaretBrush="#E0E0E0"
                                  FontSize="12"
                                  VerticalAlignment="Center"
@@ -159,7 +159,7 @@
 
         <!-- Left Panel - Plugin List -->
         <Border Grid.Row="1" Grid.Column="0"
-                Background="#181818"
+                Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="0,0,1,0">
             <Grid>
@@ -177,7 +177,7 @@
                         <TextBlock Text="Plugins"
                                    FontWeight="SemiBold"
                                    FontSize="12"
-                                   Foreground="#808080"/>
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock x:Name="PluginCountText"
                                    Text="0"
                                    HorizontalAlignment="Right"
@@ -208,7 +208,7 @@
                                                FontSize="12"/>
                                     <TextBlock Text="{Binding Vendor}"
                                                FontSize="10"
-                                               Foreground="#808080"
+                                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                                Margin="0,2,0,0"/>
                                 </StackPanel>
 
@@ -226,7 +226,7 @@
 
         <GridSplitter Grid.Row="1" Grid.Column="1"
                       Width="4"
-                      Background="#181818"
+                      Background="{DynamicResource PanelBackgroundBrush}"
                       HorizontalAlignment="Center"/>
 
         <!-- Right Panel - Presets -->
@@ -238,7 +238,7 @@
 
             <!-- Filter Bar -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,8">
@@ -254,12 +254,12 @@
                         <TextBlock Text="Show:"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"
-                                   Foreground="#808080"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    FontSize="11"/>
                         <ComboBox x:Name="CategoryFilter"
                                   Width="120"
                                   Background="#333337"
-                                  Foreground="#E0E0E0"
+                                  Foreground="{DynamicResource ForegroundBrush}"
                                   BorderBrush="#252525"
                                   SelectionChanged="CategoryFilter_SelectionChanged">
                             <ComboBoxItem Content="All" IsSelected="True"/>
@@ -319,12 +319,12 @@
                         <TextBlock Text="Sort:"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"
-                                   Foreground="#808080"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    FontSize="11"/>
                         <ComboBox x:Name="SortCombo"
                                   Width="100"
                                   Background="#333337"
-                                  Foreground="#E0E0E0"
+                                  Foreground="{DynamicResource ForegroundBrush}"
                                   BorderBrush="#252525"
                                   SelectionChanged="SortCombo_SelectionChanged">
                             <ComboBoxItem Content="Name" IsSelected="True"/>
@@ -398,7 +398,7 @@
                                                 <Border Style="{StaticResource CategoryTagStyle}">
                                                     <TextBlock Text="{Binding}"
                                                                FontSize="10"
-                                                               Foreground="#808080"/>
+                                                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                                                 </Border>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -420,7 +420,7 @@
 
         <!-- Footer -->
         <Border Grid.Row="2" Grid.ColumnSpan="3"
-                Background="#181818"
+                Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="0,1,0,0"
                 Padding="16,12">
@@ -434,7 +434,7 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock x:Name="SelectedPresetInfo"
                                Text="No preset selected"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -442,12 +442,12 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <CheckBox x:Name="PreviewCheckBox"
                               Content="Auto-Preview"
-                              Foreground="#E0E0E0"
+                              Foreground="{DynamicResource ForegroundBrush}"
                               VerticalAlignment="Center"
                               Margin="0,0,16,0"/>
                     <Button Content="Preview"
                             Background="#333337"
-                            Foreground="#E0E0E0"
+                            Foreground="{DynamicResource ForegroundBrush}"
                             BorderThickness="0"
                             Padding="16,8"
                             Margin="0,0,8,0"
@@ -461,7 +461,7 @@
                             Click="LoadPresetButton_Click"/>
                     <Button Content="Cancel"
                             Background="#333337"
-                            Foreground="#E0E0E0"
+                            Foreground="{DynamicResource ForegroundBrush}"
                             BorderThickness="0"
                             Padding="16,8"
                             IsCancel="True"

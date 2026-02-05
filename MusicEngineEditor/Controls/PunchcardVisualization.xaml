@@ -1,108 +1,51 @@
 <UserControl x:Class="MusicEngineEditor.Controls.PunchcardVisualization"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="800"
-             Background="#0D0D0D"
+             Background="{DynamicResource InputBackgroundBrush}"
              ClipToBounds="True">
 
-    <UserControl.Resources>
-        <!-- Colors matching the dark theme -->
-        <SolidColorBrush x:Key="PunchcardBackgroundBrush" Color="#0D0D0D"/>
-        <SolidColorBrush x:Key="GridLineBrush" Color="#2A2A2A"/>
-        <SolidColorBrush x:Key="BeatLineBrush" Color="#4A4D52"/>
-        <SolidColorBrush x:Key="PlayheadBrush" Color="#00D9FF"/>
-        <SolidColorBrush x:Key="PlayheadGlowBrush" Color="#7B9FDF"/>
-        <SolidColorBrush x:Key="TrackSeparatorBrush" Color="#181818"/>
-        <SolidColorBrush x:Key="BeatLabelBrush" Color="#808080"/>
-        <SolidColorBrush x:Key="TrackLabelBrush" Color="#E0E0E0"/>
-        <SolidColorBrush x:Key="ActiveNoteBrush" Color="#FFD700"/>
+    <Grid x:Name="VisualizationContainer">
+        <!-- Background gradient for depth -->
+        <Border Background="{DynamicResource InputBackgroundBrush}" CornerRadius="4">
+            <Border.Effect>
+                <DropShadowEffect Color="#000" BlurRadius="8" ShadowDepth="2" Opacity="0.5" Direction="270"/>
+            </Border.Effect>
+        </Border>
 
-        <!-- Glow effect for active notes -->
-        <DropShadowEffect x:Key="NoteGlowEffect"
-                          Color="#FFD700"
-                          BlurRadius="15"
-                          ShadowDepth="0"
-                          Opacity="0.8"/>
+        <!-- Scrolling container -->
+        <ScrollViewer x:Name="ScrollContainer"
+                      HorizontalScrollBarVisibility="Hidden"
+                      VerticalScrollBarVisibility="Disabled"
+                      Background="Transparent"
+                      Focusable="False">
+            <Grid x:Name="ContentGrid">
+                <!-- Grid lines (bars/beats) -->
+                <Canvas x:Name="GridCanvas" Background="Transparent"/>
 
-        <!-- Playhead glow effect -->
-        <DropShadowEffect x:Key="PlayheadGlowEffect"
-                          Color="#7B9FDF"
-                          BlurRadius="10"
-                          ShadowDepth="0"
-                          Opacity="0.9"/>
-    </UserControl.Resources>
+                <!-- Notes layer -->
+                <Canvas x:Name="NotesCanvas" Background="Transparent"/>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <!-- Beat number labels row -->
-            <RowDefinition Height="24"/>
-            <!-- Main visualization area -->
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Beat number labels -->
-        <Canvas x:Name="BeatLabelsCanvas"
-                Grid.Row="0"
-                Background="{StaticResource PunchcardBackgroundBrush}"
-                ClipToBounds="True"/>
-
-        <!-- Main visualization area with scrolling -->
-        <ScrollViewer Grid.Row="1"
-                      x:Name="MainScrollViewer"
-                      HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Auto"
-                      Background="{StaticResource PunchcardBackgroundBrush}">
-            <Grid x:Name="VisualizationContainer">
-                <!-- Grid lines and notes canvas -->
-                <Canvas x:Name="GridCanvas"
-                        Background="{StaticResource PunchcardBackgroundBrush}"
-                        ClipToBounds="True"/>
-
-                <!-- Notes canvas (drawn on top of grid) -->
-                <Canvas x:Name="NotesCanvas"
-                        Background="Transparent"
-                        ClipToBounds="True"/>
-
-                <!-- Playhead (vertical line with glow) -->
-                <Canvas x:Name="PlayheadCanvas"
-                        Background="Transparent"
-                        IsHitTestVisible="False"
-                        ClipToBounds="True">
-                    <!-- Playhead glow (wider, softer line behind) -->
-                    <Line x:Name="PlayheadGlow"
-                          Y1="0"
-                          Stroke="{StaticResource PlayheadGlowBrush}"
-                          StrokeThickness="6"
-                          Opacity="0.4"/>
-                    <!-- Main playhead line -->
-                    <Line x:Name="Playhead"
-                          Y1="0"
-                          Stroke="{StaticResource PlayheadBrush}"
-                          StrokeThickness="2"
-                          Opacity="0.9"
-                          Effect="{StaticResource PlayheadGlowEffect}"/>
-                </Canvas>
+                <!-- Labels layer (on top of notes) -->
+                <Canvas x:Name="LabelsCanvas" Background="Transparent" IsHitTestVisible="False"/>
             </Grid>
         </ScrollViewer>
 
-        <!-- Tooltip for note hover -->
-        <Popup x:Name="NoteTooltip"
-               Placement="Mouse"
-               AllowsTransparency="True"
-               IsOpen="False">
-            <Border Background="#252525"
-                    BorderBrush="#43454A"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="8,4">
-                <TextBlock x:Name="NoteTooltipText"
-                           Foreground="#E0E0E0"
-                           FontSize="12"
-                           FontFamily="JetBrains Mono, Consolas, Courier New"/>
-            </Border>
-        </Popup>
+        <!-- Fixed playhead overlay (stays in center when scrolling) -->
+        <Canvas x:Name="PlayheadCanvas" IsHitTestVisible="False" ClipToBounds="False">
+            <!-- Playhead glow -->
+            <Line x:Name="PlayheadGlow" Y1="0" Stroke="#FFCA28" StrokeThickness="6" Opacity="0.3">
+                <Line.Effect>
+                    <BlurEffect Radius="4"/>
+                </Line.Effect>
+            </Line>
+            <!-- Playhead line -->
+            <Line x:Name="Playhead" Y1="0" Stroke="#FFCA28" StrokeThickness="2" Opacity="0.95"/>
+            <!-- Playhead triangle marker -->
+            <Polygon x:Name="PlayheadMarker" Fill="#FFCA28" Opacity="0.9"
+                     Points="0,0 6,8 -6,8"/>
+        </Canvas>
+
+        <!-- Cycle/loop markers -->
+        <Canvas x:Name="CycleCanvas" IsHitTestVisible="False"/>
     </Grid>
 </UserControl>

@@ -216,7 +216,7 @@
 
         <!-- Karaoke Preview -->
         <Border Grid.Row="3"
-                Background="#1A1A1A">
+                Background="{DynamicResource PianoRollBackgroundBrush}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

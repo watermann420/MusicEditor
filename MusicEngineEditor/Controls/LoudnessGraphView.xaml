@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="250" d:DesignWidth="600"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinHeight="120"
              MinWidth="300">
 
@@ -107,7 +107,7 @@
 
             <!-- Header -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="0,0,0,1"
                     Padding="10,6">
@@ -136,7 +136,7 @@
                                  Text="-14"
                                  Width="40"
                                  FontSize="10"
-                                 Background="#1A1A1A"
+                                 Background="{DynamicResource PianoRollBackgroundBrush}"
                                  Foreground="{StaticResource TargetBrush}"
                                  BorderBrush="#3A3A3A"
                                  BorderThickness="1"
@@ -181,7 +181,7 @@
 
                 <!-- Main graph area -->
                 <Border Grid.Column="1"
-                        Background="#1A1A1A"
+                        Background="{DynamicResource PianoRollBackgroundBrush}"
                         CornerRadius="3"
                         BorderBrush="#3A3A3A"
                         BorderThickness="1">

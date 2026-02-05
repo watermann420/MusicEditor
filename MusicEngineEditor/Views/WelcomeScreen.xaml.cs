@@ -177,6 +177,12 @@ public class PinnedToColorConverter : IValueConverter
     private static readonly SolidColorBrush PinnedBrush = new(Color.FromRgb(0xFF, 0xD7, 0x00)); // Gold
     private static readonly SolidColorBrush UnpinnedBrush = new(Color.FromRgb(0x55, 0x55, 0x55)); // Gray
 
+    static PinnedToColorConverter()
+    {
+        PinnedBrush.Freeze();
+        UnpinnedBrush.Freeze();
+    }
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return value is true ? PinnedBrush : UnpinnedBrush;

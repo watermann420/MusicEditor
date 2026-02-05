@@ -139,7 +139,7 @@
                                VerticalAlignment="Center"/>
                     <TextBlock x:Name="TakeCountText"
                                Text=" (0 takes)"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                FontSize="12"
                                VerticalAlignment="Center"
                                Margin="4,0,0,0"/>
@@ -191,7 +191,7 @@
 
                 <TextBlock Grid.Column="0"
                            Text="Comp Preview:"
-                           Foreground="#808080"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
                            FontSize="11"
                            VerticalAlignment="Center"
                            Margin="0,0,8,0"/>
@@ -381,14 +381,14 @@
                 <TextBlock x:Name="CompStatusText"
                            Grid.Column="0"
                            Text="No comp regions selected"
-                           Foreground="#808080"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
                            FontSize="11"
                            VerticalAlignment="Center"/>
 
                 <!-- Crossfade Info -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0">
                     <TextBlock Text="Crossfade: "
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                FontSize="11"
                                VerticalAlignment="Center"/>
                     <TextBlock x:Name="CrossfadeText"
@@ -401,7 +401,7 @@
                 <!-- Zoom Controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <TextBlock Text="Zoom:"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                FontSize="11"
                                VerticalAlignment="Center"
                                Margin="0,0,6,0"/>

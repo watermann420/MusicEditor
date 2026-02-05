@@ -372,7 +372,7 @@
                                     Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
                                     BorderBrush="{StaticResource BorderBrush}" IsEnabled="False" x:Name="EditButton"/>
                             <Button Grid.Column="1" Content="Delete" Click="Delete_Click" Padding="8,6" Margin="4,0,0,0"
-                                    Background="{StaticResource BackgroundBrush}" Foreground="#FF4757"
+                                    Background="{StaticResource BackgroundBrush}" Foreground="{DynamicResource ErrorBrush}"
                                     BorderBrush="{StaticResource BorderBrush}" IsEnabled="False" x:Name="DeleteButton"/>
                         </Grid>
                     </StackPanel>

@@ -249,29 +249,19 @@ public partial class ExciterViewModel : ViewModelBase
     /// </summary>
     public void SetParameters(double lowFreq, double highFreq, double harmonics, double brightness, double mix)
     {
-        _lowFrequency = Math.Clamp(lowFreq, MinLowFrequency, MaxLowFrequency);
-        _highFrequency = Math.Clamp(highFreq, MinHighFrequency, MaxHighFrequency);
+        var clampedLow = Math.Clamp(lowFreq, MinLowFrequency, MaxLowFrequency);
+        var clampedHigh = Math.Clamp(highFreq, MinHighFrequency, MaxHighFrequency);
 
         // Ensure valid range
-        if (_lowFrequency >= _highFrequency)
+        if (clampedLow >= clampedHigh)
         {
-            _highFrequency = _lowFrequency + 100;
+            clampedHigh = clampedLow + 100;
         }
 
-        _harmonicAmount = Math.Clamp(harmonics, MinPercentage, MaxPercentage);
-        _brightness = Math.Clamp(brightness, MinPercentage, MaxPercentage);
-        _mix = Math.Clamp(mix, MinPercentage, MaxPercentage);
-
-        OnPropertyChanged(nameof(LowFrequency));
-        OnPropertyChanged(nameof(HighFrequency));
-        OnPropertyChanged(nameof(HarmonicAmount));
-        OnPropertyChanged(nameof(Brightness));
-        OnPropertyChanged(nameof(Mix));
-        OnPropertyChanged(nameof(LowFrequencyDisplay));
-        OnPropertyChanged(nameof(HighFrequencyDisplay));
-        OnPropertyChanged(nameof(FrequencyRangeDisplay));
-        OnPropertyChanged(nameof(HarmonicAmountDisplay));
-        OnPropertyChanged(nameof(BrightnessDisplay));
-        OnPropertyChanged(nameof(MixDisplay));
+        LowFrequency = clampedLow;
+        HighFrequency = clampedHigh;
+        HarmonicAmount = Math.Clamp(harmonics, MinPercentage, MaxPercentage);
+        Brightness = Math.Clamp(brightness, MinPercentage, MaxPercentage);
+        Mix = Math.Clamp(mix, MinPercentage, MaxPercentage);
     }
 }

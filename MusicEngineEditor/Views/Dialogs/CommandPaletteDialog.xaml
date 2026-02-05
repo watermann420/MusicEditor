@@ -140,7 +140,7 @@
 
                             <!-- Category Tag -->
                             <Border Grid.Column="0"
-                                    Background="#2A2A2A"
+                                    Background="{DynamicResource BorderBrush}"
                                     CornerRadius="3"
                                     Padding="6,2"
                                     Margin="0,0,8,0"

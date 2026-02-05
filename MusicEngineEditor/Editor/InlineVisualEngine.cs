@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -17,9 +18,6 @@ using MusicEngineEditor.Controls.InlineVisuals;
 using WpfControl = System.Windows.Controls.Control;
 using WpfLabel = System.Windows.Controls.Label;
 using WpfPanel = System.Windows.Controls.Panel;
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Threading;
 
 namespace MusicEngineEditor.Editor;
 
@@ -32,8 +30,11 @@ public sealed class InlineVisualEngine : IDisposable
     private readonly TextEditor _editor;
     private readonly DispatcherTimer _timer;
     private readonly Dictionary<int, InlineVisualHost> _hosts = new();
-    private readonly Regex _commandRegex = new(@"^\s*//?\s*\.(?<cmd>[a-zA-Z]+)(?<args>.*)$",
-        RegexOptions.Compiled);
+    // Match: // .punchcard, .punchcard, .Punchcard(), pattern.Punchcard(), etc.
+    private readonly Regex _commandRegex = new(
+        @"(?:^\s*//?\s*\.(?<cmd>[a-zA-Z]+)(?<args>.*)$)|" +           // Comment style: // .punchcard
+        @"(?:\.(?<cmd2>Punchcard|punchcard|PianoRoll|pianoroll|MixerVisual|mixervisual)\s*\((?<args2>[^)]*)\))", // Method call: .Punchcard()
+        RegexOptions.Compiled | RegexOptions.Multiline);
     private readonly NoteHighlightTransformer _noteHighlighter;
     private bool _disposed;
 
@@ -81,6 +82,7 @@ public sealed class InlineVisualEngine : IDisposable
 
         _editor.TextChanged += (_, _) => RebuildHosts();
         _editor.TextArea.TextView.VisualLinesChanged += (_, _) => RefreshPositions();
+        _editor.TextArea.TextView.ScrollOffsetChanged += (_, _) => RefreshPositions();
 
         RebuildHosts();
     }
@@ -129,8 +131,20 @@ public sealed class InlineVisualEngine : IDisposable
             var match = _commandRegex.Match(text);
             if (!match.Success) continue;
 
-            var cmd = match.Groups["cmd"].Value.ToLowerInvariant();
-            var args = match.Groups["args"].Value;
+            // Check both capture groups (comment style and method call style)
+            var cmd = match.Groups["cmd"].Success
+                ? match.Groups["cmd"].Value.ToLowerInvariant()
+                : match.Groups["cmd2"].Success
+                    ? match.Groups["cmd2"].Value.ToLowerInvariant()
+                    : "";
+
+            var args = match.Groups["args"].Success
+                ? match.Groups["args"].Value
+                : match.Groups["args2"].Success
+                    ? match.Groups["args2"].Value
+                    : "";
+
+            if (string.IsNullOrEmpty(cmd)) continue;
 
             InlineVisualKind kind = cmd switch
             {
@@ -141,6 +155,9 @@ public sealed class InlineVisualEngine : IDisposable
             };
 
             if (kind == InlineVisualKind.Unknown) continue;
+
+            // Don't add duplicate for same line
+            if (_hosts.ContainsKey(line)) continue;
 
             var host = new InlineVisualHost(_editor.TextArea.TextView, line, kind, args);
             host.Sequencer = Sequencer;
@@ -364,9 +381,13 @@ internal sealed class InlineVisualHost : IDisposable
 
         _container = new Border
         {
-            Background = Brushes.Transparent,
+            Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(20, 0, 217, 255)), // Subtle cyan tint for visibility
+            BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x33, 0x33, 0x33)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(6),
             Child = _control,
-            Margin = new System.Windows.Thickness(6, 2, 6, 6)
+            Margin = new System.Windows.Thickness(6, 2, 6, 6),
+            MinHeight = 100 // Ensure minimum height
         };
 
         EnsureOverlayCanvas().Children.Add(_container);
@@ -379,12 +400,24 @@ internal sealed class InlineVisualHost : IDisposable
 
     public void UpdatePosition()
     {
-        var line = _textView.Document.GetLineByNumber(_line);
-        var vl = _textView.GetVisualLine(line.LineNumber);
-        if (vl == null) return;
+        var doc = _textView.Document;
+        if (doc == null || _line > doc.LineCount) return;
 
-        var y = vl.VisualTop + vl.Height; // place directly below the line
-        var x = 0;
+        var line = doc.GetLineByNumber(_line);
+        var vl = _textView.GetVisualLine(line.LineNumber);
+        if (vl == null)
+        {
+            // Line not visible - hide the control
+            _container.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        _container.Visibility = Visibility.Visible;
+
+        // Get position relative to the TextView's render coordinates
+        var y = vl.VisualTop + vl.Height - _textView.VerticalOffset;
+        var x = -_textView.HorizontalOffset;
+
         Canvas.SetLeft(_container, x);
         Canvas.SetTop(_container, y);
         _container.Width = _textView.ActualWidth;
@@ -413,25 +446,78 @@ internal sealed class InlineVisualHost : IDisposable
 
     private Canvas EnsureOverlayCanvas()
     {
-        var parent = _textView.Parent as Grid;
-        if (parent == null)
+        // Find a suitable parent container by traversing up the visual tree
+        DependencyObject? current = _textView;
+        Grid? gridParent = null;
+
+        // Search up to 10 levels up for a Grid
+        for (int i = 0; i < 10 && current != null; i++)
         {
-            throw new InvalidOperationException("TextView parent must be Grid for inline visuals.");
+            current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+            if (current is Grid grid)
+            {
+                gridParent = grid;
+                break;
+            }
         }
 
-        var existing = parent.Children.OfType<Canvas>().FirstOrDefault(c => c.Name == "InlineVisualOverlay");
+        if (gridParent == null)
+        {
+            // Fallback: Create a canvas as a child of the TextView itself using an AdornerLayer
+            var adornerLayer = System.Windows.Documents.AdornerLayer.GetAdornerLayer(_textView);
+            if (adornerLayer != null)
+            {
+                // Use adorner approach - but for simplicity, let's try the TextArea's parent
+                var textArea = _textView.Parent;
+                if (textArea != null)
+                {
+                    var textAreaParent = System.Windows.Media.VisualTreeHelper.GetParent(textArea);
+                    if (textAreaParent is Grid taGrid)
+                    {
+                        gridParent = taGrid;
+                    }
+                }
+            }
+        }
+
+        if (gridParent == null)
+        {
+            // Last resort: just return a detached canvas (won't be visible but won't crash)
+            System.Diagnostics.Debug.WriteLine("Warning: Could not find Grid parent for inline visuals overlay");
+            return new Canvas { Name = "InlineVisualOverlay" };
+        }
+
+        var existing = gridParent.Children.OfType<Canvas>().FirstOrDefault(c => c.Name == "InlineVisualOverlay");
         if (existing != null) return existing;
 
-        var canvas = new Canvas { Name = "InlineVisualOverlay", IsHitTestVisible = false };
+        var canvas = new Canvas
+        {
+            Name = "InlineVisualOverlay",
+            IsHitTestVisible = true,
+            ClipToBounds = false,
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch,
+            VerticalAlignment = System.Windows.VerticalAlignment.Stretch
+        };
         WpfPanel.SetZIndex(canvas, 50);
-        parent.Children.Add(canvas);
+        gridParent.Children.Add(canvas);
         return canvas;
     }
 
     private Canvas? GetOverlayCanvas()
     {
-        var parent = _textView.Parent as Grid;
-        return parent?.Children.OfType<Canvas>().FirstOrDefault(c => c.Name == "InlineVisualOverlay");
+        // Find the Grid parent the same way as EnsureOverlayCanvas
+        DependencyObject? current = _textView;
+
+        for (int i = 0; i < 10 && current != null; i++)
+        {
+            current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+            if (current is Grid grid)
+            {
+                return grid.Children.OfType<Canvas>().FirstOrDefault(c => c.Name == "InlineVisualOverlay");
+            }
+        }
+
+        return null;
     }
 }
 

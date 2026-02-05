@@ -29,12 +29,60 @@ using MusicEngineEditor.Controls;
 using MusicEngineEditor.ViewModels;
 using MusicEngineEditor.Views;
 using MusicEngineEditor.Views.Dialogs;
-using MusicEngineEditor.Services;
 
 namespace MusicEngineEditor;
 
 public partial class MainWindow : Window
 {
+    // Cached frozen brushes for hot-path methods (timer callbacks, audio reactive, log output)
+    private static readonly SolidColorBrush s_statusGreenBrush;
+    private static readonly SolidColorBrush s_statusGrayBrush;
+    private static readonly SolidColorBrush s_runButtonRedBrush;
+    private static readonly SolidColorBrush s_runButtonGreenBrush;
+    private static readonly SolidColorBrush s_statusTextGreenBrush;
+    private static readonly SolidColorBrush s_statusTextGrayBrush;
+    private static readonly SolidColorBrush s_logErrorBrush;
+    private static readonly SolidColorBrush s_logWarningBrush;
+    private static readonly SolidColorBrush s_logDebugBrush;
+    private static readonly SolidColorBrush s_logDefaultBrush;
+    private static readonly SolidColorBrush s_timestampBrush;
+
+    static MainWindow()
+    {
+        s_statusGreenBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88));
+        s_statusGreenBrush.Freeze();
+
+        s_statusGrayBrush = new SolidColorBrush(Color.FromRgb(0x6F, 0x73, 0x7A));
+        s_statusGrayBrush.Freeze();
+
+        s_runButtonRedBrush = new SolidColorBrush(Color.FromRgb(0x8B, 0x2D, 0x2D));
+        s_runButtonRedBrush.Freeze();
+
+        s_runButtonGreenBrush = new SolidColorBrush(Color.FromRgb(0x2D, 0x5A, 0x2D));
+        s_runButtonGreenBrush.Freeze();
+
+        s_statusTextGreenBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66));
+        s_statusTextGreenBrush.Freeze();
+
+        s_statusTextGrayBrush = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80));
+        s_statusTextGrayBrush.Freeze();
+
+        s_logErrorBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0x47, 0x57));
+        s_logErrorBrush.Freeze();
+
+        s_logWarningBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xB8, 0x00));
+        s_logWarningBrush.Freeze();
+
+        s_logDebugBrush = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80));
+        s_logDebugBrush.Freeze();
+
+        s_logDefaultBrush = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
+        s_logDefaultBrush.Freeze();
+
+        s_timestampBrush = new SolidColorBrush(Color.FromRgb(0x60, 0x60, 0x60));
+        s_timestampBrush.Freeze();
+    }
+
     private readonly EngineService _engineService;
     private readonly IProjectService _projectService;
     private readonly DispatcherTimer _statusTimer;
@@ -45,7 +93,6 @@ public partial class MainWindow : Window
     private bool _outputVisible = true;
     private bool _isRunning = false;
     private bool _isLiveMode = false;
-    private bool _showingOutput = true;
     private CompletionProvider? _completionProvider;
     private InlineSliderService? _inlineSliderService;
     private MinimapControl? _minimap;
@@ -87,6 +134,7 @@ public partial class MainWindow : Window
     private AudioReactiveService? _audioReactiveService;
     private DropShadowEffect? _runButtonGlow;
     private readonly List<DropShadowEffect?> _sidebarGlows = new();
+    private readonly SolidColorBrush _audioReactiveStatusBrush = new(Color.FromRgb(0x6F, 0x73, 0x7A));
 
     // Audio Visualizer Background Settings
     private bool _audioVisualizerEnabled = true;
@@ -149,23 +197,11 @@ public partial class MainWindow : Window
         VstPluginsPanel.OnPluginDoubleClick += VstPluginsPanel_OnPluginDoubleClick;
         VstPluginsPanel.OnScanCompleted += VstPluginsPanel_OnScanCompleted;
 
-        // Pipe MIDI log to output console (use the script engine's shared engine)
-        _engineService.MidiLog += msg => Dispatcher.BeginInvoke(() => OutputLine(msg));
-        // Also mirror MIDI logs to console tab if active
-        _engineService.MidiLog += msg => Dispatcher.BeginInvoke(() =>
-        {
-            if (_activeTab == OutputTab.Console)
-            {
-                AppendConsole(msg);
-            }
-        });
+        // Pipe MIDI log to output console and mirror to console tab
+        _engineService.MidiLog += OnMidiLog;
 
         // Open synth editor when a synth is created via script
-        _engineService.SynthCreated += (synth, name, typeName) => Dispatcher.BeginInvoke(() =>
-        {
-            SynthEditorPanel.RegisterSynth(synth, name, typeName);
-            OpenSynthEditor(synth, name, typeName);
-        });
+        _engineService.SynthCreated += OnSynthCreated;
 
         // Hook user console keydown
         UserConsoleBox.KeyDown += UserConsoleBox_KeyDown;
@@ -207,7 +243,7 @@ public partial class MainWindow : Window
 
         // Setup visualization integration for real-time playback highlighting
         _visualization = this.CreateVisualizationIntegration(CodeEditor);
-        _visualization.VisualizationError += (s, msg) => OutputLine($"[Visualization] {msg}");
+        _visualization.VisualizationError += OnVisualizationError;
 
         // Setup context menu for code editor
         SetupEditorContextMenu();
@@ -1214,6 +1250,14 @@ public partial class MainWindow : Window
             }
         }
 
+        // Unsubscribe from service events to prevent leaks
+        _engineService.MidiLog -= OnMidiLog;
+        _engineService.SynthCreated -= OnSynthCreated;
+        if (_visualization != null)
+            _visualization.VisualizationError -= OnVisualizationError;
+        if (_audioReactiveService != null)
+            _audioReactiveService.ValuesUpdated -= OnAudioReactiveValuesUpdated;
+
         _statusTimer.Stop();
         _sliderHotReloadTimer?.Stop();
         _inlineSliderService?.Dispose();
@@ -1249,17 +1293,43 @@ public partial class MainWindow : Window
         // Update status indicator based on running state
         if (_isRunning)
         {
-            StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88)); // Green
+            StatusIndicator.Fill = s_statusGreenBrush; // Green
         }
         else
         {
-            StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0x73, 0x7A)); // Gray
+            StatusIndicator.Fill = s_statusGrayBrush; // Gray
         }
     }
 
     private void Caret_PositionChanged(object? sender, EventArgs e)
     {
         CaretPositionDisplay.Text = $"Ln {CodeEditor.TextArea.Caret.Line}, Col {CodeEditor.TextArea.Caret.Column}";
+    }
+
+    private void OnMidiLog(string msg)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            OutputLine(msg);
+            if (_activeTab == OutputTab.Console)
+            {
+                AppendConsole(msg);
+            }
+        });
+    }
+
+    private void OnSynthCreated(object synth, string name, string typeName)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            SynthEditorPanel.RegisterSynth(synth, name, typeName);
+            OpenSynthEditor(synth, name, typeName);
+        });
+    }
+
+    private void OnVisualizationError(object? sender, string msg)
+    {
+        OutputLine($"[Visualization] {msg}");
     }
 
     #region Inline Slider Events
@@ -1273,7 +1343,11 @@ public partial class MainWindow : Window
         if (_isRunning)
         {
             // Debounce hot-reload to avoid too many re-evaluations
-            _sliderHotReloadTimer?.Stop();
+            if (_sliderHotReloadTimer != null)
+            {
+                _sliderHotReloadTimer.Stop();
+                _sliderHotReloadTimer = null;
+            }
             _sliderHotReloadTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(100)
@@ -2032,7 +2106,7 @@ public partial class MainWindow : Window
         if (_isRunning)
         {
             // Show Stop state (red)
-            RunStopButton.Background = new SolidColorBrush(Color.FromRgb(0x8B, 0x2D, 0x2D));
+            RunStopButton.Background = s_runButtonRedBrush;
             RunStopIcon.Text = "\u25A0"; // Square (stop icon)
             RunStopText.Text = "Stop";
 
@@ -2045,7 +2119,7 @@ public partial class MainWindow : Window
         else
         {
             // Show Run state (green)
-            RunStopButton.Background = new SolidColorBrush(Color.FromRgb(0x2D, 0x5A, 0x2D));
+            RunStopButton.Background = s_runButtonGreenBrush;
             RunStopIcon.Text = "\u25B6"; // Triangle (play icon)
             RunStopText.Text = "Run";
 
@@ -2229,7 +2303,9 @@ public partial class MainWindow : Window
             byte g = (byte)Math.Min(255, baseColor.G + (int)(e.Overall * 30));
             byte b = (byte)Math.Min(255, baseColor.B + (int)(e.Overall * 30));
 
-            StatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(r, g, b));
+            _audioReactiveStatusBrush.Color = Color.FromRgb(r, g, b);
+            if (StatusIndicator.Fill != _audioReactiveStatusBrush)
+                StatusIndicator.Fill = _audioReactiveStatusBrush;
         }
 
         // Update Audio Visualizer Background
@@ -3410,16 +3486,16 @@ public partial class MainWindow : Window
 
     private void SetBrowserTabActive(Border header, bool active)
     {
-        header.BorderBrush = active ? (Brush)FindResource("AccentBrush") : Brushes.Transparent;
+        header.BorderBrush = active ? FindResource("AccentBrush") as Brush ?? Brushes.Transparent : Brushes.Transparent;
         var stack = header.Child as StackPanel;
         if (stack != null)
         {
             foreach (var child in stack.Children)
             {
                 if (child is System.Windows.Shapes.Path path)
-                    path.Stroke = active ? (Brush)FindResource("AccentBrush") : (Brush)FindResource("SecondaryForegroundBrush");
+                    path.Stroke = active ? FindResource("AccentBrush") as Brush ?? Brushes.Transparent : FindResource("SecondaryForegroundBrush") as Brush ?? Brushes.Transparent;
                 else if (child is TextBlock text)
-                    text.Foreground = active ? (Brush)FindResource("BrightForegroundBrush") : (Brush)FindResource("SecondaryForegroundBrush");
+                    text.Foreground = active ? FindResource("BrightForegroundBrush") as Brush ?? Brushes.Transparent : FindResource("SecondaryForegroundBrush") as Brush ?? Brushes.Transparent;
             }
         }
     }
@@ -3684,19 +3760,19 @@ public partial class MainWindow : Window
 
         if (text == "Running" || text.StartsWith("Running ("))
         {
-            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x66)); // Green
+            StatusText.Foreground = s_statusTextGreenBrush; // Green
         }
         else if (text == "Stopped")
         {
-            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)); // Gray
+            StatusText.Foreground = s_statusTextGrayBrush; // Gray
         }
         else if (text == "Ready")
         {
-            StatusText.Foreground = (Brush)FindResource("ForegroundBrush"); // Default
+            StatusText.Foreground = FindResource("ForegroundBrush") as Brush ?? Brushes.Transparent; // Default
         }
         else
         {
-            StatusText.Foreground = (Brush)FindResource("ForegroundBrush"); // Default for other messages
+            StatusText.Foreground = FindResource("ForegroundBrush") as Brush ?? Brushes.Transparent; // Default for other messages
         }
     }
 
@@ -3714,7 +3790,7 @@ public partial class MainWindow : Window
             lowerText.Contains("failed") ||
             lowerText.StartsWith("error"))
         {
-            return new SolidColorBrush(Color.FromRgb(0xFF, 0x47, 0x57)); // #FF4757 - Red
+            return s_logErrorBrush; // #FF4757 - Red
         }
 
         // Check for warning indicators
@@ -3723,7 +3799,7 @@ public partial class MainWindow : Window
             lowerText.Contains("warning:") ||
             lowerText.Contains("warn:"))
         {
-            return new SolidColorBrush(Color.FromRgb(0xFF, 0xB8, 0x00)); // #FFB800 - Yellow
+            return s_logWarningBrush; // #FFB800 - Yellow
         }
 
         // Check for debug/trace indicators
@@ -3732,11 +3808,11 @@ public partial class MainWindow : Window
             lowerText.Contains("debug:") ||
             lowerText.Contains("trace:"))
         {
-            return new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)); // #808080 - Gray
+            return s_logDebugBrush; // #808080 - Gray
         }
 
         // Default to white/info color
-        return new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)); // #E0E0E0 - White/Light gray
+        return s_logDefaultBrush; // #E0E0E0 - White/Light gray
     }
 
     /// <summary>
@@ -3756,7 +3832,7 @@ public partial class MainWindow : Window
         // Add timestamp in gray
         var timestampRun = new Run(timestamp)
         {
-            Foreground = new SolidColorBrush(Color.FromRgb(0x60, 0x60, 0x60)) // Dark gray timestamp
+            Foreground = s_timestampBrush // Dark gray timestamp
         };
         paragraph.Inlines.Add(timestampRun);
 
@@ -4991,6 +5067,17 @@ Print("");
 // Data classes for the right panel lists
 public class MidiDeviceInfo
 {
+    private static readonly System.Windows.Media.SolidColorBrush s_inputBrush;
+    private static readonly System.Windows.Media.SolidColorBrush s_outputBrush;
+
+    static MidiDeviceInfo()
+    {
+        s_inputBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88));
+        s_inputBrush.Freeze();
+        s_outputBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF));
+        s_outputBrush.Freeze();
+    }
+
     public string Name { get; set; } = "";
     public string Type { get; set; } = "";  // "Input" or "Output"
     public int DeviceIndex { get; set; } = -1;
@@ -5005,8 +5092,8 @@ public class MidiDeviceInfo
 
     // Color for the type indicator
     public System.Windows.Media.Brush TypeColor => Type == "Input"
-        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88))  // Green for input
-        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF)); // Blue for output
+        ? s_inputBrush   // Green for input
+        : s_outputBrush; // Blue for output
 }
 
 public class VstPluginInfo
@@ -5033,6 +5120,20 @@ public enum ProblemSeverity
 
 public class ProblemItem
 {
+    private static readonly System.Windows.Media.SolidColorBrush s_errorBrush;
+    private static readonly System.Windows.Media.SolidColorBrush s_warningBrush;
+    private static readonly System.Windows.Media.SolidColorBrush s_infoBrush;
+
+    static ProblemItem()
+    {
+        s_errorBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0x47, 0x57));
+        s_errorBrush.Freeze();
+        s_warningBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xB8, 0x00));
+        s_warningBrush.Freeze();
+        s_infoBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF));
+        s_infoBrush.Freeze();
+    }
+
     public ProblemSeverity Severity { get; set; } = ProblemSeverity.Error;
     public string Message { get; set; } = "";
     public string FileName { get; set; } = "";
@@ -5052,9 +5153,9 @@ public class ProblemItem
 
     public System.Windows.Media.Brush IconColor => Severity switch
     {
-        ProblemSeverity.Error => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0x47, 0x57)),
-        ProblemSeverity.Warning => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xB8, 0x00)),
-        ProblemSeverity.Info => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF)),
+        ProblemSeverity.Error => s_errorBrush,
+        ProblemSeverity.Warning => s_warningBrush,
+        ProblemSeverity.Info => s_infoBrush,
         _ => System.Windows.Media.Brushes.White
     };
 }
@@ -5062,6 +5163,30 @@ public class ProblemItem
 // Active Instrument display item with animation support
 public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
 {
+    // Cached frozen brushes for static (non-animated) states
+    private static readonly System.Windows.Media.SolidColorBrush s_activeIconBrush;
+    private static readonly System.Windows.Media.SolidColorBrush s_inactiveGrayBrush;
+    private static readonly System.Windows.Media.SolidColorBrush s_activeTextBrush;
+    private static readonly System.Windows.Media.SolidColorBrush s_activeBackgroundBrush;
+    private static readonly System.Windows.Media.SolidColorBrush s_activeBorderBrush;
+    private static readonly System.Windows.Media.SolidColorBrush s_inactiveBorderBrush;
+
+    static ActiveInstrumentInfo()
+    {
+        s_activeIconBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88));
+        s_activeIconBrush.Freeze();
+        s_inactiveGrayBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0x73, 0x7A));
+        s_inactiveGrayBrush.Freeze();
+        s_activeTextBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xDF, 0xE1, 0xE5));
+        s_activeTextBrush.Freeze();
+        s_activeBackgroundBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x33, 0x00, 0xD9, 0xFF));
+        s_activeBackgroundBrush.Freeze();
+        s_activeBorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF));
+        s_activeBorderBrush.Freeze();
+        s_inactiveBorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2A, 0x2A, 0x2A));
+        s_inactiveBorderBrush.Freeze();
+    }
+
     private string _name = "";
     private string _instrumentType = "synth";
     private bool _isActive;
@@ -5137,9 +5262,9 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xFF, 0x88)); // Green
+                return s_activeIconBrush; // Green
             }
-            return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0x73, 0x7A)); // Gray
+            return s_inactiveGrayBrush; // Gray
         }
     }
 
@@ -5155,9 +5280,9 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xDF, 0xE1, 0xE5)); // Bright
+                return s_activeTextBrush; // Bright
             }
-            return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0x73, 0x7A)); // Dim
+            return s_inactiveGrayBrush; // Dim
         }
     }
 
@@ -5173,7 +5298,7 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x33, 0x00, 0xD9, 0xFF));
+                return s_activeBackgroundBrush;
             }
             return System.Windows.Media.Brushes.Transparent;
         }
@@ -5191,9 +5316,9 @@ public class ActiveInstrumentInfo : System.ComponentModel.INotifyPropertyChanged
             }
             if (IsActive)
             {
-                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0xD9, 0xFF));
+                return s_activeBorderBrush;
             }
-            return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2A, 0x2A, 0x2A));
+            return s_inactiveBorderBrush;
         }
     }
 

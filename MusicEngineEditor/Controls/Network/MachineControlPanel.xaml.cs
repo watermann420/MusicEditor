@@ -251,6 +251,12 @@ public class BoolToChaseColorConverter : IValueConverter
     private static readonly SolidColorBrush LockedBrush = new(Color.FromRgb(0x00, 0xCC, 0x66));
     private static readonly SolidColorBrush UnlockedBrush = new(Color.FromRgb(0xFF, 0xA5, 0x00));
 
+    static BoolToChaseColorConverter()
+    {
+        LockedBrush.Freeze();
+        UnlockedBrush.Freeze();
+    }
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is bool isLocked)

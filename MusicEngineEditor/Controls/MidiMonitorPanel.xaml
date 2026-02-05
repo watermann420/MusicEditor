@@ -132,7 +132,7 @@
 
                     <!-- Channel -->
                     <Border Grid.Column="1"
-                            Background="#2A2A2A"
+                            Background="{DynamicResource BorderBrush}"
                             CornerRadius="2"
                             Padding="4,1"
                             Margin="4,0"
@@ -270,7 +270,7 @@
 
         <!-- Channel Activity Indicators -->
         <Border Grid.Row="1"
-                Background="#0D0D0D"
+                Background="{DynamicResource BackgroundBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,0,1"
                 Padding="8,4">

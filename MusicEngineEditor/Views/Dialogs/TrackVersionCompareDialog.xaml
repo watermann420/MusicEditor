@@ -9,8 +9,8 @@
         MinWidth="700" MinHeight="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
-        Background="#0D0D0D"
-        Foreground="#E0E0E0">
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -144,7 +144,7 @@
 
         <!-- Header -->
         <Border Grid.Row="0"
-                Background="#181818"
+                Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="0,0,0,1"
                 Padding="20,15">
@@ -157,13 +157,13 @@
                 <TextBlock x:Name="TrackNameText"
                            Text="Select a track to compare versions"
                            FontSize="11"
-                           Foreground="#808080"/>
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"/>
             </StackPanel>
         </Border>
 
         <!-- Version Selection -->
         <Border Grid.Row="1"
-                Background="#181818"
+                Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="0,0,0,1"
                 Padding="20,15">
@@ -184,7 +184,7 @@
                            Text="Version A (Base)"
                            FontWeight="SemiBold"
                            FontSize="11"
-                           Foreground="#808080"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
                            Margin="0,0,0,6"/>
                 <ComboBox x:Name="VersionAComboBox"
                           Grid.Column="0" Grid.Row="1"
@@ -206,7 +206,7 @@
                            Text="Version B (Compare)"
                            FontWeight="SemiBold"
                            FontSize="11"
-                           Foreground="#808080"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
                            Margin="0,0,0,6"/>
                 <ComboBox x:Name="VersionBComboBox"
                           Grid.Column="2" Grid.Row="1"
@@ -246,7 +246,7 @@
                                HorizontalAlignment="Center"/>
                     <TextBlock Text="Added"
                                FontSize="10"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
 
@@ -255,11 +255,11 @@
                                Text="0"
                                FontSize="24"
                                FontWeight="Bold"
-                               Foreground="#FF4757"
+                               Foreground="{DynamicResource ErrorBrush}"
                                HorizontalAlignment="Center"/>
                     <TextBlock Text="Removed"
                                FontSize="10"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
 
@@ -272,7 +272,7 @@
                                HorizontalAlignment="Center"/>
                     <TextBlock Text="Modified"
                                FontSize="10"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
 
@@ -281,11 +281,11 @@
                                Text="0"
                                FontSize="24"
                                FontWeight="Bold"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                HorizontalAlignment="Center"/>
                     <TextBlock Text="Unchanged"
                                FontSize="10"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
             </Grid>
@@ -300,7 +300,7 @@
 
             <!-- Filter tabs -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     CornerRadius="6,6,0,0"
                     Padding="8">
                 <StackPanel Orientation="Horizontal">
@@ -308,44 +308,44 @@
                                  Content="All"
                                  GroupName="DiffFilter"
                                  IsChecked="True"
-                                 Foreground="#E0E0E0"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  Checked="FilterChanged"
                                  Margin="0,0,16,0"/>
                     <RadioButton x:Name="FilterNotesRadio"
                                  Content="Notes"
                                  GroupName="DiffFilter"
-                                 Foreground="#E0E0E0"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  Checked="FilterChanged"
                                  Margin="0,0,16,0"/>
                     <RadioButton x:Name="FilterClipsRadio"
                                  Content="Clips"
                                  GroupName="DiffFilter"
-                                 Foreground="#E0E0E0"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  Checked="FilterChanged"
                                  Margin="0,0,16,0"/>
                     <RadioButton x:Name="FilterEffectsRadio"
                                  Content="Effects"
                                  GroupName="DiffFilter"
-                                 Foreground="#E0E0E0"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  Checked="FilterChanged"
                                  Margin="0,0,16,0"/>
                     <RadioButton x:Name="FilterAutomationRadio"
                                  Content="Automation"
                                  GroupName="DiffFilter"
-                                 Foreground="#E0E0E0"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  Checked="FilterChanged"
                                  Margin="0,0,16,0"/>
                     <RadioButton x:Name="FilterParametersRadio"
                                  Content="Parameters"
                                  GroupName="DiffFilter"
-                                 Foreground="#E0E0E0"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  Checked="FilterChanged"/>
                 </StackPanel>
             </Border>
 
             <!-- Diff content -->
             <Border Grid.Row="1"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     CornerRadius="0,0,6,6"
                     BorderBrush="#252525"
                     BorderThickness="1">
@@ -363,7 +363,7 @@
                                 HorizontalAlignment="Center">
                         <TextBlock Text="Select two versions to compare"
                                    FontSize="14"
-                                   Foreground="#808080"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,8"/>
                         <TextBlock Text="Choose Version A and Version B, then click Compare"
@@ -393,7 +393,7 @@
 
         <!-- Bottom Button Panel -->
         <Border Grid.Row="4"
-                Background="#181818"
+                Background="{DynamicResource PanelBackgroundBrush}"
                 BorderBrush="#252525"
                 BorderThickness="0,1,0,0"
                 Padding="20,15">

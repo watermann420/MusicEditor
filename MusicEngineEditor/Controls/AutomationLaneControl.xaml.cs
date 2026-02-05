@@ -213,13 +213,20 @@ public partial class AutomationLaneControl : UserControl
     private AutomationCurveType _defaultCurveType = AutomationCurveType.Linear;
     private bool _showBezierHandles = true;
 
-    private readonly SolidColorBrush _curveColor = new(Color.FromRgb(0x00, 0xFF, 0x88));
-    private readonly SolidColorBrush _pointColor = new(Color.FromRgb(0xE8, 0xE8, 0xE8));
-    private readonly SolidColorBrush _pointSelectedColor = new(Color.FromRgb(0xFF, 0x9B, 0x4B));
-    private readonly SolidColorBrush _handleColor = new(Color.FromRgb(0x7E, 0xA8, 0xDB));
-    private readonly SolidColorBrush _handleLineColor = new(Color.FromRgb(0x5A, 0x5D, 0x60));
-    private readonly SolidColorBrush _gridLineColor = new(Color.FromRgb(0x2B, 0x2D, 0x30));
-    private readonly SolidColorBrush _gridLineStrongColor = new(Color.FromRgb(0x2A, 0x2A, 0x2A));
+    private static readonly SolidColorBrush _curveColor = CreateFrozenBrush(Color.FromRgb(0x00, 0xFF, 0x88));
+    private static readonly SolidColorBrush _pointColor = CreateFrozenBrush(Color.FromRgb(0xE8, 0xE8, 0xE8));
+    private static readonly SolidColorBrush _pointSelectedColor = CreateFrozenBrush(Color.FromRgb(0xFF, 0x9B, 0x4B));
+    private static readonly SolidColorBrush _handleColor = CreateFrozenBrush(Color.FromRgb(0x7E, 0xA8, 0xDB));
+    private static readonly SolidColorBrush _handleLineColor = CreateFrozenBrush(Color.FromRgb(0x5A, 0x5D, 0x60));
+    private static readonly SolidColorBrush _gridLineColor = CreateFrozenBrush(Color.FromRgb(0x2B, 0x2D, 0x30));
+    private static readonly SolidColorBrush _gridLineStrongColor = CreateFrozenBrush(Color.FromRgb(0x2A, 0x2A, 0x2A));
+
+    private static SolidColorBrush CreateFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
 
     #endregion
 

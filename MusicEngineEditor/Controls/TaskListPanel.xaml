@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="350"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -115,7 +115,7 @@
 
             <!-- Header -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,10">
@@ -134,14 +134,14 @@
                         <TextBlock x:Name="TaskCountText"
                                    Text=" (0/0)"
                                    FontSize="12"
-                                   Foreground="#808080"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button Content="Clear Done"
                                 Background="Transparent"
-                                Foreground="#808080"
+                                Foreground="{DynamicResource SecondaryForegroundBrush}"
                                 BorderThickness="0"
                                 Padding="8,4"
                                 FontSize="11"
@@ -153,7 +153,7 @@
 
             <!-- Filter Bar -->
             <Border Grid.Row="1"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     Padding="12,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -183,7 +183,7 @@
                               Grid.Column="1"
                               Width="100"
                               Background="#333337"
-                              Foreground="#E0E0E0"
+                              Foreground="{DynamicResource ForegroundBrush}"
                               BorderBrush="#252525"
                               FontSize="11"
                               SelectionChanged="SortCombo_SelectionChanged">
@@ -197,7 +197,7 @@
 
             <!-- Category Filter -->
             <Border Grid.Row="2"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,6">
@@ -340,7 +340,7 @@
 
             <!-- Add Task Panel -->
             <Border Grid.Row="4"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,1,0,0"
                     Padding="12">
@@ -355,7 +355,7 @@
                     <TextBox x:Name="TaskTitleTextBox"
                              Grid.Row="0"
                              Background="#252628"
-                             Foreground="#E0E0E0"
+                             Foreground="{DynamicResource ForegroundBrush}"
                              BorderBrush="#252525"
                              BorderThickness="1"
                              Padding="8,6"
@@ -374,7 +374,7 @@
                         <ComboBox x:Name="PriorityCombo"
                                   Grid.Column="0"
                                   Background="#333337"
-                                  Foreground="#E0E0E0"
+                                  Foreground="{DynamicResource ForegroundBrush}"
                                   BorderBrush="#252525"
                                   FontSize="11"
                                   Margin="0,0,4,0">
@@ -388,7 +388,7 @@
                         <ComboBox x:Name="CategoryCombo"
                                   Grid.Column="1"
                                   Background="#333337"
-                                  Foreground="#E0E0E0"
+                                  Foreground="{DynamicResource ForegroundBrush}"
                                   BorderBrush="#252525"
                                   FontSize="11"
                                   Margin="4,0">
@@ -403,7 +403,7 @@
                         <DatePicker x:Name="DueDatePicker"
                                     Grid.Column="2"
                                     Background="#333337"
-                                    Foreground="#E0E0E0"
+                                    Foreground="{DynamicResource ForegroundBrush}"
                                     BorderBrush="#252525"
                                     FontSize="11"
                                     Margin="4,0,0,0"/>

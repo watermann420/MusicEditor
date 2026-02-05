@@ -186,7 +186,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Padding="16,12" Background="#141414">
+        <Border Grid.Row="0" Padding="16,12" Background="{DynamicResource SurfaceBackgroundBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -634,7 +634,7 @@
         </ScrollViewer>
 
         <!-- Status Bar -->
-        <Border Grid.Row="2" Background="#141414" Padding="12,8">
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceBackgroundBrush}" Padding="12,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

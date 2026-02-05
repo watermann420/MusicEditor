@@ -139,7 +139,7 @@
                         IsHitTestVisible="False">
                     <TextBlock x:Name="DragInfoText"
                                FontSize="10"
-                               Foreground="#FFFFFF"
+                               Foreground="{DynamicResource BrightForegroundBrush}"
                                Text="Tension: 0.50"/>
                 </Border>
             </Canvas>

@@ -175,7 +175,9 @@ public partial class ArrangementControl : UserControl
     /// <summary>
     /// Event raised when a clip is selected.
     /// </summary>
+#pragma warning disable CS0067
     public event EventHandler<UIElement>? ClipSelected;
+#pragma warning restore CS0067
 
     /// <summary>
     /// Event raised when a MIDI clip should be added.
@@ -198,9 +200,16 @@ public partial class ArrangementControl : UserControl
     private Point _contextMenuPosition;
     private bool _isDraggingPlayhead;
 
-    private readonly SolidColorBrush _majorGridBrush = new(Color.FromRgb(0x30, 0x30, 0x30));
-    private readonly SolidColorBrush _minorGridBrush = new(Color.FromRgb(0x20, 0x20, 0x20));
-    private readonly SolidColorBrush _accentBrush = new(Color.FromRgb(0x00, 0xD9, 0xFF));
+    private static readonly SolidColorBrush _majorGridBrush = CreateFrozenBrush(Color.FromRgb(0x30, 0x30, 0x30));
+    private static readonly SolidColorBrush _minorGridBrush = CreateFrozenBrush(Color.FromRgb(0x20, 0x20, 0x20));
+    private static readonly SolidColorBrush _accentBrush = CreateFrozenBrush(Color.FromRgb(0x00, 0xD9, 0xFF));
+
+    private static SolidColorBrush CreateFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
 
     #endregion
 

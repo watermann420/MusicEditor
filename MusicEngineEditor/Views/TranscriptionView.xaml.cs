@@ -65,6 +65,16 @@ public partial class TranscriptionView : UserControl
     private static readonly Brush BarLineBrush = new SolidColorBrush(Color.FromRgb(100, 100, 100));
     private static readonly Brush PitchLineBrush = new SolidColorBrush(Color.FromRgb(74, 158, 255));
 
+    static TranscriptionView()
+    {
+        StaffLineBrush.Freeze();
+        NoteBrush.Freeze();
+        NoteOutlineBrush.Freeze();
+        TextBrush.Freeze();
+        BarLineBrush.Freeze();
+        PitchLineBrush.Freeze();
+    }
+
     /// <summary>
     /// Event raised to request audio data for analysis.
     /// </summary>

@@ -224,15 +224,22 @@ public partial class BinauralRendererControl : UserControl
     private Line? _sideViewDirectionLine;
 
     // Colors
-    private readonly SolidColorBrush _headBrush = new(Color.FromRgb(0x3A, 0x3A, 0x3A));
-    private readonly SolidColorBrush _headStrokeBrush = new(Color.FromRgb(0x50, 0x50, 0x50));
-    private readonly SolidColorBrush _sourceBrush = new(Color.FromRgb(0x00, 0xD9, 0xFF));
-    private readonly SolidColorBrush _sourceGlowBrush = new(Color.FromArgb(0x40, 0x00, 0xD9, 0xFF));
-    private readonly SolidColorBrush _gridBrush = new(Color.FromRgb(0x2A, 0x2A, 0x2A));
-    private readonly SolidColorBrush _gridLightBrush = new(Color.FromRgb(0x1A, 0x1A, 0x1A));
-    private readonly SolidColorBrush _labelBrush = new(Color.FromRgb(0x80, 0x80, 0x80));
-    private readonly SolidColorBrush _directionBrush = new(Color.FromArgb(0x80, 0x00, 0xD9, 0xFF));
-    private readonly SolidColorBrush _earBrush = new(Color.FromRgb(0x00, 0xD9, 0xFF));
+    private static readonly SolidColorBrush _headBrush = CreateFrozenBrush(Color.FromRgb(0x3A, 0x3A, 0x3A));
+    private static readonly SolidColorBrush _headStrokeBrush = CreateFrozenBrush(Color.FromRgb(0x50, 0x50, 0x50));
+    private static readonly SolidColorBrush _sourceBrush = CreateFrozenBrush(Color.FromRgb(0x00, 0xD9, 0xFF));
+    private static readonly SolidColorBrush _sourceGlowBrush = CreateFrozenBrush(Color.FromArgb(0x40, 0x00, 0xD9, 0xFF));
+    private static readonly SolidColorBrush _gridBrush = CreateFrozenBrush(Color.FromRgb(0x2A, 0x2A, 0x2A));
+    private static readonly SolidColorBrush _gridLightBrush = CreateFrozenBrush(Color.FromRgb(0x1A, 0x1A, 0x1A));
+    private static readonly SolidColorBrush _labelBrush = CreateFrozenBrush(Color.FromRgb(0x80, 0x80, 0x80));
+    private static readonly SolidColorBrush _directionBrush = CreateFrozenBrush(Color.FromArgb(0x80, 0x00, 0xD9, 0xFF));
+    private static readonly SolidColorBrush _earBrush = CreateFrozenBrush(Color.FromRgb(0x00, 0xD9, 0xFF));
+
+    private static SolidColorBrush CreateFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
 
     #endregion
 

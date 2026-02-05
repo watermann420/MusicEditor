@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="600"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinWidth="400"
              MinHeight="300">
 

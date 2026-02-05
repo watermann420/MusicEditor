@@ -43,7 +43,9 @@ public partial class PresetBrowserPanel : UserControl
     /// <summary>
     /// Event raised when the panel requests to be closed.
     /// </summary>
+#pragma warning disable CS0067
     public event EventHandler? CloseRequested;
+#pragma warning restore CS0067
 
     /// <summary>
     /// Creates a new PresetBrowserPanel instance.

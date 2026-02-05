@@ -164,18 +164,9 @@ public partial class TapeStopViewModel : ViewModelBase
     /// </summary>
     public void SetParameters(double stopTime, double startTime, TapeStopDirection direction, double wowFlutter)
     {
-        _stopTime = Math.Clamp(stopTime, MinStopTime, MaxStopTime);
-        _startTime = Math.Clamp(startTime, MinStartTime, MaxStartTime);
-        _direction = direction;
-        _wowFlutter = Math.Clamp(wowFlutter, MinWowFlutter, MaxWowFlutter);
-
-        OnPropertyChanged(nameof(StopTime));
-        OnPropertyChanged(nameof(StartTime));
-        OnPropertyChanged(nameof(Direction));
-        OnPropertyChanged(nameof(WowFlutter));
-        OnPropertyChanged(nameof(StopTimeDisplay));
-        OnPropertyChanged(nameof(StartTimeDisplay));
-        OnPropertyChanged(nameof(WowFlutterDisplay));
-        OnPropertyChanged(nameof(IsStopDirection));
+        StopTime = Math.Clamp(stopTime, MinStopTime, MaxStopTime);
+        StartTime = Math.Clamp(startTime, MinStartTime, MaxStartTime);
+        Direction = direction;
+        WowFlutter = Math.Clamp(wowFlutter, MinWowFlutter, MaxWowFlutter);
     }
 }

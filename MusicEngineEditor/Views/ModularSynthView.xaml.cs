@@ -373,7 +373,8 @@ public partial class ModularSynthView : UserControl
         {
             // Start a new connection
             ViewModel.StartConnection(e.Port);
-            _connectionStartPoint = GetPortPositionOnCanvas(sender as ModuleControl, e.Port);
+            if (sender is ModuleControl moduleControl)
+                _connectionStartPoint = GetPortPositionOnCanvas(moduleControl, e.Port);
         }
         else
         {

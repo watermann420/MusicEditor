@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="60" d:DesignWidth="200"
              d:DataContext="{d:DesignInstance Type=vm:PdcDisplayViewModel}"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Colors -->

@@ -107,9 +107,9 @@
                           ToolTip="Snap to Grid"
                           Padding="6,2"
                           FontSize="9"
-                          Background="#181818"
+                          Background="{DynamicResource PanelBackgroundBrush}"
                           Foreground="{StaticResource TextBrush}"
-                          BorderBrush="#2A2A2A"
+                          BorderBrush="{DynamicResource BorderBrush}"
                           Margin="0,0,4,0"/>
             <ToggleButton x:Name="BezierModeToggle"
                           Content="Bezier"
@@ -117,9 +117,9 @@
                           ToolTip="Use Bezier Curves"
                           Padding="6,2"
                           FontSize="9"
-                          Background="#181818"
+                          Background="{DynamicResource PanelBackgroundBrush}"
                           Foreground="{StaticResource TextBrush}"
-                          BorderBrush="#2A2A2A"
+                          BorderBrush="{DynamicResource BorderBrush}"
                           Checked="BezierModeToggle_Checked"
                           Unchecked="BezierModeToggle_Unchecked"/>
         </StackPanel>

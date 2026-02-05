@@ -129,7 +129,7 @@ public partial class ModuleViewModel : ObservableObject
 
         // Header + ports + parameters + padding
         Height = 40 + (portCount * 24) + (paramCount * 28) + 20;
-        Width = _moduleType switch
+        Width = ModuleType switch
         {
             ModuleType.Mixer => 160,
             ModuleType.Sequencer => 180,

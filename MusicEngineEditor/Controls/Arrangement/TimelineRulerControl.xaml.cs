@@ -103,12 +103,19 @@ public partial class TimelineRulerControl : UserControl
 
     private Line? _playheadLine;
     private bool _isDragging;
-    private readonly SolidColorBrush _accentBrush = new(Color.FromRgb(0x00, 0xD9, 0xFF));
-    private readonly SolidColorBrush _textBrush = new(Color.FromRgb(0xE0, 0xE0, 0xE0));
-    private readonly SolidColorBrush _secondaryTextBrush = new(Color.FromRgb(0x80, 0x80, 0x80));
-    private readonly SolidColorBrush _majorTickBrush = new(Color.FromRgb(0x60, 0x60, 0x60));
-    private readonly SolidColorBrush _minorTickBrush = new(Color.FromRgb(0x40, 0x40, 0x40));
-    private readonly SolidColorBrush _beatTickBrush = new(Color.FromRgb(0x30, 0x30, 0x30));
+    private static readonly SolidColorBrush _accentBrush = CreateFrozenBrush(Color.FromRgb(0x00, 0xD9, 0xFF));
+    private static readonly SolidColorBrush _textBrush = CreateFrozenBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
+    private static readonly SolidColorBrush _secondaryTextBrush = CreateFrozenBrush(Color.FromRgb(0x80, 0x80, 0x80));
+    private static readonly SolidColorBrush _majorTickBrush = CreateFrozenBrush(Color.FromRgb(0x60, 0x60, 0x60));
+    private static readonly SolidColorBrush _minorTickBrush = CreateFrozenBrush(Color.FromRgb(0x40, 0x40, 0x40));
+    private static readonly SolidColorBrush _beatTickBrush = CreateFrozenBrush(Color.FromRgb(0x30, 0x30, 0x30));
+
+    private static SolidColorBrush CreateFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
 
     #endregion
 

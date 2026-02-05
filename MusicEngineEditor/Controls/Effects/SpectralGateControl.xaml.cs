@@ -43,8 +43,10 @@ public partial class SpectralGateControl : UserControl
 
     private Shapes.Rectangle[]? _spectrumBars;
     private Shapes.Rectangle[]? _gateActivityBars;
+#pragma warning disable CS0169
     private Shapes.Line? _thresholdLine;
     private PathGeometry? _thresholdCurveGeometry;
+#pragma warning restore CS0169
     private Shapes.Path? _thresholdCurvePath;
 
     private bool _isDrawing;

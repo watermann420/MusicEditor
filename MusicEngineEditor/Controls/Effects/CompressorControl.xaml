@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="600"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>
@@ -165,7 +165,7 @@
 
                 <!-- Gain Reduction Meter Placeholder -->
                 <TextBlock Text="GAIN REDUCTION" Style="{StaticResource HeaderStyle}"/>
-                <Border Background="#0A0A0A" CornerRadius="2" Height="20" Margin="0,4">
+                <Border Background="{DynamicResource InputBackgroundBrush}" CornerRadius="2" Height="20" Margin="0,4">
                     <Border x:Name="GainReductionMeter" Background="#FF6B6B"
                             HorizontalAlignment="Left" Width="0" CornerRadius="2"/>
                 </Border>

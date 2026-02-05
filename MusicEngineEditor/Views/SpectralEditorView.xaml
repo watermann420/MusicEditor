@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200"
              d:DataContext="{d:DesignInstance Type=vm:SpectralEditorViewModel}"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Theme Colors -->
@@ -405,7 +405,7 @@
 
                 <!-- Time Ruler -->
                 <Border Grid.Row="0" Grid.Column="1"
-                        Background="#1A1A1A"
+                        Background="{DynamicResource PianoRollBackgroundBrush}"
                         BorderBrush="{StaticResource BorderBrush}"
                         BorderThickness="0,0,0,1">
                     <Canvas x:Name="TimeRulerCanvas" ClipToBounds="True"/>
@@ -413,13 +413,13 @@
 
                 <!-- Corner (empty) -->
                 <Border Grid.Row="0" Grid.Column="0"
-                        Background="#1A1A1A"
+                        Background="{DynamicResource PianoRollBackgroundBrush}"
                         BorderBrush="{StaticResource BorderBrush}"
                         BorderThickness="0,0,1,1"/>
 
                 <!-- Frequency Axis -->
                 <Border Grid.Row="1" Grid.Column="0"
-                        Background="#1A1A1A"
+                        Background="{DynamicResource PianoRollBackgroundBrush}"
                         BorderBrush="{StaticResource BorderBrush}"
                         BorderThickness="0,0,1,0">
                     <Canvas x:Name="FrequencyAxisCanvas" ClipToBounds="True"/>

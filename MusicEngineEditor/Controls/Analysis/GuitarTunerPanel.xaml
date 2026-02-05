@@ -6,32 +6,15 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Analysis"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="400"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinHeight="500"
              MinWidth="320">
 
     <UserControl.Resources>
-        <!-- Theme Colors -->
-        <Color x:Key="BackgroundColor">#0D0D0D</Color>
-        <Color x:Key="PanelColor">#181818</Color>
-        <Color x:Key="AccentColor">#00D9FF</Color>
-        <Color x:Key="SuccessColor">#00FF88</Color>
-        <Color x:Key="WarningColor">#FFB800</Color>
-        <Color x:Key="ErrorColor">#FF4757</Color>
-        <Color x:Key="TextColor">#E0E0E0</Color>
-        <Color x:Key="BorderColor">#2A2A2A</Color>
-        <Color x:Key="DimTextColor">#808080</Color>
-
-        <!-- Brushes -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
-        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-        <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-        <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
-        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
-        <SolidColorBrush x:Key="DimTextBrush" Color="{StaticResource DimTextColor}"/>
+        <!-- Local Brush Aliases referencing global theme -->
+        <SolidColorBrush x:Key="PanelBrush" Color="{DynamicResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{DynamicResource ForegroundColor}"/>
+        <SolidColorBrush x:Key="DimTextBrush" Color="{DynamicResource SecondaryForegroundColor}"/>
 
         <!-- Tuner Arc Gradient -->
         <LinearGradientBrush x:Key="TunerArcGradient" StartPoint="0,0" EndPoint="1,0">
@@ -284,7 +267,7 @@
             <!-- Strobe Display (visible when strobe mode enabled) -->
             <Border x:Name="StrobePanel"
                     Grid.Row="2"
-                    Background="#1A1A1A"
+                    Background="{DynamicResource PianoRollBackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="0,0,0,1"
                     Height="60"
@@ -479,7 +462,7 @@
                     </Grid>
 
                     <Border Grid.Row="1"
-                            Background="#1A1A1A"
+                            Background="{DynamicResource PianoRollBackgroundBrush}"
                             CornerRadius="4"
                             Height="12">
                         <Grid>

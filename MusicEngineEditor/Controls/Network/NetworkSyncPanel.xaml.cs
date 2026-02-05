@@ -40,6 +40,15 @@ public partial class NetworkSyncPanel : UserControl, INotifyPropertyChanged
     private static readonly SolidColorBrush ErrorBrush = new(Color.FromRgb(0xFF, 0x47, 0x57));
     private static readonly SolidColorBrush AccentBrush = new(Color.FromRgb(0x00, 0xD9, 0xFF));
 
+    static NetworkSyncPanel()
+    {
+        DisconnectedBrush.Freeze();
+        ConnectedBrush.Freeze();
+        WarningBrush.Freeze();
+        ErrorBrush.Freeze();
+        AccentBrush.Freeze();
+    }
+
     #endregion
 
     #region Dependency Properties

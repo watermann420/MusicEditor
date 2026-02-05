@@ -469,7 +469,7 @@
 
                 <!-- KICK Tab -->
                 <TabItem Header="KICK">
-                    <Border Background="#141414" BorderBrush="{StaticResource KickBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
+                    <Border Background="{DynamicResource SurfaceBackgroundBrush}" BorderBrush="{StaticResource KickBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -555,7 +555,7 @@
 
                 <!-- SNARE Tab -->
                 <TabItem Header="SNARE">
-                    <Border Background="#141414" BorderBrush="{StaticResource SnareBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
+                    <Border Background="{DynamicResource SurfaceBackgroundBrush}" BorderBrush="{StaticResource SnareBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -611,7 +611,7 @@
 
                 <!-- HI-HAT Tab -->
                 <TabItem Header="HI-HAT">
-                    <Border Background="#141414" BorderBrush="{StaticResource HiHatBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
+                    <Border Background="{DynamicResource SurfaceBackgroundBrush}" BorderBrush="{StaticResource HiHatBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -679,7 +679,7 @@
 
                 <!-- CLAP Tab -->
                 <TabItem Header="CLAP">
-                    <Border Background="#141414" BorderBrush="{StaticResource ClapBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
+                    <Border Background="{DynamicResource SurfaceBackgroundBrush}" BorderBrush="{StaticResource ClapBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -725,7 +725,7 @@
 
                 <!-- TOM Tab -->
                 <TabItem Header="TOM">
-                    <Border Background="#141414" BorderBrush="{StaticResource TomBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
+                    <Border Background="{DynamicResource SurfaceBackgroundBrush}" BorderBrush="{StaticResource TomBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -761,7 +761,7 @@
 
                 <!-- CYMBAL Tab -->
                 <TabItem Header="CYMBAL">
-                    <Border Background="#141414" BorderBrush="{StaticResource CymbalBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
+                    <Border Background="{DynamicResource SurfaceBackgroundBrush}" BorderBrush="{StaticResource CymbalBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,4,4" Padding="16">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>

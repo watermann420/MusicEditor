@@ -43,6 +43,19 @@ public partial class SidechainMatrixControl : UserControl
     private static readonly SolidColorBrush TextPrimaryBrush = new(Color.FromRgb(0xE0, 0xE0, 0xE0));
     private static readonly SolidColorBrush TextSecondaryBrush = new(Color.FromRgb(0x80, 0x80, 0x80));
 
+    static SidechainMatrixControl()
+    {
+        BackgroundBrush.Freeze();
+        GridLineBrush.Freeze();
+        HeaderBackgroundBrush.Freeze();
+        DiagonalBrush.Freeze();
+        ActiveBrush.Freeze();
+        AccentBrush.Freeze();
+        HoverBrush.Freeze();
+        TextPrimaryBrush.Freeze();
+        TextSecondaryBrush.Freeze();
+    }
+
     /// <summary>
     /// Creates a new SidechainMatrixControl.
     /// </summary>

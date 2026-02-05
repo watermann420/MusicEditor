@@ -244,7 +244,7 @@
                 <Separator/>
                 <MenuItem Header="Delete" Click="DeleteMenuItem_Click" InputGestureText="Del">
                     <MenuItem.Icon>
-                        <TextBlock Text="X" FontSize="10" FontWeight="Bold" Foreground="#FF4757"/>
+                        <TextBlock Text="X" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource ErrorBrush}"/>
                     </MenuItem.Icon>
                 </MenuItem>
             </ContextMenu>

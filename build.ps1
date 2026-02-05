@@ -117,12 +117,12 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "      MusicEngineEditor packages restored" -ForegroundColor Green
 
-# Build VstBridge Native (C++) if not skipped
+# Build CppLayer Native (C++) if not skipped
 Write-Host ""
 if (-not $SkipNative) {
-    Write-Host "[5/$totalSteps] Building MusicEngine.VstBridge Native (C++)..." -ForegroundColor Yellow
-    $vstBridgePath = "$scriptDir\..\MusicEngine\MusicEngine.VstBridge"
-    $vstBridgeBuildPath = "$vstBridgePath\build_cmake"
+    Write-Host "[5/$totalSteps] Building MusicEngine.CppLayer Native (C++)..." -ForegroundColor Yellow
+    $cppLayerPath = "$scriptDir\..\MusicEngine\MusicEngine.CppLayer"
+    $cppLayerBuildPath = "$cppLayerPath\build_cmake"
 
     # Check if CMake is available
     $cmakeAvailable = $false
@@ -136,20 +136,20 @@ if (-not $SkipNative) {
         Write-Host "      CMake not found - skipping native build" -ForegroundColor Yellow
     }
 
-    if ($cmakeAvailable -and (Test-Path "$vstBridgePath\CMakeLists.txt")) {
+    if ($cmakeAvailable -and (Test-Path "$cppLayerPath\CMakeLists.txt")) {
         # Create build directory
-        if (-not (Test-Path $vstBridgeBuildPath)) {
-            New-Item -ItemType Directory -Path $vstBridgeBuildPath -Force | Out-Null
+        if (-not (Test-Path $cppLayerBuildPath)) {
+            New-Item -ItemType Directory -Path $cppLayerBuildPath -Force | Out-Null
         }
 
         # Configure with CMake
         Write-Host "      Configuring CMake..." -ForegroundColor Gray
-        Push-Location $vstBridgeBuildPath
-        $cmakeConfigResult = cmake -S "$vstBridgePath" -B . -A x64 2>&1
+        Push-Location $cppLayerBuildPath
+        $cmakeConfigResult = cmake -S "$cppLayerPath" -B . -A x64 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Host "WARNING: CMake configuration failed" -ForegroundColor Yellow
             Write-Host $cmakeConfigResult -ForegroundColor Gray
-            Write-Host "      Native VST Bridge will not be built" -ForegroundColor Yellow
+            Write-Host "      Native CppLayer will not be built" -ForegroundColor Yellow
         } else {
             # Build with CMake
             Write-Host "      Building native library..." -ForegroundColor Gray
@@ -157,13 +157,13 @@ if (-not $SkipNative) {
             if ($LASTEXITCODE -ne 0) {
                 Write-Host "WARNING: Native build failed" -ForegroundColor Yellow
                 Write-Host $cmakeBuildResult -ForegroundColor Gray
-                Write-Host "      Continuing without native VST Bridge" -ForegroundColor Yellow
+                Write-Host "      Continuing without native CppLayer" -ForegroundColor Yellow
             } else {
-                Write-Host "      VstBridge Native built successfully" -ForegroundColor Green
+                Write-Host "      CppLayer Native built successfully" -ForegroundColor Green
 
                 # Copy DLL to managed project runtimes folder
-                $nativeDll = "$vstBridgePath\build\x64\MusicEngine.VstBridge.Native.dll"
-                $runtimeDir = "$vstBridgePath\managed\runtimes\win-x64\native"
+                $nativeDll = "$cppLayerPath\native\x64\MusicEngine.CppLayer.Native.dll"
+                $runtimeDir = "$cppLayerPath\managed\runtimes\win-x64\native"
                 if (Test-Path $nativeDll) {
                     if (-not (Test-Path $runtimeDir)) {
                         New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
@@ -175,8 +175,8 @@ if (-not $SkipNative) {
         }
         Pop-Location
     } else {
-        if (-not (Test-Path "$vstBridgePath\CMakeLists.txt")) {
-            Write-Host "      VstBridge CMakeLists.txt not found - skipping native build" -ForegroundColor Gray
+        if (-not (Test-Path "$cppLayerPath\CMakeLists.txt")) {
+            Write-Host "      CppLayer CMakeLists.txt not found - skipping native build" -ForegroundColor Gray
         }
     }
 

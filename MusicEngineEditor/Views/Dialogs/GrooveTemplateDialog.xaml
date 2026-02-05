@@ -159,7 +159,7 @@
 
                 <!-- Timing Deviation Graph -->
                 <Border Grid.Row="1"
-                        Background="#0D0D0D"
+                        Background="{DynamicResource BackgroundBrush}"
                         CornerRadius="4"
                         Margin="0,0,0,12">
                     <Canvas x:Name="DeviationCanvas"

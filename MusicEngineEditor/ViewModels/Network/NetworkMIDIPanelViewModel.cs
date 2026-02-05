@@ -366,12 +366,16 @@ public partial class NetworkMIDIPanelViewModel : ViewModelBase
     /// <summary>
     /// Raised when MIDI data is received.
     /// </summary>
+#pragma warning disable CS0067
     public event EventHandler<byte[]>? MidiDataReceived;
+#pragma warning restore CS0067
 
     /// <summary>
     /// Raised when MIDI data is sent.
     /// </summary>
+#pragma warning disable CS0067
     public event EventHandler<byte[]>? MidiDataSent;
+#pragma warning restore CS0067
 
     #endregion
 

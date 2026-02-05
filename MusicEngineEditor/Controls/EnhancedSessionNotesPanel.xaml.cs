@@ -133,13 +133,13 @@ public partial class EnhancedSessionNotesPanel : UserControl
         UpdateNoteCount();
     }
 
-    public IReadOnlyList<EnhancedSessionNote> GetAllNotes() => _allNotes.ToList().AsReadOnly();
+    public IReadOnlyList<EnhancedSessionNote> GetAllNotes() => _allNotes.ToList();
 
     public IReadOnlyList<EnhancedSessionNote> GetNotesByCategory(string category) =>
-        _allNotes.Where(n => n.Category == category).ToList().AsReadOnly();
+        _allNotes.Where(n => n.Category == category).ToList();
 
     public IReadOnlyList<EnhancedSessionNote> GetNotesInRange(TimeSpan start, TimeSpan end) =>
-        _allNotes.Where(n => n.Timestamp >= start && n.Timestamp <= end).ToList().AsReadOnly();
+        _allNotes.Where(n => n.Timestamp >= start && n.Timestamp <= end).ToList();
 
     public void ClearAllNotes()
     {

@@ -217,7 +217,7 @@ public partial class GranularSynthControl : UserControl
         var path = new Path
         {
             Data = geometry,
-            Fill = (Brush)FindResource("WaveformBrush"),
+            Fill = FindResource("WaveformBrush") as Brush ?? Brushes.Transparent,
             Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)),
             StrokeThickness = 0.5,
             Opacity = 0.8

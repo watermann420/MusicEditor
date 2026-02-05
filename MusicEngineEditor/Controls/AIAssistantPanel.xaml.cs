@@ -80,7 +80,9 @@ public partial class AIAssistantPanel : UserControl
     private readonly List<string> _chordProgression = new();
     private int _currentKeyRoot = 0; // C
     private bool _isMinor = false;
+#pragma warning disable CS0414 // Field is assigned but never read - reserved for future melody playback state checks
     private bool _isMelodyPlaying = false;
+#pragma warning restore CS0414
     private bool _isMastering = false;
 
     /// <summary>

@@ -7,7 +7,7 @@
              xmlns:vm="clr-namespace:MusicEngineEditor.ViewModels.Network"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="450"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Converters -->
@@ -206,7 +206,7 @@
 
                     <!-- Last Value -->
                     <Border Grid.Column="2"
-                            Background="#252525"
+                            Background="{DynamicResource ElementHoverBrush}"
                             CornerRadius="3"
                             Padding="6,2"
                             VerticalAlignment="Center">

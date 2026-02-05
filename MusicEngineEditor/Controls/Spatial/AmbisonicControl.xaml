@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Spatial"
              mc:Ignorable="d"
              d:DesignHeight="650" d:DesignWidth="900"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Colors -->
@@ -222,7 +222,7 @@
                         </Grid.RowDefinitions>
 
                         <!-- 3D Position Visualization -->
-                        <Border Grid.Row="0" Background="#0A0A0A" CornerRadius="4" Margin="8">
+                        <Border Grid.Row="0" Background="{DynamicResource InputBackgroundBrush}" CornerRadius="4" Margin="8">
                             <Grid x:Name="SpatialVisualizationContainer"
                                   MouseLeftButtonDown="SpatialVisualization_MouseLeftButtonDown"
                                   MouseMove="SpatialVisualization_MouseMove"
@@ -265,7 +265,7 @@
                         </Border>
 
                         <!-- B-Format Channel Meters -->
-                        <Border Grid.Row="1" Background="#0A0A0A" CornerRadius="4" Margin="8,0,8,8" Padding="12,8">
+                        <Border Grid.Row="1" Background="{DynamicResource InputBackgroundBrush}" CornerRadius="4" Margin="8,0,8,8" Padding="12,8">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -280,7 +280,7 @@
                                                HorizontalAlignment="Center" FontSize="12"/>
                                     <TextBlock Text="Omni" Foreground="{StaticResource TextDimBrush}"
                                                HorizontalAlignment="Center" FontSize="9"/>
-                                    <Border Background="#1A1A1A" CornerRadius="2" Margin="0,4,0,0" Height="80">
+                                    <Border Background="{DynamicResource PianoRollBackgroundBrush}" CornerRadius="2" Margin="0,4,0,0" Height="80">
                                         <Grid>
                                             <Rectangle x:Name="WMeter" Fill="{StaticResource WChannelBrush}"
                                                        VerticalAlignment="Bottom" RadiusX="2" RadiusY="2"/>
@@ -296,7 +296,7 @@
                                                HorizontalAlignment="Center" FontSize="12"/>
                                     <TextBlock Text="Front" Foreground="{StaticResource TextDimBrush}"
                                                HorizontalAlignment="Center" FontSize="9"/>
-                                    <Border Background="#1A1A1A" CornerRadius="2" Margin="0,4,0,0" Height="80">
+                                    <Border Background="{DynamicResource PianoRollBackgroundBrush}" CornerRadius="2" Margin="0,4,0,0" Height="80">
                                         <Grid>
                                             <Rectangle x:Name="XMeter" Fill="{StaticResource XChannelBrush}"
                                                        VerticalAlignment="Bottom" RadiusX="2" RadiusY="2"/>
@@ -312,7 +312,7 @@
                                                HorizontalAlignment="Center" FontSize="12"/>
                                     <TextBlock Text="Left" Foreground="{StaticResource TextDimBrush}"
                                                HorizontalAlignment="Center" FontSize="9"/>
-                                    <Border Background="#1A1A1A" CornerRadius="2" Margin="0,4,0,0" Height="80">
+                                    <Border Background="{DynamicResource PianoRollBackgroundBrush}" CornerRadius="2" Margin="0,4,0,0" Height="80">
                                         <Grid>
                                             <Rectangle x:Name="YMeter" Fill="{StaticResource YChannelBrush}"
                                                        VerticalAlignment="Bottom" RadiusX="2" RadiusY="2"/>
@@ -328,7 +328,7 @@
                                                HorizontalAlignment="Center" FontSize="12"/>
                                     <TextBlock Text="Up" Foreground="{StaticResource TextDimBrush}"
                                                HorizontalAlignment="Center" FontSize="9"/>
-                                    <Border Background="#1A1A1A" CornerRadius="2" Margin="0,4,0,0" Height="80">
+                                    <Border Background="{DynamicResource PianoRollBackgroundBrush}" CornerRadius="2" Margin="0,4,0,0" Height="80">
                                         <Grid>
                                             <Rectangle x:Name="ZMeter" Fill="{StaticResource ZChannelBrush}"
                                                        VerticalAlignment="Bottom" RadiusX="2" RadiusY="2"/>

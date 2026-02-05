@@ -52,6 +52,13 @@ public class ModEditorAmountToColorConverter : IValueConverter
     private static readonly SolidColorBrush NegativeBrush = new(Color.FromRgb(0xFF, 0x47, 0x57));
     private static readonly SolidColorBrush NeutralBrush = new(Color.FromRgb(0x80, 0x80, 0x80));
 
+    static ModEditorAmountToColorConverter()
+    {
+        PositiveBrush.Freeze();
+        NegativeBrush.Freeze();
+        NeutralBrush.Freeze();
+    }
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is double amount)
@@ -99,6 +106,12 @@ public class ModEditorSourceActiveToColorConverter : IValueConverter
 {
     private static readonly SolidColorBrush ActiveBrush = new(Color.FromRgb(0x25, 0x25, 0x25));
     private static readonly SolidColorBrush InactiveBrush = new(Color.FromRgb(0x1E, 0x1E, 0x1E));
+
+    static ModEditorSourceActiveToColorConverter()
+    {
+        ActiveBrush.Freeze();
+        InactiveBrush.Freeze();
+    }
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {

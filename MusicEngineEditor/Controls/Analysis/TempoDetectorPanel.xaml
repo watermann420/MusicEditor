@@ -6,35 +6,20 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Analysis"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="450"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinHeight="500"
              MinWidth="350">
 
     <UserControl.Resources>
-        <!-- Theme Colors -->
-        <Color x:Key="BackgroundColor">#0D0D0D</Color>
-        <Color x:Key="PanelColor">#181818</Color>
-        <Color x:Key="AccentColor">#00D9FF</Color>
-        <Color x:Key="SuccessColor">#00FF88</Color>
-        <Color x:Key="WarningColor">#FFB800</Color>
-        <Color x:Key="ErrorColor">#FF4757</Color>
-        <Color x:Key="TextColor">#E0E0E0</Color>
-        <Color x:Key="BorderColor">#2A2A2A</Color>
-        <Color x:Key="DimTextColor">#808080</Color>
+        <!-- Local Colors (not in global theme) -->
         <Color x:Key="BeatColor">#00D9FF</Color>
         <Color x:Key="DownbeatColor">#00FF88</Color>
         <Color x:Key="WaveformColor">#3A3A3A</Color>
 
-        <!-- Brushes -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
-        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-        <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-        <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
-        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
-        <SolidColorBrush x:Key="DimTextBrush" Color="{StaticResource DimTextColor}"/>
+        <!-- Local Brush Aliases referencing global theme -->
+        <SolidColorBrush x:Key="PanelBrush" Color="{DynamicResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{DynamicResource ForegroundColor}"/>
+        <SolidColorBrush x:Key="DimTextBrush" Color="{DynamicResource SecondaryForegroundColor}"/>
         <SolidColorBrush x:Key="BeatBrush" Color="{StaticResource BeatColor}"/>
         <SolidColorBrush x:Key="DownbeatBrush" Color="{StaticResource DownbeatColor}"/>
         <SolidColorBrush x:Key="WaveformBrush" Color="{StaticResource WaveformColor}"/>
@@ -177,7 +162,7 @@
                     <ControlTemplate TargetType="Slider">
                         <Grid>
                             <Border Height="4"
-                                    Background="#2A2A2A"
+                                    Background="{DynamicResource BorderBrush}"
                                     CornerRadius="2"
                                     VerticalAlignment="Center"/>
                             <Track x:Name="PART_Track">
@@ -336,7 +321,7 @@
                                    Foreground="{StaticResource DimTextBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,4"/>
-                        <Border Background="#1A1A1A"
+                        <Border Background="{DynamicResource PianoRollBackgroundBrush}"
                                 CornerRadius="4"
                                 Height="80"
                                 Width="24"
@@ -422,7 +407,7 @@
 
             <!-- Beat Grid Visualization -->
             <Border Grid.Row="3"
-                    Background="#1A1A1A"
+                    Background="{DynamicResource PianoRollBackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1"
                     CornerRadius="4"
@@ -481,7 +466,7 @@
                     </Grid>
 
                     <Border Grid.Row="1"
-                            Background="#1A1A1A"
+                            Background="{DynamicResource PianoRollBackgroundBrush}"
                             CornerRadius="4">
                         <Canvas x:Name="VariationGraphCanvas"
                                 ClipToBounds="True"
@@ -603,7 +588,7 @@
                             <TextBox x:Name="MinBpmTextBox"
                                      Text="60"
                                      Width="50"
-                                     Background="#2A2A2A"
+                                     Background="{DynamicResource BorderBrush}"
                                      Foreground="{StaticResource TextBrush}"
                                      BorderBrush="{StaticResource BorderBrush}"
                                      Padding="4,2"
@@ -614,7 +599,7 @@
                             <TextBox x:Name="MaxBpmTextBox"
                                      Text="200"
                                      Width="50"
-                                     Background="#2A2A2A"
+                                     Background="{DynamicResource BorderBrush}"
                                      Foreground="{StaticResource TextBrush}"
                                      BorderBrush="{StaticResource BorderBrush}"
                                      Padding="4,2"

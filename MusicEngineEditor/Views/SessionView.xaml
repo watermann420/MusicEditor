@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="900"
              d:DataContext="{d:DesignInstance Type=vm:SessionViewModel}"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.InputBindings>
         <KeyBinding Key="Space" Command="{Binding StartCommand}"/>

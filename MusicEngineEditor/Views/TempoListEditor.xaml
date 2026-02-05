@@ -216,7 +216,7 @@
                         <DataTemplate>
                             <ComboBox SelectedValue="{Binding CurveType, UpdateSourceTrigger=PropertyChanged}"
                                       SelectedValuePath="Tag"
-                                      Background="#0D0D0D"
+                                      Background="{DynamicResource BackgroundBrush}"
                                       Foreground="White">
                                 <ComboBoxItem Content="Linear" Tag="Linear"/>
                                 <ComboBoxItem Content="S-Curve" Tag="SCurve"/>

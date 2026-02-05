@@ -127,7 +127,7 @@
                     Width="65"
                     Height="12"
                     Background="#080808"
-                    BorderBrush="#2A2A2A"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1"
                     CornerRadius="3"
                     VerticalAlignment="Center">
@@ -187,7 +187,7 @@
                     Width="55"
                     Height="12"
                     Background="#080808"
-                    BorderBrush="#2A2A2A"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1"
                     CornerRadius="3"
                     VerticalAlignment="Center">
@@ -247,7 +247,7 @@
                     Width="35"
                     Height="12"
                     Background="#080808"
-                    BorderBrush="#2A2A2A"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1"
                     CornerRadius="3"
                     VerticalAlignment="Center">
@@ -287,7 +287,7 @@
                                Margin="0,0,4,0"/>
                     <Border x:Name="DiskIndicator"
                             Style="{StaticResource AsioStatusStyle}"
-                            Background="#333333">
+                            Background="{DynamicResource SubtleBorderBrush}">
                         <Border.Effect>
                             <DropShadowEffect x:Name="DiskGlow"
                                               Color="{StaticResource DiskActiveColor}"

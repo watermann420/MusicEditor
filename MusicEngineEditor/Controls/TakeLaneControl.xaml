@@ -143,7 +143,7 @@
                                VerticalAlignment="Center"/>
                     <TextBlock x:Name="TakeCountText"
                                Text=" (0 takes)"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                VerticalAlignment="Center"
                                Margin="4,0,0,0"/>
                 </StackPanel>
@@ -259,7 +259,7 @@
                                             <TextBlock Grid.Column="0"
                                                        Text="{Binding TimeInfo}"
                                                        FontSize="10"
-                                                       Foreground="#808080"/>
+                                                       Foreground="{DynamicResource SecondaryForegroundBrush}"/>
 
                                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                 <Button Content="Use"
@@ -356,14 +356,14 @@
                 <TextBlock x:Name="CompStatusText"
                            Grid.Column="0"
                            Text="No comp regions selected"
-                           Foreground="#808080"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
                            FontSize="11"
                            VerticalAlignment="Center"/>
 
                 <!-- Zoom Controls -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <TextBlock Text="Zoom:"
-                               Foreground="#808080"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
                                FontSize="11"
                                VerticalAlignment="Center"
                                Margin="0,0,4,0"/>

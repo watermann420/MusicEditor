@@ -133,7 +133,7 @@ public partial class MidiMonitorPanel : UserControl, INotifyPropertyChanged
                 Height = 18,
                 CornerRadius = new CornerRadius(3),
                 Background = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x2A)),
-                BorderBrush = (Brush)FindResource("BorderBrush"),
+                BorderBrush = FindResource("BorderBrush") as Brush ?? Brushes.Transparent,
                 BorderThickness = new Thickness(1),
                 Margin = new Thickness(1),
                 ToolTip = $"Channel {channel}: No Activity",

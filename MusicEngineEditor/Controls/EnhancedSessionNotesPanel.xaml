@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="400"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -104,7 +104,7 @@
 
             <!-- Header -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,10">
@@ -123,7 +123,7 @@
                         <TextBlock x:Name="NoteCountText"
                                    Text=" (0)"
                                    FontSize="12"
-                                   Foreground="#808080"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
 
@@ -144,7 +144,7 @@
 
             <!-- Search and Filter -->
             <Border Grid.Row="1"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     Padding="12,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -153,7 +153,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Search Box -->
-                    <Border Background="#141414"
+                    <Border Background="{DynamicResource ToolbarBackgroundBrush}"
                             BorderBrush="#252525"
                             BorderThickness="1"
                             CornerRadius="4"
@@ -162,7 +162,7 @@
                         <TextBox x:Name="SearchBox"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 Foreground="#E0E0E0"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  CaretBrush="#E0E0E0"
                                  FontSize="12"
                                  TextChanged="SearchBox_TextChanged"/>
@@ -173,7 +173,7 @@
                               Grid.Column="1"
                               Width="100"
                               Background="#333337"
-                              Foreground="#E0E0E0"
+                              Foreground="{DynamicResource ForegroundBrush}"
                               BorderBrush="#252525"
                               SelectionChanged="CategoryFilterCombo_SelectionChanged">
                         <ComboBoxItem Content="All" IsSelected="True"/>
@@ -189,7 +189,7 @@
 
             <!-- Tag Filter -->
             <Border Grid.Row="2"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,0,0,1"
                     Padding="12,6">
@@ -307,7 +307,7 @@
                                     <!-- Content (Rich Text) -->
                                     <TextBlock Grid.Row="2"
                                                Text="{Binding Content}"
-                                               Foreground="#E0E0E0"
+                                               Foreground="{DynamicResource ForegroundBrush}"
                                                FontSize="12"
                                                TextWrapping="Wrap"
                                                MaxHeight="80"
@@ -331,7 +331,7 @@
                                                         Margin="0,0,4,2">
                                                     <TextBlock Text="{Binding}"
                                                                FontSize="10"
-                                                               Foreground="#808080"/>
+                                                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                                                 </Border>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -370,7 +370,7 @@
 
             <!-- Add Note Panel -->
             <Border Grid.Row="4"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="#252525"
                     BorderThickness="0,1,0,0"
                     Padding="12">
@@ -385,8 +385,8 @@
                     <!-- Title -->
                     <TextBox x:Name="TitleTextBox"
                              Grid.Row="0"
-                             Background="#141414"
-                             Foreground="#E0E0E0"
+                             Background="{DynamicResource ToolbarBackgroundBrush}"
+                             Foreground="{DynamicResource ForegroundBrush}"
                              BorderBrush="#252525"
                              BorderThickness="1"
                              Padding="8,6"
@@ -403,7 +403,7 @@
                         <ComboBox x:Name="CategoryCombo"
                                   Width="100"
                                   Background="#333337"
-                                  Foreground="#E0E0E0"
+                                  Foreground="{DynamicResource ForegroundBrush}"
                                   BorderBrush="#252525">
                             <ComboBoxItem Content="Idea" Tag="Idea" IsSelected="True"/>
                             <ComboBoxItem Content="To-Do" Tag="Todo"/>
@@ -415,8 +415,8 @@
 
                         <TextBox x:Name="TagsTextBox"
                                  Grid.Column="1"
-                                 Background="#141414"
-                                 Foreground="#E0E0E0"
+                                 Background="{DynamicResource ToolbarBackgroundBrush}"
+                                 Foreground="{DynamicResource ForegroundBrush}"
                                  BorderBrush="#252525"
                                  BorderThickness="1"
                                  Padding="8,6"
@@ -428,8 +428,8 @@
                     <!-- Content -->
                     <TextBox x:Name="ContentTextBox"
                              Grid.Row="2"
-                             Background="#141414"
-                             Foreground="#E0E0E0"
+                             Background="{DynamicResource ToolbarBackgroundBrush}"
+                             Foreground="{DynamicResource ForegroundBrush}"
                              BorderBrush="#252525"
                              BorderThickness="1"
                              Padding="8,6"

@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Network"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="400"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Dark theme colors -->
@@ -419,7 +419,7 @@
                             </Grid>
 
                             <!-- Link Status -->
-                            <Border Background="#1A1A1A"
+                            <Border Background="{DynamicResource PianoRollBackgroundBrush}"
                                     CornerRadius="4"
                                     Padding="10"
                                     Margin="0,0,0,12">
@@ -676,7 +676,7 @@
                                        FontSize="10"
                                        Margin="0,0,0,4"/>
 
-                            <Border Background="#1A1A1A"
+                            <Border Background="{DynamicResource PianoRollBackgroundBrush}"
                                     CornerRadius="4"
                                     Padding="0"
                                     Height="120"
@@ -814,7 +814,7 @@
                             </StackPanel>
 
                             <!-- Timecode Display -->
-                            <Border Background="#1A1A1A"
+                            <Border Background="{DynamicResource PianoRollBackgroundBrush}"
                                     CornerRadius="4"
                                     Padding="12"
                                     Margin="0,0,0,12">

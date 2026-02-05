@@ -6,7 +6,7 @@
              xmlns:synths="clr-namespace:MusicEngineEditor.Controls.Synths"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Colors -->

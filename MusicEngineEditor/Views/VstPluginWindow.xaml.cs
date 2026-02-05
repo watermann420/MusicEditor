@@ -204,8 +204,8 @@ public partial class VstPluginWindow : Window
         if (_isBypassed)
         {
             // Active bypass state - orange/warning colors
-            BypassButtonBorder.Background = (Brush)FindResource("BypassButtonActiveBrush");
-            BypassButtonBorder.BorderBrush = (Brush)FindResource("BypassBorderBrush");
+            BypassButtonBorder.Background = FindResource("BypassButtonActiveBrush") as Brush ?? Brushes.Transparent;
+            BypassButtonBorder.BorderBrush = FindResource("BypassBorderBrush") as Brush ?? Brushes.Transparent;
             BypassButton.Foreground = Brushes.White;
 
             // Show bypass overlay
@@ -224,8 +224,8 @@ public partial class VstPluginWindow : Window
         {
             // Normal state
             BypassButtonBorder.Background = Brushes.Transparent;
-            BypassButtonBorder.BorderBrush = (Brush)FindResource("SubtleBorderBrush");
-            BypassButton.Foreground = (Brush)FindResource("ForegroundBrush");
+            BypassButtonBorder.BorderBrush = FindResource("SubtleBorderBrush") as Brush ?? Brushes.Transparent;
+            BypassButton.Foreground = FindResource("ForegroundBrush") as Brush ?? Brushes.Transparent;
 
             // Hide bypass overlay
             BypassOverlay.Visibility = Visibility.Collapsed;

@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Spatial"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="450"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Colors -->

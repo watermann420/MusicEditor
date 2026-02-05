@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:ModularSynthViewModel}"
              d:DesignWidth="1200" d:DesignHeight="800"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              Focusable="True">
 
     <UserControl.Resources>
@@ -209,7 +209,7 @@
                 <!-- Right Section -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                     <!-- Connection Status -->
-                    <Border Background="#2A2A2A"
+                    <Border Background="{DynamicResource BorderBrush}"
                             CornerRadius="4"
                             Padding="8,4"
                             Visibility="{Binding IsConnecting, Converter={StaticResource BoolToVisibility}}">
@@ -246,7 +246,7 @@
 
                 <!-- Palette Header -->
                 <Border Grid.Row="0"
-                        Background="#1A1A1A"
+                        Background="{DynamicResource PianoRollBackgroundBrush}"
                         Padding="12,8"
                         BorderBrush="{StaticResource BorderBrush}"
                         BorderThickness="0,0,0,1">
@@ -537,7 +537,7 @@
                 </Canvas>
 
                 <!-- Legend -->
-                <Border Background="#181818"
+                <Border Background="{DynamicResource PanelBackgroundBrush}"
                         CornerRadius="6"
                         Padding="12,8"
                         Margin="16"
@@ -551,7 +551,7 @@
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,6"/>
                         <StackPanel Orientation="Horizontal" Margin="0,2">
-                            <Ellipse Width="10" Height="10" Fill="#00D9FF" Margin="0,0,6,0"/>
+                            <Ellipse Width="10" Height="10" Fill="{DynamicResource AccentBrush}" Margin="0,0,6,0"/>
                             <TextBlock Text="Audio" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,2">
@@ -559,7 +559,7 @@
                             <TextBlock Text="CV (Control)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,2">
-                            <Ellipse Width="10" Height="10" Fill="#00FF88" Margin="0,0,6,0"/>
+                            <Ellipse Width="10" Height="10" Fill="{DynamicResource SuccessBrush}" Margin="0,0,6,0"/>
                             <TextBlock Text="Gate" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,2">

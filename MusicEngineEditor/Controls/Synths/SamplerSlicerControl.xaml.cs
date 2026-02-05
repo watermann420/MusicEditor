@@ -221,7 +221,7 @@ public partial class SamplerSlicerControl : UserControl
         var path = new System.Windows.Shapes.Path
         {
             Data = geometry,
-            Fill = (Brush)FindResource("WaveformGradientBrush"),
+            Fill = FindResource("WaveformGradientBrush") as Brush ?? Brushes.Transparent,
             Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88)),
             StrokeThickness = 0.5,
             Opacity = 0.8
@@ -266,8 +266,8 @@ public partial class SamplerSlicerControl : UserControl
                 X2 = xPos,
                 Y2 = height,
                 Stroke = isSelected
-                    ? (Brush)FindResource("SelectedSliceBrush")
-                    : (Brush)FindResource("SliceBrush"),
+                    ? FindResource("SelectedSliceBrush") as Brush ?? Brushes.Transparent
+                    : FindResource("SliceBrush") as Brush ?? Brushes.Transparent,
                 StrokeThickness = isSelected ? 2 : 1,
                 StrokeDashArray = new DoubleCollection(new[] { 4.0, 2.0 })
             };
@@ -279,8 +279,8 @@ public partial class SamplerSlicerControl : UserControl
             {
                 Text = sliceVm.Index.ToString(),
                 Foreground = isSelected
-                    ? (Brush)FindResource("SelectedSliceBrush")
-                    : (Brush)FindResource("SliceBrush"),
+                    ? FindResource("SelectedSliceBrush") as Brush ?? Brushes.Transparent
+                    : FindResource("SliceBrush") as Brush ?? Brushes.Transparent,
                 FontSize = 9,
                 FontWeight = isSelected ? FontWeights.Bold : FontWeights.Normal
             };

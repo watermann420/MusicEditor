@@ -100,7 +100,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Search Box -->
-                <Border Background="#141414"
+                <Border Background="{DynamicResource ToolbarBackgroundBrush}"
                         BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="4"

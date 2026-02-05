@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="600"
              d:DataContext="{d:DesignInstance Type=viewmodels:SidechainMatrixViewModel}"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinHeight="300"
              MinWidth="400">
 
@@ -247,7 +247,7 @@
             <!-- Matrix Grid -->
             <Border Grid.Row="1"
                     Margin="10"
-                    Background="#141414"
+                    Background="{DynamicResource ToolbarBackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1"
                     CornerRadius="3">

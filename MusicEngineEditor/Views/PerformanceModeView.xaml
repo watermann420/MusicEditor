@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Views"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1000"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.InputBindings>
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding AddSceneCommand}"/>

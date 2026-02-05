@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.MIDI"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="800"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Colors -->
@@ -330,7 +330,7 @@
 
                     <!-- Map Properties -->
                     <Border Grid.Row="0"
-                            Background="#141414"
+                            Background="{DynamicResource ToolbarBackgroundBrush}"
                             Padding="12,10"
                             BorderBrush="{StaticResource BorderBrush}"
                             BorderThickness="0,0,0,1">
@@ -434,7 +434,7 @@
 
                     <!-- Add/Remove Buttons -->
                     <Border Grid.Row="3"
-                            Background="#141414"
+                            Background="{DynamicResource ToolbarBackgroundBrush}"
                             Padding="8"
                             BorderBrush="{StaticResource BorderBrush}"
                             BorderThickness="0,1,0,0">

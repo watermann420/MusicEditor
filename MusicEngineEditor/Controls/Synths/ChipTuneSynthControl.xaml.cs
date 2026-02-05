@@ -400,8 +400,10 @@ public partial class ChipTuneSynthControl : UserControl, INotifyPropertyChanged
         // This event is for potential additional logic like muting
         if (_isInitializing) return;
 
+#if DEBUG
         // Log mixer state if needed for debugging
         System.Diagnostics.Debug.WriteLine($"[ChipTuneSynthControl] Mixer changed: P1={Pulse1Level:F2}, P2={Pulse2Level:F2}, TRI={TriangleLevel:F2}, NSE={NoiseLevel:F2}");
+#endif
     }
 
     private void OnArpeggioPresetClick(object sender, RoutedEventArgs e)

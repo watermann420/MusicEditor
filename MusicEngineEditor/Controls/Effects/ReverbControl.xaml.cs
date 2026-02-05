@@ -40,7 +40,7 @@ public partial class ReverbControl : UserControl
     /// <summary>
     /// Gets or sets the stereo width (0-1).
     /// </summary>
-    public double Width
+    public new double Width
     {
         get => WidthSlider.Value;
         set => WidthSlider.Value = Math.Clamp(value, 0, 1);

@@ -6,32 +6,15 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Analysis"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="450"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinHeight="500"
              MinWidth="350">
 
     <UserControl.Resources>
-        <!-- Theme Colors -->
-        <Color x:Key="BackgroundColor">#0D0D0D</Color>
-        <Color x:Key="PanelColor">#181818</Color>
-        <Color x:Key="AccentColor">#00D9FF</Color>
-        <Color x:Key="SuccessColor">#00FF88</Color>
-        <Color x:Key="WarningColor">#FFB800</Color>
-        <Color x:Key="ErrorColor">#FF4757</Color>
-        <Color x:Key="TextColor">#E0E0E0</Color>
-        <Color x:Key="BorderColor">#2A2A2A</Color>
-        <Color x:Key="DimTextColor">#808080</Color>
-
-        <!-- Brushes -->
-        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
-        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-        <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-        <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
-        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
-        <SolidColorBrush x:Key="DimTextBrush" Color="{StaticResource DimTextColor}"/>
+        <!-- Local Brush Aliases referencing global theme -->
+        <SolidColorBrush x:Key="PanelBrush" Color="{DynamicResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{DynamicResource ForegroundColor}"/>
+        <SolidColorBrush x:Key="DimTextBrush" Color="{DynamicResource SecondaryForegroundColor}"/>
 
         <!-- Circle of Fifths Colors -->
         <LinearGradientBrush x:Key="CircleOfFifthsGradient" StartPoint="0,0" EndPoint="1,1">
@@ -239,7 +222,7 @@
                                    Margin="0,0,8,0"/>
 
                         <Border Grid.Column="1"
-                                Background="#1A1A1A"
+                                Background="{DynamicResource PianoRollBackgroundBrush}"
                                 CornerRadius="4"
                                 Height="8"
                                 VerticalAlignment="Center">
@@ -321,7 +304,7 @@
 
                             <!-- Relative Major/Minor -->
                             <Border Grid.Column="0"
-                                    Background="#1A1A1A"
+                                    Background="{DynamicResource PianoRollBackgroundBrush}"
                                     CornerRadius="4"
                                     Padding="10,8"
                                     Margin="0,0,4,0">
@@ -340,7 +323,7 @@
 
                             <!-- Parallel Major/Minor -->
                             <Border Grid.Column="1"
-                                    Background="#1A1A1A"
+                                    Background="{DynamicResource PianoRollBackgroundBrush}"
                                     CornerRadius="4"
                                     Padding="10,8"
                                     Margin="4,0,0,0">
@@ -485,7 +468,7 @@
 
                         <!-- Timeline Canvas -->
                         <Border Grid.Row="1"
-                                Background="#1A1A1A"
+                                Background="{DynamicResource PianoRollBackgroundBrush}"
                                 CornerRadius="4"
                                 Height="40"
                                 Margin="0,0,0,8">
@@ -500,7 +483,7 @@
                                       MaxHeight="80">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#1A1A1A"
+                                    <Border Background="{DynamicResource PianoRollBackgroundBrush}"
                                             CornerRadius="3"
                                             Padding="8,4"
                                             Margin="0,0,0,4">

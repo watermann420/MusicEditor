@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Effects"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="800"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinHeight="400"
              MinWidth="600">
 
@@ -302,7 +302,7 @@
 
                         <!-- GR Meter -->
                         <Border Grid.Row="1"
-                                Background="#0A0A0A"
+                                Background="{DynamicResource InputBackgroundBrush}"
                                 BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="2"
@@ -441,7 +441,7 @@
 
                         <!-- GR Meter -->
                         <Border Grid.Row="1"
-                                Background="#0A0A0A"
+                                Background="{DynamicResource InputBackgroundBrush}"
                                 BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="2"
@@ -575,7 +575,7 @@
 
                         <!-- GR Meter -->
                         <Border Grid.Row="1"
-                                Background="#0A0A0A"
+                                Background="{DynamicResource InputBackgroundBrush}"
                                 BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="2"
@@ -710,7 +710,7 @@
 
                         <!-- GR Meter -->
                         <Border Grid.Row="1"
-                                Background="#0A0A0A"
+                                Background="{DynamicResource InputBackgroundBrush}"
                                 BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="2"

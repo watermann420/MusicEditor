@@ -6,34 +6,25 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Analysis"
              mc:Ignorable="d"
              d:DesignHeight="650" d:DesignWidth="900"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              MinHeight="500"
              MinWidth="700">
 
     <UserControl.Resources>
-        <!-- Theme Colors -->
-        <Color x:Key="LoopFinderBackgroundColor">#0D0D0D</Color>
-        <Color x:Key="LoopFinderPanelColor">#181818</Color>
-        <Color x:Key="LoopFinderAccentColor">#00D9FF</Color>
-        <Color x:Key="LoopFinderSuccessColor">#00FF88</Color>
-        <Color x:Key="LoopFinderWarningColor">#FFB800</Color>
-        <Color x:Key="LoopFinderErrorColor">#FF4757</Color>
-        <Color x:Key="LoopFinderTextColor">#E0E0E0</Color>
-        <Color x:Key="LoopFinderDimTextColor">#808080</Color>
-        <Color x:Key="LoopFinderBorderColor">#2A2A2A</Color>
+        <!-- Local Colors (not in global theme) -->
         <Color x:Key="LoopFinderLoopRegionColor">#3300D9FF</Color>
         <Color x:Key="LoopFinderMarkerColor">#00D9FF</Color>
 
-        <!-- Brushes -->
-        <SolidColorBrush x:Key="LoopFinderBackgroundBrush" Color="{StaticResource LoopFinderBackgroundColor}"/>
-        <SolidColorBrush x:Key="LoopFinderPanelBrush" Color="{StaticResource LoopFinderPanelColor}"/>
-        <SolidColorBrush x:Key="LoopFinderAccentBrush" Color="{StaticResource LoopFinderAccentColor}"/>
-        <SolidColorBrush x:Key="LoopFinderSuccessBrush" Color="{StaticResource LoopFinderSuccessColor}"/>
-        <SolidColorBrush x:Key="LoopFinderWarningBrush" Color="{StaticResource LoopFinderWarningColor}"/>
-        <SolidColorBrush x:Key="LoopFinderErrorBrush" Color="{StaticResource LoopFinderErrorColor}"/>
-        <SolidColorBrush x:Key="LoopFinderTextBrush" Color="{StaticResource LoopFinderTextColor}"/>
-        <SolidColorBrush x:Key="LoopFinderDimTextBrush" Color="{StaticResource LoopFinderDimTextColor}"/>
-        <SolidColorBrush x:Key="LoopFinderBorderBrush" Color="{StaticResource LoopFinderBorderColor}"/>
+        <!-- Local Brush Aliases referencing global theme -->
+        <SolidColorBrush x:Key="LoopFinderBackgroundBrush" Color="{DynamicResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="LoopFinderPanelBrush" Color="{DynamicResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="LoopFinderAccentBrush" Color="{DynamicResource AccentColor}"/>
+        <SolidColorBrush x:Key="LoopFinderSuccessBrush" Color="{DynamicResource SuccessColor}"/>
+        <SolidColorBrush x:Key="LoopFinderWarningBrush" Color="{DynamicResource WarningColor}"/>
+        <SolidColorBrush x:Key="LoopFinderErrorBrush" Color="{DynamicResource ErrorColor}"/>
+        <SolidColorBrush x:Key="LoopFinderTextBrush" Color="{DynamicResource ForegroundColor}"/>
+        <SolidColorBrush x:Key="LoopFinderDimTextBrush" Color="{DynamicResource SecondaryForegroundColor}"/>
+        <SolidColorBrush x:Key="LoopFinderBorderBrush" Color="{DynamicResource BorderColor}"/>
         <SolidColorBrush x:Key="LoopFinderLoopRegionBrush" Color="{StaticResource LoopFinderLoopRegionColor}"/>
         <SolidColorBrush x:Key="LoopFinderMarkerBrush" Color="{StaticResource LoopFinderMarkerColor}"/>
 
@@ -139,7 +130,7 @@
                     <ControlTemplate TargetType="Slider">
                         <Grid>
                             <Border Height="4" VerticalAlignment="Center"
-                                    Background="#2A2A2A" CornerRadius="2"/>
+                                    Background="{DynamicResource BorderBrush}" CornerRadius="2"/>
                             <Border Height="4" VerticalAlignment="Center"
                                     Background="{StaticResource LoopFinderAccentBrush}"
                                     CornerRadius="2"
@@ -346,7 +337,7 @@
 
             <!-- Waveform Display Area -->
             <Border Grid.Row="1"
-                    Background="#1A1A1A"
+                    Background="{DynamicResource PianoRollBackgroundBrush}"
                     BorderBrush="{StaticResource LoopFinderBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="4"
@@ -405,7 +396,7 @@
                                            FontSize="14"
                                            HorizontalAlignment="Center"
                                            Margin="0,0,0,12"/>
-                                <Border Background="#2A2A2A" CornerRadius="4" Width="200" Height="8">
+                                <Border Background="{DynamicResource BorderBrush}" CornerRadius="4" Width="200" Height="8">
                                     <Border x:Name="ProgressBar"
                                             Background="{StaticResource LoopFinderAccentBrush}"
                                             CornerRadius="4"
@@ -589,7 +580,7 @@
 
                         <!-- List Header -->
                         <Border Grid.Row="0"
-                                Background="#1A1A1A"
+                                Background="{DynamicResource PianoRollBackgroundBrush}"
                                 BorderBrush="{StaticResource LoopFinderBorderBrush}"
                                 BorderThickness="0,0,0,1"
                                 CornerRadius="4,4,0,0"
@@ -691,7 +682,7 @@
 
                         <!-- Preview Header -->
                         <Border Grid.Row="0"
-                                Background="#1A1A1A"
+                                Background="{DynamicResource PianoRollBackgroundBrush}"
                                 BorderBrush="{StaticResource LoopFinderBorderBrush}"
                                 BorderThickness="0,0,0,1"
                                 CornerRadius="4,4,0,0"
@@ -711,7 +702,7 @@
 
                             <Canvas x:Name="CrossfadePreviewCanvas"
                                     Height="60"
-                                    Background="#1A1A1A"
+                                    Background="{DynamicResource PianoRollBackgroundBrush}"
                                     ClipToBounds="True"
                                     Margin="0,0,0,12"/>
 

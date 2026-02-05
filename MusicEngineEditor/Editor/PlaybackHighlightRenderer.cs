@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
@@ -59,18 +58,26 @@ public class InstrumentState
 /// Background renderer that draws playback highlights on the code editor.
 /// This is visual-only and does not modify the text.
 /// </summary>
-public class PlaybackHighlightRenderer : IBackgroundRenderer
+public class PlaybackHighlightRenderer : IBackgroundRenderer, IDisposable
 {
+    private bool _isDisposed;
     private readonly TextEditor _editor;
     private readonly List<HighlightedRegion> _activeHighlights = new();
     private readonly Dictionary<string, InstrumentState> _instrumentStates = new();
     private readonly object _lock = new();
+    private HighlightedRegion[]? _cachedHighlightsSnapshot;
+    private bool _highlightsDirty = true;
 
-    // Visual settings
+    // Visual settings - pre-created and frozen for zero-allocation rendering
     private static readonly Pen ActiveNotePen = new(new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)), 2.0);
     private static readonly Pen FadingNotePen = new(new SolidColorBrush(Color.FromArgb(180, 255, 255, 255)), 1.5);
     private static readonly Brush ActiveNoteFill = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255));
     private static readonly Brush GlowBrush = new SolidColorBrush(Color.FromArgb(60, 100, 200, 255));
+    private static readonly Brush WhiteFillBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255));
+    private static readonly Brush WhiteStrokeBrush = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
+    private static readonly Pen ActiveHighlightPen = new(new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)), 2.0);
+    private static readonly Pen FadingHighlightPen = new(new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)), 1.5);
+    private static readonly Pen ProgressPen = new(new SolidColorBrush(Color.FromArgb(200, 100, 200, 255)), 2);
 
     // Animation
     private readonly DispatcherTimer _animationTimer;
@@ -82,6 +89,11 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
         FadingNotePen.Freeze();
         ActiveNoteFill.Freeze();
         GlowBrush.Freeze();
+        WhiteFillBrush.Freeze();
+        WhiteStrokeBrush.Freeze();
+        ActiveHighlightPen.Freeze();
+        FadingHighlightPen.Freeze();
+        ProgressPen.Freeze();
     }
 
     public PlaybackHighlightRenderer(TextEditor editor)
@@ -113,6 +125,7 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
         lock (_lock)
         {
             _activeHighlights.Clear();
+            _highlightsDirty = true;
             foreach (var state in _instrumentStates.Values)
             {
                 state.IsActive = false;
@@ -163,6 +176,7 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
                 Opacity = 1.0
             };
             _activeHighlights.Add(highlight);
+            _highlightsDirty = true;
 
             // Activate instrument glow
             if (_instrumentStates.TryGetValue(musicalEvent.InstrumentName, out var state))
@@ -216,6 +230,7 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
                     if (highlight.Opacity <= 0)
                     {
                         _activeHighlights.RemoveAt(i);
+                        _highlightsDirty = true;
                     }
                     needsRedraw = true;
                 }
@@ -298,9 +313,8 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
         {
             if (state.Brightness < 0.35) continue; // Don't draw if fully dimmed
 
-            var brush = new SolidColorBrush(Color.FromArgb(
-                (byte)(40 * state.Brightness),
-                100, 180, 255));
+            // Use PushOpacity with frozen GlowBrush instead of allocating new brushes
+            drawingContext.PushOpacity(state.Brightness);
 
             foreach (var region in state.CodeRegions)
             {
@@ -318,9 +332,11 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
                         rect.Width + 4,
                         rect.Height + 2);
 
-                    drawingContext.DrawRoundedRectangle(brush, null, glowRect, 3, 3);
+                    drawingContext.DrawRoundedRectangle(GlowBrush, null, glowRect, 3, 3);
                 }
             }
+
+            drawingContext.Pop(); // Pop opacity
         }
     }
 
@@ -339,9 +355,7 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
             };
 
             // Get visual rectangles for this text segment
-            var rects = BackgroundGeometryBuilder.GetRectsForSegment(textView, segment).ToList();
-
-            foreach (var rect in rects)
+            foreach (var rect in BackgroundGeometryBuilder.GetRectsForSegment(textView, segment))
             {
                 // Calculate opacity based on state
                 double opacity = highlight.Opacity;
@@ -352,14 +366,10 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
                     opacity = 1.0 - (progress * 0.3); // Slight fade as note progresses
                 }
 
-                // Create brushes with current opacity
-                var fillBrush = new SolidColorBrush(Color.FromArgb(
-                    (byte)(40 * opacity), 255, 255, 255));
+                // Use PushOpacity with pre-frozen brushes instead of allocating new ones
+                drawingContext.PushOpacity(opacity);
 
-                var strokeBrush = new SolidColorBrush(Color.FromArgb(
-                    (byte)(255 * opacity), 255, 255, 255));
-
-                var pen = new Pen(strokeBrush, highlight.IsFadingOut ? 1.5 : 2.0);
+                var pen = highlight.IsFadingOut ? FadingHighlightPen : ActiveHighlightPen;
 
                 // Draw the highlight rectangle
                 var highlightRect = new Rect(
@@ -369,7 +379,7 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
                     rect.Height);
 
                 // Draw fill
-                drawingContext.DrawRoundedRectangle(fillBrush, null, highlightRect, 2, 2);
+                drawingContext.DrawRoundedRectangle(WhiteFillBrush, null, highlightRect, 2, 2);
 
                 // Draw white outline
                 drawingContext.DrawRoundedRectangle(null, pen, highlightRect, 2, 2);
@@ -380,15 +390,24 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
                     double progress = highlight.Event.PlayProgress;
                     var progressWidth = highlightRect.Width * progress;
 
-                    var progressPen = new Pen(new SolidColorBrush(Color.FromArgb(
-                        (byte)(200 * opacity), 100, 200, 255)), 2);
-
-                    drawingContext.DrawLine(progressPen,
+                    drawingContext.DrawLine(ProgressPen,
                         new Point(highlightRect.Left, highlightRect.Bottom),
                         new Point(highlightRect.Left + progressWidth, highlightRect.Bottom));
                 }
+
+                drawingContext.Pop(); // Pop opacity
             }
         }
+    }
+
+    /// <summary>Disposes the animation timer and releases resources.</summary>
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        _animationTimer.Stop();
+        _animationTimer.Tick -= AnimationTimer_Tick;
     }
 
     /// <summary>Gets all currently highlighted regions for debugging/testing.</summary>
@@ -396,7 +415,12 @@ public class PlaybackHighlightRenderer : IBackgroundRenderer
     {
         lock (_lock)
         {
-            return _activeHighlights.ToArray();
+            if (_highlightsDirty || _cachedHighlightsSnapshot == null)
+            {
+                _cachedHighlightsSnapshot = _activeHighlights.ToArray();
+                _highlightsDirty = false;
+            }
+            return _cachedHighlightsSnapshot;
         }
     }
 }
@@ -502,6 +526,7 @@ public class PlaybackHighlightService : IDisposable
 
         UnbindSequencer();
         _renderer.Stop();
+        _renderer.Dispose();
         _editor.TextArea.TextView.BackgroundRenderers.Remove(_renderer);
     }
 }

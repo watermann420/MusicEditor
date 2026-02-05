@@ -195,19 +195,19 @@ public partial class ShortcutRecorder : UserControl
         if (_isRecording)
         {
             ShortcutText.Text = "Press a key combination...";
-            ShortcutText.Foreground = (Brush)FindResource("AccentBrush");
+            ShortcutText.Foreground = FindResource("AccentBrush") as Brush ?? Brushes.Transparent;
             ClearButton.Visibility = Visibility.Collapsed;
         }
         else if (CurrentKey == Key.None)
         {
             ShortcutText.Text = PlaceholderText;
-            ShortcutText.Foreground = (Brush)FindResource("SecondaryForegroundBrush");
+            ShortcutText.Foreground = FindResource("SecondaryForegroundBrush") as Brush ?? Brushes.Transparent;
             ClearButton.Visibility = Visibility.Collapsed;
         }
         else
         {
             ShortcutText.Text = GetDisplayString(CurrentKey, CurrentModifiers);
-            ShortcutText.Foreground = (Brush)FindResource("ForegroundBrush");
+            ShortcutText.Foreground = FindResource("ForegroundBrush") as Brush ?? Brushes.Transparent;
             ClearButton.Visibility = IsCustomizable ? Visibility.Visible : Visibility.Collapsed;
         }
     }
@@ -303,7 +303,7 @@ public partial class ShortcutRecorder : UserControl
         _isRecording = true;
 
         // Visual feedback
-        MainBorder.BorderBrush = (Brush)FindResource("AccentBrush");
+        MainBorder.BorderBrush = FindResource("AccentBrush") as Brush ?? Brushes.Transparent;
         MainBorder.BorderThickness = new Thickness(2);
         RecordingIndicator.Visibility = Visibility.Visible;
 
@@ -331,7 +331,7 @@ public partial class ShortcutRecorder : UserControl
         _isRecording = false;
 
         // Visual feedback
-        MainBorder.BorderBrush = (Brush)FindResource("BorderBrush");
+        MainBorder.BorderBrush = FindResource("BorderBrush") as Brush ?? Brushes.Transparent;
         MainBorder.BorderThickness = new Thickness(1);
         RecordingIndicator.Visibility = Visibility.Collapsed;
 

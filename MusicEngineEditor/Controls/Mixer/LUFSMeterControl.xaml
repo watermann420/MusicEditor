@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="200" d:DesignWidth="80"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
     <Grid Margin="4">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -19,13 +19,13 @@
         </Grid.RowDefinitions>
 
         <!-- Integrated LUFS -->
-        <Border Grid.Row="0" Background="#181818" BorderBrush="#2A2A2A" BorderThickness="1"
+        <Border Grid.Row="0" Background="{DynamicResource PanelBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                 Padding="6,4" CornerRadius="2">
             <StackPanel>
-                <TextBlock Text="INT" FontSize="9" Foreground="#808080"
+                <TextBlock Text="INT" FontSize="9" Foreground="{DynamicResource SecondaryForegroundBrush}"
                            FontFamily="Segoe UI" FontWeight="SemiBold"/>
                 <TextBlock x:Name="IntegratedText" Text="-14.0" FontSize="14"
-                           Foreground="#E0E0E0" FontFamily="Consolas" FontWeight="Bold"
+                           Foreground="{DynamicResource ForegroundBrush}" FontFamily="Consolas" FontWeight="Bold"
                            HorizontalAlignment="Center"/>
                 <TextBlock Text="LUFS" FontSize="8" Foreground="#606060"
                            FontFamily="Segoe UI" HorizontalAlignment="Center"/>
@@ -33,13 +33,13 @@
         </Border>
 
         <!-- Short-term LUFS -->
-        <Border Grid.Row="2" Background="#181818" BorderBrush="#2A2A2A" BorderThickness="1"
+        <Border Grid.Row="2" Background="{DynamicResource PanelBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                 Padding="6,4" CornerRadius="2">
             <StackPanel>
-                <TextBlock Text="SHORT" FontSize="9" Foreground="#808080"
+                <TextBlock Text="SHORT" FontSize="9" Foreground="{DynamicResource SecondaryForegroundBrush}"
                            FontFamily="Segoe UI" FontWeight="SemiBold"/>
                 <TextBlock x:Name="ShortTermText" Text="-14.0" FontSize="14"
-                           Foreground="#E0E0E0" FontFamily="Consolas" FontWeight="Bold"
+                           Foreground="{DynamicResource ForegroundBrush}" FontFamily="Consolas" FontWeight="Bold"
                            HorizontalAlignment="Center"/>
                 <TextBlock Text="LUFS" FontSize="8" Foreground="#606060"
                            FontFamily="Segoe UI" HorizontalAlignment="Center"/>
@@ -47,13 +47,13 @@
         </Border>
 
         <!-- Momentary LUFS -->
-        <Border Grid.Row="4" Background="#181818" BorderBrush="#2A2A2A" BorderThickness="1"
+        <Border Grid.Row="4" Background="{DynamicResource PanelBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                 Padding="6,4" CornerRadius="2">
             <StackPanel>
-                <TextBlock Text="MOM" FontSize="9" Foreground="#808080"
+                <TextBlock Text="MOM" FontSize="9" Foreground="{DynamicResource SecondaryForegroundBrush}"
                            FontFamily="Segoe UI" FontWeight="SemiBold"/>
                 <TextBlock x:Name="MomentaryText" Text="-14.0" FontSize="14"
-                           Foreground="#E0E0E0" FontFamily="Consolas" FontWeight="Bold"
+                           Foreground="{DynamicResource ForegroundBrush}" FontFamily="Consolas" FontWeight="Bold"
                            HorizontalAlignment="Center"/>
                 <TextBlock Text="LUFS" FontSize="8" Foreground="#606060"
                            FontFamily="Segoe UI" HorizontalAlignment="Center"/>
@@ -61,13 +61,13 @@
         </Border>
 
         <!-- True Peak -->
-        <Border Grid.Row="6" Background="#181818" BorderBrush="#2A2A2A" BorderThickness="1"
+        <Border Grid.Row="6" Background="{DynamicResource PanelBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                 Padding="6,4" CornerRadius="2">
             <StackPanel>
-                <TextBlock Text="TP" FontSize="9" Foreground="#808080"
+                <TextBlock Text="TP" FontSize="9" Foreground="{DynamicResource SecondaryForegroundBrush}"
                            FontFamily="Segoe UI" FontWeight="SemiBold"/>
                 <TextBlock x:Name="TruePeakText" Text="-1.0" FontSize="14"
-                           Foreground="#00D9FF" FontFamily="Consolas" FontWeight="Bold"
+                           Foreground="{DynamicResource AccentBrush}" FontFamily="Consolas" FontWeight="Bold"
                            HorizontalAlignment="Center"/>
                 <TextBlock Text="dBTP" FontSize="8" Foreground="#606060"
                            FontFamily="Segoe UI" HorizontalAlignment="Center"/>

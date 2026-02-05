@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="32" d:DesignWidth="700"
              d:DataContext="{d:DesignInstance Type=vm:ZoomToolbarViewModel}"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Theme Colors -->

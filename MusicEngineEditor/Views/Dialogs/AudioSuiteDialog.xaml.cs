@@ -434,7 +434,7 @@ public partial class AudioSuiteDialog : Window
             {
                 Text = param.DisplayName,
                 VerticalAlignment = VerticalAlignment.Center,
-                Foreground = (Brush)FindResource("TextPrimaryBrush")
+                Foreground = FindResource("TextPrimaryBrush") as Brush ?? Brushes.Transparent
             };
             Grid.SetColumn(label, 0);
             paramPanel.Children.Add(label);
@@ -492,7 +492,7 @@ public partial class AudioSuiteDialog : Window
                 {
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Right,
-                    Foreground = (Brush)FindResource("TextSecondaryBrush"),
+                    Foreground = FindResource("TextSecondaryBrush") as Brush ?? Brushes.Transparent,
                     Margin = new Thickness(8, 0, 0, 0)
                 };
 

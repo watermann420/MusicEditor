@@ -568,6 +568,75 @@ public partial class QuickControlsPanel : UserControl
 /// </summary>
 public class QuickControlKnob : System.Windows.Controls.Control
 {
+    // Cached frozen brushes and pens for OnRender (avoid per-frame allocations)
+    private static readonly SolidColorBrush s_trackBrush;
+    private static readonly Pen s_trackPen;
+    private static readonly SolidColorBrush s_knobBrush;
+    private static readonly Pen s_knobPen;
+    private static readonly SolidColorBrush s_nameTextBrush;
+    private static readonly SolidColorBrush s_valueTextBrush;
+    private static readonly SolidColorBrush s_learningBrush;
+    private static readonly Typeface s_typeface = new("Segoe UI");
+
+    static QuickControlKnob()
+    {
+        s_trackBrush = new SolidColorBrush(Color.FromRgb(0x43, 0x45, 0x4A));
+        s_trackBrush.Freeze();
+
+        s_trackPen = new Pen(s_trackBrush, 4);
+        s_trackPen.Freeze();
+
+        s_knobBrush = new SolidColorBrush(Color.FromRgb(0x3C, 0x3F, 0x41));
+        s_knobBrush.Freeze();
+
+        var knobBorderBrush = new SolidColorBrush(Color.FromRgb(0x50, 0x52, 0x56));
+        knobBorderBrush.Freeze();
+        s_knobPen = new Pen(knobBorderBrush, 1);
+        s_knobPen.Freeze();
+
+        s_nameTextBrush = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
+        s_nameTextBrush.Freeze();
+
+        s_valueTextBrush = new SolidColorBrush(Color.FromRgb(0x6F, 0x73, 0x7A));
+        s_valueTextBrush.Freeze();
+
+        s_learningBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0x95, 0x00));
+        s_learningBrush.Freeze();
+    }
+
+    private static readonly Dictionary<Color, SolidColorBrush> s_brushCache = new();
+    private static readonly Dictionary<(Color, double), Pen> s_penCache = new();
+
+    private static SolidColorBrush GetOrCreateFrozenBrush(Color color)
+    {
+        if (!s_brushCache.TryGetValue(color, out var brush))
+        {
+            brush = new SolidColorBrush(color);
+            brush.Freeze();
+            s_brushCache[color] = brush;
+        }
+        return brush;
+    }
+
+    private static Pen GetOrCreateFrozenPen(Color color, double thickness)
+    {
+        var key = (color, thickness);
+        if (!s_penCache.TryGetValue(key, out var pen))
+        {
+            pen = new Pen(GetOrCreateFrozenBrush(color), thickness);
+            pen.Freeze();
+            s_penCache[key] = pen;
+        }
+        return pen;
+    }
+
+    // Cached FormattedText objects to avoid per-frame allocations in OnRender
+    private FormattedText? _cachedNameText;
+    private string? _lastNameString;
+    private FormattedText? _cachedValueText;
+    private string? _lastValueString;
+    private double _cachedPixelsPerDip;
+
     private QuickControl? _quickControl;
     private bool _isDragging;
     private Point _dragStart;
@@ -588,6 +657,11 @@ public class QuickControlKnob : System.Windows.Controls.Control
             {
                 _quickControl.PropertyChanged += OnControlPropertyChanged;
             }
+            // Invalidate cached text when control changes
+            _lastNameString = null;
+            _lastValueString = null;
+            _cachedNameText = null;
+            _cachedValueText = null;
             InvalidateVisual();
         }
     }
@@ -665,26 +739,22 @@ public class QuickControlKnob : System.Windows.Controls.Control
         dc.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, w, h));
 
         // Knob track (arc background)
-        var trackBrush = new SolidColorBrush(Color.FromRgb(0x43, 0x45, 0x4A));
-        var trackPen = new Pen(trackBrush, 4);
         double radius = knobSize / 2 - 4;
         double startAngle = 135;
         double endAngle = 405;
 
-        DrawArc(dc, cx, cy, radius, startAngle, endAngle, trackPen);
+        DrawArc(dc, cx, cy, radius, startAngle, endAngle, s_trackPen);
 
         if (QuickControl != null)
         {
             // Knob value arc
-            var valueBrush = new SolidColorBrush(QuickControl.Color);
-            var valuePen = new Pen(valueBrush, 4);
+            var valueBrush = GetOrCreateFrozenBrush(QuickControl.Color);
+            var valuePen = GetOrCreateFrozenPen(QuickControl.Color, 4);
             double valueAngle = startAngle + (QuickControl.Value * (endAngle - startAngle));
             DrawArc(dc, cx, cy, radius, startAngle, valueAngle, valuePen);
 
             // Knob circle
-            var knobBrush = new SolidColorBrush(Color.FromRgb(0x3C, 0x3F, 0x41));
-            var knobPen = new Pen(new SolidColorBrush(Color.FromRgb(0x50, 0x52, 0x56)), 1);
-            dc.DrawEllipse(knobBrush, knobPen, new Point(cx, cy), radius - 6, radius - 6);
+            dc.DrawEllipse(s_knobBrush, s_knobPen, new Point(cx, cy), radius - 6, radius - 6);
 
             // Knob indicator line
             double indicatorAngle = (startAngle + QuickControl.Value * (endAngle - startAngle)) * Math.PI / 180;
@@ -692,35 +762,55 @@ public class QuickControlKnob : System.Windows.Controls.Control
             double y1 = cy + (radius - 12) * Math.Sin(indicatorAngle);
             double x2 = cx + (radius - 20) * Math.Cos(indicatorAngle);
             double y2 = cy + (radius - 20) * Math.Sin(indicatorAngle);
-            dc.DrawLine(new Pen(valueBrush, 2), new Point(x1, y1), new Point(x2, y2));
+            var indicatorPen = GetOrCreateFrozenPen(QuickControl.Color, 2);
+            dc.DrawLine(indicatorPen, new Point(x1, y1), new Point(x2, y2));
 
-            // Name text
-            var nameText = new FormattedText(
-                QuickControl.Name,
-                System.Globalization.CultureInfo.CurrentCulture,
-                System.Windows.FlowDirection.LeftToRight,
-                new Typeface("Segoe UI"),
-                10,
-                new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
-                VisualTreeHelper.GetDpi(this).PixelsPerDip);
-            dc.DrawText(nameText, new Point(cx - nameText.Width / 2, cy + radius + 6));
+            // Cache PixelsPerDip (only changes on DPI change)
+            double pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            if (_cachedPixelsPerDip != pixelsPerDip)
+            {
+                _cachedPixelsPerDip = pixelsPerDip;
+                // Force re-creation of cached text on DPI change
+                _lastNameString = null;
+                _lastValueString = null;
+            }
 
-            // Value text
-            var valueText = new FormattedText(
-                QuickControl.DisplayValue.ToString("F2"),
-                System.Globalization.CultureInfo.CurrentCulture,
-                System.Windows.FlowDirection.LeftToRight,
-                new Typeface("Segoe UI"),
-                9,
-                new SolidColorBrush(Color.FromRgb(0x6F, 0x73, 0x7A)),
-                VisualTreeHelper.GetDpi(this).PixelsPerDip);
-            dc.DrawText(valueText, new Point(cx - valueText.Width / 2, cy + radius + 20));
+            // Name text (cached - only recreate when text changes)
+            var nameString = QuickControl.Name;
+            if (_cachedNameText == null || _lastNameString != nameString)
+            {
+                _lastNameString = nameString;
+                _cachedNameText = new FormattedText(
+                    nameString,
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    System.Windows.FlowDirection.LeftToRight,
+                    s_typeface,
+                    10,
+                    s_nameTextBrush,
+                    _cachedPixelsPerDip);
+            }
+            dc.DrawText(_cachedNameText, new Point(cx - _cachedNameText.Width / 2, cy + radius + 6));
+
+            // Value text (cached - only recreate when display value changes)
+            var valueString = QuickControl.DisplayValue.ToString("F2");
+            if (_cachedValueText == null || _lastValueString != valueString)
+            {
+                _lastValueString = valueString;
+                _cachedValueText = new FormattedText(
+                    valueString,
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    System.Windows.FlowDirection.LeftToRight,
+                    s_typeface,
+                    9,
+                    s_valueTextBrush,
+                    _cachedPixelsPerDip);
+            }
+            dc.DrawText(_cachedValueText, new Point(cx - _cachedValueText.Width / 2, cy + radius + 20));
 
             // Learning indicator
             if (QuickControl.IsLearning)
             {
-                var learningBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0x95, 0x00));
-                dc.DrawEllipse(learningBrush, null, new Point(cx + radius - 5, cy - radius + 5), 4, 4);
+                dc.DrawEllipse(s_learningBrush, null, new Point(cx + radius - 5, cy - radius + 5), 4, 4);
             }
         }
     }

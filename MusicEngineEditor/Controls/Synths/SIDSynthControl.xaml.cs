@@ -43,6 +43,12 @@ public class BoolToFilterBrushConverter : IValueConverter
     private static readonly SolidColorBrush DisabledBrush =
         new(Color.FromRgb(0x40, 0x40, 0x40)); // Dim gray
 
+    static BoolToFilterBrushConverter()
+    {
+        EnabledBrush.Freeze();
+        DisabledBrush.Freeze();
+    }
+
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is bool isEnabled)

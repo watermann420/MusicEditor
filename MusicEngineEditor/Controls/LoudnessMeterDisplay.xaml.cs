@@ -31,6 +31,13 @@ public partial class LoudnessMeterDisplay : UserControl
     private static readonly SolidColorBrush WarningBrush = new(Color.FromRgb(255, 193, 7)); // Yellow
     private static readonly SolidColorBrush DangerBrush = new(Color.FromRgb(244, 67, 54));  // Red
 
+    static LoudnessMeterDisplay()
+    {
+        GoodBrush.Freeze();
+        WarningBrush.Freeze();
+        DangerBrush.Freeze();
+    }
+
     #region Dependency Properties
 
     public static readonly DependencyProperty IntegratedLoudnessProperty =

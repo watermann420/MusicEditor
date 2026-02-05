@@ -32,7 +32,9 @@ public partial class ArrangementWindow : Window
     /// <summary>
     /// Raised when the snap toggle state changes.
     /// </summary>
+#pragma warning disable CS0067
     public event EventHandler<bool>? SnapToggled;
+#pragma warning restore CS0067
 
     /// <summary>
     /// Raised when the grid resolution changes.

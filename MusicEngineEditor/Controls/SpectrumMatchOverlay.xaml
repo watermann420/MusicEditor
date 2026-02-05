@@ -129,7 +129,7 @@
 
             <!-- Header with controls -->
             <Border Grid.Row="0"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="0,0,0,1"
                     Padding="10,6">
@@ -401,7 +401,7 @@
 
                 <!-- Statistics -->
                 <Border Grid.Row="2"
-                        Background="#252525"
+                        Background="{DynamicResource ElementHoverBrush}"
                         CornerRadius="3"
                         Padding="8,4"
                         Margin="0,6,0,0">

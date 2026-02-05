@@ -134,7 +134,7 @@
 
             <!-- Staff Notation Area -->
             <Border Grid.Column="1" Grid.Row="0"
-                    Background="#1A1A1A"
+                    Background="{DynamicResource PianoRollBackgroundBrush}"
                     BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="0">
                 <ScrollViewer x:Name="StaffScrollViewer"

@@ -788,6 +788,13 @@ internal class MarkerVisual
     private static readonly Brush SelectedBrush = Brushes.White;
     private static readonly Brush HoverBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xCC, 0x00));
 
+    static MarkerVisual()
+    {
+        NormalBrush.Freeze();
+        // SelectedBrush (Brushes.White) is already frozen by WPF
+        HoverBrush.Freeze();
+    }
+
     public MarkerVisual(StretchMarker marker)
     {
         Marker = marker;

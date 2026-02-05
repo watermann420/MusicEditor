@@ -156,6 +156,19 @@ public partial class SurroundPannerControl : UserControl
     private static readonly SolidColorBrush GridBrush = new(Color.FromArgb(0x40, 0x80, 0x80, 0x80));
     private static readonly SolidColorBrush AccentBrush = new(Color.FromRgb(0x00, 0xD9, 0xFF));
 
+    static SurroundPannerControl()
+    {
+        SpeakerBrush.Freeze();
+        SpeakerActiveBrush.Freeze();
+        SourceBrush.Freeze();
+        LFEBrush.Freeze();
+        CenterBrush.Freeze();
+        TextBrush.Freeze();
+        TextSecondaryBrush.Freeze();
+        GridBrush.Freeze();
+        AccentBrush.Freeze();
+    }
+
     #endregion
 
     #region Constructor

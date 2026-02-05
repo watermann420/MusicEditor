@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.MIDI"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="800"
-             Background="#0D0D0D"
+             Background="{DynamicResource BackgroundBrush}"
              ClipToBounds="True"
              Focusable="True">
 
@@ -482,7 +482,7 @@
             <!-- Pitch Bend Canvas -->
             <Grid Grid.Column="1" ClipToBounds="True">
                 <Canvas x:Name="PitchBendGridCanvas"
-                        Background="#1A1A1A"
+                        Background="{DynamicResource PianoRollBackgroundBrush}"
                         ClipToBounds="True"/>
                 <Canvas x:Name="PitchBendCurveCanvas"
                         Background="Transparent"
@@ -559,7 +559,7 @@
             <!-- Pressure Canvas -->
             <Grid Grid.Column="1" ClipToBounds="True">
                 <Canvas x:Name="PressureGridCanvas"
-                        Background="#1A1A1A"
+                        Background="{DynamicResource PianoRollBackgroundBrush}"
                         ClipToBounds="True"/>
                 <Canvas x:Name="PressureCurveCanvas"
                         Background="Transparent"
@@ -634,7 +634,7 @@
             <!-- Slide Canvas -->
             <Grid Grid.Column="1" ClipToBounds="True">
                 <Canvas x:Name="SlideGridCanvas"
-                        Background="#1A1A1A"
+                        Background="{DynamicResource PianoRollBackgroundBrush}"
                         ClipToBounds="True"/>
                 <Canvas x:Name="SlideCurveCanvas"
                         Background="Transparent"

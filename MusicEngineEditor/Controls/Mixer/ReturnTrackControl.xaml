@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="80"
              Width="80"
-             Background="#181818">
+             Background="{DynamicResource PanelBackgroundBrush}">
     <UserControl.Resources>
         <!-- Volume Fader Style -->
         <Style x:Key="VolumeFaderStyle" TargetType="Slider">
@@ -18,7 +18,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
                         <Grid>
-                            <Border Width="4" Background="#0D0D0D" CornerRadius="2"
+                            <Border Width="4" Background="{DynamicResource BackgroundBrush}" CornerRadius="2"
                                     HorizontalAlignment="Center"/>
                             <Track x:Name="PART_Track">
                                 <Track.Thumb>
@@ -26,7 +26,7 @@
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
                                                 <Border Background="#FF9500" CornerRadius="2"
-                                                        BorderBrush="#2A2A2A" BorderThickness="1">
+                                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                                                     <Rectangle Width="16" Height="2" Fill="#0D0D0D"
                                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 </Border>
@@ -50,7 +50,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
                         <Grid Height="20">
-                            <Border Height="4" Background="#0D0D0D" CornerRadius="2"
+                            <Border Height="4" Background="{DynamicResource BackgroundBrush}" CornerRadius="2"
                                     VerticalAlignment="Center"/>
                             <Border Width="2" Height="8" Background="#606060"
                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -60,7 +60,7 @@
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
                                                 <Border Background="#FF9500" CornerRadius="2"
-                                                        BorderBrush="#2A2A2A" BorderThickness="1"/>
+                                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -85,7 +85,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="border" Background="#0D0D0D"
+                        <Border x:Name="border" Background="{DynamicResource BackgroundBrush}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="2">
@@ -121,7 +121,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="#0D0D0D"
+                        <Border x:Name="border" Background="{DynamicResource BackgroundBrush}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="2">
@@ -146,7 +146,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="2" Padding="4">
+    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="2" Padding="4">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>   <!-- Return Label -->
@@ -180,7 +180,7 @@
                            HorizontalAlignment="Center" Margin="0,0,0,2"/>
                 <Slider x:Name="PanSlider" Style="{StaticResource PanKnobStyle}"
                         Value="0" ValueChanged="PanSlider_ValueChanged"/>
-                <TextBlock x:Name="PanValueText" Text="C" FontSize="8" Foreground="#808080"
+                <TextBlock x:Name="PanValueText" Text="C" FontSize="8" Foreground="{DynamicResource SecondaryForegroundBrush}"
                            HorizontalAlignment="Center" Margin="0,2,0,0"/>
             </StackPanel>
 
@@ -202,7 +202,7 @@
             </Grid>
 
             <!-- dB Display -->
-            <Border Grid.Row="8" Background="#0D0D0D" BorderBrush="#2A2A2A" BorderThickness="1"
+            <Border Grid.Row="8" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                     CornerRadius="2" Padding="2">
                 <TextBlock x:Name="VolumeDisplay" Text="0.0 dB" FontSize="9"
                            Foreground="#FF9500" FontFamily="Consolas"

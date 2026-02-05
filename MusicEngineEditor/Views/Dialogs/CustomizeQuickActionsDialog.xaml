@@ -8,8 +8,8 @@
         Width="500" Height="480"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Background="#0D0D0D"
-        Foreground="#E0E0E0">
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}">
 
     <Window.Resources>
         <!-- Theme Colors -->
@@ -186,7 +186,7 @@
 
                     <!-- List Header -->
                     <Border Grid.Row="0"
-                            Background="#1A1A1A"
+                            Background="{DynamicResource PianoRollBackgroundBrush}"
                             BorderBrush="{StaticResource BorderBrush}"
                             BorderThickness="0,0,0,1"
                             Padding="12,8">

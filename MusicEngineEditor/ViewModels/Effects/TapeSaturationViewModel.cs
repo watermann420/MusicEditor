@@ -210,9 +210,7 @@ public partial class TapeSaturationViewModel : ViewModelBase
     {
         InputGain = 0.0;
         SaturationAmount = 40.0;
-        _tapeSpeed = TapeSpeed.Ips15;
-        OnPropertyChanged(nameof(TapeSpeed));
-        OnPropertyChanged(nameof(TapeSpeedDisplay));
+        TapeSpeed = TapeSpeed.Ips15;
         Bias = 50.0;
         HighFrequencyRolloff = 30.0;
         WowFlutter = 15.0;
@@ -232,30 +230,13 @@ public partial class TapeSaturationViewModel : ViewModelBase
     public void SetParameters(double inputGain, double saturation, TapeSpeed speed, double bias,
         double hfRolloff, double wowFlutter, double noiseFloor, double hiss)
     {
-        _inputGain = Math.Clamp(inputGain, MinInputGain, MaxInputGain);
-        _saturationAmount = Math.Clamp(saturation, MinPercentage, MaxPercentage);
-        _tapeSpeed = speed;
-        _bias = Math.Clamp(bias, MinPercentage, MaxPercentage);
-        _highFrequencyRolloff = Math.Clamp(hfRolloff, MinPercentage, MaxPercentage);
-        _wowFlutter = Math.Clamp(wowFlutter, MinPercentage, MaxPercentage);
-        _noiseFloor = Math.Clamp(noiseFloor, MinNoiseFloor, MaxNoiseFloor);
-        _hissAmount = Math.Clamp(hiss, MinPercentage, MaxPercentage);
-
-        OnPropertyChanged(nameof(InputGain));
-        OnPropertyChanged(nameof(SaturationAmount));
-        OnPropertyChanged(nameof(TapeSpeed));
-        OnPropertyChanged(nameof(Bias));
-        OnPropertyChanged(nameof(HighFrequencyRolloff));
-        OnPropertyChanged(nameof(WowFlutter));
-        OnPropertyChanged(nameof(NoiseFloor));
-        OnPropertyChanged(nameof(HissAmount));
-        OnPropertyChanged(nameof(InputGainDisplay));
-        OnPropertyChanged(nameof(SaturationAmountDisplay));
-        OnPropertyChanged(nameof(TapeSpeedDisplay));
-        OnPropertyChanged(nameof(BiasDisplay));
-        OnPropertyChanged(nameof(HighFrequencyRolloffDisplay));
-        OnPropertyChanged(nameof(WowFlutterDisplay));
-        OnPropertyChanged(nameof(NoiseFloorDisplay));
-        OnPropertyChanged(nameof(HissAmountDisplay));
+        InputGain = Math.Clamp(inputGain, MinInputGain, MaxInputGain);
+        SaturationAmount = Math.Clamp(saturation, MinPercentage, MaxPercentage);
+        TapeSpeed = speed;
+        Bias = Math.Clamp(bias, MinPercentage, MaxPercentage);
+        HighFrequencyRolloff = Math.Clamp(hfRolloff, MinPercentage, MaxPercentage);
+        WowFlutter = Math.Clamp(wowFlutter, MinPercentage, MaxPercentage);
+        NoiseFloor = Math.Clamp(noiseFloor, MinNoiseFloor, MaxNoiseFloor);
+        HissAmount = Math.Clamp(hiss, MinPercentage, MaxPercentage);
     }
 }

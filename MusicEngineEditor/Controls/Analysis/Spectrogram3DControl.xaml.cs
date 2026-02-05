@@ -188,6 +188,8 @@ public partial class Spectrogram3DControl : UserControl
     private readonly List<SpectrogramFrame> _frameHistory = new();
     private readonly object _frameLock = new();
     private int _maxHistoryFrames = DefaultHistoryFrames;
+    private SpectrogramFrame[] _frameSnapshotBuffer = Array.Empty<SpectrogramFrame>();
+    private int _frameSnapshotCount;
 
     // Colors
     private static readonly Color BackgroundColor = Color.FromRgb(0x0A, 0x0A, 0x0A);
@@ -549,13 +551,18 @@ public partial class Spectrogram3DControl : UserControl
 
         ClearBitmap();
 
-        SpectrogramFrame[] frames;
         lock (_frameLock)
         {
-            frames = _frameHistory.ToArray();
+            int count = _frameHistory.Count;
+            if (_frameSnapshotBuffer.Length < count)
+            {
+                _frameSnapshotBuffer = new SpectrogramFrame[count];
+            }
+            _frameHistory.CopyTo(_frameSnapshotBuffer, 0);
+            _frameSnapshotCount = count;
         }
 
-        if (frames.Length == 0)
+        if (_frameSnapshotCount == 0)
         {
             DrawGrid3D();
             UpdateBitmap();
@@ -569,16 +576,14 @@ public partial class Spectrogram3DControl : UserControl
             StatusText.Text = "Receiving";
         }
 
-        DrawWaterfall(frames);
+        DrawWaterfall(_frameSnapshotBuffer, _frameSnapshotCount);
         DrawGrid3D();
         UpdateBitmap();
     }
 
-    private void DrawWaterfall(SpectrogramFrame[] frames)
+    private void DrawWaterfall(SpectrogramFrame[] frames, int frameCount)
     {
-        if (frames.Length == 0) return;
-
-        int frameCount = frames.Length;
+        if (frameCount == 0) return;
         int maxFrames = _maxHistoryFrames > 0 ? _maxHistoryFrames : DefaultHistoryFrames;
 
         // Calculate transformation matrices

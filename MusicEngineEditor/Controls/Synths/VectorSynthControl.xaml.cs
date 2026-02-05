@@ -30,6 +30,15 @@ public partial class VectorSynthControl : UserControl
     private static readonly SolidColorBrush CornerDBrushStatic = new(Color.FromRgb(0xFF, 0xA5, 0x00));
     private static readonly SolidColorBrush AccentBrushStatic = new(Color.FromRgb(0x00, 0xD9, 0xFF));
 
+    static VectorSynthControl()
+    {
+        CornerABrushStatic.Freeze();
+        CornerBBrushStatic.Freeze();
+        CornerCBrushStatic.Freeze();
+        CornerDBrushStatic.Freeze();
+        AccentBrushStatic.Freeze();
+    }
+
     /// <summary>
     /// Creates a new VectorSynthControl.
     /// </summary>

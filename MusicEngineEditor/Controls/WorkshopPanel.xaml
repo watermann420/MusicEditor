@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="500"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Colors matching the dark theme -->
@@ -398,7 +398,7 @@
                         </Button>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border Background="#0D0D0D" CornerRadius="12" Padding="14,6">
+                            <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="12" Padding="14,6">
                                 <TextBlock x:Name="ProgressText"
                                            Text="1 / 9"
                                            Foreground="{StaticResource ForegroundBrush}"

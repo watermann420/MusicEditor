@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              d:DesignHeight="280" d:DesignWidth="300"
              d:DataContext="{d:DesignInstance Type=vm:InputMonitorViewModel}"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Colors -->
@@ -126,7 +126,7 @@
                     <ControlTemplate TargetType="Slider">
                         <Grid Height="20">
                             <Border Height="4"
-                                    Background="#1A1A1A"
+                                    Background="{DynamicResource PianoRollBackgroundBrush}"
                                     CornerRadius="2"
                                     VerticalAlignment="Center"/>
                             <Track x:Name="PART_Track">

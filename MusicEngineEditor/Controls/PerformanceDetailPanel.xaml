@@ -113,7 +113,7 @@
                 <!-- CPU History Graph Section -->
                 <StackPanel Grid.Row="0">
                     <TextBlock Text="CPU HISTORY (60s)" Style="{StaticResource SectionHeaderStyle}"/>
-                    <Border Background="#0D0D0D"
+                    <Border Background="{DynamicResource BackgroundBrush}"
                             BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1"
                             CornerRadius="4"
@@ -154,7 +154,7 @@
 
                         <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="12,0,0,0">
                             <TextBlock Text="Peak:" Style="{StaticResource LabelTextStyle}" Margin="0,0,4,0"/>
-                            <TextBlock x:Name="PeakCpuText" Text="0%" Style="{StaticResource ValueTextStyle}" Foreground="#FF4757" MinWidth="35"/>
+                            <TextBlock x:Name="PeakCpuText" Text="0%" Style="{StaticResource ValueTextStyle}" Foreground="{DynamicResource ErrorBrush}" MinWidth="35"/>
                         </StackPanel>
                     </Grid>
                 </StackPanel>
@@ -200,7 +200,7 @@
                 <!-- Per-Track CPU Breakdown -->
                 <StackPanel Grid.Row="2">
                     <TextBlock Text="PER-TRACK CPU USAGE" Style="{StaticResource SectionHeaderStyle}"/>
-                    <Border Background="#0D0D0D"
+                    <Border Background="{DynamicResource BackgroundBrush}"
                             BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1"
                             CornerRadius="4"
@@ -246,7 +246,7 @@
                 <!-- Plugin CPU Usage DataGrid -->
                 <StackPanel Grid.Row="3">
                     <TextBlock Text="PLUGIN CPU USAGE" Style="{StaticResource SectionHeaderStyle}"/>
-                    <Border Background="#0D0D0D"
+                    <Border Background="{DynamicResource BackgroundBrush}"
                             BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1"
                             CornerRadius="4"
@@ -258,7 +258,7 @@
                                   Background="Transparent"
                                   BorderThickness="0"
                                   RowBackground="Transparent"
-                                  AlternatingRowBackground="#0A0A0A"
+                                  AlternatingRowBackground="{DynamicResource InputBackgroundBrush}"
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
                                   CanUserResizeRows="False"
@@ -310,7 +310,7 @@
 
                 <!-- Status Bar -->
                 <Border Grid.Row="4"
-                        Background="#1A1A1A"
+                        Background="{DynamicResource PianoRollBackgroundBrush}"
                         CornerRadius="4"
                         Padding="8,6"
                         Margin="0,12,0,0"

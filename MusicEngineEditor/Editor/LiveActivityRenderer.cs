@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -19,12 +18,18 @@ internal sealed class LiveActivityRenderer : IBackgroundRenderer, IDisposable
     private readonly TextEditor _editor;
     private readonly Dispatcher _dispatcher;
     private readonly List<Pulse> _pulses = new();
+    private readonly List<System.Windows.Rect> _rectBuffer = new();
     private readonly Regex _midiDeviceRegex = new(@"midi\.device\s*\(\s*(?<idx>\d+)\s*\)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private bool _disposed;
     private readonly DispatcherTimer _timer;
 
     private const double PulseMs = 400;
     private static readonly Brush PulseBrush = new SolidColorBrush(Color.FromArgb(220, 140, 220, 255));
+
+    static LiveActivityRenderer()
+    {
+        PulseBrush.Freeze();
+    }
 
     public LiveActivityRenderer(TextEditor editor)
     {
@@ -91,8 +96,8 @@ internal sealed class LiveActivityRenderer : IBackgroundRenderer, IDisposable
         var visible = view.VisualLines;
         if (visible == null || visible.Count == 0) return;
 
-        int visibleStart = visible.First().FirstDocumentLine.Offset;
-        int visibleEnd = visible.Last().LastDocumentLine.EndOffset;
+        int visibleStart = visible[0].FirstDocumentLine.Offset;
+        int visibleEnd = visible[visible.Count - 1].LastDocumentLine.EndOffset;
         var text = _editor.Document.GetText(visibleStart, visibleEnd - visibleStart);
 
         foreach (Match m in _midiDeviceRegex.Matches(text))
@@ -132,41 +137,34 @@ internal sealed class LiveActivityRenderer : IBackgroundRenderer, IDisposable
 
                 int start = Math.Max(pulse.Start, lineStart);
                 int end = Math.Min(pulse.Start + pulse.Length, lineEnd);
-                var geo = BackgroundGeometryBuilder.GetRectsForSegment(
+                var rects = BackgroundGeometryBuilder.GetRectsForSegment(
                         textView,
-                        new TextSegment { StartOffset = start, Length = end - start })
-                    .Select(r => new System.Windows.Rect(r.Location, r.Size))
-                    .Select(r =>
-                    {
-                        r.Inflate(1.5, 1.5);
-                        return r;
-                    })
-                    .ToList();
-                if (geo != null)
+                        new TextSegment { StartOffset = start, Length = end - start });
+                _rectBuffer.Clear();
+                foreach (var r in rects)
+                {
+                    var inflated = new System.Windows.Rect(r.Location, r.Size);
+                    inflated.Inflate(1.5, 1.5);
+                    _rectBuffer.Add(inflated);
+                }
+                if (_rectBuffer.Count > 0)
                 {
                     double t = 1.0 - (pulse.Expires - now).TotalMilliseconds / PulseMs;
-                    foreach (var rect in geo)
+                    double opacity = Math.Max(0.0, Math.Min(1.0, 1.0 - t));
+                    drawingContext.PushOpacity(opacity);
+                    foreach (var rect in _rectBuffer)
                     {
                         drawingContext.DrawRoundedRectangle(
-                            new SolidColorBrush(ScaleAlpha(PulseBrush, 1.0 - t)),
+                            PulseBrush,
                             null,
                             rect,
                             2.5,
                             2.5);
                     }
+                    drawingContext.Pop();
                 }
             }
         }
-    }
-
-    private static Color ScaleAlpha(Brush brush, double factor)
-    {
-        if (brush is SolidColorBrush scb)
-        {
-            var c = scb.Color;
-            return Color.FromArgb((byte)Math.Max(0, Math.Min(255, c.A * factor)), c.R, c.G, c.B);
-        }
-        return Color.FromArgb(120, 80, 180, 255);
     }
 
     private void Cleanup()

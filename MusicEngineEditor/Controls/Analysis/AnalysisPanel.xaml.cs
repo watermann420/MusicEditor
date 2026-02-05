@@ -92,7 +92,9 @@ public partial class AnalysisPanel : UserControl
     private readonly ObservableCollection<LoopPointViewModel> _detectedLoops = new();
 
     // Beat indicator state
+#pragma warning disable CS0169
     private int _currentBeat;
+#pragma warning restore CS0169
     private readonly Ellipse[] _beatIndicators = new Ellipse[4];
 
     // Colors

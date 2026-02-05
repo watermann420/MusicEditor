@@ -14,6 +14,7 @@
     <Color x:Key="BackgroundColor">#0D0D0D</Color>
     <Color x:Key="EditorBackgroundColor">#121212</Color>
     <Color x:Key="PanelBackgroundColor">#181818</Color>
+    <Color x:Key="SurfaceBackgroundColor">#141414</Color>
     <Color x:Key="ToolbarBackgroundColor">#141414</Color>
     <Color x:Key="MenuBackgroundColor">#161616</Color>
     <Color x:Key="StatusBarBackgroundColor">#141414</Color>
@@ -130,6 +131,7 @@
     <SolidColorBrush x:Key="BackgroundBrush" Color="{DynamicResource BackgroundColor}"/>
     <SolidColorBrush x:Key="EditorBackgroundBrush" Color="{DynamicResource EditorBackgroundColor}"/>
     <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{DynamicResource PanelBackgroundColor}"/>
+    <SolidColorBrush x:Key="SurfaceBackgroundBrush" Color="{DynamicResource SurfaceBackgroundColor}"/>
     <SolidColorBrush x:Key="ToolbarBackgroundBrush" Color="{DynamicResource ToolbarBackgroundColor}"/>
     <SolidColorBrush x:Key="MenuBackgroundBrush" Color="{DynamicResource MenuBackgroundColor}"/>
     <SolidColorBrush x:Key="StatusBarBackgroundBrush" Color="{DynamicResource StatusBarBackgroundColor}"/>
@@ -866,7 +868,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToolTip">
-                    <Border Background="#252525"
+                    <Border Background="{DynamicResource ElementHoverBrush}"
                             BorderBrush="{DynamicResource SubtleBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="4"

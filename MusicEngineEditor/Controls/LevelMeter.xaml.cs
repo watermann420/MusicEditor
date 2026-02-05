@@ -76,6 +76,58 @@ public partial class LevelMeter : UserControl
     private const double MinPeakHoldTimeSeconds = 0.5;
     private const double MaxPeakHoldTimeSeconds = 5.0;
 
+    private static readonly SolidColorBrush s_peakBlockBrush;
+    private static readonly SolidColorBrush s_peakArrowBrush;
+    private static readonly LinearGradientBrush s_peakGradientVertical;
+    private static readonly LinearGradientBrush s_peakGradientHorizontal;
+
+    private static readonly SolidColorBrush s_peakRedBrush;
+    private static readonly SolidColorBrush s_peakOrangeBrush;
+    private static readonly SolidColorBrush s_peakYellowBrush;
+    private static readonly SolidColorBrush s_peakWhiteBrush;
+    private static readonly Color s_peakRedColor = Color.FromRgb(0xFF, 0x44, 0x44);
+    private static readonly Color s_peakOrangeColor = Color.FromRgb(0xFF, 0x88, 0x00);
+    private static readonly Color s_peakYellowColor = Color.FromRgb(0xFF, 0xFF, 0x00);
+    private static readonly SolidColorBrush s_clipStrokeBrush;
+
+    static LevelMeter()
+    {
+        s_peakBlockBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xEE, 0x00));
+        s_peakBlockBrush.Freeze();
+
+        s_peakArrowBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0xFF));
+        s_peakArrowBrush.Freeze();
+
+        s_peakGradientVertical = new LinearGradientBrush(
+            Color.FromArgb(255, 255, 255, 255),
+            Color.FromArgb(0, 255, 255, 255),
+            new Point(0, 0),
+            new Point(0, 1));
+        s_peakGradientVertical.Freeze();
+
+        s_peakGradientHorizontal = new LinearGradientBrush(
+            Color.FromArgb(255, 255, 255, 255),
+            Color.FromArgb(0, 255, 255, 255),
+            new Point(1, 0),
+            new Point(0, 0));
+        s_peakGradientHorizontal.Freeze();
+
+        s_peakRedBrush = new SolidColorBrush(s_peakRedColor);
+        s_peakRedBrush.Freeze();
+
+        s_peakOrangeBrush = new SolidColorBrush(s_peakOrangeColor);
+        s_peakOrangeBrush.Freeze();
+
+        s_peakYellowBrush = new SolidColorBrush(s_peakYellowColor);
+        s_peakYellowBrush.Freeze();
+
+        s_peakWhiteBrush = new SolidColorBrush(Colors.White);
+        s_peakWhiteBrush.Freeze();
+
+        s_clipStrokeBrush = new SolidColorBrush(Color.FromRgb(0x60, 0x20, 0x20));
+        s_clipStrokeBrush.Freeze();
+    }
+
     #endregion
 
     #region Dependency Properties
@@ -773,7 +825,7 @@ public partial class LevelMeter : UserControl
             Width = 10,
             Height = 10,
             Fill = FindResource("ClipIndicatorOffBrush") as Brush,
-            Stroke = new SolidColorBrush(Color.FromRgb(0x60, 0x20, 0x20)),
+            Stroke = s_clipStrokeBrush,
             StrokeThickness = 1
         };
     }
@@ -1062,32 +1114,31 @@ public partial class LevelMeter : UserControl
         if (indicator == null || PeakIndicatorStyle != PeakIndicatorDisplayStyle.Line)
             return;
 
-        // Color transitions: white -> yellow -> orange -> red based on level
+        SolidColorBrush peakBrush;
         Color peakColor;
         if (peakLevelDb >= -3)
         {
-            // Red zone (near 0dB)
-            peakColor = Color.FromRgb(0xFF, 0x44, 0x44);
+            peakBrush = s_peakRedBrush;
+            peakColor = s_peakRedColor;
         }
         else if (peakLevelDb >= -6)
         {
-            // Orange zone
-            peakColor = Color.FromRgb(0xFF, 0x88, 0x00);
+            peakBrush = s_peakOrangeBrush;
+            peakColor = s_peakOrangeColor;
         }
         else if (peakLevelDb >= -12)
         {
-            // Yellow zone
-            peakColor = Color.FromRgb(0xFF, 0xFF, 0x00);
+            peakBrush = s_peakYellowBrush;
+            peakColor = s_peakYellowColor;
         }
         else
         {
-            // Normal white
+            peakBrush = s_peakWhiteBrush;
             peakColor = Colors.White;
         }
 
-        indicator.Fill = new SolidColorBrush(peakColor);
+        indicator.Fill = peakBrush;
 
-        // Update glow effect color to match
         if (indicator.Effect is DropShadowEffect dropShadow)
         {
             dropShadow.Color = peakColor;
@@ -1247,28 +1298,13 @@ public partial class LevelMeter : UserControl
                 return FindResource("PeakHoldBrush") as Brush ?? Brushes.White;
 
             case PeakIndicatorDisplayStyle.Block:
-                return new SolidColorBrush(Color.FromRgb(0xFF, 0xEE, 0x00)); // Bright yellow
+                return s_peakBlockBrush;
 
             case PeakIndicatorDisplayStyle.Arrow:
-                return new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0xFF)); // Cyan
+                return s_peakArrowBrush;
 
             case PeakIndicatorDisplayStyle.GradientFade:
-                if (isVertical)
-                {
-                    return new LinearGradientBrush(
-                        Color.FromArgb(255, 255, 255, 255),
-                        Color.FromArgb(0, 255, 255, 255),
-                        new Point(0, 0),
-                        new Point(0, 1));
-                }
-                else
-                {
-                    return new LinearGradientBrush(
-                        Color.FromArgb(255, 255, 255, 255),
-                        Color.FromArgb(0, 255, 255, 255),
-                        new Point(1, 0),
-                        new Point(0, 0));
-                }
+                return isVertical ? s_peakGradientVertical : s_peakGradientHorizontal;
 
             default:
                 return Brushes.White;

@@ -6,30 +6,22 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls.Analysis"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
-        <!-- Theme Colors -->
-        <Color x:Key="FrequencyCollisionBackgroundColor">#0D0D0D</Color>
-        <Color x:Key="FrequencyCollisionPanelColor">#181818</Color>
-        <Color x:Key="FrequencyCollisionAccentColor">#00D9FF</Color>
-        <Color x:Key="FrequencyCollisionErrorColor">#FF4757</Color>
+        <!-- Local Colors (not in global theme) -->
         <Color x:Key="FrequencyCollisionWarningColor">#FFA502</Color>
-        <Color x:Key="FrequencyCollisionSuccessColor">#00FF88</Color>
-        <Color x:Key="FrequencyCollisionTextColor">#E0E0E0</Color>
-        <Color x:Key="FrequencyCollisionSecondaryTextColor">#808080</Color>
-        <Color x:Key="FrequencyCollisionBorderColor">#2A2A2A</Color>
 
-        <!-- Brushes -->
-        <SolidColorBrush x:Key="FrequencyCollisionBackgroundBrush" Color="{StaticResource FrequencyCollisionBackgroundColor}"/>
-        <SolidColorBrush x:Key="FrequencyCollisionPanelBrush" Color="{StaticResource FrequencyCollisionPanelColor}"/>
-        <SolidColorBrush x:Key="FrequencyCollisionAccentBrush" Color="{StaticResource FrequencyCollisionAccentColor}"/>
-        <SolidColorBrush x:Key="FrequencyCollisionErrorBrush" Color="{StaticResource FrequencyCollisionErrorColor}"/>
+        <!-- Local Brush Aliases referencing global theme -->
+        <SolidColorBrush x:Key="FrequencyCollisionBackgroundBrush" Color="{DynamicResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="FrequencyCollisionPanelBrush" Color="{DynamicResource PanelBackgroundColor}"/>
+        <SolidColorBrush x:Key="FrequencyCollisionAccentBrush" Color="{DynamicResource AccentColor}"/>
+        <SolidColorBrush x:Key="FrequencyCollisionErrorBrush" Color="{DynamicResource ErrorColor}"/>
         <SolidColorBrush x:Key="FrequencyCollisionWarningBrush" Color="{StaticResource FrequencyCollisionWarningColor}"/>
-        <SolidColorBrush x:Key="FrequencyCollisionSuccessBrush" Color="{StaticResource FrequencyCollisionSuccessColor}"/>
-        <SolidColorBrush x:Key="FrequencyCollisionTextBrush" Color="{StaticResource FrequencyCollisionTextColor}"/>
-        <SolidColorBrush x:Key="FrequencyCollisionSecondaryTextBrush" Color="{StaticResource FrequencyCollisionSecondaryTextColor}"/>
-        <SolidColorBrush x:Key="FrequencyCollisionBorderBrush" Color="{StaticResource FrequencyCollisionBorderColor}"/>
+        <SolidColorBrush x:Key="FrequencyCollisionSuccessBrush" Color="{DynamicResource SuccessColor}"/>
+        <SolidColorBrush x:Key="FrequencyCollisionTextBrush" Color="{DynamicResource ForegroundColor}"/>
+        <SolidColorBrush x:Key="FrequencyCollisionSecondaryTextBrush" Color="{DynamicResource SecondaryForegroundColor}"/>
+        <SolidColorBrush x:Key="FrequencyCollisionBorderBrush" Color="{DynamicResource BorderColor}"/>
 
         <!-- Track Color Brushes -->
         <SolidColorBrush x:Key="FrequencyCollisionTrackABrush" Color="#00D9FF"/>
@@ -167,7 +159,7 @@
                     <ControlTemplate TargetType="Slider">
                         <Grid>
                             <Border Height="4" VerticalAlignment="Center"
-                                    Background="#2A2A2A" CornerRadius="2"/>
+                                    Background="{DynamicResource BorderBrush}" CornerRadius="2"/>
                             <Track x:Name="PART_Track">
                                 <Track.Thumb>
                                     <Thumb Width="14" Height="14">
@@ -452,7 +444,7 @@
                     <Border Grid.Column="1"
                             Margin="16,0"
                             Height="16"
-                            Background="#2A2A2A"
+                            Background="{DynamicResource BorderBrush}"
                             CornerRadius="8"
                             VerticalAlignment="Center">
                         <Border x:Name="SeverityBar"

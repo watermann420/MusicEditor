@@ -375,7 +375,9 @@ public sealed class NetworkSyncService : IDisposable
     /// <summary>
     /// Raised when an MMC command is received.
     /// </summary>
+#pragma warning disable CS0067
     public event EventHandler<MmcCommand>? MmcCommandReceived;
+#pragma warning restore CS0067
 
     #endregion
 

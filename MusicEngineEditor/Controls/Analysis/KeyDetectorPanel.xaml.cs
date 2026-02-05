@@ -138,7 +138,9 @@ public partial class KeyDetectorPanel : UserControl
     /// <summary>
     /// Event raised when analysis from selection is requested.
     /// </summary>
+#pragma warning disable CS0067
     public event EventHandler? AnalyzeFromSelectionRequested;
+#pragma warning restore CS0067
 
     #endregion
 

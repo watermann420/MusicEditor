@@ -38,6 +38,17 @@ public partial class TrackVersionCompareDialog : Window
     private static readonly SolidColorBrush RemovedBackground = new(Color.FromArgb(0x20, 0xFF, 0x47, 0x57));
     private static readonly SolidColorBrush ModifiedBackground = new(Color.FromArgb(0x20, 0xFF, 0x98, 0x00));
 
+    static TrackVersionCompareDialog()
+    {
+        AddedColor.Freeze();
+        RemovedColor.Freeze();
+        ModifiedColor.Freeze();
+        UnchangedColor.Freeze();
+        AddedBackground.Freeze();
+        RemovedBackground.Freeze();
+        ModifiedBackground.Freeze();
+    }
+
     #endregion
 
     #region Constructor

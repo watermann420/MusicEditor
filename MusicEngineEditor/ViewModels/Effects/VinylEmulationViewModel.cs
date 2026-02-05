@@ -205,8 +205,7 @@ public partial class VinylEmulationViewModel : ViewModelBase
         DustAmount = 15.0;
         SurfaceNoise = 25.0;
         WarpAmount = 10.0;
-        _age = VinylAge.Used;
-        OnPropertyChanged(nameof(Age));
+        Age = VinylAge.Used;
         Rpm = VinylRpm.Rpm33;
         StatusMessage = "Reset to defaults";
     }
@@ -221,26 +220,12 @@ public partial class VinylEmulationViewModel : ViewModelBase
     /// </summary>
     public void SetParameters(double crackle, double pop, double dust, double surface, double warp, VinylAge age, VinylRpm rpm)
     {
-        _crackleAmount = Math.Clamp(crackle, MinValue, MaxValue);
-        _popFrequency = Math.Clamp(pop, MinValue, MaxValue);
-        _dustAmount = Math.Clamp(dust, MinValue, MaxValue);
-        _surfaceNoise = Math.Clamp(surface, MinValue, MaxValue);
-        _warpAmount = Math.Clamp(warp, MinValue, MaxValue);
-        _age = age;
-        _rpm = rpm;
-
-        OnPropertyChanged(nameof(CrackleAmount));
-        OnPropertyChanged(nameof(PopFrequency));
-        OnPropertyChanged(nameof(DustAmount));
-        OnPropertyChanged(nameof(SurfaceNoise));
-        OnPropertyChanged(nameof(WarpAmount));
-        OnPropertyChanged(nameof(Age));
-        OnPropertyChanged(nameof(Rpm));
-        OnPropertyChanged(nameof(CrackleAmountDisplay));
-        OnPropertyChanged(nameof(PopFrequencyDisplay));
-        OnPropertyChanged(nameof(DustAmountDisplay));
-        OnPropertyChanged(nameof(SurfaceNoiseDisplay));
-        OnPropertyChanged(nameof(WarpAmountDisplay));
-        OnPropertyChanged(nameof(RpmDisplay));
+        CrackleAmount = Math.Clamp(crackle, MinValue, MaxValue);
+        PopFrequency = Math.Clamp(pop, MinValue, MaxValue);
+        DustAmount = Math.Clamp(dust, MinValue, MaxValue);
+        SurfaceNoise = Math.Clamp(surface, MinValue, MaxValue);
+        WarpAmount = Math.Clamp(warp, MinValue, MaxValue);
+        Age = age;
+        Rpm = rpm;
     }
 }

@@ -7,7 +7,7 @@
              xmlns:local="clr-namespace:MusicEngineEditor.Controls"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="350"
-             Background="#0D0D0D">
+             Background="{DynamicResource BackgroundBrush}">
 
     <UserControl.Resources>
         <!-- Colors matching the dark theme -->
@@ -498,7 +498,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Left Side - Tree View -->
-            <Border Grid.Column="0" Background="#181818">
+            <Border Grid.Column="0" Background="{DynamicResource PanelBackgroundBrush}">
                 <TreeView x:Name="CategoryTreeView"
                           Background="Transparent"
                           BorderThickness="0"
@@ -535,10 +535,10 @@
             </Border>
 
             <!-- Splitter -->
-            <GridSplitter Grid.Column="1" Width="1" HorizontalAlignment="Stretch" Background="#2A2A2A"/>
+            <GridSplitter Grid.Column="1" Width="1" HorizontalAlignment="Stretch" Background="{DynamicResource BorderBrush}"/>
 
             <!-- Right Side - Preset List -->
-            <Border Grid.Column="2" Background="#0D0D0D">
+            <Border Grid.Column="2" Background="{DynamicResource BackgroundBrush}">
                 <ListView x:Name="PresetListView"
                           Background="Transparent"
                           BorderThickness="0"
@@ -585,7 +585,7 @@
 
                                 <!-- Type Badge -->
                                 <Border Grid.Column="2"
-                                        Background="#2A2A2A"
+                                        Background="{DynamicResource BorderBrush}"
                                         CornerRadius="3"
                                         Padding="4,2"
                                         Margin="4,0"
@@ -609,8 +609,8 @@
 
         <!-- Preview Player Controls -->
         <Border Grid.Row="4"
-                Background="#181818"
-                BorderBrush="#2A2A2A"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="8">
             <Grid>
@@ -633,7 +633,7 @@
                 <ProgressBar x:Name="PreviewProgressBar"
                              Grid.Column="1"
                              Height="4"
-                             Background="#2A2A2A"
+                             Background="{DynamicResource BorderBrush}"
                              Foreground="{StaticResource AccentBrush}"
                              Value="0"
                              Maximum="100"
@@ -655,8 +655,8 @@
 
         <!-- Bottom Panel - Info and Load Button -->
         <Border Grid.Row="5"
-                Background="#0D0D0D"
-                BorderBrush="#2A2A2A"
+                Background="{DynamicResource BackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="8">
             <Grid>

@@ -202,21 +202,10 @@ public partial class BitcrusherViewModel : ViewModelBase
     /// </summary>
     public void SetParameters(int bitDepth, double sampleRateReduction, bool dither, double jitter, double mix)
     {
-        _bitDepth = Math.Clamp(bitDepth, MinBitDepth, MaxBitDepth);
-        _sampleRateReduction = Math.Clamp(sampleRateReduction, MinSampleRateReduction, MaxSampleRateReduction);
-        _ditherEnabled = dither;
-        _jitterAmount = Math.Clamp(jitter, MinPercentage, MaxPercentage);
-        _mix = Math.Clamp(mix, MinPercentage, MaxPercentage);
-
-        OnPropertyChanged(nameof(BitDepth));
-        OnPropertyChanged(nameof(SampleRateReduction));
-        OnPropertyChanged(nameof(DitherEnabled));
-        OnPropertyChanged(nameof(JitterAmount));
-        OnPropertyChanged(nameof(Mix));
-        OnPropertyChanged(nameof(BitDepthDisplay));
-        OnPropertyChanged(nameof(SampleRateReductionDisplay));
-        OnPropertyChanged(nameof(JitterAmountDisplay));
-        OnPropertyChanged(nameof(MixDisplay));
-        OnPropertyChanged(nameof(QuantizationLevels));
+        BitDepth = Math.Clamp(bitDepth, MinBitDepth, MaxBitDepth);
+        SampleRateReduction = Math.Clamp(sampleRateReduction, MinSampleRateReduction, MaxSampleRateReduction);
+        DitherEnabled = dither;
+        JitterAmount = Math.Clamp(jitter, MinPercentage, MaxPercentage);
+        Mix = Math.Clamp(mix, MinPercentage, MaxPercentage);
     }
 }

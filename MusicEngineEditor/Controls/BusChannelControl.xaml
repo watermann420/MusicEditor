@@ -289,7 +289,7 @@
 
             <!-- Effect Chain Indicator -->
             <Border Grid.Row="3"
-                    Background="#181818"
+                    Background="{DynamicResource PanelBackgroundBrush}"
                     CornerRadius="3"
                     Padding="4,2"
                     Margin="0,2"
@@ -297,7 +297,7 @@
                     ToolTip="Click to edit effects">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock Text="FX"
-                               Foreground="#00D9FF"
+                               Foreground="{DynamicResource AccentBrush}"
                                FontSize="9"
                                FontWeight="SemiBold"/>
                     <TextBlock Text="{Binding EffectCount, StringFormat=' ({0})'}"
@@ -352,7 +352,7 @@
 
             <!-- Volume dB Display -->
             <Border Grid.Row="6"
-                    Background="#1A1A1A"
+                    Background="{DynamicResource PianoRollBackgroundBrush}"
                     CornerRadius="3"
                     Padding="6,3"
                     Margin="0,4,0,0">

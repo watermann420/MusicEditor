@@ -111,9 +111,9 @@ public sealed class BounceInPlaceCommand : IUndoableCommand
     // State for undo
     private AudioClip? _originalClip;
     private AudioClip? _bouncedClip;
-#pragma warning disable CS0414 // Field is assigned but its value is never used
+#pragma warning disable CS0414, CS0169
     private bool _wasTrackMuted;
-#pragma warning restore CS0414
+#pragma warning restore CS0414, CS0169
     private string? _bouncedFilePath;
     private bool _executed;
     private Dictionary<int, bool> _previousMuteStates = new();

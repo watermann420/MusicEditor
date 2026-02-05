@@ -207,7 +207,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
                     <TextBlock Text="Clipping!"
-                               Foreground="#FF4757"
+                               Foreground="{DynamicResource ErrorBrush}"
                                FontWeight="Bold"
                                Visibility="{Binding IsClipping, Converter={StaticResource BoolToVisibilityConverter}}"
                                Margin="0,0,15,0"/>

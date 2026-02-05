@@ -122,6 +122,7 @@ public class InlineSliderService : IDisposable
             closeTimer.Tick += (s, args) =>
             {
                 closeTimer.Stop();
+                closeTimer = null;
                 if (_activePopup != null && !_activePopup.IsMouseOver && !_editor.TextArea.TextView.IsMouseOver)
                 {
                     ClosePopup();
@@ -586,6 +587,13 @@ public class NumberHighlightRenderer : IBackgroundRenderer
     private readonly TextEditor _editor;
     private static readonly SolidColorBrush HighlightBrush = new(Color.FromArgb(30, 75, 110, 175));
     private static readonly Pen HighlightPen = new(new SolidColorBrush(Color.FromArgb(80, 75, 110, 175)), 1);
+
+    static NumberHighlightRenderer()
+    {
+        HighlightBrush.Freeze();
+        HighlightPen.Brush.Freeze();
+        HighlightPen.Freeze();
+    }
 
     public NumberHighlightRenderer(TextEditor editor)
     {

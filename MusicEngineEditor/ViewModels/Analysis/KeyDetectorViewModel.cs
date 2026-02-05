@@ -140,7 +140,9 @@ public partial class KeyDetectorViewModel : ViewModelBase
     /// <summary>
     /// Event raised when analysis completes.
     /// </summary>
+#pragma warning disable CS0067
     public event EventHandler<KeyAnalysisResult>? AnalysisCompleted;
+#pragma warning restore CS0067
 
     #endregion
 
@@ -155,10 +157,10 @@ public partial class KeyDetectorViewModel : ViewModelBase
     {
         for (int i = 0; i < 12; i++)
         {
-            _chromagram[i] = 0;
-            _normalizedChromagram[i] = 0;
-            _scaleDegreePresent[i] = false;
-            _scaleDegreeStrength[i] = 0;
+            Chromagram[i] = 0;
+            NormalizedChromagram[i] = 0;
+            ScaleDegreePresent[i] = false;
+            ScaleDegreeStrength[i] = 0;
         }
     }
 

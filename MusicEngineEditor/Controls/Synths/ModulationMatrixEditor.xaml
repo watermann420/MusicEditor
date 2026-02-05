@@ -186,7 +186,7 @@
 
                             <!-- Track Background -->
                             <Border Grid.Row="0" Height="6" CornerRadius="3"
-                                    Background="#333333"
+                                    Background="{DynamicResource SubtleBorderBrush}"
                                     Margin="8,0"/>
 
                             <!-- Center Line -->

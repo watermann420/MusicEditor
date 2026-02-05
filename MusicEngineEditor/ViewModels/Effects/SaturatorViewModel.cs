@@ -227,21 +227,10 @@ public partial class SaturatorViewModel : ViewModelBase
     /// </summary>
     public void SetParameters(double drive, SaturationType type, double tone, double output, double mix)
     {
-        _drive = Math.Clamp(drive, MinDrive, MaxDrive);
-        _saturationType = type;
-        _tone = Math.Clamp(tone, MinTone, MaxTone);
-        _outputLevel = Math.Clamp(output, MinOutputLevel, MaxOutputLevel);
-        _mix = Math.Clamp(mix, MinMix, MaxMix);
-
-        OnPropertyChanged(nameof(Drive));
-        OnPropertyChanged(nameof(SaturationType));
-        OnPropertyChanged(nameof(Tone));
-        OnPropertyChanged(nameof(OutputLevel));
-        OnPropertyChanged(nameof(Mix));
-        OnPropertyChanged(nameof(DriveDisplay));
-        OnPropertyChanged(nameof(SaturationTypeDescription));
-        OnPropertyChanged(nameof(ToneDisplay));
-        OnPropertyChanged(nameof(OutputLevelDisplay));
-        OnPropertyChanged(nameof(MixDisplay));
+        Drive = Math.Clamp(drive, MinDrive, MaxDrive);
+        SaturationType = type;
+        Tone = Math.Clamp(tone, MinTone, MaxTone);
+        OutputLevel = Math.Clamp(output, MinOutputLevel, MaxOutputLevel);
+        Mix = Math.Clamp(mix, MinMix, MaxMix);
     }
 }

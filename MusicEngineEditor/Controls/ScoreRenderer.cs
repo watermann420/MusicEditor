@@ -111,16 +111,46 @@ public class ScoreRenderer
     private Typeface? _musicTypeface;
     private Typeface? _textTypeface;
 
-    private Pen StaffLinePen => _staffLinePen ??= new Pen(new SolidColorBrush(StaffLineColor), 1) { StartLineCap = PenLineCap.Flat, EndLineCap = PenLineCap.Flat };
-    private Pen BarLinePen => _barLinePen ??= new Pen(new SolidColorBrush(BarLineColor), 1.5) { StartLineCap = PenLineCap.Flat, EndLineCap = PenLineCap.Flat };
-    private Pen StemPen => _stemPen ??= new Pen(new SolidColorBrush(NoteColor), StemThickness) { StartLineCap = PenLineCap.Flat, EndLineCap = PenLineCap.Flat };
-    private Pen LedgerLinePen => _ledgerLinePen ??= new Pen(new SolidColorBrush(LedgerLineColor), 1) { StartLineCap = PenLineCap.Flat, EndLineCap = PenLineCap.Flat };
-    private SolidColorBrush NoteBrush => _noteBrush ??= new SolidColorBrush(NoteColor);
-    private SolidColorBrush SelectedNoteBrush => _selectedNoteBrush ??= new SolidColorBrush(SelectedNoteColor);
-    private SolidColorBrush HollowNoteBrush => _hollowNoteBrush ??= new SolidColorBrush(Colors.Transparent);
-    private SolidColorBrush AccidentalBrush => _accidentalBrush ??= new SolidColorBrush(AccidentalColor);
+    // Additional cached pens for rendering methods (previously allocated per-call)
+    private Pen? _noteOutlinePen;         // NoteBrush, thickness 1.5 (note heads, ties, rests, flags, accents, fermata)
+    private Pen? _selectedNoteOutlinePen; // SelectedNoteBrush, thickness 1.5 (selected note heads, flags)
+    private Pen? _selectedStemPen;        // SelectedNoteBrush, StemThickness (selected note stems)
+    private Pen? _noteThickPen;           // NoteBrush, thickness 2 (clef, quarter rest, articulation tenuto)
+    private Pen? _accidentalPen;          // AccidentalBrush, thickness 1.2 (accidentals)
+    private Pen? _accidentalThickPen;     // AccidentalBrush, thickness 2 (sharp/natural horizontal lines, double sharp)
+
+    private static Pen CreateFrozenPen(Brush brush, double thickness)
+    {
+        var pen = new Pen(brush, thickness);
+        pen.Freeze();
+        return pen;
+    }
+
+    private static SolidColorBrush CreateFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
+
+    private Pen StaffLinePen => _staffLinePen ??= CreateFrozenPen(CreateFrozenBrush(StaffLineColor), 1);
+    private Pen BarLinePen => _barLinePen ??= CreateFrozenPen(CreateFrozenBrush(BarLineColor), 1.5);
+    private Pen StemPen => _stemPen ??= CreateFrozenPen(NoteBrush, StemThickness);
+    private Pen LedgerLinePen => _ledgerLinePen ??= CreateFrozenPen(CreateFrozenBrush(LedgerLineColor), 1);
+    private SolidColorBrush NoteBrush => _noteBrush ??= CreateFrozenBrush(NoteColor);
+    private SolidColorBrush SelectedNoteBrush => _selectedNoteBrush ??= CreateFrozenBrush(SelectedNoteColor);
+    private SolidColorBrush HollowNoteBrush => _hollowNoteBrush ??= CreateFrozenBrush(Colors.Transparent);
+    private SolidColorBrush AccidentalBrush => _accidentalBrush ??= CreateFrozenBrush(AccidentalColor);
     private Typeface MusicTypeface => _musicTypeface ??= new Typeface(new FontFamily("Segoe UI Symbol"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
     private Typeface TextTypeface => _textTypeface ??= new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
+
+    // Cached pens for rendering methods - eliminates per-call allocations
+    private Pen NoteOutlinePen => _noteOutlinePen ??= CreateFrozenPen(NoteBrush, 1.5);
+    private Pen SelectedNoteOutlinePen => _selectedNoteOutlinePen ??= CreateFrozenPen(SelectedNoteBrush, 1.5);
+    private Pen SelectedStemPen => _selectedStemPen ??= CreateFrozenPen(SelectedNoteBrush, StemThickness);
+    private Pen NoteThickPen => _noteThickPen ??= CreateFrozenPen(NoteBrush, 2);
+    private Pen AccidentalPen => _accidentalPen ??= CreateFrozenPen(AccidentalBrush, 1.2);
+    private Pen AccidentalThickPen => _accidentalThickPen ??= CreateFrozenPen(AccidentalBrush, 2);
 
     #endregion
 
@@ -188,7 +218,7 @@ public class ScoreRenderer
         }
 
         var brush = isSelected ? SelectedNoteBrush : NoteBrush;
-        var pen = new Pen(brush, 1.5);
+        var pen = isSelected ? SelectedNoteOutlinePen : NoteOutlinePen;
 
         // Draw note head based on duration
         bool isFilled = duration != NoteDuration.Whole && duration != NoteDuration.Half;
@@ -235,13 +265,13 @@ public class ScoreRenderer
             double stemStartY = position.Y;
             double stemEndY = stemUp ? position.Y - stemHeight : position.Y + stemHeight;
 
-            var stemPen = new Pen(brush, StemThickness);
+            var stemPen = isSelected ? SelectedStemPen : StemPen;
             dc.DrawLine(stemPen, new Point(stemX, stemStartY), new Point(stemX, stemEndY));
 
             // Draw flags for eighth notes and smaller
             if (flagCount > 0)
             {
-                RenderFlags(dc, new Point(stemX, stemEndY), flagCount, stemUp, brush);
+                RenderFlags(dc, new Point(stemX, stemEndY), flagCount, stemUp, isSelected ? SelectedNoteOutlinePen : NoteOutlinePen);
             }
         }
     }
@@ -255,7 +285,6 @@ public class ScoreRenderer
     public void RenderRest(DrawingContext dc, Point position, NoteDuration duration)
     {
         var brush = NoteBrush;
-        var pen = new Pen(brush, 1.5);
 
         switch (duration)
         {
@@ -305,7 +334,7 @@ public class ScoreRenderer
             return;
 
         var brush = AccidentalBrush;
-        var pen = new Pen(brush, 1.2);
+        var pen = AccidentalPen;
 
         switch (accidental)
         {
@@ -520,7 +549,7 @@ public class ScoreRenderer
                 break;
 
             case ArticulationType.Tenuto:
-                dc.DrawLine(new Pen(brush, 2),
+                dc.DrawLine(NoteThickPen,
                     new Point(articulationPosition.X - 4, articulationPosition.Y),
                     new Point(articulationPosition.X + 4, articulationPosition.Y));
                 break;
@@ -548,8 +577,7 @@ public class ScoreRenderer
     /// <param name="above">Whether the tie curves above the notes.</param>
     public void RenderTie(DrawingContext dc, Point startPosition, Point endPosition, bool above = true)
     {
-        var brush = NoteBrush;
-        var pen = new Pen(brush, 1.5);
+        var pen = NoteOutlinePen;
 
         double controlY = above
             ? Math.Min(startPosition.Y, endPosition.Y) - StaffLineSpacing * 1.5
@@ -610,10 +638,8 @@ public class ScoreRenderer
         };
     }
 
-    private void RenderFlags(DrawingContext dc, Point stemEnd, int count, bool stemUp, Brush brush)
+    private void RenderFlags(DrawingContext dc, Point stemEnd, int count, bool stemUp, Pen pen)
     {
-        var pen = new Pen(brush, 1.5);
-
         for (int i = 0; i < count; i++)
         {
             double yOffset = i * 6 * (stemUp ? 1 : -1);
@@ -647,7 +673,7 @@ public class ScoreRenderer
     private void DrawClefGeometric(DrawingContext dc, Point position, ClefType clef)
     {
         var brush = NoteBrush;
-        var pen = new Pen(brush, 2);
+        var pen = NoteThickPen;
 
         switch (clef)
         {
@@ -751,7 +777,7 @@ public class ScoreRenderer
     private void DrawQuarterRest(DrawingContext dc, Point position, Brush brush)
     {
         // Simplified quarter rest (zigzag)
-        var pen = new Pen(brush, 2);
+        var pen = NoteThickPen;
         var geometry = new PathGeometry();
         var figure = new PathFigure
         {
@@ -770,7 +796,7 @@ public class ScoreRenderer
 
     private void DrawEighthRest(DrawingContext dc, Point position, Brush brush, int flags)
     {
-        var pen = new Pen(brush, 1.5);
+        var pen = NoteOutlinePen;
 
         // Stem
         double stemHeight = 10 + (flags - 1) * 5;
@@ -794,9 +820,8 @@ public class ScoreRenderer
         dc.DrawLine(pen, new Point(position.X + 2, position.Y - size), new Point(position.X + 2, position.Y + size));
 
         // Horizontal lines (slightly angled)
-        var thickPen = new Pen(brush, 2);
-        dc.DrawLine(thickPen, new Point(position.X - 5, position.Y - 3), new Point(position.X + 5, position.Y - 5));
-        dc.DrawLine(thickPen, new Point(position.X - 5, position.Y + 5), new Point(position.X + 5, position.Y + 3));
+        dc.DrawLine(AccidentalThickPen, new Point(position.X - 5, position.Y - 3), new Point(position.X + 5, position.Y - 5));
+        dc.DrawLine(AccidentalThickPen, new Point(position.X - 5, position.Y + 5), new Point(position.X + 5, position.Y + 3));
     }
 
     private void DrawFlat(DrawingContext dc, Point position, Brush brush, Pen pen)
@@ -836,16 +861,15 @@ public class ScoreRenderer
         dc.DrawLine(pen, new Point(position.X + 3, position.Y - size), new Point(position.X + 3, position.Y));
 
         // Horizontal connectors
-        var thickPen = new Pen(brush, 2);
-        dc.DrawLine(thickPen, new Point(position.X - 3, position.Y - 2), new Point(position.X + 3, position.Y - 4));
-        dc.DrawLine(thickPen, new Point(position.X - 3, position.Y + 4), new Point(position.X + 3, position.Y + 2));
+        dc.DrawLine(AccidentalThickPen, new Point(position.X - 3, position.Y - 2), new Point(position.X + 3, position.Y - 4));
+        dc.DrawLine(AccidentalThickPen, new Point(position.X - 3, position.Y + 4), new Point(position.X + 3, position.Y + 2));
     }
 
     private void DrawDoubleSharp(DrawingContext dc, Point position, Brush brush)
     {
         // Draw double sharp (X)
         double size = 4;
-        var pen = new Pen(brush, 2);
+        var pen = AccidentalThickPen;
 
         dc.DrawLine(pen, new Point(position.X - size, position.Y - size), new Point(position.X + size, position.Y + size));
         dc.DrawLine(pen, new Point(position.X + size, position.Y - size), new Point(position.X - size, position.Y + size));
@@ -877,7 +901,7 @@ public class ScoreRenderer
 
     private void DrawAccent(DrawingContext dc, Point position, bool above, Brush brush)
     {
-        var pen = new Pen(brush, 1.5);
+        var pen = NoteOutlinePen;
         double size = 5;
         double direction = above ? 1 : -1;
 
@@ -890,14 +914,13 @@ public class ScoreRenderer
         // Marcato is like accent but filled
         DrawAccent(dc, position, above, brush);
         // Add vertical line
-        var pen = new Pen(brush, 1.5);
         double size = 5;
-        dc.DrawLine(pen, new Point(position.X, position.Y), new Point(position.X, position.Y - size * (above ? 1 : -1)));
+        dc.DrawLine(NoteOutlinePen, new Point(position.X, position.Y), new Point(position.X, position.Y - size * (above ? 1 : -1)));
     }
 
     private void DrawFermata(DrawingContext dc, Point position, bool above, Brush brush)
     {
-        var pen = new Pen(brush, 1.5);
+        var pen = NoteOutlinePen;
         double width = 10;
         double height = 6;
         double direction = above ? -1 : 1;
@@ -969,6 +992,12 @@ public class ScoreRenderer
         _selectedNoteBrush = null;
         _hollowNoteBrush = null;
         _accidentalBrush = null;
+        _noteOutlinePen = null;
+        _selectedNoteOutlinePen = null;
+        _selectedStemPen = null;
+        _noteThickPen = null;
+        _accidentalPen = null;
+        _accidentalThickPen = null;
     }
 
     #endregion

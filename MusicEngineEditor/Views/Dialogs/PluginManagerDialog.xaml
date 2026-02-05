@@ -124,7 +124,7 @@
 
                 <!-- Search Box -->
                 <Border Grid.Column="0"
-                        Background="#141414"
+                        Background="{DynamicResource ToolbarBackgroundBrush}"
                         BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="4"
@@ -438,7 +438,7 @@
                         <TextBlock Text="Path" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding SelectedPlugin.Path, Mode=OneWay}"
                                  IsReadOnly="True"
-                                 Background="#141414"
+                                 Background="{DynamicResource ToolbarBackgroundBrush}"
                                  BorderBrush="{DynamicResource BorderBrush}"
                                  Foreground="{DynamicResource SecondaryForegroundBrush}"
                                  FontSize="10"
@@ -450,7 +450,7 @@
                         <TextBlock Text="Tags (comma separated)" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
                         <TextBox x:Name="TagsTextBox"
                                  Text="{Binding SelectedPlugin.TagsDisplay, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                 Background="#141414"
+                                 Background="{DynamicResource ToolbarBackgroundBrush}"
                                  BorderBrush="{DynamicResource BorderBrush}"
                                  Foreground="{DynamicResource ForegroundBrush}"
                                  FontSize="11"
