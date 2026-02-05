@@ -22,6 +22,7 @@ using System.Xml;
 using ICSharpCode.AvalonEdit.Document;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using MusicEngine.Core;
 using MusicEngineEditor.Editor;
 using MusicEngineEditor.Models;
 using MusicEngineEditor.Services;
@@ -30,6 +31,7 @@ using MusicEngineEditor.ViewModels;
 using MusicEngineEditor.Views;
 using MusicEngineEditor.Views.Dialogs;
 using MusicEngineEditor.Services;
+using MusicEngine.Core.Vst;
 
 namespace MusicEngineEditor;
 
@@ -55,6 +57,10 @@ public partial class MainWindow : Window
 
     // VST Plugin Windows
     private readonly Dictionary<string, VstPluginWindow> _vstWindows = new();
+    private readonly VstHost _vstHost = new();
+    private readonly Dictionary<string, IVstPlugin> _scriptVstInstances = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _scriptVstVariables = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<IVstPlugin> _panelOwnedInstances = new();
 
     // DAW Windows
     private Views.PatternEditorWindow? _patternEditorWindow;
@@ -163,8 +169,16 @@ public partial class MainWindow : Window
         // Open synth editor when a synth is created via script
         _engineService.SynthCreated += (synth, name, typeName) => Dispatcher.BeginInvoke(() =>
         {
+            if (synth is IVstPlugin vstPlugin)
+            {
+                VstPluginsPanel.AssociatePluginInstance(vstPlugin.Name, vstPlugin);
+                _scriptVstInstances[vstPlugin.Name] = vstPlugin;
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    _scriptVstVariables[vstPlugin.Name] = name;
+                }
+            }
             SynthEditorPanel.RegisterSynth(synth, name, typeName);
-            OpenSynthEditor(synth, name, typeName);
         });
 
         // Hook user console keydown
@@ -1048,32 +1062,13 @@ public partial class MainWindow : Window
 
     private void OpenVstWindowByName(string name)
     {
-        // Try to find or create VST window
-        if (_vstWindows.TryGetValue(name, out var existingWindow))
-        {
-            existingWindow.Show();
-            existingWindow.WindowState = System.Windows.WindowState.Normal;
-            existingWindow.Activate();
-        }
-        else
-        {
-            // Find the VST plugin in the panel's list
-            var plugin = VstPluginsPanel.Plugins.FirstOrDefault(p =>
-                p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        var plugin = VstPluginsPanel.Plugins.FirstOrDefault(p =>
+            p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        var instance = plugin != null ? EnsureVstPluginInstance(plugin) : null;
 
-            if (plugin != null)
-            {
-                var window = new VstPluginWindow(plugin.Name, plugin.FullPath);
-                _vstWindows[name] = window;
-                window.Show();
-                OutputLine($"Opened VST window: {name}");
-            }
-            else
-            {
-                // Plugin not found in panel, open with just the name
-                OpenVstPluginWindow(name, name);
-            }
-        }
+        var pluginName = plugin?.Name ?? name;
+        var variableName = GetVstVariableName(pluginName, name);
+        OpenVstPluginWindow(pluginName, variableName, instance);
     }
 
     private DateTime _lastClickTime = DateTime.MinValue;
@@ -1222,6 +1217,7 @@ public partial class MainWindow : Window
         _transportViewModel?.Dispose();
         _performanceMonitorService.Dispose();
         CloseAllVstWindows();
+        (_vstHost as IDisposable)?.Dispose();
         _engineService.Dispose();
 
         // Mark session as cleanly closed (no crash recovery needed)
@@ -1866,6 +1862,7 @@ public partial class MainWindow : Window
 
                 // Notify visualization system after successful execution
                 _visualization?.OnAfterExecute(true);
+                RefreshPatternEditor();
                 _visualization?.OnPlaybackStarted();
 
                 // Start audio reactive lighting
@@ -2631,8 +2628,26 @@ public partial class MainWindow : Window
             _patternEditorWindow.Owner = this;
             _patternEditorWindow.Closed += (s, args) => _patternEditorWindow = null;
         }
+        RefreshPatternEditor();
         _patternEditorWindow.Show();
         _patternEditorWindow.Activate();
+    }
+
+    private void RefreshPatternEditor()
+    {
+        if (_patternEditorWindow == null || !_patternEditorWindow.IsLoaded)
+        {
+            return;
+        }
+
+        var sequencer = _engineService.Sequencer;
+        if (sequencer == null)
+        {
+            return;
+        }
+
+        _patternEditorWindow.BindToSequencer(sequencer);
+        _patternEditorWindow.RegisterPatterns(sequencer.Patterns);
     }
 
     private void ToggleMixer_Click(object sender, RoutedEventArgs e)
@@ -3144,12 +3159,16 @@ public partial class MainWindow : Window
     // VstPluginPanel Event Handlers
     private void VstPluginsPanel_OnOpenPluginEditor(object? sender, VstPluginEventArgs e)
     {
-        OpenVstPluginWindow(e.Plugin.Name, e.Plugin.Name);
+        var instance = EnsureVstPluginInstance(e.Plugin);
+        var variableName = GetVstVariableName(e.Plugin.Name, e.Plugin.Name);
+        OpenVstPluginWindow(e.Plugin.Name, variableName, instance);
     }
 
     private void VstPluginsPanel_OnPluginDoubleClick(object? sender, VstPluginEventArgs e)
     {
-        OpenVstPluginWindow(e.Plugin.Name, e.Plugin.Name);
+        var instance = EnsureVstPluginInstance(e.Plugin);
+        var variableName = GetVstVariableName(e.Plugin.Name, e.Plugin.Name);
+        OpenVstPluginWindow(e.Plugin.Name, variableName, instance);
     }
 
     private void VstPluginsPanel_OnScanCompleted(object? sender, VstScanCompletedEventArgs e)
@@ -4025,7 +4044,7 @@ Print("");
 
     #region VST Plugin Windows
 
-    public void OpenVstPluginWindow(string pluginName, string variableName)
+    public void OpenVstPluginWindow(string pluginName, string variableName, IVstPlugin? pluginInstance = null)
     {
         var key = $"{variableName}_{pluginName}";
 
@@ -4037,7 +4056,7 @@ Print("");
         else
         {
             // Create new VST window
-            var window = new VstPluginWindow(pluginName, variableName, null)
+            var window = new VstPluginWindow(pluginName, variableName, pluginInstance)
             {
                 Owner = this
             };
@@ -4050,12 +4069,167 @@ Print("");
                 if (!window.KeepRunning)
                 {
                     _vstWindows.Remove(key);
+                    if (pluginInstance != null && _panelOwnedInstances.Remove(pluginInstance))
+                    {
+                        try
+                        {
+                            _vstHost.UnloadPlugin(pluginInstance.Name);
+                        }
+                        catch (Exception ex)
+                        {
+                            OutputLine($"Failed to unload VST plugin '{pluginInstance.Name}': {ex.Message}");
+                        }
+
+                        var panelPlugin = VstPluginsPanel.Plugins.FirstOrDefault(p =>
+                            ReferenceEquals(p.PluginInstance, pluginInstance));
+                        if (panelPlugin != null)
+                        {
+                            panelPlugin.PluginInstance = null;
+                            panelPlugin.IsLoaded = false;
+                        }
+                    }
                 }
             };
 
             window.Show();
             OutputLine($"Opened VST plugin window: {pluginName} (variable: {variableName})");
         }
+    }
+
+    private IVstPlugin? EnsureVstPluginInstance(VstPluginDisplayInfo plugin)
+    {
+        if (plugin.PluginInstance != null)
+        {
+            return plugin.PluginInstance;
+        }
+
+        var resolved = TryResolveVstInstanceFromScript(plugin.Name);
+        if (resolved != null)
+        {
+            plugin.PluginInstance = resolved;
+            plugin.IsLoaded = true;
+            return resolved;
+        }
+
+        if (_scriptVstInstances.TryGetValue(plugin.Name, out var scriptInstance))
+        {
+            plugin.PluginInstance = scriptInstance;
+            plugin.IsLoaded = true;
+            return scriptInstance;
+        }
+
+        if (string.IsNullOrWhiteSpace(plugin.FullPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var instance = _vstHost.LoadPlugin(plugin.FullPath);
+            if (instance != null)
+            {
+                plugin.PluginInstance = instance;
+                plugin.IsLoaded = true;
+                _panelOwnedInstances.Add(instance);
+            }
+            else
+            {
+                OutputLine($"Failed to load VST plugin '{plugin.Name}' (LoadPlugin returned null).");
+            }
+            return instance;
+        }
+        catch (Exception ex)
+        {
+            OutputLine($"Failed to load VST plugin '{plugin.Name}': {ex.Message}");
+            return null;
+        }
+    }
+
+    private string GetVstVariableName(string pluginName, string fallback)
+    {
+        if (_scriptVstVariables.TryGetValue(pluginName, out var variableName))
+        {
+            return variableName;
+        }
+
+        var discovered = FindVstVariableForPlugin(pluginName);
+        if (!string.IsNullOrWhiteSpace(discovered))
+        {
+            _scriptVstVariables[pluginName] = discovered;
+            return discovered;
+        }
+
+        return fallback;
+    }
+
+    private IVstPlugin? TryResolveVstInstanceFromScript(string pluginName)
+    {
+        var variableName = GetVstVariableName(pluginName, string.Empty);
+        if (string.IsNullOrWhiteSpace(variableName))
+        {
+            return null;
+        }
+
+        if (_engineService.TryGetScriptVariable(variableName, out var value) && value is IVstPlugin vstPlugin)
+        {
+            _scriptVstInstances[pluginName] = vstPlugin;
+            _scriptVstVariables[pluginName] = variableName;
+            VstPluginsPanel.AssociatePluginInstance(vstPlugin.Name, vstPlugin);
+            return vstPlugin;
+        }
+
+        return null;
+    }
+
+    private string? FindVstVariableForPlugin(string pluginName)
+    {
+        var code = CodeEditor.Text;
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return null;
+        }
+
+        var normalizedTarget = NormalizeVstName(pluginName);
+        var regex = new System.Text.RegularExpressions.Regex(
+            @"var\s+(?<var>\w+)\s*=\s*(?:vst\.load|vst\.loadFile)\s*\(\s*[""'](?<name>[^""']+)[""']\s*\)",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        foreach (System.Text.RegularExpressions.Match match in regex.Matches(code))
+        {
+            var matchName = match.Groups["name"].Value;
+            if (NormalizeVstName(matchName) == normalizedTarget)
+            {
+                return match.Groups["var"].Value;
+            }
+        }
+
+        return null;
+    }
+
+    private static string NormalizeVstName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return string.Empty;
+        }
+
+        var normalized = name.Trim().Replace("\\", "/");
+        var lastSlash = normalized.LastIndexOf('/');
+        if (lastSlash >= 0)
+        {
+            normalized = normalized[(lastSlash + 1)..];
+        }
+
+        if (normalized.EndsWith(".vst3", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[..^5];
+        }
+        else if (normalized.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[..^4];
+        }
+
+        return normalized.Trim().ToLowerInvariant();
     }
 
     public void CloseAllVstWindows()

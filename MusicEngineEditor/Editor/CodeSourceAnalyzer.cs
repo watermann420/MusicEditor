@@ -87,7 +87,7 @@ public static class CodeSourceAnalyzer
         RegexOptions.Compiled);
 
     private static readonly Regex PatternCreationRegex = new(
-        @"(?<var>\w+)\s*=\s*(?:new\s+Pattern|CreatePattern)\s*\(\s*(?<synth>\w+)\s*\)",
+        @"(?<var>\w+)\s*=\s*(?:new\s+Pattern|CreatePattern|pattern|p|newPattern)\s*\(\s*(?<synth>\w+)?\s*(?:,[^)]*)?\)",
         RegexOptions.Compiled);
 
     private static readonly Regex NoteEventRegex = new(
@@ -102,9 +102,9 @@ public static class CodeSourceAnalyzer
         @"(?<pattern>\w+)\.Events\.Add\s*\(\s*new\s+NoteEvent\s*\{(?<props>[^}]+)\}\s*\)",
         RegexOptions.Compiled);
 
-    // Simple pattern.Note(note, beat, duration, velocity) syntax - this is the primary syntax
+    // Simple pattern.Note(note, beat, duration, velocity) syntax - primary syntax (note can be expression or literal)
     private static readonly Regex SimplePatternNoteRegex = new(
-        @"(?<pattern>\w+)\.Note\s*\(\s*(?<note>\d+)\s*,\s*(?<beat>[\d.]+)\s*,\s*(?<duration>[\d.]+)\s*,\s*(?<velocity>\d+)\s*\)",
+        @"(?<pattern>\w+)\.Note\s*\(\s*(?<note>[^,]+)\s*,\s*(?<beat>[\d.]+)\s*,\s*(?<duration>[\d.]+)\s*,\s*(?<velocity>\d+)\s*\)",
         RegexOptions.Compiled);
 
     private static readonly Regex VariableUsageRegex = new(
@@ -294,7 +294,7 @@ public static class CodeSourceAnalyzer
 
             var note = new NoteDefinition
             {
-                Note = int.Parse(match.Groups["note"].Value),
+                Note = TryParseNoteExpression(match.Groups["note"].Value),
                 Beat = double.Parse(match.Groups["beat"].Value, System.Globalization.CultureInfo.InvariantCulture),
                 Duration = double.Parse(match.Groups["duration"].Value, System.Globalization.CultureInfo.InvariantCulture),
                 Velocity = int.Parse(match.Groups["velocity"].Value),
@@ -330,12 +330,12 @@ public static class CodeSourceAnalyzer
         var velocityMatch = Regex.Match(props, @"Velocity\s*=\s*(\d+)");
         var durationMatch = Regex.Match(props, @"Duration\s*=\s*([\d.]+)");
 
-        if (beatMatch.Success) note.Beat = double.Parse(beatMatch.Groups[1].Value);
-        if (noteMatch.Success) note.Note = int.Parse(noteMatch.Groups[1].Value);
+        if (beatMatch.Success) note.Beat = double.Parse(beatMatch.Groups[1].Value, CultureInfo.InvariantCulture);
+        if (noteMatch.Success) note.Note = int.Parse(noteMatch.Groups[1].Value, CultureInfo.InvariantCulture);
         if (velocityMatch.Success) note.Velocity = int.Parse(velocityMatch.Groups[1].Value);
-        if (durationMatch.Success) note.Duration = double.Parse(durationMatch.Groups[1].Value);
+        if (durationMatch.Success) note.Duration = double.Parse(durationMatch.Groups[1].Value, CultureInfo.InvariantCulture);
 
-        return note.Note > 0 ? note : null;
+        return note;
     }
 
     private static void FindInstrumentReferences(string code, CodeAnalysisResult result)
@@ -404,16 +404,53 @@ public static class CodeSourceAnalyzer
     public static void AttachSourceInfoToPatterns(string code, IEnumerable<Pattern> patterns)
     {
         var analysis = Analyze(code);
+        var remainingDefinitions = new List<PatternDefinition>(analysis.Patterns);
+        var indexedDefinitions = analysis.Patterns.ToList();
 
         foreach (var pattern in patterns)
         {
             // Try to find matching pattern definition
-            var patternDef = analysis.Patterns.FirstOrDefault(p =>
-                p.InstrumentName == pattern.InstrumentName ||
-                p.InstrumentName == pattern.Name);
+            PatternDefinition? patternDef = null;
+            if (!string.IsNullOrWhiteSpace(pattern.Name))
+            {
+                patternDef = remainingDefinitions.FirstOrDefault(p =>
+                    string.Equals(p.VariableName, pattern.Name, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (patternDef == null)
+            {
+                var patternIndex = GetPatternIndex(pattern);
+                if (patternIndex >= 0 && patternIndex < indexedDefinitions.Count)
+                {
+                    var candidate = indexedDefinitions[patternIndex];
+                    if (remainingDefinitions.Contains(candidate))
+                    {
+                        patternDef = candidate;
+                    }
+                }
+            }
+
+            if (patternDef == null)
+            {
+                patternDef = remainingDefinitions.FirstOrDefault(p =>
+                    string.Equals(p.InstrumentName, pattern.InstrumentName, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(p.InstrumentName, pattern.Name, StringComparison.OrdinalIgnoreCase));
+            }
 
             if (patternDef != null)
             {
+                remainingDefinitions.Remove(patternDef);
+
+                if (string.IsNullOrWhiteSpace(pattern.Name))
+                {
+                    pattern.Name = patternDef.VariableName;
+                }
+
+                if (string.IsNullOrWhiteSpace(pattern.InstrumentName))
+                {
+                    pattern.InstrumentName = patternDef.InstrumentName;
+                }
+
                 // Attach source info to the pattern itself
                 pattern.SourceInfo = new CodeSourceInfo
                 {
@@ -424,11 +461,17 @@ public static class CodeSourceAnalyzer
                 };
 
                 // Match note events by their Beat position
-                foreach (var noteEvent in pattern.Events)
+                for (int i = 0; i < pattern.Events.Count; i++)
                 {
+                    var noteEvent = pattern.Events[i];
                     var matchingNote = patternDef.Notes.FirstOrDefault(n =>
-                        Math.Abs(n.Beat - noteEvent.Beat) < 0.001 &&
-                        n.Note == noteEvent.Note);
+                        Math.Abs(n.Beat - noteEvent.Beat) < 0.01 &&
+                        (n.Note <= 0 || n.Note == noteEvent.Note));
+
+                    if (matchingNote == null && i < patternDef.Notes.Count)
+                    {
+                        matchingNote = patternDef.Notes[i];
+                    }
 
                     if (matchingNote != null)
                     {
@@ -450,17 +493,23 @@ public static class CodeSourceAnalyzer
     /// <summary>
     /// Extracts source info for a specific note event based on code analysis.
     /// </summary>
-    public static CodeSourceInfo? GetSourceInfoForNote(string code, int note, double beat, string? instrumentName = null)
+    public static CodeSourceInfo? GetSourceInfoForNote(string code, int note, double beat, string? instrumentName = null, string? patternVariable = null)
     {
         var analysis = Analyze(code);
 
         foreach (var pattern in analysis.Patterns)
         {
+            if (!string.IsNullOrWhiteSpace(patternVariable) &&
+                !string.Equals(pattern.VariableName, patternVariable, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             if (instrumentName != null && pattern.InstrumentName != instrumentName)
                 continue;
 
             var matchingNote = pattern.Notes.FirstOrDefault(n =>
-                Math.Abs(n.Beat - beat) < 0.001 && n.Note == note);
+                Math.Abs(n.Beat - beat) < 0.01 && (n.Note <= 0 || n.Note == note));
 
             if (matchingNote != null)
             {
@@ -479,6 +528,39 @@ public static class CodeSourceAnalyzer
         return null;
     }
 
+    public static CodeSourceInfo? GetSourceInfoForNoteIndex(string code, int patternIndex, int noteIndex, string? patternVariable = null)
+    {
+        var analysis = Analyze(code);
+        PatternDefinition? patternDef = null;
+
+        if (!string.IsNullOrWhiteSpace(patternVariable))
+        {
+            patternDef = analysis.Patterns.FirstOrDefault(p =>
+                string.Equals(p.VariableName, patternVariable, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (patternDef == null && patternIndex >= 0 && patternIndex < analysis.Patterns.Count)
+        {
+            patternDef = analysis.Patterns[patternIndex];
+        }
+
+        if (patternDef == null || noteIndex < 0 || noteIndex >= patternDef.Notes.Count)
+        {
+            return null;
+        }
+
+        var matchingNote = patternDef.Notes[noteIndex];
+        return new CodeSourceInfo
+        {
+            StartIndex = matchingNote.SourceStart,
+            EndIndex = matchingNote.SourceEnd,
+            StartLine = matchingNote.Line,
+            StartColumn = matchingNote.Column,
+            SourceText = matchingNote.RawText,
+            InstrumentName = patternDef.InstrumentName
+        };
+    }
+
     private static int GetLineNumber(string text, int index)
     {
         if (index >= text.Length) return 1;
@@ -490,5 +572,100 @@ public static class CodeSourceAnalyzer
         if (index >= text.Length) return 1;
         int lastNewline = text.LastIndexOf('\n', index);
         return index - lastNewline;
+    }
+
+    private static int GetPatternIndex(Pattern pattern)
+    {
+        var prop = pattern.GetType().GetProperty("PatternIndex",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+        if (prop?.GetValue(pattern) is int index)
+        {
+            return index;
+        }
+
+        return -1;
+    }
+
+    private static int TryParseNoteExpression(string expression)
+    {
+        var trimmed = expression.Trim();
+        if (int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out var note))
+        {
+            return note;
+        }
+
+        if (trimmed.Length >= 2 &&
+            (trimmed[0] == '"' && trimmed[^1] == '"' || trimmed[0] == '\'' && trimmed[^1] == '\''))
+        {
+            var name = trimmed.Substring(1, trimmed.Length - 2);
+            var parsed = TryParseNoteName(name);
+            if (parsed.HasValue)
+            {
+                return parsed.Value;
+            }
+        }
+
+        var funcMatch = Regex.Match(trimmed, @"(?<note>[A-Ga-g])\s*(?<accidental>[#b]?)[\s_]*\(\s*(?<octave>-?\d+)\s*\)");
+        if (funcMatch.Success)
+        {
+            var name = funcMatch.Groups["note"].Value.ToUpperInvariant() + funcMatch.Groups["accidental"].Value;
+            var octaveText = funcMatch.Groups["octave"].Value;
+            if (int.TryParse(octaveText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var octave))
+            {
+                var parsed = TryParseNoteName($"{name}{octave}");
+                if (parsed.HasValue)
+                {
+                    return parsed.Value;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    private static int? TryParseNoteName(string noteText)
+    {
+        if (string.IsNullOrWhiteSpace(noteText))
+        {
+            return null;
+        }
+
+        var match = Regex.Match(noteText.Trim(), @"^(?<note>[A-Ga-g])(?<accidental>[#b]?)(?<octave>-?\d+)$");
+        if (!match.Success)
+        {
+            return null;
+        }
+
+        var noteLetter = match.Groups["note"].Value.ToUpperInvariant();
+        var accidental = match.Groups["accidental"].Value;
+        if (!int.TryParse(match.Groups["octave"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var octave))
+        {
+            return null;
+        }
+
+        var baseIndex = noteLetter switch
+        {
+            "C" => 0,
+            "D" => 2,
+            "E" => 4,
+            "F" => 5,
+            "G" => 7,
+            "A" => 9,
+            "B" => 11,
+            _ => 0
+        };
+
+        if (accidental == "#")
+        {
+            baseIndex += 1;
+        }
+        else if (accidental == "b")
+        {
+            baseIndex -= 1;
+        }
+
+        baseIndex = (baseIndex + 12) % 12;
+        var midi = (octave + 1) * 12 + baseIndex;
+        return Math.Clamp(midi, 0, 127);
     }
 }

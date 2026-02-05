@@ -258,8 +258,6 @@ public class VisualizationIntegration : IDisposable
 
         var aes = AudioEngineService.Instance;
         aes.MidiNoteActivity += (idx, on) => _editor?.Dispatcher.BeginInvoke(() => _liveActivity?.NoteActivity(idx, on), DispatcherPriority.Background);
-        // Also pulse for any MIDI message (for log.info / non-note events)
-        aes.MidiActivity += idx => _editor?.Dispatcher.BeginInvoke(() => _liveActivity?.PingMidiDevice(idx), DispatcherPriority.Background);
     }
 }
 

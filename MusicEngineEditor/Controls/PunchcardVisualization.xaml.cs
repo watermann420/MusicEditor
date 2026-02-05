@@ -94,6 +94,7 @@ public partial class PunchcardVisualization : UserControl
     private readonly List<Pattern> _patterns = new();
     private readonly Dictionary<System.Windows.Shapes.Rectangle, NoteInfo> _noteRectangles = new();
     private readonly Dictionary<System.Windows.Shapes.Rectangle, NoteInfo> _activeNotes = new();
+    private readonly Dictionary<(Guid patternId, int noteIndex), System.Windows.Shapes.Rectangle> _noteLookup = new();
     private readonly HashSet<int> _triggeredNotes = new();
     private Storyboard? _playheadAnimation;
 
@@ -359,12 +360,13 @@ public partial class PunchcardVisualization : UserControl
             var vizPattern = new Pattern
             {
                 Name = $"Pattern {_patterns.Count + 1}",
-                Notes = seqPattern.Events.Select(e => new Note
+                Notes = seqPattern.Events.Select((e, index) => new Note
                 {
                     Pitch = e.Note,
                     StartBeat = e.Beat,
                     Duration = e.Duration,
-                    Velocity = e.Velocity
+                    Velocity = e.Velocity,
+                    SourceIndex = index
                 }).ToList()
             };
 
@@ -399,12 +401,13 @@ public partial class PunchcardVisualization : UserControl
         var vizPattern = new Pattern
         {
             Name = name ?? $"Pattern {_patterns.Count + 1}",
-            Notes = sequencerPattern.Events.Select(e => new Note
+            Notes = sequencerPattern.Events.Select((e, index) => new Note
             {
                 Pitch = e.Note,
                 StartBeat = e.Beat,
                 Duration = e.Duration,
-                Velocity = e.Velocity
+                Velocity = e.Velocity,
+                SourceIndex = index
             }).ToList(),
             SourcePattern = sequencerPattern
         };
@@ -447,6 +450,7 @@ public partial class PunchcardVisualization : UserControl
         NotesCanvas.Children.Clear();
         BeatLabelsCanvas.Children.Clear();
         _noteRectangles.Clear();
+        _noteLookup.Clear();
 
         // Render components
         RenderGrid(totalWidth, totalHeight);
@@ -554,12 +558,12 @@ public partial class PunchcardVisualization : UserControl
 
             foreach (var note in pattern.Notes)
             {
-                RenderNote(note, trackY, pattern.Name);
+                RenderNote(note, trackY, pattern.Name, pattern.SourcePattern, note.SourceIndex);
             }
         }
     }
 
-    private void RenderNote(Note note, double trackY, string patternName)
+    private void RenderNote(Note note, double trackY, string patternName, MusicEngine.Core.Pattern? sourcePattern, int noteIndex)
     {
         var noteX = note.StartBeat * BeatWidth;
         var noteWidth = Math.Max(note.Duration * BeatWidth - 2, MinNoteWidth);
@@ -587,9 +591,15 @@ public partial class PunchcardVisualization : UserControl
         var noteInfo = new NoteInfo
         {
             Note = note,
-            PatternName = patternName
+            PatternName = patternName,
+            SourcePattern = sourcePattern,
+            NoteIndex = noteIndex
         };
         _noteRectangles[rect] = noteInfo;
+        if (sourcePattern != null && noteIndex >= 0)
+        {
+            _noteLookup[(sourcePattern.Id, noteIndex)] = rect;
+        }
 
         // Add event handlers for hover
         rect.MouseEnter += OnNoteMouseEnter;
@@ -667,6 +677,11 @@ public partial class PunchcardVisualization : UserControl
     /// </summary>
     private void CheckAndTriggerNotes(double currentBeat)
     {
+        if (_sequencer != null && _noteLookup.Count > 0 && UpdateActiveNotesFromSequencer())
+        {
+            return;
+        }
+
         // Determine the beat range to check (small window around current beat)
         const double triggerWindow = 0.1; // beats
 
@@ -711,6 +726,75 @@ public partial class PunchcardVisualization : UserControl
                 _activeNotes.Remove(rect);
             }
         }
+    }
+
+    private bool UpdateActiveNotesFromSequencer()
+    {
+        if (_sequencer == null)
+        {
+            return false;
+        }
+
+        var activeEvents = _sequencer.ActiveEvents;
+        if (activeEvents.Count == 0)
+        {
+            if (_activeNotes.Count > 0)
+            {
+                ClearActiveNoteEffects();
+            }
+            return true;
+        }
+
+        var activeRects = new HashSet<System.Windows.Shapes.Rectangle>();
+        foreach (var musicalEvent in activeEvents)
+        {
+            if (musicalEvent.SourcePattern == null)
+            {
+                continue;
+            }
+
+            var noteIndex = musicalEvent.Id.NoteIndex;
+            if (noteIndex < 0)
+            {
+                continue;
+            }
+
+            var key = (musicalEvent.SourcePattern.Id, noteIndex);
+            if (!_noteLookup.TryGetValue(key, out var rect) ||
+                !_noteRectangles.TryGetValue(rect, out var noteInfo))
+            {
+                continue;
+            }
+
+            activeRects.Add(rect);
+
+            if (!_activeNotes.ContainsKey(rect))
+            {
+                TriggerNoteAnimation(rect, noteInfo);
+                _activeNotes[rect] = noteInfo;
+            }
+            else
+            {
+                var duration = musicalEvent.Duration;
+                if (duration <= 0)
+                {
+                    duration = 0.0001;
+                }
+                var elapsed = duration * musicalEvent.PlayProgress;
+                UpdatePlayingNoteEffect(rect, elapsed, duration);
+            }
+        }
+
+        foreach (var rect in _activeNotes.Keys.ToList())
+        {
+            if (!activeRects.Contains(rect))
+            {
+                RemoveNoteAnimation(rect);
+                _activeNotes.Remove(rect);
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -927,6 +1011,8 @@ public partial class PunchcardVisualization : UserControl
     {
         public Note Note { get; init; } = null!;
         public string PatternName { get; init; } = string.Empty;
+        public MusicEngine.Core.Pattern? SourcePattern { get; init; }
+        public int NoteIndex { get; init; }
     }
 
     #endregion
@@ -986,6 +1072,11 @@ public class Note
     /// Gets or sets the velocity (0-127).
     /// </summary>
     public int Velocity { get; set; } = 100;
+
+    /// <summary>
+    /// Gets or sets the source note index from the sequencer pattern.
+    /// </summary>
+    public int SourceIndex { get; set; } = -1;
 
     /// <summary>
     /// Gets the note name (e.g., "C4", "F#3").

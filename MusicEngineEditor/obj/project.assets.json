@@ -885,11 +885,9 @@
           "Microsoft.Extensions.Logging": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.0",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "9.0.0",
-          "MusicEngine.VstBridge": "1.0.0",
+          "MusicEngine.CppLayer": "1.0.0",
           "NAudio": "2.2.1",
-          "NAudio.Asio": "2.2.1",
           "NAudio.Midi": "2.2.1",
-          "NAudio.Wasapi": "2.2.1",
           "NAudio.WinForms": "2.2.1",
           "NAudio.WinMM": "2.2.1",
           "Serilog": "4.1.0",
@@ -905,14 +903,14 @@
           "bin/placeholder/MusicEngine.dll": {}
         }
       },
-      "MusicEngine.VstBridge/1.0.0": {
+      "MusicEngine.CppLayer/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "compile": {
-          "bin/placeholder/MusicEngine.VstBridge.dll": {}
+          "bin/placeholder/MusicEngine.CppLayer.dll": {}
         },
         "runtime": {
-          "bin/placeholder/MusicEngine.VstBridge.dll": {}
+          "bin/placeholder/MusicEngine.CppLayer.dll": {}
         }
       }
     }
@@ -3328,10 +3326,10 @@
       "path": "../../MusicEngine/MusicEngine.csproj",
       "msbuildProject": "../../MusicEngine/MusicEngine.csproj"
     },
-    "MusicEngine.VstBridge/1.0.0": {
+    "MusicEngine.CppLayer/1.0.0": {
       "type": "project",
-      "path": "../../MusicEngine/MusicEngine.VstBridge/managed/MusicEngine.VstBridge.csproj",
-      "msbuildProject": "../../MusicEngine/MusicEngine.VstBridge/managed/MusicEngine.VstBridge.csproj"
+      "path": "../../MusicEngine/MusicEngine.CppLayer/managed/MusicEngine.CppLayer.csproj",
+      "msbuildProject": "../../MusicEngine/MusicEngine.CppLayer/managed/MusicEngine.CppLayer.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -3348,32 +3346,34 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\null\\.nuget\\packages\\": {}
+    "C:\\Users\\water\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\null\\RiderProjects\\MusicEditor\\MusicEngineEditor\\MusicEngineEditor.csproj",
+      "projectUniqueName": "C:\\Users\\water\\RiderProjects\\MusicEditor\\MusicEngineEditor\\MusicEngineEditor.csproj",
       "projectName": "MusicEngineEditor",
-      "projectPath": "C:\\Users\\null\\RiderProjects\\MusicEditor\\MusicEngineEditor\\MusicEngineEditor.csproj",
-      "packagesPath": "C:\\Users\\null\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\null\\RiderProjects\\MusicEditor\\MusicEngineEditor\\obj\\",
+      "projectPath": "C:\\Users\\water\\RiderProjects\\MusicEditor\\MusicEngineEditor\\MusicEngineEditor.csproj",
+      "packagesPath": "C:\\Users\\water\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\water\\RiderProjects\\MusicEditor\\MusicEngineEditor\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\null\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\water\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net10.0-windows"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net10.0-windows7.0": {
           "targetAlias": "net10.0-windows",
           "projectReferences": {
-            "C:\\Users\\null\\RiderProjects\\MusicEngine\\MusicEngine.csproj": {
-              "projectPath": "C:\\Users\\null\\RiderProjects\\MusicEngine\\MusicEngine.csproj"
+            "C:\\Users\\water\\RiderProjects\\MusicEngine\\MusicEngine.csproj": {
+              "projectPath": "C:\\Users\\water\\RiderProjects\\MusicEngine\\MusicEngine.csproj"
             }
           }
         }
@@ -3449,7 +3449,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",
