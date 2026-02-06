@@ -1,4 +1,5 @@
 #include "editor/EditorView.h"
+#include "app/CommandIds.h"
 
 #include <string>
 #include <algorithm>
@@ -23,10 +24,10 @@ void EditorView::Initialize(HWND parent)
         CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Consolas");
 
     _editor = CreateWindowExW(
-        WS_EX_CLIENTEDGE,
+        0,
         L"EDIT",
-        L"// MusicEngine Editor\n// Live coding placeholder\n\n",
-        WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
+        L"// MusicEngine Editor\n// Write your MusicEngine script here and press Play.\n\n",
+        WS_CHILD | WS_VISIBLE | WS_HSCROLL |
             ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
         0, 0, 0, 0,
         parent,
@@ -52,10 +53,10 @@ void EditorView::Initialize(HWND parent)
         ReleaseDC(_editor, hdc);
     }
 
-    Resize();
+    Resize(0, 0);
 }
 
-void EditorView::Resize()
+void EditorView::Resize(int topOffset, int bottomOffset)
 {
     if (!_editor || !_parent)
     {
@@ -69,9 +70,9 @@ void EditorView::Resize()
     const int width = rect.right - rect.left;
     const int height = rect.bottom - rect.top;
     const int x = kEditorPadding + _gutterWidth;
-    const int y = kEditorPadding;
+    const int y = kEditorPadding + topOffset;
     const int w = width - (kEditorPadding * 2) - _gutterWidth;
-    const int h = height - (kEditorPadding * 2);
+    const int h = height - (kEditorPadding * 2) - topOffset - bottomOffset;
     MoveWindow(_editor, x, y, w, h, TRUE);
 }
 
@@ -96,19 +97,12 @@ LRESULT EditorView::OnEditColor(HDC hdc)
     return reinterpret_cast<LRESULT>(_bgBrush);
 }
 
-void EditorView::DrawLineNumbers()
+void EditorView::DrawLineNumbers(HDC hdc)
 {
-    if (!_parent || !_editor)
+    if (!_parent || !_editor || !hdc)
     {
         return;
     }
-
-    PAINTSTRUCT ps{};
-    HDC hdc = BeginPaint(_parent, &ps);
-
-    RECT client{};
-    GetClientRect(_parent, &client);
-    FillRect(hdc, &client, _bgBrush ? _bgBrush : reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1));
 
     RECT editRect{};
     GetWindowRect(_editor, &editRect);
@@ -156,7 +150,6 @@ void EditorView::DrawLineNumbers()
         SelectObject(hdc, oldFont);
     }
 
-    EndPaint(_parent, &ps);
 }
 
 LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -168,9 +161,21 @@ LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
     {
         switch (msg)
         {
+        case WM_KEYDOWN:
+            if (wParam == VK_RETURN && (GetKeyState(VK_CONTROL) & 0x8000))
+            {
+                PostMessageW(parent, WM_COMMAND, MAKEWPARAM(kCommandRefresh, 0), 0);
+                return 0;
+            }
+            if (wParam == VK_ESCAPE)
+            {
+                PostMessageW(parent, WM_COMMAND, MAKEWPARAM(kCommandStop, 0), 0);
+                return 0;
+            }
+            InvalidateRect(parent, nullptr, FALSE);
+            break;
         case WM_VSCROLL:
         case WM_MOUSEWHEEL:
-        case WM_KEYDOWN:
         case WM_KEYUP:
         case WM_CHAR:
         case WM_LBUTTONDOWN:
@@ -225,4 +230,34 @@ int EditorView::GetLineCount() const
         return 1;
     }
     return static_cast<int>(SendMessageW(_editor, EM_GETLINECOUNT, 0, 0));
+}
+
+std::wstring EditorView::GetText() const
+{
+    if (!_editor)
+    {
+        return {};
+    }
+
+    int length = GetWindowTextLengthW(_editor);
+    if (length <= 0)
+    {
+        return {};
+    }
+
+    std::wstring text(static_cast<size_t>(length) + 1, L'\0');
+    GetWindowTextW(_editor, text.data(), length + 1);
+    text.resize(static_cast<size_t>(length));
+    return text;
+}
+
+void EditorView::SetText(const std::wstring& text)
+{
+    if (!_editor)
+    {
+        return;
+    }
+
+    SetWindowTextW(_editor, text.c_str());
+    InvalidateRect(_parent, nullptr, FALSE);
 }

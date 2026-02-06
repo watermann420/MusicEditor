@@ -1,15 +1,22 @@
 #pragma once
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include <windows.h>
+#include <string>
 
 class EditorView
 {
 public:
     void Initialize(HWND parent);
-    void Resize();
+    void Resize(int topOffset, int bottomOffset);
     void Shutdown();
     LRESULT OnEditColor(HDC hdc);
-    void DrawLineNumbers();
+    void DrawLineNumbers(HDC hdc);
+    std::wstring GetText() const;
+    void SetText(const std::wstring& text);
 
 private:
     static LRESULT CALLBACK EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

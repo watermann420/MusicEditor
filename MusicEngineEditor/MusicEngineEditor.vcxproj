@@ -83,11 +83,14 @@
   <ItemGroup>
     <ClCompile Include="src\WinMain.cpp" />
     <ClCompile Include="src\app\App.cpp" />
+    <ClCompile Include="src\app\MusicEngineHost.cpp" />
     <ClCompile Include="src\editor\EditorView.cpp" />
   </ItemGroup>
 
   <ItemGroup>
     <ClInclude Include="src\app\App.h" />
+    <ClInclude Include="src\app\CommandIds.h" />
+    <ClInclude Include="src\app\MusicEngineHost.h" />
     <ClInclude Include="src\editor\EditorView.h" />
   </ItemGroup>
 
