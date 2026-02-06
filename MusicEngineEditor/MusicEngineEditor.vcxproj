@@ -94,6 +94,17 @@
     <ClInclude Include="src\editor\EditorView.h" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Docs\Redme.md" />
+    <Content Include="VisualScripts\syntax_colors.json" />
+    <Content Include="VisualScripts\text_visuals.json" />
+    <Content Include="VisualScripts\theme_dark.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DevDocs\" />
+  </ItemGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

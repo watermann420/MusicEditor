@@ -11,4 +11,9 @@
     <ClInclude Include="src\app\MusicEngineHost.h" />
     <ClInclude Include="src\editor\EditorView.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="VisualScripts\text_visuals.json" />
+    <None Include="VisualScripts\syntax_colors.json" />
+    <None Include="VisualScripts\theme_dark.json" />
+  </ItemGroup>
 </Project>

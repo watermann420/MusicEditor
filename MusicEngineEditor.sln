@@ -6,8 +6,6 @@ Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "MusicEngineEditor", "MusicE
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameEngine", "..\GameEngien\GameEngine\GameEngine.vcxproj", "{C7F6A91E-F67F-45AB-AC44-0105E22E60B3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameEditor", "..\GameEngien\GameEngine\GameEditor\GameEditor.vcxproj", "{6E6C5319-7B0F-4B5C-8AA9-AEC8DE1700C5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicEngine", "..\MusicEngine\MusicEngine.csproj", "{3DAA7AB9-AEB9-4DBC-9A58-B4CFC4F2758D}"
 EndProject
 Global
@@ -24,10 +22,6 @@ Global
 		{C7F6A91E-F67F-45AB-AC44-0105E22E60B3}.Debug|x64.Build.0 = Debug|x64
 		{C7F6A91E-F67F-45AB-AC44-0105E22E60B3}.Release|x64.ActiveCfg = Release|x64
 		{C7F6A91E-F67F-45AB-AC44-0105E22E60B3}.Release|x64.Build.0 = Release|x64
-		{6E6C5319-7B0F-4B5C-8AA9-AEC8DE1700C5}.Debug|x64.ActiveCfg = Debug|x64
-		{6E6C5319-7B0F-4B5C-8AA9-AEC8DE1700C5}.Debug|x64.Build.0 = Debug|x64
-		{6E6C5319-7B0F-4B5C-8AA9-AEC8DE1700C5}.Release|x64.ActiveCfg = Release|x64
-		{6E6C5319-7B0F-4B5C-8AA9-AEC8DE1700C5}.Release|x64.Build.0 = Release|x64
 		{3DAA7AB9-AEB9-4DBC-9A58-B4CFC4F2758D}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{3DAA7AB9-AEB9-4DBC-9A58-B4CFC4F2758D}.Debug|x64.Build.0 = Debug|Any CPU
 		{3DAA7AB9-AEB9-4DBC-9A58-B4CFC4F2758D}.Release|x64.ActiveCfg = Release|Any CPU

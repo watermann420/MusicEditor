@@ -6,6 +6,10 @@
 
 #include <windows.h>
 #include <string>
+#include <memory>
+#include <unordered_map>
+
+#include <gdiplus.h>
 
 class EditorView
 {
@@ -19,16 +23,49 @@ public:
     void SetText(const std::wstring& text);
 
 private:
+    struct LineCacheEntry
+    {
+        std::wstring text;
+        std::unique_ptr<Gdiplus::Bitmap> bitmap;
+        int width = 0;
+        int height = 0;
+    };
+
     static LRESULT CALLBACK EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK RenderProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    void DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width, int height);
+    void RenderOverlay(HDC hdc, int width, int height);
     void UpdateGutterWidth();
     int GetLineCount() const;
+    void UpdateCharMetrics();
+    void LoadVisualConfig();
 
     HWND _parent = nullptr;
     HWND _editor = nullptr;
+    HWND _render = nullptr;
     HFONT _font = nullptr;
     HBRUSH _bgBrush = nullptr;
     WNDPROC _originalEditProc = nullptr;
+    Gdiplus::Font* _gdiFont = nullptr;
 
     int _lineHeight = 16;
     int _gutterWidth = 36;
+    int _charWidth = 8;
+    ULONG_PTR _gdiplusToken = 0;
+    bool _randomGlowEnabled = false;
+    unsigned int _randomGlowSeed = 1337;
+    float _randomGlowIntensity = 0.6f;
+    float _randomGlowRadius = 9.0f;
+    float _randomGlowSoftness = 0.7f;
+    std::wstring _visualConfigPath;
+    FILETIME _visualConfigWriteTime{};
+    DWORD _lastConfigCheckTick = 0;
+    unsigned int _cacheGlowSeed = 0;
+    float _cacheGlowIntensity = 0.0f;
+    float _cacheGlowRadius = 0.0f;
+    float _cacheGlowSoftness = 0.0f;
+    int _cacheColumns = 0;
+    int _cacheLineHeight = 0;
+    int _cacheScrollX = 0;
+    std::unordered_map<int, LineCacheEntry> _lineCache;
 };
