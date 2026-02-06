@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "defaults": {
+    "text": "#E6E6E6",
+    "background": "#121214"
+  },
+  "tokens": {
+    "keyword": "#8BE9FD",
+    "type": "#FFD166",
+    "string": "#B8F1A4",
+    "number": "#F78C6C",
+    "comment": "#6C7A89",
+    "operator": "#E6E6E6",
+    "punctuation": "#E6E6E6",
+    "function": "#9D7CFF",
+    "variable": "#E6E6E6",
+    "constant": "#F4D06F",
+    "namespace": "#7DCFFF",
+    "preprocessor": "#FFB703"
+  }
+}

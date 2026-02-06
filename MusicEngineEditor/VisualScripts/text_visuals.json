@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "defaults": {
+    "color": "#E6E6E6",
+    "glow": {
+      "enabled": false,
+      "color": "#5EE2FF",
+      "intensity": 0.35,
+      "radius": 8.0,
+      "softness": 0.7
+    }
+  },
+  "lineStyles": [
+    {
+      "line": 1,
+      "color": "#F3D27C",
+      "glow": {
+        "enabled": true,
+        "color": "#F3D27C",
+        "intensity": 0.55,
+        "radius": 10.0,
+        "softness": 0.75
+      }
+    }
+  ],
+  "wordStyles": [
+    {
+      "word": "TODO",
+      "color": "#FF6B6B",
+      "glow": {
+        "enabled": true,
+        "color": "#FF6B6B",
+        "intensity": 0.45,
+        "radius": 7.0,
+        "softness": 0.65
+      }
+    }
+  ],
+  "charStyles": [
+    {
+      "index": 0,
+      "color": "#00D1FF"
+    }
+  ],
+  "ranges": [
+    {
+      "start": 0,
+      "length": 12,
+      "color": "#B8F1FF",
+      "glow": {
+        "enabled": true,
+        "color": "#00D1FF",
+        "intensity": 0.4,
+        "radius": 6.0,
+        "softness": 0.6
+      }
+    }
+  ]
+  ,
+  "randomCharGlowTest": {
+    "enabled": true,
+    "seed": 1337,
+    "glow": {
+      "enabled": true,
+      "intensity": 0.6,
+      "radius": 9.0,
+      "softness": 0.7
+    }
+  }
+}

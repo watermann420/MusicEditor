@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "Dark",
+  "ui": {
+    "background": "#121214",
+    "panel": "#0F0F12",
+    "topBar": "#0C0C0E",
+    "border": "#1F2228",
+    "text": "#E6E6E6",
+    "mutedText": "#9AA0A6",
+    "accent": "#2EA043",
+    "danger": "#C03C3C"
+  },
+  "editor": {
+    "background": "#121214",
+    "text": "#E6E6E6",
+    "selection": "#2A2D34",
+    "cursor": "#E6E6E6",
+    "lineNumbers": "#5F6368",
+    "lineHighlight": "#1A1D22"
+  },
+  "console": {
+    "background": "#0C0C0E",
+    "text": "#BEBEBE"
+  }
+}
