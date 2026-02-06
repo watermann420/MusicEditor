@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <cwctype>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -18,6 +19,19 @@ namespace
     constexpr COLORREF kGutterTextColor = RGB(140, 140, 140);
     constexpr int kEditorPadding = 16;
     constexpr int kGutterMinWidth = 36;
+
+    const Gdiplus::Color kDefaultText(255, 230, 230, 230);
+    const Gdiplus::Color kKeywordBlue(255, 120, 170, 255);
+    const Gdiplus::Color kMethodGreen(255, 120, 210, 120);
+    const Gdiplus::Color kPatternPink(255, 200, 90, 160);
+    const Gdiplus::Color kPatternWhite(255, 240, 240, 240);
+    const Gdiplus::Color kNumberPink(255, 255, 130, 190);
+    const Gdiplus::Color kNameTurquoise(255, 80, 200, 200);
+    const Gdiplus::Color kCommentGray(255, 150, 150, 150);
+    const Gdiplus::Color kBoolTrueGreen(255, 110, 210, 110);
+    const Gdiplus::Color kBoolFalseRed(255, 220, 90, 90);
+    constexpr DWORD kActiveNoteTimeoutMs = 1200;
+    constexpr DWORD kNoteGlowFadeMs = 220;
 
     struct RandomGlowConfig
     {
@@ -63,6 +77,36 @@ namespace
         const BYTE g = static_cast<BYTE>(std::min<int>(255, color.GetG() + boost));
         const BYTE b = static_cast<BYTE>(std::min<int>(255, color.GetB() + boost));
         return Gdiplus::Color(color.GetA(), r, g, b);
+    }
+
+    bool IsIdentifierStart(wchar_t ch)
+    {
+        return (ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z') || ch == L'_';
+    }
+
+    bool IsIdentifierChar(wchar_t ch)
+    {
+        return IsIdentifierStart(ch) || (ch >= L'0' && ch <= L'9');
+    }
+
+    bool IsDigit(wchar_t ch)
+    {
+        return ch >= L'0' && ch <= L'9';
+    }
+
+    int ParseIntToken(const std::wstring& token)
+    {
+        if (token.empty())
+        {
+            return -1;
+        }
+        wchar_t* end = nullptr;
+        long value = std::wcstol(token.c_str(), &end, 10);
+        if (end == token.c_str())
+        {
+            return -1;
+        }
+        return static_cast<int>(value);
     }
 
     bool ParseBool(const std::string& text, const std::string& key, bool fallback)
@@ -171,8 +215,8 @@ void EditorView::Initialize(HWND parent)
         0,
         L"EDIT",
         L"// MusicEngine Editor\n// Write your MusicEngine script here and press Play.\n\n",
-        WS_CHILD | WS_VISIBLE | WS_HSCROLL |
-            ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+        WS_CHILD | WS_VISIBLE | WS_VSCROLL |
+            ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL,
         0, 0, 0, 0,
         parent,
         nullptr,
@@ -276,8 +320,7 @@ void EditorView::Shutdown()
 
 LRESULT EditorView::OnEditColor(HDC hdc)
 {
-    LoadVisualConfig();
-    SetTextColor(hdc, _randomGlowEnabled ? kBgColor : kTextColor);
+    SetTextColor(hdc, _syntaxOverlayEnabled ? kBgColor : kTextColor);
     SetBkColor(hdc, kBgColor);
     return reinterpret_cast<LRESULT>(_bgBrush);
 }
@@ -369,6 +412,16 @@ void EditorView::RenderOverlay(HDC hdc, int width, int height)
     Gdiplus::Graphics graphics(memDC);
     DrawCustomTextToGraphics(graphics, width, height);
 
+    if (_editor)
+    {
+        HDC editorDC = GetDC(_editor);
+        if (editorDC)
+        {
+            BitBlt(hdc, 0, 0, width, height, editorDC, 0, 0, SRCCOPY);
+            ReleaseDC(_editor, editorDC);
+        }
+    }
+
     BLENDFUNCTION blend{};
     blend.BlendOp = AC_SRC_OVER;
     blend.SourceConstantAlpha = 255;
@@ -382,12 +435,10 @@ void EditorView::RenderOverlay(HDC hdc, int width, int height)
 
 void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width, int height)
 {
-    if (!_parent || !_editor || !_randomGlowEnabled)
+    if (!_parent || !_editor || !_syntaxOverlayEnabled)
     {
         return;
     }
-
-    LoadVisualConfig();
 
     int firstLine = static_cast<int>(SendMessageW(_editor, EM_GETFIRSTVISIBLELINE, 0, 0));
     int totalLines = GetLineCount();
@@ -429,6 +480,24 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
     }
     const int lineWidth = visibleColumns * _charWidth;
 
+    const DWORD now = GetTickCount();
+    bool hasGlow = false;
+    for (const auto& pair : _noteGlow)
+    {
+        const auto& state = pair.second;
+        if (state.active)
+        {
+            hasGlow = true;
+            break;
+        }
+        if (state.lastOffTick != 0 && static_cast<int>(now - state.lastOffTick) >= 0 &&
+            (now - state.lastOffTick) < kNoteGlowFadeMs)
+        {
+            hasGlow = true;
+            break;
+        }
+    }
+    const bool allowCache = !hasGlow;
     bool cacheInvalid =
         _cacheGlowSeed != _randomGlowSeed ||
         _cacheGlowIntensity != _randomGlowIntensity ||
@@ -436,9 +505,10 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
         _cacheGlowSoftness != _randomGlowSoftness ||
         _cacheColumns != visibleColumns ||
         _cacheLineHeight != _lineHeight ||
-        _cacheScrollX != scrollX;
+        _cacheScrollX != scrollX ||
+        _cacheActiveNotesVersion != _activeNotesVersion;
 
-    if (cacheInvalid)
+    if (cacheInvalid || !allowCache)
     {
         _lineCache.clear();
         _cacheGlowSeed = _randomGlowSeed;
@@ -448,15 +518,12 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
         _cacheColumns = visibleColumns;
         _cacheLineHeight = _lineHeight;
         _cacheScrollX = scrollX;
+        _cacheActiveNotesVersion = _activeNotesVersion;
     }
 
-    const int glowSpread = std::max<int>(1, static_cast<int>(std::round(_randomGlowRadius / 3.0f)));
-    const float softness = std::clamp(_randomGlowSoftness, 0.1f, 1.0f);
-    const float glowScale = 0.18f;
-    const BYTE glowAlphaBase = static_cast<BYTE>(std::min(60.0f,
-        std::clamp(_randomGlowIntensity * glowScale, 0.0f, 1.0f) * 255.0f));
-    const int glowLayers = 2;
-    const int glowStep = std::max(1, static_cast<int>(std::round(glowSpread * softness)));
+    const int glowLayers = 3;
+    const int glowStep = 1;
+    const BYTE glowAlphaBase = 40;
 
     for (int lineIndex = 0; lineIndex < visibleLines; ++lineIndex)
     {
@@ -481,7 +548,7 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
 
         const int y = lineIndex * _lineHeight;
         auto& entry = _lineCache[lineNo];
-        bool needsRender = entry.text != line || !entry.bitmap || entry.width != lineWidth || entry.height != _lineHeight;
+        bool needsRender = !allowCache || entry.text != line || !entry.bitmap || entry.width != lineWidth || entry.height != _lineHeight;
 
         if (needsRender)
         {
@@ -491,7 +558,7 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
             entry.bitmap = std::make_unique<Gdiplus::Bitmap>(lineWidth, _lineHeight, PixelFormat32bppPARGB);
 
             Gdiplus::Graphics lineGraphics(entry.bitmap.get());
-            lineGraphics.SetTextRenderingHint(Gdiplus::TextRenderingHintClearTypeGridFit);
+            lineGraphics.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
             lineGraphics.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
             lineGraphics.SetCompositingQuality(Gdiplus::CompositingQualityHighQuality);
             lineGraphics.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
@@ -500,6 +567,9 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
 
             Gdiplus::SolidBrush glowBrush(Gdiplus::Color(0, 0, 0, 0));
             Gdiplus::SolidBrush textBrush(Gdiplus::Color(255, 255, 255, 255));
+            std::vector<Gdiplus::Color> colors;
+            std::vector<float> glow;
+            BuildSyntaxColors(line, colors, glow, now);
             if (static_cast<size_t>(scrollX) >= line.size())
             {
                 lineGraphics.Clear(Gdiplus::Color(0, 0, 0, 0));
@@ -514,32 +584,39 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
                     continue;
                 }
 
-                unsigned int hash = HashColor(_randomGlowSeed, static_cast<unsigned int>((lineNo * 131u) + col));
-                Gdiplus::Color glowColor = SoftenGlowColor(ColorFromHash(hash ^ 0x5bd1e995u, glowAlphaBase),
-                    glowAlphaBase, 0.85f);
-                Gdiplus::Color textColor = SoftenGlowColor(ColorFromHash(hash, 255), 255, 0.35f);
-                textColor = BoostTextColor(textColor, 20);
+                Gdiplus::Color textColor = col < colors.size() ? colors[col] : kDefaultText;
+                Gdiplus::Color glowColor = SoftenGlowColor(textColor, glowAlphaBase, 0.55f);
 
                 float x = static_cast<float>(static_cast<int>(col - startColumn) * _charWidth);
-                glowBrush.SetColor(glowColor);
                 textBrush.SetColor(textColor);
-
-                for (int layer = 1; layer <= glowLayers; ++layer)
+                float glowIntensity = (col < glow.size()) ? glow[col] : 0.0f;
+                if (glowIntensity > 0.0f)
                 {
-                    const int offset = glowStep * layer;
-                    const BYTE layerAlpha = static_cast<BYTE>(std::max(0, glowAlphaBase - (layer - 1) * (glowAlphaBase / glowLayers)));
-                    glowBrush.SetColor(SoftenGlowColor(ColorFromHash(hash ^ 0x5bd1e995u, layerAlpha),
-                        layerAlpha, 0.8f));
-
-                    const int offsets[8][2] = {
-                        { -offset, 0 }, { offset, 0 }, { 0, -offset }, { 0, offset },
-                        { -offset, -offset }, { offset, -offset }, { -offset, offset }, { offset, offset }
-                    };
-                    for (const auto& off : offsets)
+                    glowBrush.SetColor(glowColor);
+                    for (int layer = 1; layer <= glowLayers; ++layer)
                     {
-                        Gdiplus::PointF pos(x + off[0], static_cast<float>(off[1]));
-                        wchar_t buffer[2]{ ch, L'\0' };
-                        lineGraphics.DrawString(buffer, 1, _gdiFont, pos, &glowBrush);
+                        const int offset = glowStep * layer;
+                        const int baseAlpha = glowAlphaBase - (layer - 1) * (glowAlphaBase / glowLayers);
+                        const BYTE layerAlpha = static_cast<BYTE>(std::max(0, static_cast<int>(baseAlpha * glowIntensity)));
+                        glowBrush.SetColor(Gdiplus::Color(layerAlpha, glowColor.GetR(), glowColor.GetG(), glowColor.GetB()));
+                        const int radiusSq = offset * offset;
+                        for (int dx = -offset; dx <= offset; ++dx)
+                        {
+                            for (int dy = -offset; dy <= offset; ++dy)
+                            {
+                                if (dx == 0 && dy == 0)
+                                {
+                                    continue;
+                                }
+                                if ((dx * dx + dy * dy) > radiusSq)
+                                {
+                                    continue;
+                                }
+                                Gdiplus::PointF pos(x + dx, static_cast<float>(dy));
+                                wchar_t buffer[2]{ ch, L'\0' };
+                                lineGraphics.DrawString(buffer, 1, _gdiFont, pos, &glowBrush);
+                            }
+                        }
                     }
                 }
 
@@ -554,6 +631,296 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
             graphics.DrawImage(entry.bitmap.get(), 0, y);
         }
     }
+}
+
+void EditorView::BuildSyntaxColors(const std::wstring& line, std::vector<Gdiplus::Color>& colors,
+    std::vector<float>& glow, DWORD now) const
+{
+    colors.assign(line.size(), kDefaultText);
+    glow.assign(line.size(), 0.0f);
+
+    if (line.empty())
+    {
+        return;
+    }
+
+    auto applyColor = [&](size_t start, size_t end, const Gdiplus::Color& color)
+    {
+        if (start >= end || start >= line.size())
+        {
+            return;
+        }
+        const size_t clampedEnd = std::min(end, line.size());
+        for (size_t i = start; i < clampedEnd; ++i)
+        {
+            colors[i] = color;
+        }
+    };
+
+    bool inString = false;
+    int parenDepth = 0;
+    bool noteCallPending = false;
+    bool inNoteCall = false;
+    bool noteArgCaptured = false;
+
+    for (size_t i = 0; i < line.size();)
+    {
+        if (!inString && i + 1 < line.size() && line[i] == L'/' && line[i + 1] == L'/')
+        {
+            applyColor(i, line.size(), kCommentGray);
+            break;
+        }
+
+        wchar_t ch = line[i];
+        if (ch == L'"')
+        {
+            inString = !inString;
+            ++i;
+            continue;
+        }
+
+        if (!inString)
+        {
+            if (ch == L'(')
+            {
+                ++parenDepth;
+            }
+            else if (ch == L')')
+            {
+                parenDepth = std::max(0, parenDepth - 1);
+                if (parenDepth == 0)
+                {
+                    inNoteCall = false;
+                    noteArgCaptured = false;
+                }
+            }
+        }
+
+        if (!inString && IsIdentifierStart(ch))
+        {
+            size_t start = i;
+            size_t end = i + 1;
+            while (end < line.size() && IsIdentifierChar(line[end]))
+            {
+                ++end;
+            }
+            std::wstring token = line.substr(start, end - start);
+
+            if (token == L"var")
+            {
+                applyColor(start, end, kKeywordBlue);
+            }
+            else if (token == L"true")
+            {
+                applyColor(start, end, kBoolTrueGreen);
+            }
+            else if (token == L"false")
+            {
+                applyColor(start, end, kBoolFalseRed);
+            }
+            else if (token == L"CreatePattern")
+            {
+                applyColor(start, end, kMethodGreen);
+            }
+            else if (token == L"CreateSynth")
+            {
+                applyColor(start, end, kMethodGreen);
+            }
+            else if (token == L"pattern")
+            {
+                applyColor(start, end, kPatternPink);
+            }
+            else if (token == L"Note" && noteCallPending)
+            {
+                applyColor(start, end, kMethodGreen);
+                inNoteCall = true;
+                noteArgCaptured = false;
+                noteCallPending = false;
+            }
+            else if (token == L"synth")
+            {
+                applyColor(start, end, kNameTurquoise);
+            }
+            else
+            {
+                applyColor(start, end, kNameTurquoise);
+            }
+
+            size_t look = end;
+            while (look < line.size() && iswspace(line[look]))
+            {
+                ++look;
+            }
+            if (look < line.size() && line[look] == L'.')
+            {
+                size_t idStart = look + 1;
+                while (idStart < line.size() && iswspace(line[idStart]))
+                {
+                    ++idStart;
+                }
+                size_t idEnd = idStart;
+                while (idEnd < line.size() && IsIdentifierChar(line[idEnd]))
+                {
+                    ++idEnd;
+                }
+                std::wstring method = line.substr(idStart, idEnd - idStart);
+                if (method == L"Note")
+                {
+                    applyColor(start, end, kPatternWhite);
+                    if (look < line.size())
+                    {
+                        colors[look] = kPatternWhite;
+                    }
+                    noteCallPending = true;
+                }
+            }
+
+            i = end;
+            continue;
+        }
+
+        if (!inString && IsDigit(ch))
+        {
+            size_t start = i;
+            size_t end = i + 1;
+            while (end < line.size() && (IsDigit(line[end]) || line[end] == L'.'))
+            {
+                ++end;
+            }
+            if (parenDepth > 0)
+            {
+                applyColor(start, end, kNumberPink);
+            }
+
+            if (inNoteCall && !noteArgCaptured && parenDepth > 0)
+            {
+                int noteValue = ParseIntToken(line.substr(start, end - start));
+                float intensity = 0.0f;
+                auto it = _noteGlow.find(noteValue);
+                if (it != _noteGlow.end())
+                {
+                    const NoteGlowState& state = it->second;
+                    if (state.active)
+                    {
+                        intensity = 1.0f;
+                    }
+                    else if (state.lastOffTick != 0 && static_cast<int>(now - state.lastOffTick) >= 0)
+                    {
+                        const DWORD elapsed = now - state.lastOffTick;
+                        if (elapsed < kNoteGlowFadeMs)
+                        {
+                            intensity = 1.0f - (static_cast<float>(elapsed) / static_cast<float>(kNoteGlowFadeMs));
+                        }
+                    }
+                }
+                if (intensity > 0.0f)
+                {
+                    for (size_t idx = start; idx < end && idx < glow.size(); ++idx)
+                    {
+                        glow[idx] = std::max(glow[idx], intensity);
+                    }
+                }
+                noteArgCaptured = true;
+            }
+
+            i = end;
+            continue;
+        }
+
+        ++i;
+    }
+}
+
+void EditorView::SetActiveNote(int note, bool active)
+{
+    if (note < 0)
+    {
+        return;
+    }
+
+    const DWORD now = GetTickCount();
+    bool changed = false;
+    if (active)
+    {
+        auto& state = _noteGlow[note];
+        state.active = true;
+        state.lastOnTick = now;
+        state.lastOffTick = 0;
+        changed = true;
+    }
+    else
+    {
+        auto it = _noteGlow.find(note);
+        if (it != _noteGlow.end())
+        {
+            it->second.active = false;
+            it->second.lastOffTick = now;
+            changed = true;
+        }
+    }
+
+    if (changed)
+    {
+        ++_activeNotesVersion;
+        _lineCache.clear();
+        if (_render)
+        {
+            RedrawWindow(_render, nullptr, nullptr, RDW_INVALIDATE | RDW_NOERASE);
+        }
+    }
+}
+
+bool EditorView::PruneExpiredNotes()
+{
+    if (_noteGlow.empty())
+    {
+        return false;
+    }
+
+    const DWORD now = GetTickCount();
+    bool changed = false;
+    bool needsRedraw = false;
+    for (auto it = _noteGlow.begin(); it != _noteGlow.end();)
+    {
+        NoteGlowState& state = it->second;
+        if (state.active && static_cast<int>(now - state.lastOnTick) >= 0 &&
+            (now - state.lastOnTick) >= kActiveNoteTimeoutMs)
+        {
+            state.active = false;
+            state.lastOffTick = now;
+            changed = true;
+        }
+
+        if (!state.active && state.lastOffTick != 0 &&
+            static_cast<int>(now - state.lastOffTick) >= 0 &&
+            (now - state.lastOffTick) >= kNoteGlowFadeMs)
+        {
+            it = _noteGlow.erase(it);
+            changed = true;
+            continue;
+        }
+
+        if (state.active ||
+            (state.lastOffTick != 0 && static_cast<int>(now - state.lastOffTick) >= 0 &&
+                (now - state.lastOffTick) < kNoteGlowFadeMs))
+        {
+            needsRedraw = true;
+        }
+        ++it;
+    }
+
+    if (changed)
+    {
+        ++_activeNotesVersion;
+        _lineCache.clear();
+    }
+
+    if ((changed || needsRedraw) && _render)
+    {
+        RedrawWindow(_render, nullptr, nullptr, RDW_INVALIDATE | RDW_NOERASE);
+    }
+
+    return changed || needsRedraw;
 }
 
 LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -626,6 +993,10 @@ LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             }
             break;
         case WM_CHAR:
+            if ((wParam == L'\r' || wParam == L'\n') && (GetKeyState(VK_CONTROL) & 0x8000))
+            {
+                return 0;
+            }
             if (wParam == L'\r' || wParam == L'\n')
             {
                 invalidateGutter();

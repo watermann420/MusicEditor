@@ -27,6 +27,7 @@ private:
     bool IsOverSplitter(POINT pt) const;
     void AppendConsoleText(const std::wstring& text);
     bool ShouldSuppressConsoleLine(const std::wstring& line) const;
+    void TickEditorVisuals();
 
     HWND _window = nullptr;
     HWND _playButton = nullptr;

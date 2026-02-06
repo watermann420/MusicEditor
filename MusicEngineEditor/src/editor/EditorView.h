@@ -8,6 +8,8 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include <gdiplus.h>
 
@@ -21,6 +23,8 @@ public:
     void DrawLineNumbers(HDC hdc);
     std::wstring GetText() const;
     void SetText(const std::wstring& text);
+    void SetActiveNote(int note, bool active);
+    bool PruneExpiredNotes();
 
 private:
     struct LineCacheEntry
@@ -31,6 +35,13 @@ private:
         int height = 0;
     };
 
+    struct NoteGlowState
+    {
+        bool active = false;
+        DWORD lastOnTick = 0;
+        DWORD lastOffTick = 0;
+    };
+
     static LRESULT CALLBACK EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     static LRESULT CALLBACK RenderProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width, int height);
@@ -39,6 +50,8 @@ private:
     int GetLineCount() const;
     void UpdateCharMetrics();
     void LoadVisualConfig();
+    void BuildSyntaxColors(const std::wstring& line, std::vector<Gdiplus::Color>& colors,
+        std::vector<float>& glow, DWORD now) const;
 
     HWND _parent = nullptr;
     HWND _editor = nullptr;
@@ -67,5 +80,9 @@ private:
     int _cacheColumns = 0;
     int _cacheLineHeight = 0;
     int _cacheScrollX = 0;
+    unsigned int _cacheActiveNotesVersion = 0;
     std::unordered_map<int, LineCacheEntry> _lineCache;
+    std::unordered_map<int, NoteGlowState> _noteGlow;
+    unsigned int _activeNotesVersion = 0;
+    bool _syntaxOverlayEnabled = true;
 };

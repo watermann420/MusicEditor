@@ -2,6 +2,7 @@
 #include "app/CommandIds.h"
 
 #include <algorithm>
+#include <cwctype>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -81,6 +82,103 @@ namespace
         }
 
         return {};
+    }
+
+    bool TryParseNoteEvent(const std::wstring& line, int& note, bool& isOn)
+    {
+        if (line.empty())
+        {
+            return false;
+        }
+
+        std::wstring upper;
+        upper.reserve(line.size());
+        for (wchar_t ch : line)
+        {
+            upper.push_back(static_cast<wchar_t>(towupper(ch)));
+        }
+
+        bool on = false;
+        bool off = false;
+        size_t tokenPos = std::wstring::npos;
+        size_t tokenLen = 0;
+        if ((tokenPos = upper.find(L"NOTE_ON")) != std::wstring::npos)
+        {
+            on = true;
+            tokenLen = 7;
+        }
+        else if ((tokenPos = upper.find(L"NOTE ON")) != std::wstring::npos)
+        {
+            on = true;
+            tokenLen = 7;
+        }
+        else if ((tokenPos = upper.find(L"NOTEON")) != std::wstring::npos)
+        {
+            on = true;
+            tokenLen = 6;
+        }
+        else if ((tokenPos = upper.find(L"NOTE_OFF")) != std::wstring::npos)
+        {
+            off = true;
+            tokenLen = 8;
+        }
+        else if ((tokenPos = upper.find(L"NOTE OFF")) != std::wstring::npos)
+        {
+            off = true;
+            tokenLen = 8;
+        }
+        else if ((tokenPos = upper.find(L"NOTEOFF")) != std::wstring::npos)
+        {
+            off = true;
+            tokenLen = 7;
+        }
+
+        if (!on && !off)
+        {
+            return false;
+        }
+
+        int value = -1;
+        int velocity = -1;
+        if (tokenPos != std::wstring::npos)
+        {
+            size_t i = tokenPos + tokenLen;
+            auto parseNextInt = [&](size_t& index, int& outValue) -> bool
+            {
+                while (index < line.size() && !iswdigit(line[index]))
+                {
+                    ++index;
+                }
+                if (index >= line.size())
+                {
+                    return false;
+                }
+                int current = 0;
+                while (index < line.size() && iswdigit(line[index]))
+                {
+                    current = current * 10 + (line[index] - L'0');
+                    ++index;
+                }
+                outValue = current;
+                return true;
+            };
+
+            parseNextInt(i, value);
+            parseNextInt(i, velocity);
+        }
+
+        if (value < 0)
+        {
+            return false;
+        }
+
+        note = value;
+        isOn = on && !off;
+        if (isOn && velocity == 0)
+        {
+            isOn = false;
+        }
+        return true;
     }
 }
 
@@ -208,6 +306,8 @@ bool App::InitWindow(HINSTANCE instance, int nCmdShow)
     _engine.Start(true, false);
     _isPlaying = false;
     UpdatePlayButton();
+
+    SetTimer(_window, 1, 250, nullptr);
 
     ShowWindow(_window, nCmdShow);
     return true;
@@ -405,6 +505,13 @@ LRESULT CALLBACK App::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
         break;
+    case WM_TIMER:
+        if (app && wParam == 1)
+        {
+            app->TickEditorVisuals();
+            return 0;
+        }
+        break;
     case kOutputMessage:
         if (app)
         {
@@ -420,6 +527,7 @@ LRESULT CALLBACK App::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         if (app)
         {
+            KillTimer(hwnd, 1);
             app->_editor.Shutdown();
             app->_engine.Shutdown();
             if (app->_uiFont)
@@ -670,6 +778,13 @@ void App::AppendConsoleText(const std::wstring& text)
     {
         std::wstring line = _consolePending.substr(0, newline + 1);
         _consolePending.erase(0, newline + 1);
+        int noteValue = -1;
+        bool noteOn = false;
+        if (TryParseNoteEvent(line, noteValue, noteOn))
+        {
+            _editor.SetActiveNote(noteValue, noteOn);
+        }
+
         if (ShouldSuppressConsoleLine(line))
         {
             continue;
@@ -679,6 +794,11 @@ void App::AppendConsoleText(const std::wstring& text)
         SendMessageW(_console, EM_SETSEL, length, length);
         SendMessageW(_console, EM_REPLACESEL, FALSE, reinterpret_cast<LPARAM>(line.c_str()));
     }
+}
+
+void App::TickEditorVisuals()
+{
+    _editor.PruneExpiredNotes();
 }
 
 bool App::ShouldSuppressConsoleLine(const std::wstring& line) const
@@ -709,6 +829,12 @@ bool App::ShouldSuppressConsoleLine(const std::wstring& line) const
         return true;
     }
     if (trimmed.find(L"Unknown command: /WAKE") != std::wstring::npos)
+    {
+        return true;
+    }
+    if (trimmed.find(L"NOTE_ON") != std::wstring::npos || trimmed.find(L"NOTE OFF") != std::wstring::npos ||
+        trimmed.find(L"NOTE_OFF") != std::wstring::npos || trimmed.find(L"NOTE ON") != std::wstring::npos ||
+        trimmed.find(L"MIDI_IN") != std::wstring::npos || trimmed.find(L"MIDI_DEVICE_ACTIVE") != std::wstring::npos)
     {
         return true;
     }
