@@ -47,6 +47,24 @@ namespace
         return Gdiplus::Color(alpha, r, g, b);
     }
 
+    Gdiplus::Color SoftenGlowColor(const Gdiplus::Color& color, BYTE alpha, float mix)
+    {
+        const float clampMix = std::clamp(mix, 0.0f, 1.0f);
+        const BYTE target = 200;
+        BYTE r = static_cast<BYTE>(color.GetR() * (1.0f - clampMix) + target * clampMix);
+        BYTE g = static_cast<BYTE>(color.GetG() * (1.0f - clampMix) + target * clampMix);
+        BYTE b = static_cast<BYTE>(color.GetB() * (1.0f - clampMix) + target * clampMix);
+        return Gdiplus::Color(alpha, r, g, b);
+    }
+
+    Gdiplus::Color BoostTextColor(const Gdiplus::Color& color, BYTE boost)
+    {
+        const BYTE r = static_cast<BYTE>(std::min<int>(255, color.GetR() + boost));
+        const BYTE g = static_cast<BYTE>(std::min<int>(255, color.GetG() + boost));
+        const BYTE b = static_cast<BYTE>(std::min<int>(255, color.GetB() + boost));
+        return Gdiplus::Color(color.GetA(), r, g, b);
+    }
+
     bool ParseBool(const std::string& text, const std::string& key, bool fallback)
     {
         size_t pos = text.find(key);
@@ -145,7 +163,7 @@ void EditorView::Initialize(HWND parent)
     Gdiplus::GdiplusStartupInput gdiplusStartupInput{};
     Gdiplus::GdiplusStartup(&_gdiplusToken, &gdiplusStartupInput, nullptr);
     _font = CreateFontW(
-        18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+        20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
         DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
         CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Consolas");
 
@@ -375,10 +393,10 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
     int totalLines = GetLineCount();
     int visibleLines = _lineHeight > 0 ? height / _lineHeight + 1 : 0;
 
-    graphics.SetSmoothingMode(Gdiplus::SmoothingModeHighSpeed);
-    graphics.SetCompositingQuality(Gdiplus::CompositingQualityHighSpeed);
-    graphics.SetInterpolationMode(Gdiplus::InterpolationModeLowQuality);
-    graphics.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHighSpeed);
+    graphics.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
+    graphics.SetCompositingQuality(Gdiplus::CompositingQualityHighQuality);
+    graphics.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
+    graphics.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHighQuality);
 
     if (!_gdiFont)
     {
@@ -434,7 +452,11 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
 
     const int glowSpread = std::max<int>(1, static_cast<int>(std::round(_randomGlowRadius / 3.0f)));
     const float softness = std::clamp(_randomGlowSoftness, 0.1f, 1.0f);
-    const BYTE glowAlphaBase = static_cast<BYTE>(std::clamp(_randomGlowIntensity, 0.0f, 1.0f) * 255.0f);
+    const float glowScale = 0.18f;
+    const BYTE glowAlphaBase = static_cast<BYTE>(std::min(60.0f,
+        std::clamp(_randomGlowIntensity * glowScale, 0.0f, 1.0f) * 255.0f));
+    const int glowLayers = 2;
+    const int glowStep = std::max(1, static_cast<int>(std::round(glowSpread * softness)));
 
     for (int lineIndex = 0; lineIndex < visibleLines; ++lineIndex)
     {
@@ -469,11 +491,11 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
             entry.bitmap = std::make_unique<Gdiplus::Bitmap>(lineWidth, _lineHeight, PixelFormat32bppPARGB);
 
             Gdiplus::Graphics lineGraphics(entry.bitmap.get());
-            lineGraphics.SetTextRenderingHint(Gdiplus::TextRenderingHintSingleBitPerPixelGridFit);
-            lineGraphics.SetSmoothingMode(Gdiplus::SmoothingModeHighSpeed);
-            lineGraphics.SetCompositingQuality(Gdiplus::CompositingQualityHighSpeed);
-            lineGraphics.SetInterpolationMode(Gdiplus::InterpolationModeLowQuality);
-            lineGraphics.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHighSpeed);
+            lineGraphics.SetTextRenderingHint(Gdiplus::TextRenderingHintClearTypeGridFit);
+            lineGraphics.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
+            lineGraphics.SetCompositingQuality(Gdiplus::CompositingQualityHighQuality);
+            lineGraphics.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
+            lineGraphics.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHighQuality);
             lineGraphics.Clear(Gdiplus::Color(0, 0, 0, 0));
 
             Gdiplus::SolidBrush glowBrush(Gdiplus::Color(0, 0, 0, 0));
@@ -493,24 +515,32 @@ void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width
                 }
 
                 unsigned int hash = HashColor(_randomGlowSeed, static_cast<unsigned int>((lineNo * 131u) + col));
-                Gdiplus::Color textColor = ColorFromHash(hash, 255);
-                Gdiplus::Color glowColor = ColorFromHash(hash ^ 0x5bd1e995u, glowAlphaBase);
+                Gdiplus::Color glowColor = SoftenGlowColor(ColorFromHash(hash ^ 0x5bd1e995u, glowAlphaBase),
+                    glowAlphaBase, 0.85f);
+                Gdiplus::Color textColor = SoftenGlowColor(ColorFromHash(hash, 255), 255, 0.35f);
+                textColor = BoostTextColor(textColor, 20);
 
                 float x = static_cast<float>(static_cast<int>(col - startColumn) * _charWidth);
                 glowBrush.SetColor(glowColor);
                 textBrush.SetColor(textColor);
 
-                int offset = static_cast<int>(std::round(glowSpread * softness));
-                if (offset < 1)
+                for (int layer = 1; layer <= glowLayers; ++layer)
                 {
-                    offset = 1;
-                }
-                const int offsets[4][2] = { { -offset, 0 }, { offset, 0 }, { 0, -offset }, { 0, offset } };
-                for (const auto& off : offsets)
-                {
-                    Gdiplus::PointF pos(x + off[0], static_cast<float>(off[1]));
-                    wchar_t buffer[2]{ ch, L'\0' };
-                    lineGraphics.DrawString(buffer, 1, _gdiFont, pos, &glowBrush);
+                    const int offset = glowStep * layer;
+                    const BYTE layerAlpha = static_cast<BYTE>(std::max(0, glowAlphaBase - (layer - 1) * (glowAlphaBase / glowLayers)));
+                    glowBrush.SetColor(SoftenGlowColor(ColorFromHash(hash ^ 0x5bd1e995u, layerAlpha),
+                        layerAlpha, 0.8f));
+
+                    const int offsets[8][2] = {
+                        { -offset, 0 }, { offset, 0 }, { 0, -offset }, { 0, offset },
+                        { -offset, -offset }, { offset, -offset }, { -offset, offset }, { offset, offset }
+                    };
+                    for (const auto& off : offsets)
+                    {
+                        Gdiplus::PointF pos(x + off[0], static_cast<float>(off[1]));
+                        wchar_t buffer[2]{ ch, L'\0' };
+                        lineGraphics.DrawString(buffer, 1, _gdiFont, pos, &glowBrush);
+                    }
                 }
 
                 Gdiplus::PointF pos(x, 0.0f);
