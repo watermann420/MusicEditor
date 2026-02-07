@@ -3,14 +3,17 @@
 
 #include <algorithm>
 #include <cstring>
+#include <cwchar>
 #include <cwctype>
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <windowsx.h>
+#include <uxtheme.h>
 
 #pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "msimg32.lib")
+#pragma comment(lib, "uxtheme.lib")
 
 namespace
 {
@@ -20,6 +23,11 @@ namespace
     constexpr COLORREF kGutterTextColor = RGB(140, 140, 140);
     constexpr int kEditorPadding = 16;
     constexpr int kGutterMinWidth = 36;
+    constexpr int kGutterGap = 8;
+    constexpr int kGutterTextPadding = 4;
+    constexpr int kFoldIconAreaWidth = 14;
+    constexpr int kFoldIconSize = 8;
+    const wchar_t kFoldMarkerPrefix[] = L"/*fold:";
 
     const Gdiplus::Color kDefaultText(255, 230, 230, 230);
     const Gdiplus::Color kKeywordBlue(255, 120, 170, 255);
@@ -34,6 +42,30 @@ namespace
     const Gdiplus::Color kVstNameOrange(255, 255, 165, 0);
     constexpr DWORD kActiveNoteTimeoutMs = 1200;
     constexpr DWORD kNoteGlowFadeMs = 220;
+
+    using AllowDarkModeForWindowFn = BOOL(WINAPI*)(HWND, BOOL);
+
+    void ApplyDarkThemeToControl(HWND hwnd)
+    {
+        static AllowDarkModeForWindowFn allowDarkModeForWindow = nullptr;
+        static bool initialized = false;
+        if (!initialized)
+        {
+            HMODULE module = LoadLibraryW(L"uxtheme.dll");
+            if (module)
+            {
+                allowDarkModeForWindow = reinterpret_cast<AllowDarkModeForWindowFn>(
+                    GetProcAddress(module, "AllowDarkModeForWindow"));
+            }
+            initialized = true;
+        }
+
+        if (allowDarkModeForWindow)
+        {
+            allowDarkModeForWindow(hwnd, TRUE);
+        }
+        SetWindowTheme(hwnd, L"DarkMode_Explorer", nullptr);
+    }
 
     struct RandomGlowConfig
     {
@@ -216,6 +248,165 @@ namespace
         config.softness = ParseFloat(slice, "\"softness\"", config.softness);
         return config;
     }
+
+    bool IsWhitespaceOnly(const std::wstring& text, size_t start, size_t end)
+    {
+        for (size_t i = start; i < end && i < text.size(); ++i)
+        {
+            if (!iswspace(text[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool IsWhitespaceOnlyLine(const std::wstring& line)
+    {
+        return IsWhitespaceOnly(line, 0, line.size());
+    }
+
+    bool TryFindFoldBraceForLine(const std::wstring& text, int lineStart, int lineLength, int& bracePos, bool& braceOnNextLine)
+    {
+        braceOnNextLine = false;
+        if (lineStart < 0 || lineLength <= 0 || lineStart >= static_cast<int>(text.size()))
+        {
+            return false;
+        }
+
+        size_t start = static_cast<size_t>(lineStart);
+        size_t end = std::min(text.size(), start + static_cast<size_t>(lineLength));
+        size_t pos = text.find(L'{', start);
+        if (pos != std::wstring::npos && pos < end)
+        {
+            bracePos = static_cast<int>(pos);
+            return true;
+        }
+
+        size_t scan = text.find(L'\n', start);
+        if (scan == std::wstring::npos)
+        {
+            return false;
+        }
+        scan += 1;
+
+        while (scan < text.size())
+        {
+            size_t lineEnd = text.find(L'\n', scan);
+            if (lineEnd == std::wstring::npos)
+            {
+                lineEnd = text.size();
+            }
+
+            size_t first = scan;
+            while (first < lineEnd && iswspace(text[first]))
+            {
+                ++first;
+            }
+
+            if (first >= lineEnd)
+            {
+                scan = lineEnd + 1;
+                continue;
+            }
+
+            if (text[first] == L'{')
+            {
+                bracePos = static_cast<int>(first);
+                braceOnNextLine = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    bool TryFindMatchingBrace(const std::wstring& text, int bracePos, int& matchPos)
+    {
+        if (bracePos < 0 || bracePos >= static_cast<int>(text.size()))
+        {
+            return false;
+        }
+
+        int depth = 1;
+        for (size_t i = static_cast<size_t>(bracePos + 1); i < text.size(); ++i)
+        {
+            wchar_t ch = text[i];
+            if (ch == L'{')
+            {
+                ++depth;
+            }
+            else if (ch == L'}')
+            {
+                --depth;
+                if (depth == 0)
+                {
+                    matchPos = static_cast<int>(i);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool TryGetFoldMarkerId(const std::wstring& text, int bracePos, std::wstring& outId)
+    {
+        if (bracePos < 0 || bracePos >= static_cast<int>(text.size()))
+        {
+            return false;
+        }
+
+        size_t searchStart = static_cast<size_t>(bracePos);
+        size_t markerPos = text.find(kFoldMarkerPrefix, searchStart);
+        if (markerPos == std::wstring::npos)
+        {
+            return false;
+        }
+
+        size_t idStart = markerPos + wcslen(kFoldMarkerPrefix);
+        size_t idEnd = text.find(L"*/", idStart);
+        if (idEnd == std::wstring::npos)
+        {
+            return false;
+        }
+
+        outId = text.substr(idStart, idEnd - idStart);
+        return !outId.empty();
+    }
+
+    bool IsBraceOnlyLine(const std::wstring& line, size_t bracePos)
+    {
+        if (bracePos >= line.size())
+        {
+            return false;
+        }
+
+        for (size_t i = 0; i < bracePos; ++i)
+        {
+            if (!iswspace(line[i]))
+            {
+                return false;
+            }
+        }
+
+        size_t i = bracePos + 1;
+        while (i < line.size() && iswspace(line[i]))
+        {
+            ++i;
+        }
+        if (i >= line.size())
+        {
+            return true;
+        }
+        if (line[i] == L'/' && (i + 1) < line.size() && line[i + 1] == L'/')
+        {
+            return true;
+        }
+        return false;
+    }
 }
 
 void EditorView::Initialize(HWND parent)
@@ -233,8 +424,8 @@ void EditorView::Initialize(HWND parent)
         0,
         L"EDIT",
         L"// MusicEngine Editor\n// Write your MusicEngine script here and press Play.\n\n",
-        WS_CHILD | WS_VISIBLE | WS_VSCROLL |
-            ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL,
+        WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
+            ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
         0, 0, 0, 0,
         parent,
         nullptr,
@@ -243,6 +434,7 @@ void EditorView::Initialize(HWND parent)
 
     if (_editor)
     {
+        ApplyDarkThemeToControl(_editor);
         SendMessageW(_editor, WM_SETFONT, reinterpret_cast<WPARAM>(_font), TRUE);
         SetWindowLongPtrW(_editor, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
         _originalEditProc = reinterpret_cast<WNDPROC>(SetWindowLongPtrW(_editor, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(EditProc)));
@@ -290,13 +482,14 @@ void EditorView::Resize(int topOffset, int bottomOffset)
 
     UpdateGutterWidth();
 
+    RECT prevGutter = _lastGutterRect;
     RECT rect{};
     GetClientRect(_parent, &rect);
     const int width = rect.right - rect.left;
     const int height = rect.bottom - rect.top;
-    const int x = kEditorPadding + _gutterWidth;
+    const int x = _gutterWidth + kGutterGap;
     const int y = kEditorPadding + topOffset;
-    const int w = width - (kEditorPadding * 2) - _gutterWidth;
+    const int w = width - kEditorPadding - _gutterWidth - kGutterGap;
     const int h = height - (kEditorPadding * 2) - topOffset - bottomOffset;
     MoveWindow(_editor, x, y, w, h, TRUE);
     if (_render)
@@ -304,6 +497,22 @@ void EditorView::Resize(int topOffset, int bottomOffset)
         MoveWindow(_render, x, y, w, h, TRUE);
         SetWindowPos(_render, _editor, 0, 0, 0, 0,
             SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    }
+
+    RECT newGutter{};
+    if (GetGutterRect(newGutter))
+    {
+        _lastGutterRect = newGutter;
+        RECT invalidate{};
+        if (!IsRectEmpty(&prevGutter))
+        {
+            UnionRect(&invalidate, &prevGutter, &newGutter);
+        }
+        else
+        {
+            invalidate = newGutter;
+        }
+        InvalidateRect(_parent, &invalidate, TRUE);
     }
 }
 
@@ -338,7 +547,15 @@ void EditorView::Shutdown()
 
 LRESULT EditorView::OnEditColor(HDC hdc)
 {
-    SetTextColor(hdc, _syntaxOverlayEnabled ? kBgColor : kTextColor);
+    bool hasSelection = false;
+    if (_editor)
+    {
+        DWORD start = 0;
+        DWORD end = 0;
+        SendMessageW(_editor, EM_GETSEL, reinterpret_cast<WPARAM>(&start), reinterpret_cast<LPARAM>(&end));
+        hasSelection = start != end;
+    }
+    SetTextColor(hdc, (_syntaxOverlayEnabled && !hasSelection) ? kBgColor : kTextColor);
     SetBkColor(hdc, kBgColor);
     return reinterpret_cast<LRESULT>(_bgBrush);
 }
@@ -350,19 +567,14 @@ void EditorView::DrawLineNumbers(HDC hdc)
         return;
     }
 
-    RECT editRect{};
-    GetWindowRect(_editor, &editRect);
-    POINT topLeft{ editRect.left, editRect.top };
-    POINT bottomRight{ editRect.right, editRect.bottom };
-    ScreenToClient(_parent, &topLeft);
-    ScreenToClient(_parent, &bottomRight);
+    const int savedState = SaveDC(hdc);
+    SelectClipRgn(hdc, nullptr);
 
-    RECT gutter{
-        topLeft.x - _gutterWidth,
-        topLeft.y,
-        topLeft.x,
-        bottomRight.y
-    };
+    RECT gutter{};
+    if (!GetGutterRect(gutter))
+    {
+        return;
+    }
 
     HBRUSH gutterBrush = CreateSolidBrush(kGutterColor);
     FillRect(hdc, &gutter, gutterBrush);
@@ -371,10 +583,15 @@ void EditorView::DrawLineNumbers(HDC hdc)
     int firstLine = static_cast<int>(SendMessageW(_editor, EM_GETFIRSTVISIBLELINE, 0, 0));
     int totalLines = GetLineCount();
     int visibleLines = _lineHeight > 0 ? (gutter.bottom - gutter.top) / _lineHeight + 1 : 0;
+    std::wstring fullText = GetText();
 
     HFONT oldFont = _font ? static_cast<HFONT>(SelectObject(hdc, _font)) : nullptr;
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, kGutterTextColor);
+    HPEN iconPen = CreatePen(PS_SOLID, 1, kGutterTextColor);
+    HBRUSH iconBrush = CreateSolidBrush(kGutterTextColor);
+    HPEN oldPen = iconPen ? static_cast<HPEN>(SelectObject(hdc, iconPen)) : nullptr;
+    HBRUSH oldBrush = iconBrush ? static_cast<HBRUSH>(SelectObject(hdc, iconBrush)) : nullptr;
 
     for (int i = 0; i < visibleLines; ++i)
     {
@@ -385,17 +602,273 @@ void EditorView::DrawLineNumbers(HDC hdc)
         }
 
         int y = gutter.top + (i * _lineHeight);
-        RECT lineRect{ gutter.left + 4, y, gutter.right - 6, y + _lineHeight };
+        RECT lineRect{ gutter.left + kGutterTextPadding, y, gutter.right - kFoldIconAreaWidth - 2, y + _lineHeight };
         std::wstring text = std::to_wstring(lineNo);
         DrawTextW(hdc, text.c_str(), static_cast<int>(text.size()), &lineRect,
-            DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+            DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+
+        bool foldable = false;
+        bool folded = false;
+        if (!fullText.empty())
+        {
+            int lineStart = static_cast<int>(SendMessageW(_editor, EM_LINEINDEX, lineNo - 1, 0));
+            if (lineStart >= 0)
+            {
+                int lineLength = static_cast<int>(SendMessageW(_editor, EM_LINELENGTH, lineStart, 0));
+                std::wstring line;
+                if (lineLength > 0 && lineStart + lineLength <= static_cast<int>(fullText.size()))
+                {
+                    line = fullText.substr(static_cast<size_t>(lineStart), static_cast<size_t>(lineLength));
+                }
+                int bracePos = -1;
+                int matchPos = -1;
+                bool braceOnNextLine = false;
+                if (!line.empty() && !IsWhitespaceOnlyLine(line) &&
+                    TryFindFoldBraceForLine(fullText, lineStart, lineLength, bracePos, braceOnNextLine) &&
+                    TryFindMatchingBrace(fullText, bracePos, matchPos))
+                {
+                    size_t newline = fullText.find(L'\n', static_cast<size_t>(bracePos));
+                    foldable = newline != std::wstring::npos && static_cast<int>(newline) < matchPos;
+                    std::wstring id;
+                    folded = TryGetFoldMarkerId(fullText, bracePos, id);
+                    if (foldable && !braceOnNextLine && bracePos >= lineStart && bracePos < lineStart + lineLength)
+                    {
+                        size_t localPos = static_cast<size_t>(bracePos - lineStart);
+                        if (localPos < line.size() && IsBraceOnlyLine(line, localPos))
+                        {
+                            foldable = false;
+                            folded = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (foldable)
+        {
+            int centerY = y + (_lineHeight / 2);
+            int iconLeft = gutter.right - kFoldIconAreaWidth + (kFoldIconAreaWidth - kFoldIconSize) / 2;
+            if (folded)
+            {
+                POINT pts[3] = {
+                    { iconLeft, centerY - (kFoldIconSize / 2) },
+                    { iconLeft, centerY + (kFoldIconSize / 2) },
+                    { iconLeft + kFoldIconSize, centerY }
+                };
+                Polygon(hdc, pts, 3);
+            }
+            else
+            {
+                POINT pts[3] = {
+                    { iconLeft, centerY - (kFoldIconSize / 2) },
+                    { iconLeft + kFoldIconSize, centerY - (kFoldIconSize / 2) },
+                    { iconLeft + (kFoldIconSize / 2), centerY + (kFoldIconSize / 2) }
+                };
+                Polygon(hdc, pts, 3);
+            }
+        }
     }
 
     if (oldFont)
     {
         SelectObject(hdc, oldFont);
     }
+    if (oldPen)
+    {
+        SelectObject(hdc, oldPen);
+    }
+    if (oldBrush)
+    {
+        SelectObject(hdc, oldBrush);
+    }
+    if (iconPen)
+    {
+        DeleteObject(iconPen);
+    }
+    if (iconBrush)
+    {
+        DeleteObject(iconBrush);
+    }
 
+    if (savedState != 0)
+    {
+        RestoreDC(hdc, savedState);
+    }
+}
+
+bool EditorView::HandleGutterClick(POINT pt)
+{
+    if (!_editor || !_parent)
+    {
+        return false;
+    }
+
+    RECT gutter{};
+    if (!GetGutterRect(gutter) || !PtInRect(&gutter, pt))
+    {
+        return false;
+    }
+
+    int lineHeight = _lineHeight > 0 ? _lineHeight : 1;
+    int firstLine = static_cast<int>(SendMessageW(_editor, EM_GETFIRSTVISIBLELINE, 0, 0));
+    int offsetY = static_cast<int>(pt.y) - static_cast<int>(gutter.top);
+    int lineIndex = firstLine + std::max<int>(0, offsetY / lineHeight);
+    int totalLines = GetLineCount();
+    if (lineIndex >= totalLines)
+    {
+        lineIndex = totalLines - 1;
+    }
+    if (lineIndex < 0)
+    {
+        return true;
+    }
+
+    int start = static_cast<int>(SendMessageW(_editor, EM_LINEINDEX, lineIndex, 0));
+    if (start < 0)
+    {
+        return true;
+    }
+
+    if (pt.x >= gutter.right - kFoldIconAreaWidth)
+    {
+        if (ToggleFoldAtLine(lineIndex))
+        {
+            return true;
+        }
+    }
+
+    int end = start;
+    if (lineIndex + 1 < totalLines)
+    {
+        int next = static_cast<int>(SendMessageW(_editor, EM_LINEINDEX, lineIndex + 1, 0));
+        if (next > start)
+        {
+            end = next;
+        }
+    }
+    if (end == start)
+    {
+        int length = static_cast<int>(SendMessageW(_editor, EM_LINELENGTH, start, 0));
+        end = start + std::max(0, length);
+    }
+
+    SetFocus(_editor);
+    SendMessageW(_editor, EM_SETSEL, start, end);
+    return true;
+}
+
+bool EditorView::GetGutterRect(RECT& outRect) const
+{
+    if (!_editor || !_parent)
+    {
+        return false;
+    }
+
+    RECT editRect{};
+    GetWindowRect(_editor, &editRect);
+    POINT topLeft{ editRect.left, editRect.top };
+    POINT bottomRight{ editRect.right, editRect.bottom };
+    ScreenToClient(_parent, &topLeft);
+    ScreenToClient(_parent, &bottomRight);
+    outRect = RECT{
+        0,
+        topLeft.y,
+        _gutterWidth,
+        bottomRight.y
+    };
+    return true;
+}
+
+bool EditorView::ToggleFoldAtLine(int lineIndex)
+{
+    if (!_editor)
+    {
+        return false;
+    }
+
+    std::wstring fullText = GetText();
+    if (fullText.empty())
+    {
+        return false;
+    }
+
+    int lineStart = static_cast<int>(SendMessageW(_editor, EM_LINEINDEX, lineIndex, 0));
+    if (lineStart < 0)
+    {
+        return false;
+    }
+
+    int lineLength = static_cast<int>(SendMessageW(_editor, EM_LINELENGTH, lineStart, 0));
+    if (lineLength <= 0 || lineStart + lineLength > static_cast<int>(fullText.size()))
+    {
+        return false;
+    }
+
+    int bracePos = -1;
+    int matchPos = -1;
+    bool braceOnNextLine = false;
+    if (!TryFindFoldBraceForLine(fullText, lineStart, lineLength, bracePos, braceOnNextLine))
+    {
+        return false;
+    }
+
+    std::wstring line = fullText.substr(static_cast<size_t>(lineStart), static_cast<size_t>(lineLength));
+    if (!braceOnNextLine)
+    {
+        size_t localPos = static_cast<size_t>(bracePos - lineStart);
+        if (localPos < line.size() && IsBraceOnlyLine(line, localPos))
+        {
+            return false;
+        }
+    }
+
+    std::wstring foldedId;
+    if (TryGetFoldMarkerId(fullText, bracePos, foldedId))
+    {
+        auto it = _foldedBlocks.find(foldedId);
+        if (it != _foldedBlocks.end())
+        {
+            std::wstring marker = L"{ ";
+            marker += kFoldMarkerPrefix;
+            marker += foldedId;
+            marker += L"*/ }";
+            size_t markerPosText = fullText.find(marker, static_cast<size_t>(bracePos));
+            if (markerPosText != std::wstring::npos)
+            {
+                fullText.replace(markerPosText, marker.size(), it->second);
+                _foldedBlocks.erase(it);
+                SetWindowTextW(_editor, fullText.c_str());
+                InvalidateRect(_parent, nullptr, TRUE);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    if (!TryFindMatchingBrace(fullText, bracePos, matchPos))
+    {
+        return false;
+    }
+
+    size_t newline = fullText.find(L'\n', static_cast<size_t>(bracePos));
+    if (newline == std::wstring::npos || static_cast<int>(newline) >= matchPos)
+    {
+        return false;
+    }
+
+    std::wstring id = L"F" + std::to_wstring(++_foldCounter);
+    std::wstring original = fullText.substr(static_cast<size_t>(bracePos),
+        static_cast<size_t>(matchPos - bracePos + 1));
+    std::wstring marker = L"{ ";
+    marker += kFoldMarkerPrefix;
+    marker += id;
+    marker += L"*/ }";
+
+    fullText.replace(static_cast<size_t>(bracePos), static_cast<size_t>(matchPos - bracePos + 1), marker);
+    _foldedBlocks[id] = std::move(original);
+    SetWindowTextW(_editor, fullText.c_str());
+    InvalidateRect(_parent, nullptr, TRUE);
+    return true;
 }
 
 void EditorView::RenderOverlay(HDC hdc, int width, int height)
@@ -454,6 +927,14 @@ void EditorView::RenderOverlay(HDC hdc, int width, int height)
 void EditorView::DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width, int height)
 {
     if (!_parent || !_editor || !_syntaxOverlayEnabled)
+    {
+        return;
+    }
+
+    DWORD selStart = 0;
+    DWORD selEnd = 0;
+    SendMessageW(_editor, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<LPARAM>(&selEnd));
+    if (selStart != selEnd)
     {
         return;
     }
@@ -987,20 +1468,23 @@ LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
     if (editor)
     {
-        auto invalidateGutter = [editor, parent]()
+        auto invalidateGutter = [editor, parent](bool immediate)
         {
             if (!editor->_editor || !parent)
             {
                 return;
             }
-            RECT editRect{};
-            GetWindowRect(editor->_editor, &editRect);
-            POINT topLeft{ editRect.left, editRect.top };
-            POINT bottomRight{ editRect.right, editRect.bottom };
-            ScreenToClient(parent, &topLeft);
-            ScreenToClient(parent, &bottomRight);
-            RECT gutter{ topLeft.x - editor->_gutterWidth, topLeft.y, topLeft.x, bottomRight.y };
-            InvalidateRect(parent, &gutter, FALSE);
+            RECT gutter{};
+            if (!editor->GetGutterRect(gutter))
+            {
+                return;
+            }
+            UINT flags = RDW_INVALIDATE | RDW_NOERASE;
+            if (immediate)
+            {
+                flags = RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW;
+            }
+            RedrawWindow(parent, &gutter, nullptr, flags);
         };
 
         switch (msg)
@@ -1032,7 +1516,7 @@ LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             break;
         case WM_VSCROLL:
         case WM_MOUSEWHEEL:
-            invalidateGutter();
+            invalidateGutter(true);
             if (editor->_render)
             {
                 RedrawWindow(editor->_render, nullptr, nullptr, RDW_INVALIDATE | RDW_NOERASE);
@@ -1041,7 +1525,7 @@ LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         case WM_KEYUP:
             if (wParam == VK_RETURN || wParam == VK_BACK || wParam == VK_DELETE)
             {
-                invalidateGutter();
+                invalidateGutter(false);
             }
             if (editor->_render)
             {
@@ -1055,7 +1539,7 @@ LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             }
             if (wParam == L'\r' || wParam == L'\n')
             {
-                invalidateGutter();
+                invalidateGutter(false);
             }
             if (editor->_render)
             {
@@ -1096,7 +1580,7 @@ LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         case WM_PASTE:
             if (msg == WM_PASTE)
             {
-                invalidateGutter();
+                invalidateGutter(false);
             }
             if (editor->_render)
             {
@@ -1219,11 +1703,11 @@ void EditorView::UpdateGutterWidth()
         GetTextExtentPoint32W(hdc, sample.c_str(), static_cast<int>(sample.size()), &size);
         SelectObject(hdc, oldFont);
         ReleaseDC(_editor, hdc);
-        _gutterWidth = std::max<int>(kGutterMinWidth, static_cast<int>(size.cx + 16));
+        _gutterWidth = std::max<int>(kGutterMinWidth, static_cast<int>(size.cx + 16 + kFoldIconAreaWidth));
     }
     else
     {
-        _gutterWidth = std::max<int>(kGutterMinWidth, 10 * digits + 16);
+        _gutterWidth = std::max<int>(kGutterMinWidth, 10 * digits + 16 + kFoldIconAreaWidth);
     }
 }
 

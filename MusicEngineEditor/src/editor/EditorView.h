@@ -25,6 +25,7 @@ public:
     void SetText(const std::wstring& text);
     void SetActiveNote(int note, bool active);
     bool PruneExpiredNotes();
+    bool HandleGutterClick(POINT pt);
 
 private:
     struct LineCacheEntry
@@ -47,11 +48,13 @@ private:
     void DrawCustomTextToGraphics(Gdiplus::Graphics& graphics, int width, int height);
     void RenderOverlay(HDC hdc, int width, int height);
     void UpdateGutterWidth();
+    bool GetGutterRect(RECT& outRect) const;
     int GetLineCount() const;
     void UpdateCharMetrics();
     void LoadVisualConfig();
     void BuildSyntaxColors(const std::wstring& line, std::vector<Gdiplus::Color>& colors,
         std::vector<float>& glow, DWORD now) const;
+    bool ToggleFoldAtLine(int lineIndex);
 
     HWND _parent = nullptr;
     HWND _editor = nullptr;
@@ -85,4 +88,7 @@ private:
     std::unordered_map<int, NoteGlowState> _noteGlow;
     unsigned int _activeNotesVersion = 0;
     bool _syntaxOverlayEnabled = true;
+    RECT _lastGutterRect{};
+    int _foldCounter = 0;
+    std::unordered_map<std::wstring, std::wstring> _foldedBlocks;
 };

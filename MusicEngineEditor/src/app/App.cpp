@@ -8,6 +8,11 @@
 #include <string>
 #include <vector>
 #include <windowsx.h>
+#include <dwmapi.h>
+#include <uxtheme.h>
+
+#pragma comment(lib, "dwmapi.lib")
+#pragma comment(lib, "uxtheme.lib")
 
 namespace
 {
@@ -21,7 +26,7 @@ namespace
     constexpr COLORREF kPlayColor = RGB(30, 160, 70);
     constexpr COLORREF kStopColor = RGB(190, 60, 60);
     constexpr COLORREF kConsoleBgColor = RGB(12, 12, 14);
-    constexpr COLORREF kConsoleTextColor = RGB(190, 190, 190);
+    constexpr COLORREF kConsoleTextColor = RGB(230, 230, 230);
     constexpr int kTopBarHeight = 52;
     constexpr int kTopBarPadding = 12;
     constexpr int kPlayButtonWidth = 110;
@@ -33,6 +38,81 @@ namespace
     constexpr int kConsoleToggleButtonWidth = 120;
     constexpr UINT kOutputMessage = WM_APP + 1;
     constexpr int kEditorPadding = 16;
+
+    enum PreferredAppMode
+    {
+        Default,
+        AllowDark,
+        ForceDark,
+        ForceLight,
+        Max
+    };
+
+    using SetPreferredAppModeFn = PreferredAppMode(WINAPI*)(PreferredAppMode);
+    using AllowDarkModeForWindowFn = BOOL(WINAPI*)(HWND, BOOL);
+    using RefreshImmersiveColorPolicyStateFn = void (WINAPI*)();
+
+    struct DarkModeApi
+    {
+        HMODULE module = nullptr;
+        SetPreferredAppModeFn setPreferredAppMode = nullptr;
+        AllowDarkModeForWindowFn allowDarkModeForWindow = nullptr;
+        RefreshImmersiveColorPolicyStateFn refreshImmersiveColorPolicyState = nullptr;
+        bool initialized = false;
+    };
+
+    DarkModeApi& GetDarkModeApi()
+    {
+        static DarkModeApi api;
+        if (!api.initialized)
+        {
+            api.module = LoadLibraryW(L"uxtheme.dll");
+            if (api.module)
+            {
+                api.setPreferredAppMode = reinterpret_cast<SetPreferredAppModeFn>(
+                    GetProcAddress(api.module, "SetPreferredAppMode"));
+                api.allowDarkModeForWindow = reinterpret_cast<AllowDarkModeForWindowFn>(
+                    GetProcAddress(api.module, "AllowDarkModeForWindow"));
+                api.refreshImmersiveColorPolicyState = reinterpret_cast<RefreshImmersiveColorPolicyStateFn>(
+                    GetProcAddress(api.module, "RefreshImmersiveColorPolicyState"));
+            }
+            api.initialized = true;
+        }
+        return api;
+    }
+
+    void EnableDarkModeForWindow(HWND hwnd)
+    {
+        DarkModeApi& api = GetDarkModeApi();
+        if (api.setPreferredAppMode)
+        {
+            api.setPreferredAppMode(AllowDark);
+        }
+        if (api.refreshImmersiveColorPolicyState)
+        {
+            api.refreshImmersiveColorPolicyState();
+        }
+        if (api.allowDarkModeForWindow)
+        {
+            api.allowDarkModeForWindow(hwnd, TRUE);
+        }
+
+        const BOOL enable = TRUE;
+        if (FAILED(DwmSetWindowAttribute(hwnd, 20, &enable, sizeof(enable))))
+        {
+            DwmSetWindowAttribute(hwnd, 19, &enable, sizeof(enable));
+        }
+    }
+
+    void ApplyDarkThemeToControl(HWND hwnd)
+    {
+        DarkModeApi& api = GetDarkModeApi();
+        if (api.allowDarkModeForWindow)
+        {
+            api.allowDarkModeForWindow(hwnd, TRUE);
+        }
+        SetWindowTheme(hwnd, L"DarkMode_Explorer", nullptr);
+    }
 
     std::wstring ReadFileUtf8(const std::filesystem::path& path)
     {
@@ -333,6 +413,8 @@ bool App::InitWindow(HINSTANCE instance, int nCmdShow)
         return false;
     }
 
+    EnableDarkModeForWindow(_window);
+
     _backgroundBrush = CreateSolidBrush(kBgColor);
     _topBarBrush = CreateSolidBrush(kTopBarColor);
     _consoleBrush = CreateSolidBrush(kConsoleBgColor);
@@ -373,6 +455,11 @@ bool App::InitWindow(HINSTANCE instance, int nCmdShow)
         nullptr,
         instance,
         nullptr);
+
+    if (_console)
+    {
+        ApplyDarkThemeToControl(_console);
+    }
 
     if (_playButton && _uiFont)
     {
@@ -526,6 +613,10 @@ LRESULT CALLBACK App::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (app)
         {
             POINT pt{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+            if (app->_editor.HandleGutterClick(pt))
+            {
+                return 0;
+            }
             if (app->IsOverSplitter(pt))
             {
                 app->_draggingSplitter = true;
