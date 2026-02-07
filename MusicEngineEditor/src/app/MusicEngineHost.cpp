@@ -6,6 +6,7 @@
 #include <cstring>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 namespace
 {
@@ -316,6 +317,29 @@ bool MusicEngineHost::Sleep()
 bool MusicEngineHost::Wake()
 {
     return SendCommand(kPlayCommand);
+}
+
+bool MusicEngineHost::OpenPlugin(const std::wstring& name)
+{
+    if (name.empty())
+    {
+        return false;
+    }
+
+    std::string utf8Name = WideToUtf8(name);
+    if (utf8Name.empty())
+    {
+        return false;
+    }
+
+    utf8Name.erase(std::remove(utf8Name.begin(), utf8Name.end(), '\r'), utf8Name.end());
+    utf8Name.erase(std::remove(utf8Name.begin(), utf8Name.end(), '\n'), utf8Name.end());
+
+    std::string command = "/open ";
+    command += utf8Name;
+    command.push_back('\n');
+
+    return SendCommand(command.c_str());
 }
 
 bool MusicEngineHost::SendCommand(const char* command)

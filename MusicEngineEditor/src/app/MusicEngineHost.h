@@ -19,6 +19,7 @@ public:
     bool Refresh();
     bool Sleep();
     bool Wake();
+    bool OpenPlugin(const std::wstring& name);
     void Stop();
     bool IsRunning() const;
 

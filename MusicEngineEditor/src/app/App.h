@@ -28,6 +28,7 @@ private:
     void AppendConsoleText(const std::wstring& text);
     bool ShouldSuppressConsoleLine(const std::wstring& line) const;
     void TickEditorVisuals();
+    void OpenPluginForIdentifier(const std::wstring& identifier);
 
     HWND _window = nullptr;
     HWND _playButton = nullptr;

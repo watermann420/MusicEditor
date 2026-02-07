@@ -180,6 +180,107 @@ namespace
         }
         return true;
     }
+
+    bool IsIdentifierStart(wchar_t ch)
+    {
+        return (ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z') || ch == L'_';
+    }
+
+    bool IsIdentifierChar(wchar_t ch)
+    {
+        return IsIdentifierStart(ch) || (ch >= L'0' && ch <= L'9');
+    }
+
+    bool TryExtractVstBinding(const std::wstring& line, std::wstring& outVar, std::wstring& outName)
+    {
+        size_t commentPos = line.find(L"//");
+        std::wstring view = commentPos == std::wstring::npos ? line : line.substr(0, commentPos);
+
+        const std::wstring token = L"CreateVst";
+        size_t createPos = view.find(token);
+        if (createPos == std::wstring::npos)
+        {
+            return false;
+        }
+        size_t tokenEnd = createPos + token.size();
+        if ((createPos > 0 && IsIdentifierChar(view[createPos - 1])) ||
+            (tokenEnd < view.size() && IsIdentifierChar(view[tokenEnd])))
+        {
+            return false;
+        }
+
+        size_t eqPos = view.rfind(L'=', createPos);
+        if (eqPos == std::wstring::npos)
+        {
+            return false;
+        }
+
+        size_t idEnd = eqPos;
+        while (idEnd > 0 && iswspace(view[idEnd - 1]))
+        {
+            --idEnd;
+        }
+        size_t idStart = idEnd;
+        while (idStart > 0 && IsIdentifierChar(view[idStart - 1]))
+        {
+            --idStart;
+        }
+        if (idStart == idEnd)
+        {
+            return false;
+        }
+
+        size_t quoteStart = view.find(L'"', createPos);
+        if (quoteStart == std::wstring::npos)
+        {
+            return false;
+        }
+        size_t quoteEnd = view.find(L'"', quoteStart + 1);
+        if (quoteEnd == std::wstring::npos || quoteEnd <= quoteStart + 1)
+        {
+            return false;
+        }
+
+        outVar = view.substr(idStart, idEnd - idStart);
+        outName = view.substr(quoteStart + 1, quoteEnd - quoteStart - 1);
+        return !outVar.empty() && !outName.empty();
+    }
+
+    bool TryFindVstPluginName(const std::wstring& script, const std::wstring& identifier, std::wstring& outName)
+    {
+        if (identifier.empty())
+        {
+            return false;
+        }
+
+        size_t start = 0;
+        while (start < script.size())
+        {
+            size_t end = script.find(L'\n', start);
+            if (end == std::wstring::npos)
+            {
+                end = script.size();
+            }
+
+            std::wstring line = script.substr(start, end - start);
+            if (!line.empty() && line.back() == L'\r')
+            {
+                line.pop_back();
+            }
+
+            std::wstring varName;
+            std::wstring pluginName;
+            if (TryExtractVstBinding(line, varName, pluginName) && varName == identifier)
+            {
+                outName = std::move(pluginName);
+                return true;
+            }
+
+            start = end + 1;
+        }
+
+        return false;
+    }
 }
 
 int App::Run(HINSTANCE instance, int nCmdShow)
@@ -524,6 +625,18 @@ LRESULT CALLBACK App::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
         break;
+    case kEditorOpenPluginMessage:
+        if (app)
+        {
+            auto* word = reinterpret_cast<std::wstring*>(lParam);
+            if (word)
+            {
+                app->OpenPluginForIdentifier(*word);
+                delete word;
+            }
+            return 0;
+        }
+        break;
     case WM_DESTROY:
         if (app)
         {
@@ -799,6 +912,29 @@ void App::AppendConsoleText(const std::wstring& text)
 void App::TickEditorVisuals()
 {
     _editor.PruneExpiredNotes();
+}
+
+void App::OpenPluginForIdentifier(const std::wstring& identifier)
+{
+    if (identifier.empty())
+    {
+        return;
+    }
+
+    std::wstring script = _editor.GetText();
+    std::wstring pluginName;
+    if (!TryFindVstPluginName(script, identifier, pluginName))
+    {
+        pluginName = identifier;
+    }
+
+    if (!_engine.IsRunning())
+    {
+        _engine.SetScript(std::move(script));
+        _engine.Start(true, false);
+    }
+
+    _engine.OpenPlugin(pluginName);
 }
 
 bool App::ShouldSuppressConsoleLine(const std::wstring& line) const

@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <windowsx.h>
 
 #pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "msimg32.lib")
@@ -30,6 +31,7 @@ namespace
     const Gdiplus::Color kCommentGray(255, 150, 150, 150);
     const Gdiplus::Color kBoolTrueGreen(255, 110, 210, 110);
     const Gdiplus::Color kBoolFalseRed(255, 220, 90, 90);
+    const Gdiplus::Color kVstNameOrange(255, 255, 165, 0);
     constexpr DWORD kActiveNoteTimeoutMs = 1200;
     constexpr DWORD kNoteGlowFadeMs = 220;
 
@@ -87,6 +89,22 @@ namespace
     bool IsIdentifierChar(wchar_t ch)
     {
         return IsIdentifierStart(ch) || (ch >= L'0' && ch <= L'9');
+    }
+
+    bool IsIdentifierToken(const std::wstring& token)
+    {
+        if (token.empty())
+        {
+            return false;
+        }
+        for (wchar_t ch : token)
+        {
+            if (!IsIdentifierChar(ch))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     bool IsDigit(wchar_t ch)
@@ -662,6 +680,8 @@ void EditorView::BuildSyntaxColors(const std::wstring& line, std::vector<Gdiplus
     bool noteCallPending = false;
     bool inNoteCall = false;
     bool noteArgCaptured = false;
+    bool pendingVstName = false;
+    bool vstStringActive = false;
 
     for (size_t i = 0; i < line.size();)
     {
@@ -672,9 +692,41 @@ void EditorView::BuildSyntaxColors(const std::wstring& line, std::vector<Gdiplus
         }
 
         wchar_t ch = line[i];
+        if (!inString && pendingVstName)
+        {
+            if (!iswspace(ch) && ch != L'"' && ch != L'(' && ch != L',' && ch != L')')
+            {
+                pendingVstName = false;
+            }
+        }
+
         if (ch == L'"')
         {
-            inString = !inString;
+            if (!inString)
+            {
+                inString = true;
+                vstStringActive = pendingVstName;
+                pendingVstName = false;
+            }
+            else
+            {
+                inString = false;
+                if (vstStringActive)
+                {
+                    vstStringActive = false;
+                }
+            }
+
+            ++i;
+            continue;
+        }
+
+        if (inString)
+        {
+            if (vstStringActive)
+            {
+                applyColor(i, i + 1, kVstNameOrange);
+            }
             ++i;
             continue;
         }
@@ -725,6 +777,11 @@ void EditorView::BuildSyntaxColors(const std::wstring& line, std::vector<Gdiplus
             else if (token == L"CreateSynth")
             {
                 applyColor(start, end, kMethodGreen);
+            }
+            else if (token == L"CreateVst")
+            {
+                applyColor(start, end, kMethodGreen);
+                pendingVstName = true;
             }
             else if (token == L"pattern")
             {
@@ -962,7 +1019,6 @@ LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             if (wParam == VK_RETURN && (GetKeyState(VK_CONTROL) & 0x8000))
             {
                 PostMessageW(parent, WM_COMMAND, MAKEWPARAM(kCommandRefresh, 0), 0);
-                return 0;
             }
             if (wParam == VK_ESCAPE)
             {
@@ -1006,6 +1062,35 @@ LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                 RedrawWindow(editor->_render, nullptr, nullptr, RDW_INVALIDATE | RDW_NOERASE);
             }
             break;
+        case WM_LBUTTONDBLCLK:
+        {
+            LRESULT result = 0;
+            if (editor->_originalEditProc)
+            {
+                result = CallWindowProcW(editor->_originalEditProc, hwnd, msg, wParam, lParam);
+            }
+
+            DWORD selStart = 0;
+            DWORD selEnd = 0;
+            SendMessageW(hwnd, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<LPARAM>(&selEnd));
+            if (selEnd > selStart)
+            {
+                int textLength = GetWindowTextLengthW(hwnd);
+                if (textLength > 0 && selEnd <= static_cast<DWORD>(textLength))
+                {
+                    std::wstring text(static_cast<size_t>(textLength) + 1, L'\0');
+                    GetWindowTextW(hwnd, text.data(), textLength + 1);
+                    text.resize(static_cast<size_t>(textLength));
+                    std::wstring selection = text.substr(selStart, selEnd - selStart);
+                    if (IsIdentifierToken(selection) && editor->_parent)
+                    {
+                        auto* word = new std::wstring(selection);
+                        PostMessageW(editor->_parent, kEditorOpenPluginMessage, 0, reinterpret_cast<LPARAM>(word));
+                    }
+                }
+            }
+            return result;
+        }
         case WM_LBUTTONDOWN:
         case WM_LBUTTONUP:
         case WM_PASTE:
@@ -1018,6 +1103,48 @@ LRESULT CALLBACK EditorView::EditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                 RedrawWindow(editor->_render, nullptr, nullptr, RDW_INVALIDATE | RDW_NOERASE);
             }
             break;
+        case WM_RBUTTONUP:
+        {
+            DWORD selStart = 0;
+            DWORD selEnd = 0;
+            SendMessageW(hwnd, EM_GETSEL, reinterpret_cast<WPARAM>(&selStart), reinterpret_cast<LPARAM>(&selEnd));
+            if (selEnd > selStart)
+            {
+                int textLength = GetWindowTextLengthW(hwnd);
+                if (textLength > 0 && selEnd <= static_cast<DWORD>(textLength))
+                {
+                    std::wstring text(static_cast<size_t>(textLength) + 1, L'\0');
+                    GetWindowTextW(hwnd, text.data(), textLength + 1);
+                    text.resize(static_cast<size_t>(textLength));
+                    std::wstring selection = text.substr(selStart, selEnd - selStart);
+                    if (IsIdentifierToken(selection))
+                    {
+                        POINT pt{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+                        ClientToScreen(hwnd, &pt);
+                        HMENU menu = CreatePopupMenu();
+                        if (menu)
+                        {
+                            constexpr UINT kContextOpenVst = 2001;
+                            AppendMenuW(menu, MF_STRING, kContextOpenVst, L"Open VST");
+                            UINT cmd = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_RIGHTBUTTON,
+                                pt.x, pt.y, 0, hwnd, nullptr);
+                            DestroyMenu(menu);
+                            if (cmd == kContextOpenVst && editor && editor->_parent)
+                            {
+                                auto* word = new std::wstring(selection);
+                                PostMessageW(editor->_parent, kEditorOpenPluginMessage, 0, reinterpret_cast<LPARAM>(word));
+                                return 0;
+                            }
+                        }
+                    }
+                }
+            }
+            if (editor && editor->_originalEditProc)
+            {
+                return CallWindowProcW(editor->_originalEditProc, hwnd, msg, wParam, lParam);
+            }
+            return DefWindowProcW(hwnd, msg, wParam, lParam);
+        }
         default:
             break;
         }
