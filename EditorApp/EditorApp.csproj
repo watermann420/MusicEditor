@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\MusicEngine\MusicEngine.csproj" />
+  </ItemGroup>
+
+  <Target Name="CopyMusicEngineNative" AfterTargets="Build">
+    <PropertyGroup>
+      <MusicEngineBin>$(MSBuildProjectDirectory)\..\..\MusicEngine\bin\$(Configuration)\net10.0-windows</MusicEngineBin>
+    </PropertyGroup>
+    <ItemGroup>
+      <MusicEngineNative Include="$(MusicEngineBin)\MusicEngine.CppLayer.Native.dll" Condition="Exists('$(MusicEngineBin)\MusicEngine.CppLayer.Native.dll')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(MusicEngineNative)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

@@ -1,0 +1,330 @@
+<Window x:Class="EditorApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EditorApp"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        mc:Ignorable="d"
+        Title="Music Engine Live Coding"
+        Height="600"
+        Width="980"
+        Background="#FF0F1115"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        WindowState="Maximized"
+        PreviewKeyDown="OnWindowPreviewKeyDown"
+        Loaded="OnWindowLoaded">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#FF1D2229" />
+            <Setter Property="Foreground" Value="#FFE6E6E6" />
+            <Setter Property="BorderBrush" Value="#FF2A3139" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="ContextMenu">
+            <Setter Property="Background" Value="#FF14181E" />
+            <Setter Property="BorderBrush" Value="#FF2A3139" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="MinWidth" Value="180" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="HasDropShadow" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ItemsPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="MenuItem">
+            <Setter Property="Foreground" Value="#FFE6E6E6" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="MinWidth" Value="180" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter Margin="12,6"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              ContentSource="Header"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter Property="Background" Value="#FF1D2229" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="EditorScrollBarThumbStyle" TargetType="Thumb">
+            <Setter Property="Background" Value="#FF2F3742" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="EditorScrollBarStyle" TargetType="ScrollBar">
+            <Setter Property="Background" Value="#FF0F1217" />
+            <Setter Property="Width" Value="12" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track Name="PART_Track" IsDirectionReversed="True">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageUpCommand"
+                                                  Focusable="False"
+                                                  Opacity="0" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource EditorScrollBarThumbStyle}" />
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageDownCommand"
+                                                  Focusable="False"
+                                                  Opacity="0" />
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Orientation" Value="Horizontal">
+                                <Setter Property="Height" Value="12" />
+                                <Setter Property="Width" Value="Auto" />
+                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0"
+                            ResizeBorderThickness="8"
+                            GlassFrameThickness="0"
+                            UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="FilesColumn" Width="0" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition x:Name="ConsoleRow" Height="0" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#FF0F1115" MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown">
+            <DockPanel LastChildFill="True">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="FilesMenu"
+                               Text="Files"
+                               Margin="12,0,0,0"
+                               VerticalAlignment="Center"
+                               Cursor="Hand"
+                               Foreground="#FFE6E6E6"
+                               MouseLeftButtonDown="OnFilesMenuMouseLeftButtonDown">
+                        <TextBlock.ContextMenu>
+                            <ContextMenu Placement="Bottom">
+                                <MenuItem Header="Create File" />
+                                <MenuItem Header="Create Folder" />
+                                <MenuItem Header="Open..." />
+                                <MenuItem Header="Save" />
+                                <MenuItem Header="Save As..." />
+                                <MenuItem Header="Close File" />
+                            </ContextMenu>
+                        </TextBlock.ContextMenu>
+                    </TextBlock>
+                    <TextBlock x:Name="ViewMenu"
+                               Text="View"
+                               Margin="16,0,0,0"
+                               VerticalAlignment="Center"
+                               Cursor="Hand"
+                               Foreground="#FFE6E6E6"
+                               MouseLeftButtonDown="OnViewMenuMouseLeftButtonDown">
+                        <TextBlock.ContextMenu>
+                            <ContextMenu Placement="Bottom">
+                                <MenuItem Header="Toggle File Tree" Click="OnFilesToggleClicked" />
+                                <MenuItem Header="Toggle Console" Click="OnConsoleToggleClicked" />
+                            </ContextMenu>
+                        </TextBlock.ContextMenu>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Width="40"
+                            Height="32"
+                            Background="#FF0F1115"
+                            Foreground="#FFE6E6E6"
+                            BorderBrush="#FF1D2229"
+                            shell:WindowChrome.IsHitTestVisibleInChrome="False"
+                            Click="OnMinimizeClicked">_</Button>
+                    <Button Width="40"
+                            Height="32"
+                            Background="#FF0F1115"
+                            Foreground="#FFE6E6E6"
+                            BorderBrush="#FF1D2229"
+                            shell:WindowChrome.IsHitTestVisibleInChrome="False"
+                            Click="OnMaximizeClicked">[]</Button>
+                    <Button Width="40"
+                            Height="32"
+                            Background="#FF0F1115"
+                            Foreground="#FFE6E6E6"
+                            BorderBrush="#FF1D2229"
+                            shell:WindowChrome.IsHitTestVisibleInChrome="False"
+                            Click="OnCloseClicked">X</Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Row="1" Grid.RowSpan="4" Grid.Column="0" Background="#FF0F1217" BorderBrush="#FF1D2229" BorderThickness="0,0,1,0">
+            <StackPanel>
+                <TextBlock Text="Files"
+                           Margin="6,8,0,6"
+                           Foreground="#FFFFFFFF"
+                           FontFamily="Consolas"
+                           FontSize="11" />
+                <TreeView x:Name="FileTree"
+                          Margin="2,0,2,8"
+                          Background="#FF0F1217"
+                          Foreground="#FFFFFFFF"
+                          BorderThickness="0"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          MouseDoubleClick="OnFileTreeDoubleClick">
+                    <TreeView.Resources>
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="FontFamily" Value="Consolas" />
+                            <Setter Property="FontSize" Value="11" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="Padding" Value="0,1" />
+                            <Setter Property="Foreground" Value="#FFFFFFFF" />
+                        </Style>
+                    </TreeView.Resources>
+                </TreeView>
+            </StackPanel>
+        </Border>
+
+        <DockPanel Grid.Row="1" Grid.Column="1" LastChildFill="True" Margin="16,6,16,6">
+            <Button x:Name="StartStopButton"
+                    Width="120"
+                    Height="28"
+                    HorizontalAlignment="Left"
+                    Click="OnStartStopClicked"
+                    Background="#FF6B1F1F"
+                    Foreground="#FFF2F2F2"
+                    BorderBrush="#FF8A2A2A">
+                Start
+            </Button>
+        </DockPanel>
+
+        <Border Grid.Row="2" Grid.Column="1" Margin="16,0,16,0" BorderBrush="#FF1D2229" BorderThickness="1" CornerRadius="6" Background="#FF14181E">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Background="#FF101419" BorderBrush="#FF1D2229" BorderThickness="0,0,1,0">
+                    <ScrollViewer x:Name="LineNumbersScroll"
+                                  VerticalScrollBarVisibility="Hidden"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <TextBlock x:Name="LineNumbers"
+                                   Margin="0,8,4,8"
+                                   FontFamily="Consolas"
+                                   FontSize="14"
+                                   TextBlock.LineHeight="18"
+                                   Foreground="#FF6B7280"
+                                   TextAlignment="Left"
+                                   MouseLeftButtonDown="OnLineNumbersMouseDown" />
+                    </ScrollViewer>
+                </Border>
+                <RichTextBox x:Name="CodeEditor"
+                         Grid.Column="1"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Auto"
+                         Cursor="IBeam"
+                         ForceCursor="True"
+                         FontFamily="Consolas"
+                         FontSize="14"
+                         Padding="8,8,12,8"
+                         Background="#FF14181E"
+                         Foreground="#FFF5F5F5"
+                         CaretBrush="#FFE6E6E6"
+                         BorderThickness="0"
+                         IsDocumentEnabled="True"
+                         Loaded="OnEditorLoaded"
+                         PreviewKeyDown="OnEditorPreviewKeyDown"
+                         PreviewMouseMove="OnEditorPreviewMouseMove"
+                         MouseLeave="OnEditorMouseLeave"
+                         SelectionChanged="OnEditorSelectionChanged"
+                         MouseDoubleClick="OnEditorMouseDoubleClick"
+                         ContextMenuOpening="OnEditorContextMenuOpening"
+                         TextChanged="OnEditorChanged">
+                    <RichTextBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="OpenVstMenuItem"
+                                      Header="Open VST"
+                                      Click="OnOpenVstMenuItemClicked" />
+                            <Separator />
+                            <MenuItem Header="Cut" Command="ApplicationCommands.Cut" />
+                            <MenuItem Header="Copy" Command="ApplicationCommands.Copy" />
+                            <MenuItem Header="Paste" Command="ApplicationCommands.Paste" />
+                            <MenuItem Header="Select All" Command="ApplicationCommands.SelectAll" />
+                        </ContextMenu>
+                    </RichTextBox.ContextMenu>
+                    <RichTextBox.Resources>
+                        <Style TargetType="ScrollBar" BasedOn="{StaticResource EditorScrollBarStyle}" />
+                    </RichTextBox.Resources>
+                </RichTextBox>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="3" Grid.Column="1" Margin="16,10,16,10" Padding="8" Background="#FF14181E" CornerRadius="6">
+            <TextBlock x:Name="CursorText" Text="Line 1, Col 1" Foreground="#FF9CA3AF" />
+        </Border>
+
+        <Border Grid.Row="4" Grid.Column="1" Margin="16,0,16,16" Padding="8" Background="#FF101419" BorderBrush="#FF1D2229" BorderThickness="1">
+            <TextBox x:Name="ConsoleText"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     Background="#FF101419"
+                     Foreground="#FFB5BDC9"
+                     BorderThickness="0"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     Text="Console ready..." />
+        </Border>
+    </Grid>
+</Window>
